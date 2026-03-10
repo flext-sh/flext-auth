@@ -407,12 +407,9 @@ class FlextAuthBaseProvider(Protocol):
     ) -> r[Mapping[str, t.ContainerValue]]:
         if isinstance(user, Mapping):
             return r[t.ConfigurationMapping].ok(user)
-        if user.__class__ is m.Auth.AuthIdentity:
-            return r[t.ConfigurationMapping].ok(
-                user.model_dump(exclude={"credential_hash", "token", "refresh_token"})
-            )
-        return r[t.ConfigurationMapping].fail(
-            "User payload must be AuthIdentity or mapping"
+        # At this point, user is narrowed to m.Auth.AuthIdentity by type system
+        return r[t.ConfigurationMapping].ok(
+            user.model_dump(exclude={"credential_hash", "token", "refresh_token"})
         )
 
     def _protocol_name(self) -> str:
