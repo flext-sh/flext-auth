@@ -1,0 +1,25 @@
+src/flext_auth/providers/rfc.py
+  0d3e5eafd1c4d9d8 89-121
+src/flext_auth/providers/oauth2.py
+  0d3e5eafd1c4d9d8 344-345
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.10",
+  "base_commit_sha": "c72ae9495513fc9803767ec293901811d5aed1dc",
+  "prompts": {
+    "0d3e5eafd1c4d9d8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_32697f3bbffeJYW8HyihR5eo0B",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 36,
+      "total_deletions": 3,
+      "accepted_lines": 36,
+      "overriden_lines": 0
+    }
+  }
+}
