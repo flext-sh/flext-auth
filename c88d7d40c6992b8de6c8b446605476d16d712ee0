@@ -1,0 +1,23 @@
+src/flext_auth/providers/base.py
+  eca0689dd8c5de55 202
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.10",
+  "base_commit_sha": "c88d7d40c6992b8de6c8b446605476d16d712ee0",
+  "prompts": {
+    "eca0689dd8c5de55": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_326a011f8ffe6Iz4CpfyFWgwZb",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 15,
+      "total_deletions": 18,
+      "accepted_lines": 7,
+      "overriden_lines": 0
+    }
+  }
+}
