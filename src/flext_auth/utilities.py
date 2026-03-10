@@ -315,21 +315,25 @@ class FlextAuthUtilities(FlextApiUtilities):
         FlextResult with encoded token or error
 
         """
-        try:
+
+        def _encode() -> str:
             token = jwt.encode(dict(payload), secret, algorithm=algorithm)
             if isinstance(token, str):
-                return r[str].ok(token)
-            return r[str].ok(str(token))
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
-            return r[str].fail(f"Encoding failed: {e}")
+                return token
+            return str(token)
+
+        return FlextUtilities.try_(
+            _encode,
+            catch=(
+                ValueError,
+                TypeError,
+                KeyError,
+                AttributeError,
+                OSError,
+                RuntimeError,
+                ImportError,
+            ),
+        ).map_error(lambda e: f"Encoding failed: {e}")
 
 
 u = FlextAuthUtilities
