@@ -136,19 +136,19 @@ class FlextAuthTokenService(s[bool]):
 
     def validate_token(self, token: str) -> r[bool]:
         """Railway-oriented token validation with audit logging."""
-        result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.validate_token(token)
-        )
-        if result.is_failure:
-            error_msg = result.error if result.error is not None else "Unknown error"
-            FlextLogger(__name__).debug(
-                "Token validation",
-                success=False,
-                token_id=self._short_token(token),
-                reason=error_msg,
+        return (
+            self
+            ._get_jwt_provider_cached()
+            .flat_map(lambda provider: provider.validate_token(token))
+            .tap_error(
+                lambda e: FlextLogger(__name__).debug(
+                    "Token validation",
+                    success=False,
+                    token_id=self._short_token(token),
+                    reason=e or "Unknown error",
+                )
             )
-            return result
-        return result
+        )
 
     def _get_jwt_provider_cached(self) -> r[FlextAuthJwtProvider]:
         """Get JWT provider with lazy caching to eliminate repeated lookups."""

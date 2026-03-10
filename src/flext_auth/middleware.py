@@ -202,10 +202,7 @@ class FlextAuthMiddleware(s[bool]):
                     if hasattr(refreshed_payload, "user_id")
                     else ""
                 )
-                if user_id_value:
-                    identity_id_value = user_id_value
-                else:
-                    identity_id_value = current_token.identity_id
+                identity_id_value = user_id_value or current_token.identity_id
             try:
                 refreshed_token = m.Auth.AuthToken(
                     identity_id=identity_id_value,

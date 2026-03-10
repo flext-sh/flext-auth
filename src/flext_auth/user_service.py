@@ -39,33 +39,23 @@ class FlextAuthIdentityService(s[bool]):
         self, name: str, credential: str
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
-        return (
-            self.identity_manager
-            .get_user_by_username(name)
-            .flat_map(lambda identity: r.ok((identity, credential)))
-            .flat_map(
-                lambda ic: (
-                    r.fail("Account is locked due to too many failed attempts")
-                    if ic[0].is_locked()
-                    else r.ok(ic)
-                )
+        identity_result = self.identity_manager.get_user_by_username(name)
+        if identity_result.is_failure:
+            return r[m.Auth.AuthIdentity].fail(identity_result.error)
+        identity = identity_result.value
+        if identity.is_locked():
+            return r[m.Auth.AuthIdentity].fail(
+                "Account is locked due to too many failed attempts"
             )
-            .flat_map(
-                lambda ic: (
-                    ic[0]
-                    .verify_credential(ic[1])
-                    .flat_map(
-                        lambda is_valid: (
-                            r.ok(ic[0].with_successful_access())
-                            if is_valid
-                            else self._handle_failed_attempt(ic[0]).flat_map(
-                                lambda _: r.fail("Invalid credentials")
-                            )
-                        )
-                    )
-                )
-            )
-        )
+        verification_result = identity.verify_credential(credential)
+        if verification_result.is_failure:
+            return r[m.Auth.AuthIdentity].fail(verification_result.error)
+        if verification_result.value:
+            return r[m.Auth.AuthIdentity].ok(identity.with_successful_access())
+        failed_attempt_result = self._handle_failed_attempt(identity)
+        if failed_attempt_result.is_failure:
+            return r[m.Auth.AuthIdentity].fail(failed_attempt_result.error)
+        return r[m.Auth.AuthIdentity].fail("Invalid credentials")
 
     def authorize_identity(
         self, identity_id: str, permission: str, resource: str | None = None
@@ -86,36 +76,24 @@ class FlextAuthIdentityService(s[bool]):
         self, identity_id: str, current_credential: str, new_credential: str
     ) -> r[bool]:
         """Railway-oriented credential change with validation."""
-        return (
-            self.identity_manager
-            .get_user(identity_id)
-            .flat_map(
-                lambda identity: identity.verify_credential(
-                    current_credential
-                ).flat_map(
-                    lambda is_valid: (
-                        r.ok(identity)
-                        if is_valid
-                        else r.fail("Current credential is incorrect")
-                    )
-                )
+        identity_result = self.identity_manager.get_user(identity_id)
+        if identity_result.is_failure:
+            return r[bool].fail(identity_result.error)
+        identity = identity_result.value
+        verify_result = identity.verify_credential(current_credential)
+        if verify_result.is_failure:
+            return r[bool].fail(verify_result.error)
+        if not verify_result.value:
+            return r[bool].fail("Current credential is incorrect")
+        if len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
+            return r[bool].fail(
+                f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
-            .flat_map(
-                lambda identity: (
-                    r.ok(identity)
-                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
-                    else r.fail(
-                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
-                    )
-                )
-            )
-            .flat_map(
-                lambda identity: identity.set_credential(new_credential).map(
-                    lambda _: self._log_success(
-                        "Password change successful", identity.name
-                    )
-                )
-            )
+        set_result = identity.set_credential(new_credential)
+        if set_result.is_failure:
+            return r[bool].fail(set_result.error)
+        return r[bool].ok(
+            self._log_success("Password change successful", identity.name)
         )
 
     def create_identity(
@@ -185,34 +163,26 @@ class FlextAuthIdentityService(s[bool]):
 
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
-        return (
-            self.identity_manager
-            .get_user(identity_id)
-            .flat_map(
-                lambda identity: (
-                    r.ok(identity)
-                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
-                    else r.fail(
-                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
-                    )
-                )
+        identity_result = self.identity_manager.get_user(identity_id)
+        if identity_result.is_failure:
+            return r[bool].fail(identity_result.error)
+        identity = identity_result.value
+        if len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
+            return r[bool].fail(
+                f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
-            .flat_map(
-                lambda identity: identity.set_credential(new_credential).map(
-                    lambda _: self._log_success(
-                        "Password reset successful", identity.name
-                    )
-                )
-            )
-        )
+        set_result = identity.set_credential(new_credential)
+        if set_result.is_failure:
+            return r[bool].fail(set_result.error)
+        return r[bool].ok(self._log_success("Password reset successful", identity.name))
 
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
-        max_attempts = self._managers.config.max_attempts
+        max_attempts = c.Auth.AuthSecurity.MAX_LOGIN_ATTEMPTS
         if identity.failed_attempts >= max_attempts:
             lockout_duration = timedelta(
-                minutes=self._managers.config.lockout_duration_minutes
+                minutes=c.Auth.AuthSecurity.LOCKOUT_DURATION_MINUTES
             )
             identity.locked_until = datetime.now(UTC) + lockout_duration
             self.logger.warning(

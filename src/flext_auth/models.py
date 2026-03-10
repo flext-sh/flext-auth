@@ -515,6 +515,7 @@ class FlextAuthModels(FlextApiModels):
 
             ticket: str = Field(..., description="Kerberos ticket")
             principal: str = Field(default="", description="Kerberos principal")
+            realm: str = Field(default="", description="Kerberos realm")
 
         # =========================================================================
         # HTTP RESPONSE DATA - Generic HTTP response container

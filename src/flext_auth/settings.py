@@ -9,8 +9,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextModels
-from pydantic import Field
+from typing import ClassVar
+
+from flext_core import FlextModels, r
+from pydantic import ConfigDict, Field, SecretStr, field_validator
 
 from flext_auth.constants import FlextAuthConstants as c
 
@@ -18,10 +20,18 @@ from flext_auth.constants import FlextAuthConstants as c
 class FlextAuthSettings(FlextModels.Value):
     """Validated settings used by auth providers and token services."""
 
+    _global_instance: ClassVar[FlextAuthSettings | None] = None
+    model_config = ConfigDict(validate_assignment=True, populate_by_name=True)
+
     secret_key: str = Field(
         default="change-me-in-production-minimum-32-characters",
+        alias="auth_secret",
         min_length=c.Auth.SECRET_MIN_LENGTH,
         description="Signing secret",
+    )
+    algorithm: str = Field(
+        default=c.Auth.DEFAULT_JWT_ALGORITHM,
+        description="JWT signing algorithm",
     )
     issuer: str = Field(default=c.Auth.DEFAULT_ISSUER, description="Token issuer")
     audience: str = Field(
@@ -50,9 +60,31 @@ class FlextAuthSettings(FlextModels.Value):
         description="Password hash rounds",
     )
 
+    @property
+    def auth_secret(self) -> SecretStr:
+        """Expose secret as SecretStr for compatibility."""
+        return SecretStr(self.secret_key)
+
+    @field_validator("secret_key", mode="before")
+    @classmethod
+    def _normalize_secret_key(cls, value: object) -> object:
+        if isinstance(value, SecretStr):
+            return value.get_secret_value()
+        return value
+
     @classmethod
     def _reset_instance(cls) -> None:
-        return None
+        setattr(cls, "_global_instance", None)
+
+    @classmethod
+    def get_or_create_global(cls) -> r[FlextAuthSettings]:
+        """Return the singleton settings instance, creating it on first access."""
+        existing_instance = cls._global_instance
+        if existing_instance is not None:
+            return r[FlextAuthSettings].ok(existing_instance)
+        created_instance = cls()
+        setattr(cls, "_global_instance", created_instance)
+        return r[FlextAuthSettings].ok(created_instance)
 
 
 __all__ = ["FlextAuthSettings"]

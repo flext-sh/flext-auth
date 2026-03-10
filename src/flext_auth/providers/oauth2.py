@@ -22,6 +22,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from flext_core import e, r
+from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthProtocols, c, m, t, u
 from flext_auth.providers.rfc import FlextAuthRfcProvider
@@ -340,10 +341,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     )
                 case str() as scope_str:
                     scope = scope_str
-                case _:
-                    return r[t.Auth.OAuth2TokenResponse].fail(
-                        "OAuth2 scope must be a string"
-                    )
             token_response = t.Auth.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
@@ -685,11 +682,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[t.ConfigurationMapping].fail(
                 "OAuth2 introspection payload must be a mapping"
             )
-        parsed_mapping: dict[str, t.ContainerValue] = {
-            str(key): value
-            for key, value in parsed_payload.items()
-            if isinstance(key, str)
-        }
+        try:
+            parsed_mapping: dict[str, t.ContainerValue] = TypeAdapter(
+                dict[str, t.ContainerValue]
+            ).validate_python(parsed_payload)
+        except ValidationError as exc:
+            return r[t.ConfigurationMapping].fail(
+                f"OAuth2 introspection payload has invalid shape: {exc}"
+            )
         return r[t.ConfigurationMapping].ok(parsed_mapping)
 
     def _introspection_endpoint(self) -> r[str]:

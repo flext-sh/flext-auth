@@ -86,12 +86,14 @@ class FlextAuthTypes(FlextApiTypes):
             """Project type namespace."""
 
             type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
+            AuthProjectConfig = m.Auth.ProviderConfig
 
         class Providers:
             """Provider-oriented type definitions."""
 
             # Model reference from m.Auth.Providers
             Metadata = m.Auth.Providers.Metadata
+            Registration = m.Auth.ProviderConfig
 
             type Key = Annotated[
                 str,
@@ -118,6 +120,9 @@ class FlextAuthTypes(FlextApiTypes):
 
         class Credentials:
             """Credential payload type definitions."""
+
+            Basic = m.Auth.Credential
+            MultiFactor = m.Auth.CredentialValidation
 
             type Username = Annotated[
                 str,
@@ -149,15 +154,29 @@ class FlextAuthTypes(FlextApiTypes):
 
             type TokenType = c.Auth.TokenTypes
             type ClaimMap = FlextApiTypes.JsonDict
+            Claims = FlextApiTypes.JsonDict
+            Introspection = FlextApiTypes.JsonDict
 
         class Sessions:
             """Session-related type definitions."""
 
+            Activity = FlextApiTypes.JsonDict
+
         class Responses:
             """Response payload abstractions."""
 
+            Authentication = m.Auth.AuthResponse
+            AuthenticationPayload = FlextApiTypes.JsonDict
+
         class Managers:
             """Manager-specific supporting types."""
+
+            UserData = FlextApiTypes.JsonDict
+            SessionData = FlextApiTypes.JsonDict
+            LogEntry = FlextApiTypes.JsonDict
+            AuditEntry = FlextApiTypes.JsonDict
+            AttemptData = FlextApiTypes.JsonDict
+            AttemptWindow = m.Auth.ValidationResult
 
         class Domain:
             """Domain-level literals and shortcuts."""
@@ -253,6 +272,7 @@ class FlextAuthTypes(FlextApiTypes):
         """Auth project namespace extending API project namespace."""
 
         type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
+        AuthProjectConfig = m.Auth.ProviderConfig
 
     OAuth2TokenResponse = Auth.OAuth2TokenResponse
     KerberosTicketData = Auth.KerberosTicketData

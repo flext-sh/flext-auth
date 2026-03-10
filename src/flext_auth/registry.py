@@ -7,10 +7,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import ClassVar
+from typing import ClassVar, TypeGuard
 
 from flext_core import FlextRegistry, r, t
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from flext_auth import FlextAuthTypes as at
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -19,10 +19,12 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 class _ProviderWrapper(BaseModel):
     """Wrapper for auth provider instances."""
 
+    category: str = Field(description="Provider category")
     provider: object = Field(description="Provider instance")
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    class Config:
-        arbitrary_types_allowed = True
+    def _protocol_name(self) -> str:
+        return self.category
 
 
 class _ConfigWrapper(BaseModel):
@@ -43,6 +45,11 @@ class _MetadataWrapper(BaseModel):
 
     def _protocol_name(self) -> str:
         return self.category
+
+
+def _is_auth_provider(value: object) -> TypeGuard[FlextAuthBaseProvider]:
+    required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
+    return all(callable(getattr(value, attr, None)) for attr in required)
 
 
 class FlextAuthRegistry(FlextRegistry):
@@ -83,8 +90,9 @@ class FlextAuthRegistry(FlextRegistry):
             return r[FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{name}' not registered"
             )
-        provider = result.value
-        if not isinstance(provider, FlextAuthBaseProvider):
+        wrapped_provider = result.value
+        provider = getattr(wrapped_provider, "provider", wrapped_provider)
+        if not _is_auth_provider(provider):
             return r[FlextAuthBaseProvider].fail(
                 f"Provider '{name}' is not a FlextAuthBaseProvider"
             )
@@ -167,7 +175,7 @@ class FlextAuthRegistry(FlextRegistry):
         configuration: Mapping[str, t.JsonValue] | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
-        provider_wrapper = _ProviderWrapper(provider=provider)
+        provider_wrapper = _ProviderWrapper(category=self.PROVIDERS, provider=provider)
         provider_result = self.register_plugin(self.PROVIDERS, name, provider_wrapper)
         if provider_result.is_failure:
             return provider_result

@@ -105,11 +105,7 @@ class FlextAuthManagers:
             """Create a new user."""
             if username in self._users:
                 return r[m.Auth.AuthIdentity].fail("Identity already exists")
-            match email:
-                case str() as email_str:
-                    normalized_email = email_str.lower()
-                case _:
-                    normalized_email = email
+            normalized_email = email.lower()
             for existing_user_data in self._users.values():
                 existing_contact = existing_user_data.get("contact", "")
                 match existing_contact:
@@ -321,16 +317,18 @@ class FlextAuthManagers:
                 storage_data, "credential_hash", str
             )
             is_active = self._validate_required_field(storage_data, "is_active", bool)
-            roles_value = self._validate_required_field(storage_data, "roles", list)
-            permissions_value = self._validate_required_field(
-                storage_data, "permissions", list
-            )
-            roles: list[str] = [role for role in roles_value if isinstance(role, str)]
-            permissions: list[str] = [
-                permission
-                for permission in permissions_value
-                if isinstance(permission, str)
-            ]
+            roles_raw = storage_data.get("roles", [])
+            permissions_raw = storage_data.get("permissions", [])
+            roles: list[str] = []
+            permissions: list[str] = []
+            if u.Guards.is_list(roles_raw):
+                roles = [role for role in roles_raw if isinstance(role, str)]
+            if u.Guards.is_list(permissions_raw):
+                permissions = [
+                    permission
+                    for permission in permissions_raw
+                    if isinstance(permission, str)
+                ]
             identity_data: dict[str, t.ContainerValue] = {
                 "unique_id": identity_id,
                 "name": name_value,
