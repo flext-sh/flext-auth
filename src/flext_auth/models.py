@@ -489,6 +489,68 @@ class FlextAuthModels(FlextApiModels):
                 description="Additional data",
             )
 
+        # =========================================================================
+        # OAUTH2 TOKEN RESPONSE - OAuth2 token exchange result
+        # =========================================================================
+
+        class OAuth2TokenResponse(FlextApiModels.Value):
+            """OAuth2 token response from token endpoint."""
+
+            access_token: str = Field(..., description="Access token")
+            token_type: str = Field(default="Bearer", description="Token type")
+            expires_in: int = Field(default=3600, ge=0, description="Expiry seconds")
+            scope: str = Field(default="", description="Granted scope")
+            refresh_token: str = Field(
+                default="",
+                description="Refresh token",
+                exclude=True,
+            )
+
+        # =========================================================================
+        # KERBEROS TICKET DATA - Kerberos ticket information
+        # =========================================================================
+
+        class KerberosTicketData(FlextApiModels.Value):
+            """Kerberos ticket information."""
+
+            ticket: str = Field(..., description="Kerberos ticket")
+            principal: str = Field(default="", description="Kerberos principal")
+
+        # =========================================================================
+        # HTTP RESPONSE DATA - Generic HTTP response container
+        # =========================================================================
+
+        class HttpResponseData(FlextApiModels.Value):
+            """Generic HTTP response data."""
+
+            status_code: int = Field(..., description="HTTP status code")
+            body: str = Field(default="", description="Response body")
+            headers: dict[str, str] = Field(
+                default_factory=dict,
+                description="Response headers",
+            )
+
+        # =========================================================================
+        # PROVIDERS NAMESPACE - Provider metadata and related models
+        # =========================================================================
+
+        class Providers:
+            """Provider-related models namespace."""
+
+            class Metadata(FlextApiModels.Value):
+                """Provider metadata for registry."""
+
+                name: str = Field(..., description="Provider name")
+                version: str = Field(default="1.0.0", description="Provider version")
+                capabilities: tuple[str, ...] = Field(
+                    default_factory=tuple,
+                    description="Provider capabilities",
+                )
+                extras: dict[str, t.JsonValue] = Field(
+                    default_factory=dict,
+                    description="Extra metadata",
+                )
+
 
 # Forward references resolved via from __future__ import annotations at module top
 # This architectural approach avoids runtime model_rebuild() calls

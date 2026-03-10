@@ -39,6 +39,11 @@ class FlextAuthTypes(FlextApiTypes):
             c.Auth.RoleTypes, BeforeValidator(lambda x: x)
         ]
 
+        # Model references from m.Auth
+        OAuth2TokenResponse = m.Auth.OAuth2TokenResponse
+        KerberosTicketData = m.Auth.KerberosTicketData
+        HttpResponseData = m.Auth.HttpResponseData
+
         class UserManagement:
             """User management type definitions."""
 
@@ -84,6 +89,9 @@ class FlextAuthTypes(FlextApiTypes):
 
         class Providers:
             """Provider-oriented type definitions."""
+
+            # Model reference from m.Auth.Providers
+            Metadata = m.Auth.Providers.Metadata
 
             type Key = Annotated[
                 str,

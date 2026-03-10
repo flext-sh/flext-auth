@@ -408,7 +408,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             credential_payload = dict(credentials)
         else:
             metadata_value = credentials.metadata
-            metadata_payload = (
+            metadata_payload: dict[str, t.JsonValue] = (
                 metadata_value if isinstance(metadata_value, dict) else {}
             )
             credential_payload = {
