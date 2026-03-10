@@ -17,6 +17,7 @@ from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings
 from flext_core import FlextLogger, r
+from pydantic import TypeAdapter
 
 from flext_auth import m, t
 
@@ -228,14 +229,11 @@ class FlextWebTransportAdapter:
                     f"Unsupported response body type: {type(body)}"
                 )
         try:
-            parsed = json.loads(decoded)
+            adapter = TypeAdapter(dict[str, t.JsonValue])
+            parsed = adapter.validate_python(json.loads(decoded))
+            return r[t.Api.ResponseDict].ok(parsed)
         except json.JSONDecodeError:
             return r[t.Api.ResponseDict].fail("Unable to parse response body as JSON")
-        if isinstance(parsed, Mapping):
-            normalized_parsed: t.Api.ResponseDict = {
-                str(key): self._to_json_value(value) for key, value in parsed.items()
-            }
-            return r[t.Api.ResponseDict].ok(normalized_parsed)
         return r[t.Api.ResponseDict].fail(
             f"Unexpected parsed response type: {type(parsed)}"
         )
@@ -323,8 +321,6 @@ class FlextWebTransportAdapter:
 
     def _to_json_value(self, value: t.ContainerValue) -> t.JsonValue:
         """Convert object to JsonValue type (safe for JSON-parsed data)."""
-        if value is None:
-            return None
         match value:
             case str() as text:
                 return text
@@ -334,6 +330,8 @@ class FlextWebTransportAdapter:
                 return integer
             case float() as decimal:
                 return decimal
+            case None:
+                return ""
             case _:
                 pass
         if isinstance(value, (list, tuple)):

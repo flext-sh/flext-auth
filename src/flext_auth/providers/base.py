@@ -75,36 +75,29 @@ class FlextAuthBaseProvider(Protocol):
 
     @staticmethod
     def _normalize_claim_value(value: t.ContainerValue) -> t.ContainerValue | None:
-        match value:
-            case str() | int() | float() | bool() | None:
-                return value
-            case datetime() as dt:
-                return dt.isoformat()
-            case list() as values:
-                normalized_items = []
-                for item in values:
-                    normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
-                    if normalized_item is not None:
-                        normalized_items.append(normalized_item)
-                return normalized_items
-            case tuple() as values:
-                normalized_items = []
-                for item in values:
-                    normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
-                    if normalized_item is not None:
-                        normalized_items.append(normalized_item)
-                return normalized_items
-            case Mapping() as values:
-                normalized_mapping: dict[str, t.ContainerValue] = {}
-                for key, item in values.items():
-                    if not isinstance(key, str):
-                        continue
+        if value is None:
+            return None
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        if isinstance(value, datetime):
+            return value.isoformat()
+        if isinstance(value, (list, tuple)):
+            normalized_items: list[t.ContainerValue] = []
+            for item in value:
+                normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
+                if normalized_item is not None:
+                    normalized_items.append(normalized_item)
+            return normalized_items
+        if isinstance(value, Mapping):
+            normalized_mapping: dict[str, t.ContainerValue] = {}
+            for key, item in value.items():
+                # Only include string keys in normalized mapping
+                if type(key) is str:
                     normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
                     if normalized_item is not None:
                         normalized_mapping[key] = normalized_item
-                return normalized_mapping
-            case _:
-                return None
+            return normalized_mapping
+        return value
 
     def authenticate(
         self, credentials: m.Auth.CredentialValidation
@@ -184,7 +177,7 @@ class FlextAuthBaseProvider(Protocol):
             "aud",
         }
         for key, value in payload.items():
-            if not isinstance(key, str) or key in reserved_claims:
+            if key in reserved_claims:
                 continue
             normalized_value = self._normalize_claim_value(value)
             if normalized_value is not None:
@@ -215,13 +208,10 @@ class FlextAuthBaseProvider(Protocol):
             ImportError,
         ) as exc:
             return r[str].fail(f"Token generation failed: {exc}")
-        match encoded_token:
-            case str() as token_text:
-                token = token_text
-            case bytes() as token_bytes:
-                token = token_bytes.decode("utf-8")
-            case _:
-                token = str(encoded_token)
+        if isinstance(encoded_token, str):
+            token = encoded_token
+        else:
+            token = str(encoded_token)
         return r[str].ok(token)
 
     def generate_token_for_user(
@@ -407,10 +397,6 @@ class FlextAuthBaseProvider(Protocol):
             ImportError,
         ) as exc:
             return r[t.ConfigurationMapping].fail(f"Token validation failed: {exc}")
-        if not isinstance(decoded_payload, Mapping):
-            return r[t.ConfigurationMapping].fail(
-                "Decoded token payload must be a mapping"
-            )
         return r[t.ConfigurationMapping].ok(decoded_payload)
 
     def _normalize_identity_payload(

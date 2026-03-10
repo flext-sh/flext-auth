@@ -408,9 +408,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             credential_payload = dict(credentials)
         else:
             metadata_value = credentials.metadata
-            metadata_payload: dict[str, t.JsonValue] = (
-                metadata_value if isinstance(metadata_value, dict) else {}
-            )
+            metadata_payload: dict[str, t.JsonValue] = metadata_value
             credential_payload = {
                 "username": credentials.username,
                 "password": credentials.password,
@@ -687,7 +685,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[t.ConfigurationMapping].fail(
                 "OAuth2 introspection payload must be a mapping"
             )
-        return r[t.ConfigurationMapping].ok(parsed_payload)
+        parsed_mapping: dict[str, t.ContainerValue] = {
+            str(key): value
+            for key, value in parsed_payload.items()
+            if isinstance(key, str)
+        }
+        return r[t.ConfigurationMapping].ok(parsed_mapping)
 
     def _introspection_endpoint(self) -> r[str]:
         for key in ("introspection_endpoint", "token_introspection_endpoint"):

@@ -42,8 +42,7 @@ class FlextAuthProviderService(s[bool]):
     def __init__(self, *, config: FlextAuthSettings | None = None) -> None:
         """Flexible initialization with automatic provider registration."""
         super().__init__()
-        if config is not None:
-            self._config = config
+        self._auth_config = config if config is not None else FlextAuthSettings()
         self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 
@@ -124,12 +123,10 @@ class FlextAuthProviderService(s[bool]):
 
     def _register_builtin_providers(self) -> None:
         """Flexible provider registration with conditional loading."""
-        match self._config if hasattr(self, "_config") else None:
-            case FlextAuthSettings() as cfg:
-                provider_config = cfg.to_provider_config()
-            case _:
-                self.logger.error("Configuration is required for provider registration")
-                return
+        if not hasattr(self, "_auth_config"):
+            self.logger.error("Configuration is required for provider registration")
+            return
+        provider_config = self._auth_config.model_dump()
         providers: list[
             tuple[t.Auth.Providers.Key, type[FlextAuthBaseProvider], Callable[[], bool]]
         ] = [

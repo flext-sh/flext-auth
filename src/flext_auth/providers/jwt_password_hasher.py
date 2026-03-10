@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import bcrypt
-from flext_core import r
+from flext_core import FlextResult, r
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -27,7 +27,7 @@ class FlextAuthPasswordHasher:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def hash_password(self, password: str) -> r[str]:
+    def hash_password(self, password: str) -> FlextResult[str]:
         """Hash password using bcrypt with railway-oriented programming.
 
         Args:
@@ -43,9 +43,9 @@ class FlextAuthPasswordHasher:
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
             return r.ok(hashed.decode("utf-8"))
         except (ValueError, TypeError) as e:
-            return r.fail(f"Password hashing failed: {type(e).__name__}: {e}")
+            return r[str].fail(f"Password hashing failed: {type(e).__name__}: {e}")
 
-    def verify_password(self, password: str, hashed_password: str) -> r[bool]:
+    def verify_password(self, password: str, hashed_password: str) -> FlextResult[bool]:
         """Verify password against hash using bcrypt.
 
         Args:
@@ -62,7 +62,9 @@ class FlextAuthPasswordHasher:
             )
             return r.ok(result)
         except (ValueError, TypeError) as e:
-            return r.fail(f"Password verification failed: {type(e).__name__}: {e}")
+            return r[bool].fail(
+                f"Password verification failed: {type(e).__name__}: {e}"
+            )
 
 
 __all__ = ["FlextAuthPasswordHasher"]

@@ -25,7 +25,7 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
     def __init__(self, config: FlextAuthSettings | None = None) -> None:
         """Initialize quickstart auth service with sensible defaults."""
         super().__init__()
-        self._config = config if config is not None else FlextAuthSettings()
+        self._auth_config = config if config is not None else FlextAuthSettings()
         self._auth = FlextAuth()
 
     @property

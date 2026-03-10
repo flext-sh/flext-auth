@@ -196,13 +196,13 @@ class FlextAuthMiddleware(s[bool]):
                 if hasattr(refreshed_payload, "identity_id")
                 else ""
             )
-            if not isinstance(identity_id_value, str) or not identity_id_value:
+            if not identity_id_value:
                 user_id_value = (
                     refreshed_payload.user_id
                     if hasattr(refreshed_payload, "user_id")
                     else ""
                 )
-                if isinstance(user_id_value, str) and user_id_value:
+                if user_id_value:
                     identity_id_value = user_id_value
                 else:
                     identity_id_value = current_token.identity_id
