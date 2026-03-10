@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import bcrypt
-from flext_core import FlextResult, r
+from flext_core import FlextResult, u
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -37,13 +37,17 @@ class FlextAuthPasswordHasher:
         FlextResult containing hashed password or error
 
         """
-        try:
+
+        def _hash() -> str:
             salt_rounds = 12
             salt = bcrypt.gensalt(rounds=salt_rounds)
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-            return r.ok(hashed.decode("utf-8"))
-        except (ValueError, TypeError) as e:
-            return r[str].fail(f"Password hashing failed: {type(e).__name__}: {e}")
+            return hashed.decode("utf-8")
+
+        return u.try_(
+            _hash,
+            catch=(ValueError, TypeError),
+        ).map_error(lambda e: f"Password hashing failed: {type(e).__name__}: {e}")
 
     def verify_password(self, password: str, hashed_password: str) -> FlextResult[bool]:
         """Verify password against hash using bcrypt.
@@ -56,15 +60,16 @@ class FlextAuthPasswordHasher:
         r containing verification result or error
 
         """
-        try:
-            result = bcrypt.checkpw(
+
+        def _verify() -> bool:
+            return bcrypt.checkpw(
                 password.encode("utf-8"), hashed_password.encode("utf-8")
             )
-            return r.ok(result)
-        except (ValueError, TypeError) as e:
-            return r[bool].fail(
-                f"Password verification failed: {type(e).__name__}: {e}"
-            )
+
+        return u.try_(
+            _verify,
+            catch=(ValueError, TypeError),
+        ).map_error(lambda e: f"Password verification failed: {type(e).__name__}: {e}")
 
 
 __all__ = ["FlextAuthPasswordHasher"]
