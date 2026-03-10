@@ -321,10 +321,16 @@ class FlextAuthManagers:
                 storage_data, "credential_hash", str
             )
             is_active = self._validate_required_field(storage_data, "is_active", bool)
-            roles = self._validate_required_field(storage_data, "roles", list)
-            permissions = self._validate_required_field(
+            roles_value = self._validate_required_field(storage_data, "roles", list)
+            permissions_value = self._validate_required_field(
                 storage_data, "permissions", list
             )
+            roles: list[str] = [role for role in roles_value if isinstance(role, str)]
+            permissions: list[str] = [
+                permission
+                for permission in permissions_value
+                if isinstance(permission, str)
+            ]
             identity_data: dict[str, t.ContainerValue] = {
                 "unique_id": identity_id,
                 "name": name_value,

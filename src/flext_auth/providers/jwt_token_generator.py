@@ -87,13 +87,11 @@ class FlextAuthJwtTokenGenerator:
             token_result = jwt.encode(
                 payload, secret_result.value, algorithm=algorithm_result.value
             )
-            match token_result:
-                case bytes() as token_bytes:
-                    token = token_bytes.decode("utf-8")
-                case str() as token_str:
-                    token = token_str
-                case _:
-                    token = str(token_result)
+            token = (
+                token_result.decode("utf-8")
+                if isinstance(token_result, bytes)
+                else str(token_result)
+            )
             return r[str].ok(token)
         except (
             ValueError,
