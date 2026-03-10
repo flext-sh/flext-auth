@@ -199,7 +199,7 @@ class FlextAuthBaseProvider(Protocol):
                 return encoded_token
             return str(encoded_token)
 
-        encode_result = u.try_(
+        return u.try_(
             _encode_token,
             catch=(
                 jwt.PyJWTError,
@@ -212,9 +212,6 @@ class FlextAuthBaseProvider(Protocol):
                 ImportError,
             ),
         ).map_error(lambda exc: f"Token generation failed: {exc}")
-        if encode_result.is_failure:
-            return encode_result
-        return encode_result
 
     def generate_token_for_user(
         self,
