@@ -163,9 +163,10 @@ class FlextAuthRegistry(FlextRegistry):
     def list_providers(self) -> list[str]:
         """List registered provider names."""
         result = self.list_plugins(self.PROVIDERS)
-        if result.is_failure:
-            return []
-        return result.value or []
+        return result.fold(
+            on_failure=lambda _: [],
+            on_success=lambda v: v or [],
+        )
 
     def register_provider(
         self,

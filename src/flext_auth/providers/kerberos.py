@@ -261,10 +261,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 "Kerberos ticket validator returned unsupported payload"
             )
         claims_result = self._decode_token_claims(token)
-        if claims_result.is_success:
-            return self._map_identity_payload(claims_result.value)
-        return r[FlextAuthModels.Auth.AuthIdentity].fail(
-            "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)"
+        return claims_result.fold(
+            on_failure=lambda _: r[FlextAuthModels.Auth.AuthIdentity].fail(
+                "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)"
+            ),
+            on_success=lambda v: self._map_identity_payload(v),
         )
 
     def _map_identity_payload(
