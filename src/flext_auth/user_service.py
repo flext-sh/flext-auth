@@ -90,10 +90,11 @@ class FlextAuthIdentityService(s[bool]):
                 f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
         set_result = identity.set_credential(new_credential)
-        if set_result.is_failure:
-            return r[bool].fail(set_result.error)
-        return r[bool].ok(
-            self._log_success("Password change successful", identity.name)
+        return set_result.fold(
+            on_failure=lambda e: r[bool].fail(e),
+            on_success=lambda _: r[bool].ok(
+                self._log_success("Password change successful", identity.name)
+            ),
         )
 
     def create_identity(
@@ -167,9 +168,12 @@ class FlextAuthIdentityService(s[bool]):
                 f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
         set_result = identity.set_credential(new_credential)
-        if set_result.is_failure:
-            return r[bool].fail(set_result.error)
-        return r[bool].ok(self._log_success("Password reset successful", identity.name))
+        return set_result.fold(
+            on_failure=lambda e: r[bool].fail(e),
+            on_success=lambda _: r[bool].ok(
+                self._log_success("Password reset successful", identity.name)
+            ),
+        )
 
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""

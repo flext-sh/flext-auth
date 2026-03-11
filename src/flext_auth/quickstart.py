@@ -73,17 +73,19 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
         def create_admin_demo_user(user_ids: list[str]) -> r[list[str]]:
             if not create_admin_user:
                 return r[list[str]].ok(user_ids)
-            result = self.register_user(
+            return self.register_user(
                 "REDACTED_LDAP_BIND_PASSWORD",
                 "REDACTED_LDAP_BIND_PASSWORD@example.com",
                 "AdminPass123!",
                 ["ADMIN"],
+            ).fold(
+                on_failure=lambda e: r[list[str]].fail(
+                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {e}"
+                ),
+                on_success=lambda _: r[list[str]].ok(
+                    user_ids + ["REDACTED_LDAP_BIND_PASSWORD"]
+                ),
             )
-            if result.is_failure:
-                return r[list[str]].fail(
-                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {result.error}"
-                )
-            return r[list[str]].ok(user_ids + ["REDACTED_LDAP_BIND_PASSWORD"])
 
         return self.create_demo_users().flat_map(create_admin_demo_user)
 
