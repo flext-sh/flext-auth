@@ -14,8 +14,6 @@ import os
 import secrets
 import string
 
-from src.flext_auth.models import FlextAuthModels
-
 from flext_auth import (
     FlextAuth,
     FlextAuthModels,
@@ -23,7 +21,6 @@ from flext_auth import (
     FlextAuthSettings,
     m,
 )
-from flext_auth.models import FlextAuthModels
 
 
 def demo_complete_auth_workflow() -> None:
