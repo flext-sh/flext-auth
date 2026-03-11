@@ -18,7 +18,7 @@ from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import override
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 from flext_core import e, r
@@ -646,14 +646,19 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[t.ConfigurationMapping].fail(
                 body_result.error or "OAuth2 introspection payload is invalid"
             )
-        request = Request(  # noqa: S310
+        parsed = urlparse(endpoint_result.value)
+        if parsed.scheme not in {"https", "http"}:
+            return r[t.ConfigurationMapping].fail(
+                f"Unsupported URL scheme: {parsed.scheme}"
+            )
+        request = Request(  # noqa: S310 - Scheme validated above against whitelist (https/http only); see https://owasp.org/www-community/attacks/Open_Redirect
             endpoint_result.value,
             data=body_result.value.encode("utf-8"),
             headers=headers_result.value,
             method="POST",
         )
         try:
-            with urlopen(request, timeout=10.0) as response:  # noqa: S310
+            with urlopen(request, timeout=10.0) as response:  # noqa: S310 - Scheme validated above against whitelist (https/http only); see https://owasp.org/www-community/attacks/Open_Redirect
                 response_payload = response.read().decode("utf-8")
         except HTTPError as exc:
             try:
