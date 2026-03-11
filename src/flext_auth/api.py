@@ -206,10 +206,11 @@ class FlextAuth:
                     ip_address=_ip_address or "",
                     user_agent=_user_agent or "",
                 )
-                if session_result.is_failure:
-                    self.logger.warning(
-                        f"Failed to create session for user {identity.name}: {session_result.error}"
+                session_result.tap_error(
+                    lambda err: self.logger.warning(
+                        f"Failed to create session for user {identity.name}: {err}"
                     )
+                )
         return auth_result
 
     def cleanup_expired_sessions(self) -> r[int]:
