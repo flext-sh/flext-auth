@@ -14,7 +14,16 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings, m
+from src.flext_auth.models import FlextAuthModels
+
+from flext_auth import (
+    FlextAuth,
+    FlextAuthModels,
+    FlextAuthQuickstart,
+    FlextAuthSettings,
+    m,
+)
+from flext_auth.models import FlextAuthModels
 
 
 def demo_complete_auth_workflow() -> None:
@@ -93,7 +102,7 @@ def demo_user_management() -> None:
         ("regular_user", "regular@example.com", "RegularPass123!", ["user"]),
         ("guest_user", "guest@example.com", "GuestPass123!", ["guest"]),
     ]
-    registered_users = []
+    registered_users: list[FlextAuthModels.Auth.AuthIdentity] = []
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
         if result.is_success:

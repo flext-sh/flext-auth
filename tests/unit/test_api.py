@@ -13,6 +13,7 @@ from __future__ import annotations
 import threading
 import time
 from datetime import UTC, datetime, timedelta
+from threading import Thread
 
 import jwt
 import pytest
@@ -1343,14 +1344,14 @@ class TestAuthModule:
             result = auth.authenticate_user(f"user_{index}", "Password123!")
             results.append(result)
 
-        threads = []
+        threads: list[Thread] = []
         for i in range(5):
             thread = threading.Thread(target=register_user, args=(i,))
             threads.append(thread)
             thread.start()
         for thread in threads:
             thread.join()
-        auth_threads = []
+        auth_threads: list[Thread] = []
         for i in range(5):
             thread = threading.Thread(target=authenticate_user, args=(i,))
             auth_threads.append(thread)
