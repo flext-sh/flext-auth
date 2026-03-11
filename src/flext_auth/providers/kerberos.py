@@ -67,11 +67,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     @staticmethod
     def _to_scalar_config(
         config: Mapping[str, t.JsonValue] | None,
-    ) -> dict[str, str | int | bool] | None:
+    ) -> dict[str, t.Primitives] | None:
         """Project provider config into RFC base scalar contract."""
         if config is None:
             return None
-        scalar_config: dict[str, str | int | bool] = {
+        scalar_config: dict[str, t.Primitives] = {
             key: value
             for key, value in config.items()
             if isinstance(value, (bool, int, str))

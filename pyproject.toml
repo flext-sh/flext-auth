@@ -529,6 +529,21 @@ extraPaths = [
 ]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
+reportConstantRedefinition = "error"
+reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
+reportInconsistentConstructor = "error"
+reportMissingImports = "error"
+reportMissingModuleSource = "error"
+reportMissingTypeStubs = "warning"
+reportPrivateUsage = "warning"
+reportUnnecessaryCast = "error"
+reportUnnecessaryComparison = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnusedClass = "error"
+reportUnusedFunction = "error"
+reportUnusedImport = "error"
+reportUnusedVariable = "error"
 typeCheckingMode = "strict"
 
 [[tool.pyright.executionEnvironments]]
@@ -557,6 +572,12 @@ line_length = 88
 preserve_quotes = true
 section_whitelines = 1
 whitelines = 1
+
+[tool.coverage.report]
+fail_under = 15
+precision = 2
+show_missing = true
+skip_covered = false
 
 [tool.pytest.ini_options]
 addopts = [ "--strict-markers" ]

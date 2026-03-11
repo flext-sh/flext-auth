@@ -85,9 +85,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @staticmethod
     def _to_scalar_config(
         config: Mapping[str, t.JsonValue],
-    ) -> dict[str, str | int | bool]:
+    ) -> dict[str, t.Primitives]:
         """Project OAuth2 config to RFC base scalar contract."""
-        scalar_config: dict[str, str | int | bool] = {
+        scalar_config: dict[str, t.Primitives] = {
             key: value
             for key, value in config.items()
             if isinstance(value, (bool, int, str))

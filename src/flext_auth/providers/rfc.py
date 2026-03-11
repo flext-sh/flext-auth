@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
-from flext_core import r
+from flext_core import r, t
 
 from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -38,7 +38,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.Primitives] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(config)
 

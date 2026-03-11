@@ -49,9 +49,9 @@ class FlextAuthProviderService(s[bool]):
     @staticmethod
     def _build_provider_init_config(
         provider_config: Mapping[str, t.JsonValue],
-    ) -> dict[str, str | int | bool]:
+    ) -> dict[str, t.Primitives]:
         """Normalize provider config to base-provider scalar contract."""
-        normalized: dict[str, str | int | bool] = {
+        normalized: dict[str, t.Primitives] = {
             key: value
             for key, value in provider_config.items()
             if isinstance(value, (bool, int, str))

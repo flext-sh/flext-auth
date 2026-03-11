@@ -32,9 +32,9 @@ class FlextAuthBaseProvider(Protocol):
     OAuth2, SAML, etc.).
     """
 
-    _provider_config: Mapping[str, str | int | bool] | None
+    _provider_config: Mapping[str, t.Primitives] | None
 
-    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.Primitives] | None = None) -> None:
         """Initialize provider with optional configuration.
 
         Args:
@@ -44,7 +44,7 @@ class FlextAuthBaseProvider(Protocol):
         self._provider_config = config
 
     @property
-    def config(self) -> Mapping[str, str | int | bool] | None:
+    def config(self) -> Mapping[str, t.Primitives] | None:
         """Get provider configuration."""
         return self._provider_config
 
