@@ -156,11 +156,6 @@ class FlextAuthIdentityService(s[bool]):
             "Use specific identity methods: create_identity, authenticate_identity, etc."
         )
 
-    @identity_manager.setter
-    def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
-        """Set identity manager (for service composition)."""
-        self._managers.user_manager = value
-
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         identity_result = self.identity_manager.get_user(identity_id)

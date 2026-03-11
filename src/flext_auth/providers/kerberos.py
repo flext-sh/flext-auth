@@ -22,7 +22,7 @@ from typing import override
 
 from flext_core import r, t, u
 
-from flext_auth import FlextAuthModels, FlextAuthTypes as at
+from flext_auth import FlextAuthModels
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
@@ -62,7 +62,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         self.ticket_validator = self._KerberosTicketValidator(self)
         self._service_handler = self._KerberosServiceHandler(self)
         self._auth_manager = self._KerberosAuthManager(self)
-        self._active_tickets: dict[str, at.Auth.KerberosTicketData] = {}
+        self._active_tickets: dict[str, FlextAuthModels.Auth.KerberosTicketData] = {}
 
     @staticmethod
     def _to_scalar_config(
@@ -155,13 +155,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             self.provider = provider
 
         def validate_ticket(
-            self, _ticket_data: at.Auth.KerberosTicketData
-        ) -> r[at.Auth.KerberosTicketData]:
+            self, _ticket_data: FlextAuthModels.Auth.KerberosTicketData
+        ) -> r[FlextAuthModels.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
-            result = at.Auth.KerberosTicketData(
+            result = FlextAuthModels.Auth.KerberosTicketData(
                 ticket="validated_ticket", principal="kerberos_user"
             )
-            return r[at.Auth.KerberosTicketData].ok(result)
+            return r[FlextAuthModels.Auth.KerberosTicketData].ok(result)
 
     class _KerberosServiceHandler:
         """SOLID-compliant Kerberos service handler.
@@ -173,12 +173,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             """Initialize service handler."""
             self.provider = provider
 
-        def handle_service_ticket(self, ticket: str) -> r[at.Auth.KerberosTicketData]:
-            """Handle Kerberos service ticket."""
-            result = at.Auth.KerberosTicketData(
-                ticket=ticket, principal="service_principal"
-            )
-            return r[at.Auth.KerberosTicketData].ok(result)
+    def handle_service_ticket(
+        self, ticket: str
+    ) -> r[FlextAuthModels.Auth.KerberosTicketData]:
+        """Handle Kerberos service ticket."""
+        result = FlextAuthModels.Auth.KerberosTicketData(
+            ticket=ticket, principal="service_principal"
+        )
+        return r[FlextAuthModels.Auth.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
@@ -191,8 +193,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             self.provider = provider
 
         def authenticate_ticket(
-            self, ticket_data: at.Auth.KerberosTicketData
-        ) -> r[at.Auth.KerberosTicketData]:
+            self, ticket_data: FlextAuthModels.Auth.KerberosTicketData
+        ) -> r[FlextAuthModels.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
@@ -208,9 +210,9 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             user=user, token_type=token_type, expiry_minutes=expiry_minutes
         )
 
-    def get_metadata(self) -> at.Auth.Providers.Metadata:
+    def get_metadata(self) -> FlextAuthModels.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
-        return at.Auth.Providers.Metadata(
+        return FlextAuthModels.Auth.Providers.Metadata(
             name="kerberos", version="5", capabilities=tuple(self.supports())
         )
 
@@ -245,7 +247,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 return r[FlextAuthModels.Auth.AuthIdentity].ok(validator_result)
             if isinstance(validator_result, Mapping):
                 return self._map_identity_payload(validator_result)
-            if isinstance(validator_result, at.Auth.KerberosTicketData):
+            if isinstance(validator_result, FlextAuthModels.Auth.KerberosTicketData):
                 principal_value = validator_result.principal
                 principal = principal_value or "kerberos-user"
                 identity_map: dict[str, t.ContainerValue] = {

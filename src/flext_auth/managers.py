@@ -109,7 +109,9 @@ class FlextAuthManagers:
             for existing_user_data in self._users.values():
                 existing_contact = existing_user_data.get("contact", "")
                 match existing_contact:
-                    case str() as contact if contact.lower() == normalized_email:
+                    case str() as existing_contact_str if (
+                        existing_contact_str.lower() == normalized_email
+                    ):
                         return r[m.Auth.AuthIdentity].fail("Identity already exists")
                     case _:
                         pass

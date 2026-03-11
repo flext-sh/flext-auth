@@ -156,10 +156,13 @@ class FlextAuthBaseProvider(Protocol):
                 else f"{identity_id}@local"
             )
         roles_value = payload.get("roles")
+        user_roles: list[str]
         if isinstance(roles_value, list):
-            roles = [role for role in roles_value if isinstance(role, str) and role]
+            user_roles = [
+                role for role in roles_value if isinstance(role, str) and role
+            ]
         else:
-            roles: list[str] = []
+            user_roles = []
         now = datetime.now(UTC)
         claims: dict[str, t.ContainerValue] = {}
         reserved_claims = {
@@ -185,7 +188,7 @@ class FlextAuthBaseProvider(Protocol):
             "identity_id": identity_id,
             "name": name,
             "email": contact,
-            "roles": roles,
+            "roles": user_roles,
             "token_type": token_type or "access",
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(minutes=effective_expiry)).timestamp()),

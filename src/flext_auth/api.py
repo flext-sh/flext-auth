@@ -42,6 +42,12 @@ class FlextAuth:
 
     _instance: ClassVar[FlextAuth | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
+    logger: FlextLogger
+    _registry: FlextAuthRegistry
+    _provider_service: FlextAuthProviderService
+    _identity_service: FlextAuthIdentityService
+    _token_service: FlextAuthTokenService
+    _session_service: FlextAuthSessionService
 
     def __init__(
         self, config: FlextAuthSettings | None = None, service_name: str | None = None

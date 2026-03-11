@@ -43,10 +43,5 @@ class FlextAuthSessionService(s[bool]):
             "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()"
         )
 
-    @session_manager.setter
-    def session_manager(self, value: FlextAuthManagers.FlextAuthSessionManager) -> None:
-        """Set session manager (for service composition)."""
-        self._managers.session_manager = value
-
 
 __all__ = ["FlextAuthSessionService"]
