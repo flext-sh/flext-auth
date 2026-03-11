@@ -80,7 +80,7 @@ class FlextWebTransportAdapter:
             headers: Optional additional headers
 
         Returns:
-            FlextResult containing user information or error
+            r containing user information or error
 
         Example:
             >>> result = adapter.get_userinfo(
@@ -120,7 +120,7 @@ class FlextWebTransportAdapter:
             headers: Optional additional headers
 
         Returns:
-            FlextResult containing token response or error
+            r containing token response or error
 
         Example:
             >>> result = adapter.post_token_request(
@@ -174,7 +174,7 @@ class FlextWebTransportAdapter:
         headers: Request headers
 
         Returns:
-        FlextResult containing response data or error
+        r containing response data or error
 
         """
         request_headers = dict(headers) if headers is not None else {}
@@ -247,7 +247,7 @@ class FlextWebTransportAdapter:
         response_data: Token endpoint response data
 
         Returns:
-        FlextResult containing validated token data or error
+        r containing validated token data or error
 
         """
         if "error" in response_data:
