@@ -112,7 +112,7 @@ if auth_result.success:
 - Quick start setup
 - User registration
 - User authentication
-- Error handling with FlextResult
+- Error handling with r
 
 ### 2. Advanced Features (`02_advanced_features.py`)
 

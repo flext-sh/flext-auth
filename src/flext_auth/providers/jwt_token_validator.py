@@ -37,7 +37,7 @@ class FlextAuthJwtTokenValidator:
         token: JWT token string to validate
 
         Returns:
-        FlextResult containing token payload or error
+        r containing token payload or error
 
         """
         try:

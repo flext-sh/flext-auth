@@ -22,7 +22,7 @@
   - [Performance Standards](#performance-standards)
   - [Quality Metrics](#quality-metrics)
 - [Common Testing Patterns](#common-testing-patterns)
-  - [Testing FlextResult Patterns](#testing-flextresult-patterns)
+  - [Testing r Patterns](#testing-flextresult-patterns)
   - [Testing Domain Invariants](#testing-domain-invariants)
   - [Testing Error Handling](#testing-error-handling)
 - [Debugging Unit Tests](#debugging-unit-tests)
@@ -147,8 +147,8 @@ def test_user_authentication_with_valid_credentials():
 def mock_password_service():
     """Mock password service for isolated testing."""
     with patch("flext_auth.services.FlextPasswordService") as mock:
-        mock.hash_password.return_value = FlextResult[bool].ok("hashed_password")
-        mock.verify_password.return_value = FlextResult[bool].ok(data=True)
+        mock.hash_password.return_value = r[bool].ok("hashed_password")
+        mock.verify_password.return_value = r[bool].ok(data=True)
         yield mock
 
 
@@ -156,8 +156,8 @@ def mock_password_service():
 def mock_user_repository():
     """Mock user repository for isolated testing."""
     with patch("flext_auth.user.InMemoryUserRepository") as mock:
-        mock.get_by_username.return_value = FlextResult[bool].ok(test_user)
-        mock.create.return_value = FlextResult[bool].ok(test_user)
+        mock.get_by_username.return_value = r[bool].ok(test_user)
+        mock.create.return_value = r[bool].ok(test_user)
         yield mock
 ```
 
@@ -251,7 +251,7 @@ pytest tests/unit/ -k "test_authentication" -v
 
 ## Common Testing Patterns
 
-### Testing FlextResult Patterns
+### Testing r Patterns
 
 ```python
 def test_authentication_failure_returns_error():

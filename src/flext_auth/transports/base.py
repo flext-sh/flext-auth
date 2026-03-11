@@ -68,7 +68,7 @@ class BaseTransportAdapter(Protocol):
         **kwargs: Transport-specific additional parameters
 
         Returns:
-        FlextResult containing response data or error
+        r containing response data or error
 
         """
         ...

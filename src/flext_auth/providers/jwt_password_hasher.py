@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import bcrypt
-from flext_core import FlextResult, u
+from flext_core import r, u
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -27,14 +27,14 @@ class FlextAuthPasswordHasher:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def hash_password(self, password: str) -> FlextResult[str]:
+    def hash_password(self, password: str) -> r[str]:
         """Hash password using bcrypt with railway-oriented programming.
 
         Args:
         password: Plain text password to hash
 
         Returns:
-        FlextResult containing hashed password or error
+        r containing hashed password or error
 
         """
 
@@ -49,7 +49,7 @@ class FlextAuthPasswordHasher:
             catch=(ValueError, TypeError),
         ).map_error(lambda e: f"Password hashing failed: {type(e).__name__}: {e}")
 
-    def verify_password(self, password: str, hashed_password: str) -> FlextResult[bool]:
+    def verify_password(self, password: str, hashed_password: str) -> r[bool]:
         """Verify password against hash using bcrypt.
 
         Args:

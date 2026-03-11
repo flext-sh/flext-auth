@@ -19,10 +19,9 @@ if TYPE_CHECKING:
         FlextHandlers,
         FlextHandlers as h,
         FlextMixins as x,
-        FlextResult,
-        FlextResult as r,
         FlextService,
         FlextService as s,
+        r as r,
     )
 
     from flext_auth.api import FlextAuth
@@ -96,7 +95,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextDecorators": ("flext_core", "FlextDecorators"),
     "FlextExceptions": ("flext_core", "FlextExceptions"),
     "FlextHandlers": ("flext_core", "FlextHandlers"),
-    "FlextResult": ("flext_core", "FlextResult"),
+    "r": ("flext_core", "r"),
     "FlextService": ("flext_core", "FlextService"),
     "ServiceManagers": ("flext_auth.managers", "ServiceManagers"),
     "c": ("flext_auth.constants", "FlextAuthConstants"),
@@ -105,7 +104,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "h": ("flext_core", "FlextHandlers"),
     "m": ("flext_auth.models", "FlextAuthModels"),
     "p": ("flext_auth.protocols", "FlextAuthProtocols"),
-    "r": ("flext_core", "FlextResult"),
     "s": ("flext_core", "FlextService"),
     "t": ("flext_auth.typings", "FlextAuthTypes"),
     "u": ("flext_auth.utilities", "FlextAuthUtilities"),
@@ -143,7 +141,6 @@ __all__ = [
     "FlextDecorators",
     "FlextExceptions",
     "FlextHandlers",
-    "FlextResult",
     "FlextService",
     "ServiceManagers",
     "c",

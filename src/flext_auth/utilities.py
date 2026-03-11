@@ -260,7 +260,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         verify: Whether to verify signature
 
         Returns:
-        FlextResult with decoded payload or error
+        r with decoded payload or error
 
         """
         try:
@@ -312,7 +312,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         algorithm: JWT algorithm
 
         Returns:
-        FlextResult with encoded token or error
+        r with encoded token or error
 
         """
 

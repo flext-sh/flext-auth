@@ -132,13 +132,13 @@ ______________________________________________________________________
 All code must follow FLEXT patterns:
 
 ```python
-# ✅ Correct - Use FlextResult for error handling
-def authenticate_user(username: str, password: str) -> FlextResult[t.Dict]:
+# ✅ Correct - Use r for error handling
+def authenticate_user(username: str, password: str) -> r[t.Dict]:
     if not username:
-        return FlextResult[t.Dict].fail("Username required")
+        return r[t.Dict].fail("Username required")
 
     # Authentication logic
-    return FlextResult[t.Dict].ok(result)
+    return r[t.Dict].ok(result)
 
 
 # ❌ Incorrect - Don't use exceptions for business logic
@@ -168,7 +168,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -179,8 +179,8 @@ class User(FlextModels.Entity):
     username: str
     email: str
 
-    def verify_password(self, password: str) -> FlextResult[bool]:
-        # Business logic returning FlextResult
+    def verify_password(self, password: str) -> r[bool]:
+        # Business logic returning r
         pass
 
 
@@ -278,7 +278,7 @@ make format
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns
-- Use FlextResult for all error handling
+- Use r for all error handling
 - Extend FlextModels.Entity for domain entities
 - Add tests for new functionality
 - Update documentation for API changes
@@ -327,7 +327,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -371,7 +371,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -384,18 +384,18 @@ class AuthenticationService(FlextService):
         self._container = FlextContainer.get_global()
         self.logger = FlextLogger(__name__)
 
-    def process(self, request) -> FlextResult[Response]:
+    def process(self, request) -> r[Response]:
         # Service implementation
         pass
 ```
 
 ### Error Handling
 
-Use FlextResult exclusively:
+Use r exclusively:
 
 ```python
-# Chain operations with FlextResult
-def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
+# Chain operations with r
+def complete_auth_flow(username: str, password: str) -> r[t.Dict]:
     return (
         self
         ._validate_input(username, password)

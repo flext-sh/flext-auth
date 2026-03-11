@@ -16,13 +16,13 @@
   - [User Management](#user-management)
   - [Configuration Management](#configuration-management)
 - [FLEXT Integration Patterns](#flext-integration-patterns)
-  - [FlextResult Error Handling](#flextresult-error-handling)
+  - [r Error Handling](#flextresult-error-handling)
   - [Container Integration](#container-integration)
 - [Domain Models](#domain-models)
   - [Working with User Entities](#working-with-user-entities)
   - [Session Management](#session-management)
 - [Testing Your Integration](#testing-your-integration)
-  - [Unit Testing with FlextResult](#unit-testing-with-flextresult)
+  - [Unit Testing with r](#unit-testing-with-flextresult)
 - [Next Steps](#next-steps)
   - [Development Environment](#development-environment)
   - [Documentation](#documentation)
@@ -75,7 +75,7 @@ user_request = FlextAuthModels.UserCreationRequest(
     username="alice", email="alice@example.com", password="secure123"
 )
 
-# Register user (FlextResult pattern)
+# Register user (r pattern)
 result = auth.register_user(
     username=user_request.username,
     email=user_request.email,
@@ -186,7 +186,7 @@ ______________________________________________________________________
 
 ## FLEXT Integration Patterns
 
-### FlextResult Error Handling
+### r Error Handling
 
 ```python
 from flext_core import FlextBus
@@ -204,21 +204,19 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
 
-def process_authentication_workflow(
-    username: str, password: str
-) -> FlextResult[t.Dict]:
-    """Authentication workflow using FlextResult error handling."""
+def process_authentication_workflow(username: str, password: str) -> r[t.Dict]:
+    """Authentication workflow using r error handling."""
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-    # Chain operations with FlextResult
+    # Chain operations with r
     return (
         auth
         .authenticate_user(username, password)
@@ -258,7 +256,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -328,7 +326,7 @@ ______________________________________________________________________
 
 ## Testing Your Integration
 
-### Unit Testing with FlextResult
+### Unit Testing with r
 
 ```python
 import pytest
