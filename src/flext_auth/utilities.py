@@ -75,8 +75,8 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         """
 
-    class Collection(FlextUtilities.Collection):
-        """Collection utilities extending u.Collection via inheritance.
+    class Collection(FlextUtilities):
+        """Collection utilities extending u via inheritance.
 
         Exposes all flext-core Collection methods through inheritance hierarchy.
         Access via u.Auth.Collection.* pattern.
@@ -89,8 +89,8 @@ class FlextAuthUtilities(FlextApiUtilities):
         Access via u.Auth.Args.* pattern.
         """
 
-    class Model(FlextUtilities.Model):
-        """Model utilities extending u.Model via inheritance.
+    class Model(FlextUtilities):
+        """Model utilities extending u via inheritance.
 
         Exposes all flext-core Model methods through inheritance hierarchy.
         Access via u.Auth.Model.* pattern.

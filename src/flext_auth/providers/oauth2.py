@@ -234,7 +234,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             field_value = self._config.get(field_name)
             if field_value is not None and (
                 not any(
-                    u.Guards.is_type(field_value, expected_type)
+                    u.is_type(field_value, expected_type)
                     for expected_type in expected_types
                 )
             ):

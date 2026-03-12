@@ -135,11 +135,9 @@ class FlextAuthManagers:
                 elif k == "is_active":
                     is_active = bool(v)
                 elif k == "roles":
-                    roles = [str(item) for item in v] if u.Guards.is_list(v) else []
+                    roles = [str(item) for item in v] if u.is_list(v) else []
                 elif k == "permissions":
-                    permissions = (
-                        [str(item) for item in v] if u.Guards.is_list(v) else []
-                    )
+                    permissions = [str(item) for item in v] if u.is_list(v) else []
                 elif k == "failed_attempts":
                     match v:
                         case int() as int_value:
@@ -281,7 +279,7 @@ class FlextAuthManagers:
         ) -> None:
             """Apply list modification atomically."""
             field_list_value = user_data.get(field)
-            if not u.Guards.is_list(field_list_value):
+            if not u.is_list(field_list_value):
                 msg = f"Field '{field}' must be a list for modification"
                 raise TypeError(msg)
             field_list = field_list_value
@@ -323,9 +321,9 @@ class FlextAuthManagers:
             permissions_raw = storage_data.get("permissions", [])
             roles: list[str] = []
             permissions: list[str] = []
-            if u.Guards.is_list(roles_raw):
+            if u.is_list(roles_raw):
                 roles = [role for role in roles_raw if isinstance(role, str)]
-            if u.Guards.is_list(permissions_raw):
+            if u.is_list(permissions_raw):
                 permissions = [
                     permission
                     for permission in permissions_raw
@@ -368,7 +366,7 @@ class FlextAuthManagers:
                         else datetime
                     )
                     field_value = storage_data.get(field)
-                    if u.Guards.is_type(field_value, field_type):
+                    if u.is_type(field_value, field_type):
                         if field in {"locked_until", "last_access"}:
                             if field_value is None:
                                 identity_data[field] = datetime.min.replace(tzinfo=UTC)
@@ -877,7 +875,7 @@ class FlextAuthManagers:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
             attempts_list: list[datetime]
-            if u.Guards.is_list(attempts_raw):
+            if u.is_list(attempts_raw):
                 attempts_list = [
                     attempt for attempt in attempts_raw if isinstance(attempt, datetime)
                 ]
@@ -898,7 +896,7 @@ class FlextAuthManagers:
             if not isinstance(attempt_data, Mapping):
                 return []
             attempts_value = attempt_data.get("attempts")
-            if not u.Guards.is_list(attempts_value):
+            if not u.is_list(attempts_value):
                 return []
             return [
                 attempt
