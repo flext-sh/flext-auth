@@ -83,7 +83,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         """
 
     class Args(FlextUtilities.Args):
-        """Args utilities extending u.Args via inheritance.
+        """Args utilities extending u via inheritance.
 
         Exposes all flext-core Args methods through inheritance hierarchy.
         Access via u.Auth.Args.* pattern.
