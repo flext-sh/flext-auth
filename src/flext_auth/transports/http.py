@@ -104,7 +104,7 @@ class FlextWebTransportAdapter:
     def post_token_request(
         self,
         url: str,
-        data: Mapping[str, t.ContainerValue],
+        data: Mapping[str, object],
         auth: tuple[str, str] | None = None,
         headers: Mapping[str, str] | None = None,
     ) -> r[t.Api.ResponseDict]:
@@ -299,7 +299,7 @@ class FlextWebTransportAdapter:
         self, method: str, data: t.Api.RequestBody | None, query: t.Api.WebParams | None
     ) -> t.Api.WebParams | None:
         if isinstance(data, Mapping) and method.upper() == "GET":
-            data_mapping: dict[str, t.ContainerValue] = {
+            data_mapping: dict[str, object] = {
                 str(key): value for key, value in data.items()
             }
             query_dict = query if query is not None else {}
@@ -316,7 +316,7 @@ class FlextWebTransportAdapter:
             return normalized
         return query
 
-    def _to_json_value(self, value: t.ContainerValue) -> t.JsonValue:
+    def _to_json_value(self, value: object) -> t.JsonValue:
         """Convert object to JsonValue type (safe for JSON-parsed data)."""
         match value:
             case str() as text:

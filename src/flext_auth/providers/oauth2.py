@@ -80,7 +80,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
         self._pkce_verifiers: dict[str, str] = {}
-        self._http_client: t.ContainerValue | None = None
+        self._http_client: object | None = None
 
     @staticmethod
     def _to_scalar_config(
@@ -203,7 +203,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required OAuth2 configuration fields: {fields_str}"
             )
-        validations: list[tuple[str, tuple[type[t.ContainerValue], ...], str]] = [
+        validations: list[tuple[str, tuple[type[object], ...], str]] = [
             ("client_id", (str,), "OAuth2 client_id must be a string"),
             (
                 "client_secret",
@@ -270,7 +270,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             state: str | None = None,
             code_challenge: str | None = None,
             code_challenge_method: str = "S256",
-            **kwargs: t.ContainerValue,
+            **kwargs: object,
         ) -> r[str]:
             """Generate authorization URL for authorization code flow."""
             auth_endpoint = self.provider.get_authorization_endpoint()
@@ -628,7 +628,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         headers["Authorization"] = f"Basic {encoded_auth}"
         return r[dict[str, str]].ok(headers)
 
-    def _introspect_token(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
+    def _introspect_token(self, token: str) -> r[Mapping[str, object]]:
         endpoint_result = self._introspection_endpoint()
         if endpoint_result.is_failure:
             return r[t.ConfigurationMapping].fail(
@@ -688,8 +688,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 "OAuth2 introspection payload must be a mapping"
             )
         try:
-            parsed_mapping: dict[str, t.ContainerValue] = TypeAdapter(
-                dict[str, t.ContainerValue]
+            parsed_mapping: dict[str, object] = TypeAdapter(
+                dict[str, object]
             ).validate_python(parsed_payload)
         except ValidationError as exc:
             return r[t.ConfigurationMapping].fail(
@@ -705,7 +705,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[str].fail("OAuth2 introspection endpoint is not configured")
 
     def _map_token_payload_to_identity(
-        self, payload: Mapping[str, t.ContainerValue]
+        self, payload: Mapping[str, object]
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
         if identity_result.is_failure:

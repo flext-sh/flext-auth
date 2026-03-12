@@ -94,7 +94,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}"
             )
-        validations: list[tuple[str, tuple[type[t.ContainerValue], ...], str]] = [
+        validations: list[tuple[str, tuple[type[object], ...], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
             ("kdc", (str,), "Kerberos kdc must be a string"),
             (
@@ -250,7 +250,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             if isinstance(validator_result, FlextAuthModels.Auth.KerberosTicketData):
                 principal_value = validator_result.principal
                 principal = principal_value or "kerberos-user"
-                identity_map: dict[str, t.ContainerValue] = {
+                identity_map: dict[str, object] = {
                     "identity_id": principal,
                     "name": principal,
                     "contact": f"{principal}@kerberos.local",
@@ -269,7 +269,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         )
 
     def _map_identity_payload(
-        self, claims: Mapping[str, t.ContainerValue]
+        self, claims: Mapping[str, object]
     ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(claims)
         if identity_result.is_failure:
@@ -309,7 +309,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             )
         return r[FlextAuthModels.Auth.AuthIdentity].ok(identity)
 
-    def _ticket_validator_callable(self) -> Callable[[str], t.ContainerValue] | None:
+    def _ticket_validator_callable(self) -> Callable[[str], object] | None:
         config = self._config
         if config is None:
             return None

@@ -56,7 +56,7 @@ class BaseTransportAdapter(Protocol):
         method: str = "POST",
         data: Mapping[str, t.JsonValue] | None = None,
         headers: Mapping[str, str] | None = None,
-        **kwargs: t.ContainerValue,
+        **kwargs: object,
     ) -> r[Mapping[str, t.JsonValue]]:
         """Send a request using this transport.
 

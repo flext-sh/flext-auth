@@ -396,14 +396,14 @@ class FlextAuthModels(FlextApiModels):
                 """Check if configured."""
                 return bool(self.name and self.type)
 
-        class ProviderConfiguration(UserDict[str, t.ContainerValue]):
+        class ProviderConfiguration(UserDict[str, object]):
             """Provider configuration for authentication providers."""
 
             def __init__(
                 self,
                 dict_: Mapping[str, t.JsonValue] | None = None,
                 /,
-                **kwargs: t.ContainerValue,
+                **kwargs: object,
             ) -> None:
                 """Initialize provider configuration with defaults."""
                 if dict_ is not None:

@@ -30,7 +30,7 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
+    def validate_token(self, token: str) -> r[Mapping[str, object]]:
         """Validate JWT token with railway-oriented programming.
 
         Args:

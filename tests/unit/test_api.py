@@ -17,7 +17,7 @@ from threading import Thread
 
 import jwt
 import pytest
-from flext_core import r, t
+from flext_core import r
 from pydantic import SecretStr
 
 from flext_auth import (
@@ -992,7 +992,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> dict[str, t.ContainerValue]:
+        def create_test_user_data() -> dict[str, object]:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1002,7 +1002,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> dict[str, t.ContainerValue]:
+        def create_test_auth_data() -> dict[str, object]:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1011,7 +1011,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> dict[str, t.ContainerValue]:
+        def create_test_session_data() -> dict[str, object]:
             """Create test session data."""
             return {
                 "user_id": "user_123",

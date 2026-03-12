@@ -15,7 +15,6 @@ from collections.abc import Mapping
 from flext_core import e, r, u
 
 from flext_auth.protocols import p
-from flext_auth.typings import t
 
 
 class FlextAuthProviderMixin:
@@ -82,11 +81,11 @@ class FlextAuthProviderMixin:
         )
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
-    def _get_capability_metadata(self) -> Mapping[str, t.ContainerValue]:
+    def _get_capability_metadata(self) -> Mapping[str, object]:
         """Get metadata about provider capabilities.
 
         Returns:
-            Mapping[str, t.ContainerValue]: Metadata including supported capabilities
+            Mapping[str, object]: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()
@@ -99,7 +98,7 @@ class FlextAuthProviderMixin:
         }
 
     def _validate_credentials_dict(
-        self, credentials: Mapping[str, t.ContainerValue], required_fields: list[str]
+        self, credentials: Mapping[str, object], required_fields: list[str]
     ) -> r[bool]:
         """Validate that credentials contain required fields.
 

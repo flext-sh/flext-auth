@@ -63,7 +63,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         """Get provider metadata.
 
         Returns:
-            Mapping[str, t.ContainerValue]: Provider metadata (name, version, capabilities, etc.)
+            Mapping[str, object]: Provider metadata (name, version, capabilities, etc.)
 
         Business Rule: Returns metadata for provider discovery and configuration.
 

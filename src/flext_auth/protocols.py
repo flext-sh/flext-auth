@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Protocol, TypeAlias, override, runtime_checkable
 
 from flext_api import FlextApiProtocols
-from flext_core import FlextProtocols, t
+from flext_core import FlextProtocols
 
 
 class FlextAuthProtocols(FlextApiProtocols):
@@ -49,7 +49,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         structural typing - no model imports required.
         """
 
-        AuthValue: TypeAlias = t.ContainerValue
+        AuthValue: TypeAlias = object
 
         @runtime_checkable
         class IdentityProtocol(FlextProtocols.Service[bool], Protocol):
@@ -202,9 +202,9 @@ class FlextAuthProtocols(FlextApiProtocols):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, t.ContainerValue]
+            user: Mapping[str, object]
             "User/identity data."
-            session: Mapping[str, t.ContainerValue]
+            session: Mapping[str, object]
             "Session data."
             jwt_token: str
             "JWT token string."

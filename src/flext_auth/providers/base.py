@@ -50,7 +50,7 @@ class FlextAuthBaseProvider(Protocol):
 
     @staticmethod
     def _extract_expiration_datetime(
-        payload: Mapping[str, t.ContainerValue],
+        payload: Mapping[str, object],
     ) -> r[datetime]:
         exp_value = payload.get("exp")
         match exp_value:
@@ -66,7 +66,7 @@ class FlextAuthBaseProvider(Protocol):
         ).map_error(lambda exc: f"Token exp claim conversion failed: {exc}")
 
     @staticmethod
-    def _extract_identity_id(payload: Mapping[str, t.ContainerValue]) -> r[str]:
+    def _extract_identity_id(payload: Mapping[str, object]) -> r[str]:
         for key in ("identity_id", "unique_id", "id", "user_id", "sub", "name"):
             value = payload.get(key)
             if isinstance(value, str) and value:
@@ -74,7 +74,7 @@ class FlextAuthBaseProvider(Protocol):
         return r[str].fail("User payload must include identity identifier")
 
     @staticmethod
-    def _normalize_claim_value(value: t.ContainerValue) -> t.ContainerValue | None:
+    def _normalize_claim_value(value: object) -> object | None:
         if value is None:
             return None
         if isinstance(value, (str, int, float, bool)):
@@ -82,14 +82,14 @@ class FlextAuthBaseProvider(Protocol):
         if isinstance(value, datetime):
             return value.isoformat()
         if isinstance(value, (list, tuple)):
-            normalized_items: list[t.ContainerValue] = []
+            normalized_items: list[object] = []
             for item in value:
                 normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
                 if normalized_item is not None:
                     normalized_items.append(normalized_item)
             return normalized_items
         if isinstance(value, Mapping):
-            normalized_mapping: dict[str, t.ContainerValue] = {}
+            normalized_mapping: dict[str, object] = {}
             for key, item in value.items():
                 normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
                 if normalized_item is not None:
@@ -118,7 +118,7 @@ class FlextAuthBaseProvider(Protocol):
 
     def generate_token(
         self,
-        payload: Mapping[str, t.ContainerValue],
+        payload: Mapping[str, object],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -164,7 +164,7 @@ class FlextAuthBaseProvider(Protocol):
         else:
             user_roles = []
         now = datetime.now(UTC)
-        claims: dict[str, t.ContainerValue] = {}
+        claims: dict[str, object] = {}
         reserved_claims = {
             "sub",
             "identity_id",
@@ -366,7 +366,7 @@ class FlextAuthBaseProvider(Protocol):
         """
         ...
 
-    def _decode_token_claims(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
+    def _decode_token_claims(self, token: str) -> r[Mapping[str, object]]:
         if not token.strip():
             return r[t.ConfigurationMapping].fail("Token must be a non-empty string")
         settings_result = self._token_settings()
@@ -404,7 +404,7 @@ class FlextAuthBaseProvider(Protocol):
 
     def _normalize_identity_payload(
         self, user: m.Auth.AuthIdentity | t.ConfigurationMapping
-    ) -> r[Mapping[str, t.ContainerValue]]:
+    ) -> r[Mapping[str, object]]:
         if isinstance(user, Mapping):
             return r[t.ConfigurationMapping].ok(user)
         # At this point, user is narrowed to m.Auth.AuthIdentity by type system

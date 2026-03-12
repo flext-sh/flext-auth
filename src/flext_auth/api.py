@@ -13,7 +13,7 @@ import threading
 from collections.abc import Mapping
 from typing import ClassVar, Self
 
-from flext_core import FlextContainer, FlextLogger, p, r, t
+from flext_core import FlextContainer, FlextLogger, p, r
 
 from flext_auth import (
     FlextAuthBaseProvider,
@@ -109,7 +109,7 @@ class FlextAuth:
         return self._token_service
 
     @classmethod
-    def create_with_config_overrides(cls, **config_overrides: t.ContainerValue) -> Self:
+    def create_with_config_overrides(cls, **config_overrides: object) -> Self:
         """Factory method to create FlextAuth with configuration overrides.
 
         Args:
@@ -248,9 +248,9 @@ class FlextAuth:
         """Delete identity - delegation to identity_service."""
         return self._identity_service.identity_manager.delete_user(user_id)
 
-    def execute(self) -> r[t.ContainerValue]:
+    def execute(self) -> r[object]:
         """Flexible execute implementation with railway orchestration."""
-        return r[t.ContainerValue].fail(
+        return r[object].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"
         )
 

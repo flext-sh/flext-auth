@@ -56,12 +56,12 @@ class FlextAuthManagers:
     providing a single import point while maintaining clean separation of concerns.
     """
 
-    def execute(self) -> r[t.ContainerValue]:
+    def execute(self) -> r[object]:
         """Execute method for FlextService interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
         """
-        return r[t.ContainerValue].fail(
+        return r[object].fail(
             "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
         )
 
@@ -75,7 +75,7 @@ class FlextAuthManagers:
         _config: FlextAuthSettings
         logger: FlextLogger
         _context: FlextContext
-        _users: dict[str, dict[str, t.ContainerValue]]
+        _users: dict[str, dict[str, object]]
 
         def __init__(self, config: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
@@ -180,7 +180,7 @@ class FlextAuthManagers:
                     token = str(v) if v is not None else ""
                 elif k == "session_id":
                     session_id = str(v) if v is not None else ""
-            storage_data: dict[str, t.ContainerValue] = {
+            storage_data: dict[str, object] = {
                 "unique_id": unique_id,
                 "name": name,
                 "contact": contact,
@@ -273,7 +273,7 @@ class FlextAuthManagers:
 
         def _apply_list_modification(
             self,
-            user_data: dict[str, t.ContainerValue],
+            user_data: dict[str, object],
             field: str,
             value: str,
             *,
@@ -292,7 +292,7 @@ class FlextAuthManagers:
 
         def _apply_list_modification_and_return_true(
             self,
-            user_data: dict[str, t.ContainerValue],
+            user_data: dict[str, object],
             field: str,
             value: str,
             *,
@@ -303,7 +303,7 @@ class FlextAuthManagers:
             return True
 
         def _create_identity_from_storage(
-            self, storage_data: Mapping[str, t.ContainerValue]
+            self, storage_data: Mapping[str, object]
         ) -> m.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
@@ -331,7 +331,7 @@ class FlextAuthManagers:
                     for permission in permissions_raw
                     if isinstance(permission, str)
                 ]
-            identity_data: dict[str, t.ContainerValue] = {
+            identity_data: dict[str, object] = {
                 "unique_id": identity_id,
                 "name": name_value,
                 "contact": contact_value,
@@ -381,9 +381,7 @@ class FlextAuthManagers:
             }
             return m.Auth.AuthIdentity.model_validate(filtered_identity_data)
 
-        def _extract_identity_id(
-            self, storage_data: Mapping[str, t.ContainerValue]
-        ) -> str:
+        def _extract_identity_id(self, storage_data: Mapping[str, object]) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
                 value = storage_data.get(field)
@@ -395,9 +393,7 @@ class FlextAuthManagers:
             msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
             raise ValueError(msg)
 
-        def _find_user_by_id(
-            self, user_id: str
-        ) -> r[tuple[str, dict[str, t.ContainerValue]]]:
+        def _find_user_by_id(self, user_id: str) -> r[tuple[str, dict[str, object]]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
@@ -408,11 +404,11 @@ class FlextAuthManagers:
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, dict[str, t.ContainerValue]]].ok((
+                    return r[tuple[str, dict[str, object]]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, dict[str, t.ContainerValue]]].fail("User not found")
+            return r[tuple[str, dict[str, object]]].fail("User not found")
 
         def _modify_user_list_field(
             self, user_id: str, field: str, value: str, *, add: bool = True
@@ -429,7 +425,7 @@ class FlextAuthManagers:
 
         def _validate_required_field[T](
             self,
-            storage_data: Mapping[str, t.ContainerValue],
+            storage_data: Mapping[str, object],
             field: str,
             field_type: type[T],
         ) -> T:
@@ -456,7 +452,7 @@ class FlextAuthManagers:
             self._dispatcher: t.RegisterableService = (
                 FlextContainer.get_global().get("command_bus").unwrap()
             )
-            self._sessions: dict[str, dict[str, t.ContainerValue]] = {}
+            self._sessions: dict[str, dict[str, object]] = {}
 
         def cleanup_expired_sessions(self) -> r[int]:
             """Clean up expired sessions and return count of cleaned sessions."""
@@ -481,7 +477,7 @@ class FlextAuthManagers:
             """Create a new session."""
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
-            session_data: dict[str, t.ContainerValue] = {
+            session_data: dict[str, object] = {
                 "id": session_id,
                 "unique_id": session_id,
                 "identity_id": user_id,
@@ -577,9 +573,7 @@ class FlextAuthManagers:
                 if self._is_session_active(session)
             )
 
-        def _is_session_active(
-            self, session_data: Mapping[str, t.ContainerValue]
-        ) -> bool:
+        def _is_session_active(self, session_data: Mapping[str, object]) -> bool:
             """Check if session is active and not expired.
 
             Eliminates duplication of expiration check (appeared 2+ times).
@@ -625,7 +619,7 @@ class FlextAuthManagers:
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._logs: list[dict[str, t.ContainerValue]] = []
+            self._logs: list[dict[str, object]] = []
 
         def get_logs(
             self,
@@ -634,9 +628,9 @@ class FlextAuthManagers:
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> r[list[Mapping[str, t.ContainerValue]]]:
+        ) -> r[list[Mapping[str, object]]]:
             """Get audit logs with optional filtering."""
-            filtered_logs: list[Mapping[str, t.ContainerValue]] = []
+            filtered_logs: list[Mapping[str, object]] = []
             for log in self._logs:
                 if user_id is not None:
                     username_value = log.get("username")
@@ -826,7 +820,7 @@ class FlextAuthManagers:
             **data: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log an audit event."""
-            log_entry: dict[str, t.ContainerValue] = {
+            log_entry: dict[str, object] = {
                 "id": str(uuid4()),
                 "event_type": event_type,
                 "timestamp": datetime.now(UTC),
@@ -850,7 +844,7 @@ class FlextAuthManagers:
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._registry = FlextRegistry(dispatcher)
-            self._attempts: dict[str, dict[str, t.ContainerValue]] = {}
+            self._attempts: dict[str, dict[str, object]] = {}
             self._max_attempts = 5
             self._window_minutes = 15
 
