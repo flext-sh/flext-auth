@@ -153,12 +153,12 @@ class FlextAuthTokenService(s[bool]):
     def _get_jwt_provider_cached(self) -> r[FlextAuthJwtProvider]:
         """Get JWT provider with lazy caching to eliminate repeated lookups."""
         if self._jwt_provider_cache is not None:
-            return r.ok(self._jwt_provider_cache)
+            return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)
         result = self._provider_service.get_jwt_provider()
         if result.is_failure:
             return result
         self._jwt_provider_cache = result.value
-        return r.ok(self._jwt_provider_cache)
+        return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)
 
 
 __all__ = ["FlextAuthTokenService"]
