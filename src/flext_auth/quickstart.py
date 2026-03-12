@@ -14,7 +14,7 @@ from flext_core import r, s
 from flext_auth import FlextAuth, FlextAuthSettings, m
 
 
-class FlextAuthQuickstart(s[object]):
+class FlextAuthQuickstart(s[bool]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
     This class provides a simplified interface for common authentication operations
@@ -57,13 +57,13 @@ class FlextAuthQuickstart(s[object]):
         return r[list[str]].ok(user_ids)
 
     @override
-    def execute(self) -> r[object]:
+    def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 
         Quickstart service doesn't use generic execute pattern.
         Use specific quickstart methods instead.
         """
-        return r[object].fail(
+        return r[bool].fail(
             "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
         )
 

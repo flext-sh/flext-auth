@@ -21,6 +21,7 @@ from datetime import UTC, datetime
 from typing import override
 
 from flext_core import r, t, u
+from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthModels
 from flext_auth.providers.rfc import FlextAuthRfcProvider
@@ -47,7 +48,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     """
 
-    def __init__(self, config: Mapping[str, objectone = None) -> None:
+    def __init__(self, config: Mapping[str, t.Scalar] | None = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
@@ -66,7 +67,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     @staticmethod
     def _to_scalar_config(
-        config: Mapping[str, objectone,
+        config: Mapping[str, t.Scalar] | None,
     ) -> dict[str, t.Primitives] | None:
         """Project provider config into RFC base scalar contract."""
         if config is None:
@@ -246,7 +247,15 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             if isinstance(validator_result, FlextAuthModels.Auth.AuthIdentity):
                 return r[FlextAuthModels.Auth.AuthIdentity].ok(validator_result)
             if isinstance(validator_result, Mapping):
-                return self._map_identity_payload(validator_result)
+                try:
+                    parsed_claims = TypeAdapter(dict[str, object]).validate_python(
+                        validator_result
+                    )
+                except ValidationError as exc:
+                    return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                        f"Kerberos ticket validator mapping payload is invalid: {exc}"
+                    )
+                return self._map_identity_payload(parsed_claims)
             if isinstance(validator_result, FlextAuthModels.Auth.KerberosTicketData):
                 principal_value = validator_result.principal
                 principal = principal_value or "kerberos-user"
@@ -290,7 +299,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = f"{identity_id}@kerberos.local"
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
-            roles = [role for role in roles_value if isinstance(role, str) and role]
+            try:
+                parsed_roles = TypeAdapter(list[str]).validate_python(roles_value)
+            except ValidationError:
+                parsed_roles = []
+            roles = [role for role in parsed_roles if role]
         else:
             roles = ["user"]
         try:
