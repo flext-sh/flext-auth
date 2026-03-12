@@ -642,14 +642,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[Mapping[str, t.Scalar]].fail(
                 f"Unsupported URL scheme: {parsed.scheme}"
             )
-        request = Request(  # noqa: S310 - Scheme validated above against whitelist (https/http only); see https://owasp.org/www-community/attacks/Open_Redirect
+        request = Request(
             endpoint_result.value,
             data=body_result.value.encode("utf-8"),
             headers=headers_result.value,
             method="POST",
         )
         try:
-            with urlopen(request, timeout=10.0) as response:  # noqa: S310 - Scheme validated above against whitelist (https/http only); see https://owasp.org/www-community/attacks/Open_Redirect
+            with urlopen(request, timeout=10.0) as response:
                 response_payload = response.read().decode("utf-8")
         except HTTPError as exc:
             try:
