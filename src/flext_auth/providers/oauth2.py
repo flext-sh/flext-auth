@@ -266,7 +266,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             state: str | None = None,
             code_challenge: str | None = None,
             code_challenge_method: str = "S256",
-            **kwargs: object,
+            **kwargs: t.Scalar,
         ) -> r[str]:
             """Generate authorization URL for authorization code flow."""
             auth_endpoint = self.provider.get_authorization_endpoint()

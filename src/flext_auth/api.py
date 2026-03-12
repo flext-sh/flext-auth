@@ -25,6 +25,7 @@ from flext_auth import (
     FlextAuthTokenService,
     c,
     m,
+    t,
 )
 
 
@@ -109,7 +110,7 @@ class FlextAuth:
         return self._token_service
 
     @classmethod
-    def create_with_config_overrides(cls, **config_overrides: object) -> Self:
+    def create_with_config_overrides(cls, **config_overrides: t.Scalar) -> Self:
         """Factory method to create FlextAuth with configuration overrides.
 
         Args:

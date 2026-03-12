@@ -403,7 +403,7 @@ class FlextAuthModels(FlextApiModels):
                 self,
                 dict_: Mapping[str, object] | None = None,
                 /,
-                **kwargs: object,
+                **kwargs: t.Scalar,
             ) -> None:
                 """Initialize provider configuration with defaults."""
                 if dict_ is not None:
