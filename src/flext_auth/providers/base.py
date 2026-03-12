@@ -218,7 +218,7 @@ class FlextAuthBaseProvider(Protocol):
 
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | t.ConfigurationMapping,
+        user: m.Auth.AuthIdentity | object,
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -368,10 +368,10 @@ class FlextAuthBaseProvider(Protocol):
 
     def _decode_token_claims(self, token: str) -> r[Mapping[str, object]]:
         if not token.strip():
-            return r[t.ConfigurationMapping].fail("Token must be a non-empty string")
+            return r[object].fail("Token must be a non-empty string")
         settings_result = self._token_settings()
         if settings_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 settings_result.error or "Token settings are invalid"
             )
         secret_key, algorithm_name, issuer_name, audience_name, _default_expiry = (
@@ -387,9 +387,9 @@ class FlextAuthBaseProvider(Protocol):
                 options={"verify_iat": True, "verify_exp": True},
             )
         except jwt.ExpiredSignatureError:
-            return r[t.ConfigurationMapping].fail("Token has expired")
+            return r[object].fail("Token has expired")
         except jwt.InvalidTokenError as exc:
-            return r[t.ConfigurationMapping].fail(f"Invalid token: {exc}")
+            return r[object].fail(f"Invalid token: {exc}")
         except (
             ValueError,
             TypeError,
@@ -399,16 +399,16 @@ class FlextAuthBaseProvider(Protocol):
             RuntimeError,
             ImportError,
         ) as exc:
-            return r[t.ConfigurationMapping].fail(f"Token validation failed: {exc}")
-        return r[t.ConfigurationMapping].ok(decoded_payload)
+            return r[object].fail(f"Token validation failed: {exc}")
+        return r[object].ok(decoded_payload)
 
     def _normalize_identity_payload(
-        self, user: m.Auth.AuthIdentity | t.ConfigurationMapping
+        self, user: m.Auth.AuthIdentity | object
     ) -> r[Mapping[str, object]]:
         if isinstance(user, Mapping):
-            return r[t.ConfigurationMapping].ok(user)
+            return r[object].ok(user)
         # At this point, user is narrowed to m.Auth.AuthIdentity by type system
-        return r[t.ConfigurationMapping].ok(
+        return r[object].ok(
             user.model_dump(exclude={"credential_hash", "token", "refresh_token"})
         )
 

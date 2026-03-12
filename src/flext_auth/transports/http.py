@@ -229,7 +229,7 @@ class FlextWebTransportAdapter:
                     f"Unsupported response body type: {type(body)}"
                 )
         try:
-            adapter = TypeAdapter(dict[str, t.JsonValue])
+            adapter = TypeAdapter(dict[str, object
             parsed = adapter.validate_python(json.loads(decoded))
             return r[t.Api.ResponseDict].ok(parsed)
         except json.JSONDecodeError:
@@ -316,8 +316,8 @@ class FlextWebTransportAdapter:
             return normalized
         return query
 
-    def _to_json_value(self, value: object) -> t.JsonValue:
-        """Convert object to JsonValue type (safe for JSON-parsed data)."""
+    def _to_json_value(self, value: object) -> object
+        """Convert object to object type (safe for JSON-parsed data)."""
         match value:
             case str() as text:
                 return text

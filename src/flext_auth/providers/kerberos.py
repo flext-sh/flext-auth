@@ -47,7 +47,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     """
 
-    def __init__(self, config: Mapping[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, objectone = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
@@ -66,7 +66,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     @staticmethod
     def _to_scalar_config(
-        config: Mapping[str, t.JsonValue] | None,
+        config: Mapping[str, objectone,
     ) -> dict[str, t.Primitives] | None:
         """Project provider config into RFC base scalar contract."""
         if config is None:
@@ -201,7 +201,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Auth.AuthIdentity | t.ConfigurationMapping,
+        user: FlextAuthModels.Auth.AuthIdentity | object,
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

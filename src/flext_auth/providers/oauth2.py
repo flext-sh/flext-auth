@@ -36,7 +36,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     """
 
     def __init__(
-        self, config: m.Auth.ProviderConfig | Mapping[str, t.JsonValue]
+        self, config: m.Auth.ProviderConfig | Mapping[str, object
     ) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
@@ -44,7 +44,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         Uses composition for better separation of concerns.
         """
         if isinstance(config, Mapping):
-            normalized_config: dict[str, t.JsonValue] = dict(config)
+            normalized_config: dict[str, objectict(config)
         else:
             normalized_config = dict(config.model_dump())
         super().__init__(self._to_scalar_config(normalized_config))
@@ -84,7 +84,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     @staticmethod
     def _to_scalar_config(
-        config: Mapping[str, t.JsonValue],
+        config: Mapping[str, object
     ) -> dict[str, t.Primitives]:
         """Project OAuth2 config to RFC base scalar contract."""
         scalar_config: dict[str, t.Primitives] = {
@@ -305,10 +305,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[str].ok(f"{auth_endpoint}?{urlencode(params)}")
 
         def handle_authorization_code_flow(
-            self, _credentials: Mapping[str, t.JsonValue]
-        ) -> r[Mapping[str, t.JsonValue]]:
+            self, _credentials: Mapping[str, object
+        ) -> r[Mapping[str, object
             """Handle OAuth2 authorization code flow."""
-            return r[Mapping[str, t.JsonValue]].ok({
+            return r[Mapping[str, object({
                 "user_id": "oauth2_user",
                 "valid": True,
             })
@@ -399,15 +399,15 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     @override
     def authenticate(
-        self, credentials: m.Auth.CredentialValidation | Mapping[str, t.JsonValue]
+        self, credentials: m.Auth.CredentialValidation | Mapping[str, object
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using OAuth2 flows with delegation."""
-        credential_payload: dict[str, t.JsonValue]
+        credential_payload: dict[str, object
         if isinstance(credentials, Mapping):
             credential_payload = dict(credentials)
         else:
             metadata_value = credentials.metadata
-            metadata_payload: dict[str, t.JsonValue] = metadata_value
+            metadata_payload: dict[str, objectetadata_value
             credential_payload = {
                 "username": credentials.username,
                 "password": credentials.password,
@@ -436,7 +436,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | t.ConfigurationMapping,
+        user: m.Auth.AuthIdentity | object,
         token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -631,22 +631,22 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _introspect_token(self, token: str) -> r[Mapping[str, object]]:
         endpoint_result = self._introspection_endpoint()
         if endpoint_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 endpoint_result.error or "OAuth2 introspection endpoint is required"
             )
         headers_result = self._build_introspection_headers()
         if headers_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 headers_result.error or "OAuth2 introspection headers are invalid"
             )
         body_result = self._build_introspection_form_data(token)
         if body_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 body_result.error or "OAuth2 introspection payload is invalid"
             )
         parsed = urlparse(endpoint_result.value)
         if parsed.scheme not in {"https", "http"}:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 f"Unsupported URL scheme: {parsed.scheme}"
             )
         request = Request(  # noqa: S310 - Scheme validated above against whitelist (https/http only); see https://owasp.org/www-community/attacks/Open_Redirect
@@ -668,23 +668,23 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 if error_body
                 else f"OAuth2 introspection request failed with status {exc.code}"
             )
-            return r[t.ConfigurationMapping].fail(error_message)
+            return r[object].fail(error_message)
         except URLError as exc:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 f"OAuth2 introspection network failure: {exc}"
             )
         except (ValueError, TypeError, OSError, RuntimeError, AttributeError) as exc:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 f"OAuth2 introspection request failed: {exc}"
             )
         try:
             parsed_payload = json.loads(response_payload)
         except json.JSONDecodeError as exc:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 f"OAuth2 introspection payload is not valid JSON: {exc}"
             )
         if not isinstance(parsed_payload, Mapping):
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 "OAuth2 introspection payload must be a mapping"
             )
         try:
@@ -692,10 +692,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 dict[str, object]
             ).validate_python(parsed_payload)
         except ValidationError as exc:
-            return r[t.ConfigurationMapping].fail(
+            return r[object].fail(
                 f"OAuth2 introspection payload has invalid shape: {exc}"
             )
-        return r[t.ConfigurationMapping].ok(parsed_mapping)
+        return r[object].ok(parsed_mapping)
 
     def _introspection_endpoint(self) -> r[str]:
         for key in ("introspection_endpoint", "token_introspection_endpoint"):

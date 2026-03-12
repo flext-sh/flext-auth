@@ -43,13 +43,13 @@ class FlextAuthJwtTokenValidator:
         try:
             config = self._provider.config
             if not config:
-                return r[t.ConfigurationMapping].fail("JWT configuration not provided")
+                return r[object].fail("JWT configuration not provided")
             secret_key_value = config.get("secret_key")
             match secret_key_value:
                 case str() as secret if secret:
                     secret_key = secret
                 case _:
-                    return r[t.ConfigurationMapping].fail(
+                    return r[object].fail(
                         "JWT secret key not configured"
                     )
             algorithm_value = config.get("algorithm")
@@ -57,7 +57,7 @@ class FlextAuthJwtTokenValidator:
                 case str() as algorithm_str:
                     algorithm = algorithm_str
                 case _:
-                    return r[t.ConfigurationMapping].fail(
+                    return r[object].fail(
                         "JWT algorithm not configured"
                     )
             audience_value = config.get("audience")
@@ -66,7 +66,7 @@ class FlextAuthJwtTokenValidator:
                     case str() as audience_str:
                         audience = audience_str
                     case _:
-                        return r[t.ConfigurationMapping].fail(
+                        return r[object].fail(
                             "JWT audience must be a string if provided"
                         )
             else:
@@ -84,11 +84,11 @@ class FlextAuthJwtTokenValidator:
                 payload = jwt.decode(
                     token, secret_key, algorithms=[algorithm], options=decode_options
                 )
-            return r[t.ConfigurationMapping].ok(payload)
+            return r[object].ok(payload)
         except jwt.ExpiredSignatureError:
-            return r[t.ConfigurationMapping].fail("Token has expired")
+            return r[object].fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return r[t.ConfigurationMapping].fail(f"Invalid token: {e}")
+            return r[object].fail(f"Invalid token: {e}")
         except (
             ValueError,
             TypeError,
@@ -98,7 +98,7 @@ class FlextAuthJwtTokenValidator:
             RuntimeError,
             ImportError,
         ) as e:
-            return r[t.ConfigurationMapping].fail(f"Token validation failed: {e}")
+            return r[object].fail(f"Token validation failed: {e}")
 
 
 __all__ = ["FlextAuthJwtTokenValidator"]

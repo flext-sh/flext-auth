@@ -215,7 +215,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             @staticmethod
             def build_auth_error_response(
                 error: str, error_code: str = "AUTH_ERROR"
-            ) -> Mapping[str, t.JsonValue]:
+            ) -> Mapping[str, object
                 """Build an authentication error response."""
                 return {
                     "success": False,
@@ -229,9 +229,9 @@ class FlextAuthUtilities(FlextApiUtilities):
                 token: str | None = None,
                 user_id: str | None = None,
                 expires_at: datetime | None = None,
-            ) -> Mapping[str, t.JsonValue]:
+            ) -> Mapping[str, object
                 """Build a successful authentication response."""
-                response: dict[str, t.JsonValue] = {
+                response: dict[str, object
                     "success": True,
                     "message": "Authentication successful",
                     "timestamp": datetime.now(UTC).isoformat(),
