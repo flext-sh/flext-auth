@@ -31,7 +31,7 @@ class _ConfigWrapper(BaseModel):
     """Protocol-conformant wrapper for config data."""
 
     category: str = Field(description="Config category")
-    data: dict[str, objectield(description="Config data")
+    data: dict[str, t.Scalar] = Field(description="Config data")
 
     def _protocol_name(self) -> str:
         return self.category
@@ -117,20 +117,18 @@ class FlextAuthRegistry(FlextRegistry):
         ):
             return r[set[str]].ok(set())
 
-    def get_config(self, name: str) -> r[Mapping[str, object
+    def get_config(self, name: str) -> r[Mapping[str, t.Scalar]]:
         """Get provider configuration."""
         if not self.has_provider(name):
-            return r[Mapping[str, objectil(
-                f"Provider '{name}' not registered"
-            )
+            return r[Mapping[str, t.Scalar]].fail(f"Provider '{name}' not registered")
         config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
         if config_result.is_failure:
-            return r[Mapping[str, objectil("No config")
+            return r[Mapping[str, t.Scalar]].fail("No config")
         wrapper = config_result.value
         config = getattr(wrapper, "data", None)
         if config is None:
-            return r[Mapping[str, objectil("Invalid config format")
-        return r[Mapping[str, object(config)
+            return r[Mapping[str, t.Scalar]].fail("Invalid config format")
+        return r[Mapping[str, t.Scalar]].ok(config)
 
     def get_metadata(self, name: str) -> r[am.Auth.Providers.Metadata]:
         """Get provider metadata."""
@@ -173,7 +171,7 @@ class FlextAuthRegistry(FlextRegistry):
         name: str,
         provider: FlextAuthBaseProvider,
         metadata: am.Auth.Providers.Metadata | None = None,
-        configuration: Mapping[str, objectone = None,
+        configuration: Mapping[str, t.Scalar] | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
         provider_wrapper = _ProviderWrapper(category=self.PROVIDERS, provider=provider)
@@ -212,7 +210,7 @@ class FlextAuthRegistry(FlextRegistry):
         self.unregister_plugin(f"{self.PROVIDERS}_metadata", name)
         return r[bool].ok(value=True)
 
-    def update_config(self, name: str, config: Mapping[str, object r[bool]:
+    def update_config(self, name: str, config: Mapping[str, t.Scalar]) -> r[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")

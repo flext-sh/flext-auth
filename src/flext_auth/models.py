@@ -16,7 +16,7 @@ from typing import Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
-from flext_core import r, t
+from flext_core import r
 from pydantic import ConfigDict, Field
 
 from flext_auth import c
@@ -401,7 +401,7 @@ class FlextAuthModels(FlextApiModels):
 
             def __init__(
                 self,
-                dict_: Mapping[str, object] = None,
+                dict_: Mapping[str, object] | None = None,
                 /,
                 **kwargs: object,
             ) -> None:

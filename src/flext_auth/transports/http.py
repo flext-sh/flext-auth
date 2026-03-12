@@ -229,7 +229,7 @@ class FlextWebTransportAdapter:
                     f"Unsupported response body type: {type(body)}"
                 )
         try:
-            adapter = TypeAdapter(dict[str, object
+            adapter = TypeAdapter(dict[str, t.Scalar])
             parsed = adapter.validate_python(json.loads(decoded))
             return r[t.Api.ResponseDict].ok(parsed)
         except json.JSONDecodeError:
@@ -309,14 +309,11 @@ class FlextWebTransportAdapter:
             }
             normalized: t.Api.WebParams = {}
             for key, value in merged_query.items():
-                if isinstance(value, (list, tuple)):
-                    normalized[str(key)] = [str(item) for item in value]
-                else:
-                    normalized[str(key)] = str(value)
+                normalized[str(key)] = str(value)
             return normalized
         return query
 
-    def _to_json_value(self, value: object) -> object
+    def _to_json_value(self, value: object) -> t.Scalar:
         """Convert object to object type (safe for JSON-parsed data)."""
         match value:
             case str() as text:
@@ -331,10 +328,8 @@ class FlextWebTransportAdapter:
                 return ""
             case _:
                 pass
-        if isinstance(value, (list, tuple)):
-            return [self._to_json_value(item) for item in value]
-        if isinstance(value, Mapping):
-            return {str(key): self._to_json_value(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple, Mapping)):
+            return json.dumps(value, default=str)
         return str(value)
 
     def _validate_userinfo_response(

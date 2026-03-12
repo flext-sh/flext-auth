@@ -33,9 +33,9 @@ class BaseTransportAdapter(Protocol):
         ...         self,
         ...         url: str,
         ...         method: str = "POST",
-        ...         data: dict[str, objectone = None,
+        ...         data: dict[str, t.Scalar] | None = None,
         ...         headers: dict[str, str] | None = None,
-        ...     ) -> r[dict[str, object
+        ...     ) -> r[dict[str, t.Scalar]]:
         ...         # HTTP-specific implementation
         ...         pass
 
@@ -54,10 +54,10 @@ class BaseTransportAdapter(Protocol):
         self,
         url: str,
         method: str = "POST",
-        data: Mapping[str, objectone = None,
+        data: Mapping[str, t.Scalar] | None = None,
         headers: Mapping[str, str] | None = None,
         **kwargs: object,
-    ) -> r[Mapping[str, object
+    ) -> r[Mapping[str, t.Scalar]]:
         """Send a request using this transport.
 
         Args:

@@ -15,7 +15,6 @@ from collections.abc import Mapping
 import jwt
 from flext_core import r
 
-from flext_auth import t
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
@@ -49,17 +48,13 @@ class FlextAuthJwtTokenValidator:
                 case str() as secret if secret:
                     secret_key = secret
                 case _:
-                    return r[object].fail(
-                        "JWT secret key not configured"
-                    )
+                    return r[object].fail("JWT secret key not configured")
             algorithm_value = config.get("algorithm")
             match algorithm_value:
                 case str() as algorithm_str:
                     algorithm = algorithm_str
                 case _:
-                    return r[object].fail(
-                        "JWT algorithm not configured"
-                    )
+                    return r[object].fail("JWT algorithm not configured")
             audience_value = config.get("audience")
             if audience_value is not None:
                 match audience_value:

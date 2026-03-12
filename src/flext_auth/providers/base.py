@@ -371,9 +371,7 @@ class FlextAuthBaseProvider(Protocol):
             return r[object].fail("Token must be a non-empty string")
         settings_result = self._token_settings()
         if settings_result.is_failure:
-            return r[object].fail(
-                settings_result.error or "Token settings are invalid"
-            )
+            return r[object].fail(settings_result.error or "Token settings are invalid")
         secret_key, algorithm_name, issuer_name, audience_name, _default_expiry = (
             settings_result.value
         )
