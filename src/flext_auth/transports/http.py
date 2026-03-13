@@ -11,13 +11,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import base64
-import json
 from collections.abc import Mapping
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings
 from flext_core import FlextLogger, r
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import m, t
 
@@ -216,7 +215,7 @@ class FlextWebTransportAdapter:
             return r[t.Api.ResponseDict].ok({})
         if isinstance(body, Mapping):
             normalized_body: t.Api.ResponseDict = {
-                str(key): self._to_json_value(value) for key, value in body.items()
+                str(key): self._to_scalar(value) for key, value in body.items()
             }
             return r[t.Api.ResponseDict].ok(normalized_body)
         match body:
@@ -230,9 +229,9 @@ class FlextWebTransportAdapter:
                 )
         try:
             adapter = TypeAdapter(dict[str, t.Scalar])
-            parsed = adapter.validate_python(json.loads(decoded))
+            parsed = adapter.validate_json(decoded)
             return r[t.Api.ResponseDict].ok(parsed)
-        except json.JSONDecodeError:
+        except (ValueError, ValidationError):
             return r[t.Api.ResponseDict].fail("Unable to parse response body as JSON")
 
     def _parse_token_response(
@@ -313,8 +312,9 @@ class FlextWebTransportAdapter:
             return normalized
         return query
 
-    def _to_json_value(self, value: object) -> t.Scalar:
-        """Convert object to object type (safe for JSON-parsed data)."""
+    @staticmethod
+    def _to_scalar(value: object) -> t.Scalar:
+        """Normalize object to t.Scalar for response dict values."""
         match value:
             case str() as text:
                 return text
@@ -327,10 +327,7 @@ class FlextWebTransportAdapter:
             case None:
                 return ""
             case _:
-                pass
-        if isinstance(value, (list, tuple, Mapping)):
-            return json.dumps(value, default=str)
-        return str(value)
+                return str(value)
 
     def _validate_userinfo_response(
         self, payload: t.Api.ResponseDict

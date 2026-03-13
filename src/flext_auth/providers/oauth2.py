@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import hashlib
-import json
 import secrets
 from base64 import b64encode, urlsafe_b64encode
 from collections.abc import Mapping
@@ -666,22 +665,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 f"OAuth2 introspection request failed: {exc}"
             )
         try:
-            parsed_payload = json.loads(response_payload)
-        except json.JSONDecodeError as exc:
-            return r[Mapping[str, t.Scalar]].fail(
-                f"OAuth2 introspection payload is not valid JSON: {exc}"
-            )
-        if not isinstance(parsed_payload, Mapping):
-            return r[Mapping[str, t.Scalar]].fail(
-                "OAuth2 introspection payload must be a mapping"
-            )
-        try:
             parsed_mapping: dict[str, t.Scalar] = TypeAdapter(
                 dict[str, t.Scalar]
-            ).validate_python(parsed_payload)
-        except ValidationError as exc:
+            ).validate_json(response_payload)
+        except (ValueError, ValidationError) as exc:
             return r[Mapping[str, t.Scalar]].fail(
-                f"OAuth2 introspection payload has invalid shape: {exc}"
+                f"OAuth2 introspection payload is not valid JSON: {exc}"
             )
         return r[Mapping[str, t.Scalar]].ok(parsed_mapping)
 
