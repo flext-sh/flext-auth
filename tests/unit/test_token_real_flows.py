@@ -38,11 +38,6 @@ class _BaseProviderForTokenTests(FlextAuthBaseProvider):
     def validate(self, token: str) -> r[bool]:
         return self._decode_token_claims(token).map(lambda _claims: True)
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-test-base"
-
 
 class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
     def __init__(self) -> None:
@@ -56,11 +51,6 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
             }
         )
         self.refresh_called = False
-
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-test-middleware-refresh"
 
     @override
     def authenticate(
@@ -99,11 +89,6 @@ class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
     @override
     def validate(self, token: str) -> r[bool]:
         return self.validate_token(token).map(lambda _identity: True)
-
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-test-kerberos"
 
 
 class TestTokenRealFlows:

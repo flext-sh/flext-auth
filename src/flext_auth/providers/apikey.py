@@ -53,10 +53,5 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         _ = token
         return r[bool].fail("Not implemented")
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-apikey"
-
 
 __all__ = ["FlextAuthApiKeyProvider"]

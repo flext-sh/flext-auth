@@ -70,10 +70,5 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         _ = token
         return r[bool].fail("Not implemented")
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-ldap"
-
 
 __all__ = ["FlextAuthLdapProvider"]

@@ -119,10 +119,5 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         return r[bool].fail("RFC provider validate() must be implemented by subclass")
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-rfc"
-
 
 __all__ = ["FlextAuthRfcProvider"]

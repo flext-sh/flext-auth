@@ -79,11 +79,6 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         }
         return scalar_config
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-kerberos"
-
     def _validate_kerberos_configuration(self) -> r[bool]:
         """Railway-oriented Kerberos configuration validation."""
         if self._config is None:

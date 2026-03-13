@@ -183,11 +183,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 error_msg = f"OAuth2 'token_endpoint_auth_method' must be str or None, got {type(token_endpoint_auth_method_value).__name__}"
                 raise ValueError(error_msg)
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-oauth2"
-
     def _validate_configuration(self) -> r[bool]:
         """Railway-oriented configuration validation."""
         required_fields = ["client_id", "token_endpoint"]

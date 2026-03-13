@@ -103,8 +103,3 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         """
         _ = token
         return r[bool].fail("SAML provider not yet fully implemented")
-
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-saml"

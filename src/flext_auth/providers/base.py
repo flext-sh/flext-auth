@@ -410,10 +410,6 @@ class FlextAuthBaseProvider(Protocol):
             user.model_dump(exclude={"credential_hash", "token", "refresh_token"})
         )
 
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider"
-
     def _token_settings(self) -> r[tuple[str, str, str, str, int]]:
         config = self.config
         if config is None:

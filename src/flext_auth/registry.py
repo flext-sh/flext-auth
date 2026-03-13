@@ -23,9 +23,6 @@ class _ProviderWrapper(BaseModel):
     provider: object = Field(description="Provider instance")
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def _protocol_name(self) -> str:
-        return self.category
-
 
 class _ConfigWrapper(BaseModel):
     """Protocol-conformant wrapper for config data."""
@@ -33,18 +30,12 @@ class _ConfigWrapper(BaseModel):
     category: str = Field(description="Config category")
     data: dict[str, t.Scalar] = Field(description="Config data")
 
-    def _protocol_name(self) -> str:
-        return self.category
-
 
 class _MetadataWrapper(BaseModel):
     """Protocol-conformant wrapper for metadata."""
 
     category: str = Field(description="Metadata category")
     data: am.Auth.Providers.Metadata = Field(description="Metadata")
-
-    def _protocol_name(self) -> str:
-        return self.category
 
 
 def _is_auth_provider(value: object) -> TypeGuard[FlextAuthBaseProvider]:

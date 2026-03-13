@@ -1364,19 +1364,11 @@ class _BaseTokenProviderForFlowTests(FlextAuthBaseProvider):
         _ = token
         return r[bool].ok(True)
 
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-test-base-flow"
-
 
 class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
     def __init__(self) -> None:
         super().__init__(config={})
         self.last_refresh_input: str | None = None
-
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-test-refresh-flow"
 
     def authenticate(
         self, credentials: m.Auth.CredentialValidation
@@ -1409,10 +1401,6 @@ class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
 
     def validate(self, token: str) -> r[bool]:
         return self.validate_token(token).map(lambda _identity: True)
-
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-test-kerberos-flow"
 
 
 class TestProviderTokenFlows:
