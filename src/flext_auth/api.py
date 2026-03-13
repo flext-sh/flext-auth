@@ -120,7 +120,7 @@ class FlextAuth:
             Initialized FlextAuth instance with custom configuration
 
         """
-        custom_config = FlextAuthSettings.model_validate(config_overrides)
+        custom_config = FlextAuthSettings(config_overrides)
         return cls(config=custom_config)
 
     @classmethod

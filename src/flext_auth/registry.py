@@ -229,7 +229,7 @@ class FlextAuthRegistry(FlextRegistry):
         if callable(get_metadata_fn):
             try:
                 raw = get_metadata_fn()
-                return am.Auth.Providers.Metadata.model_validate(raw)
+                return am.Auth.Providers.Metadata(raw)
             except (AttributeError, TypeError, ValueError):
                 return base
         return base
