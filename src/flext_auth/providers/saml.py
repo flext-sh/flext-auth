@@ -42,9 +42,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
     """
 
     @override
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using SAML 2.0 assertion.
 
         Args:
@@ -57,7 +55,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
 
         """
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("SAML provider not yet fully implemented")
+        return r[p.Auth.Token].fail("SAML provider not yet fully implemented")
 
     def get_metadata(self) -> dict[str, str | list[str]]:
         """Get provider metadata.
@@ -89,7 +87,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         return {"authenticate", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
         """Validate SAML assertion token.
 
         Args:

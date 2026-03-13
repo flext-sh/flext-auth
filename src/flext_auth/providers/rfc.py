@@ -86,9 +86,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return r[bool].ok(value=True)
 
     @override
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate user with provided credentials.
 
         This is an abstract method that must be implemented by RFC-specific providers.
@@ -97,10 +95,10 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             credentials: Dictionary containing authentication credentials.
 
         Returns:
-            r[p.Auth.TokenProtocol]: Authentication token on success, error on failure
+            r[p.Auth.Token]: Authentication token on success, error on failure
 
         """
-        return r[p.Auth.TokenProtocol].fail(
+        return r[p.Auth.Token].fail(
             "RFC provider authenticate() must be implemented by subclass"
         )
 

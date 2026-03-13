@@ -24,7 +24,7 @@
   - [gRPC Transport (`transports/grpc.py`)](#grpc-transport-transportsgrpcpy)
   - [WebSocket Transport (`transports/websocket.py`)](#websocket-transport-transportswebsocketpy)
 - [📡 PROTOCOL HANDLERS](#protocol-handlers)
-  - [Protocol Handler Base (`protocol_handlers/base.py`)](#protocol-handler-base-protocolhandlersbasepy)
+  - [Handler Base (`protocol_handlers/base.py`)](#protocol-handler-base-protocolhandlersbasepy)
   - [REST Protocol Handler (`protocol_handlers/rest.py`)](#rest-protocol-handler-protocolhandlersrestpy)
   - [SOAP Protocol Handler (`protocol_handlers/soap.py`)](#soap-protocol-handler-protocolhandlerssoappy)
 - [🎫 TOKEN MANAGEMENT](#token-management)

@@ -1354,11 +1354,9 @@ class TestAuthModule:
 
 
 class _BaseTokenProviderForFlowTests(FlextAuthBaseProvider):
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not used in this test")
+        return r[p.Auth.Token].fail("Not used in this test")
 
     def validate(self, token: str) -> r[bool]:
         _ = token
@@ -1370,17 +1368,15 @@ class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
         super().__init__(config={})
         self.last_refresh_input: str | None = None
 
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not used in this test")
+        return r[p.Auth.Token].fail("Not used in this test")
 
     def validate(self, token: str) -> r[bool]:
         _ = token
         return r[bool].ok(True)
 
-    def refresh(self, token: str) -> r[p.Auth.TokenProtocol]:
+    def refresh(self, token: str) -> r[p.Auth.Token]:
         self.last_refresh_input = token
         refreshed_token = m.Auth.AuthToken(
             identity_id="middleware-user",
@@ -1389,15 +1385,13 @@ class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
             expires_at=datetime.now(UTC) + timedelta(hours=1),
             refresh_token="refresh-next",
         )
-        return r[p.Auth.TokenProtocol].ok(refreshed_token)
+        return r[p.Auth.Token].ok(refreshed_token)
 
 
 class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not used in this test")
+        return r[p.Auth.Token].fail("Not used in this test")
 
     def validate(self, token: str) -> r[bool]:
         return self.validate_token(token).map(lambda _identity: True)

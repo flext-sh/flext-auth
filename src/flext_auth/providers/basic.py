@@ -29,12 +29,10 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using HTTP Basic credentials."""
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
@@ -56,7 +54,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         return {"basic", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
         """Validate authentication token."""
         _ = token
         return r[bool].fail("Not implemented")

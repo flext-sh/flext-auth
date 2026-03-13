@@ -97,9 +97,7 @@ class FlextAuthBaseProvider(Protocol):
             return normalized_mapping
         return value
 
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate user with provided credentials.
 
         This is the primary authentication method. It should validate the
@@ -110,7 +108,7 @@ class FlextAuthBaseProvider(Protocol):
                         The exact structure depends on the provider type.
 
         Returns:
-            r[p.Auth.TokenProtocol]: Authentication token on success,
+            r[p.Auth.Token]: Authentication token on success,
                                    error message on failure
 
         """
@@ -248,7 +246,7 @@ class FlextAuthBaseProvider(Protocol):
             expiry_minutes=expiry_minutes,
         )
 
-    def refresh(self, token: str) -> r[p.Auth.TokenProtocol]:
+    def refresh(self, token: str) -> r[p.Auth.Token]:
         """Refresh authentication token.
 
         Generate a new token based on an existing valid token. This operation
@@ -259,19 +257,19 @@ class FlextAuthBaseProvider(Protocol):
             token: Existing token to refresh
 
         Returns:
-            r[p.Auth.TokenProtocol]: New token on success,
+            r[p.Auth.Token]: New token on success,
                                    error if refresh not supported or failed
 
         """
         claims_result = self._decode_token_claims(token)
         if claims_result.is_failure:
-            return r[p.Auth.TokenProtocol].fail(
+            return r[p.Auth.Token].fail(
                 claims_result.error or "Source token validation failed"
             )
         source_claims = claims_result.value
         identity_result = self._extract_identity_id(source_claims)
         if identity_result.is_failure:
-            return r[p.Auth.TokenProtocol].fail(
+            return r[p.Auth.Token].fail(
                 identity_result.error or "Token subject is missing"
             )
         refresh_type_value = source_claims.get("token_type")
@@ -284,19 +282,19 @@ class FlextAuthBaseProvider(Protocol):
             payload=source_claims, token_type=refresh_type, expiry_minutes=None
         )
         if generation_result.is_failure:
-            return r[p.Auth.TokenProtocol].fail(
+            return r[p.Auth.Token].fail(
                 generation_result.error or "Token refresh generation failed"
             )
         refreshed_claims_result = self._decode_token_claims(generation_result.value)
         if refreshed_claims_result.is_failure:
-            return r[p.Auth.TokenProtocol].fail(
+            return r[p.Auth.Token].fail(
                 refreshed_claims_result.error or "Refreshed token validation failed"
             )
         expires_result = self._extract_expiration_datetime(
             refreshed_claims_result.value
         )
         if expires_result.is_failure:
-            return r[p.Auth.TokenProtocol].fail(
+            return r[p.Auth.Token].fail(
                 expires_result.error or "Refreshed token exp claim is invalid"
             )
         refresh_token_value = source_claims.get("refresh_token")
@@ -306,7 +304,7 @@ class FlextAuthBaseProvider(Protocol):
             else token
         )
 
-        def _build_refreshed_token() -> p.Auth.TokenProtocol:
+        def _build_refreshed_token() -> p.Auth.Token:
             return m.Auth.AuthToken(
                 identity_id=identity_result.value,
                 token=generation_result.value,

@@ -60,7 +60,7 @@ class FlextAuthProviderService(s[bool]):
 
     def authenticate_user(
         self, username: str, password: str, provider: str = "basic"
-    ) -> r[p.Auth.TokenProtocol]:
+    ) -> r[p.Auth.Token]:
         """Railway-oriented user authentication with provider selection."""
         credentials = m.Auth.CredentialValidation(username=username, password=password)
         return self._providers.get(provider).flat_map(

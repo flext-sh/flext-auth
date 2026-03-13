@@ -38,7 +38,7 @@ class FlextAuthProtocols(FlextApiProtocols):
     p.Result
 
     # Authentication-specific access
-    p.Auth.UserProtocol
+    p.Auth.User
     """
 
     class Auth:
@@ -52,7 +52,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         AuthValue: TypeAlias = object
 
         @runtime_checkable
-        class IdentityProtocol(FlextProtocols.Service[bool], Protocol):
+        class Identity(FlextProtocols.Service[bool], Protocol):
             """Protocol for identity/user-like objects in authentication.
 
             Structural typing interface for identity objects. Models implement
@@ -97,11 +97,11 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
         @runtime_checkable
-        class UserProtocol(IdentityProtocol, Protocol):
+        class User(Identity, Protocol):
             """Protocol for user-like objects in authentication.
 
-            Extends IdentityProtocol with user-specific methods. Maintains
-            backward compatibility with existing UserProtocol interface.
+            Extends Identity with user-specific methods. Maintains
+            backward compatibility with existing User interface.
             """
 
             @property
@@ -118,7 +118,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
         @runtime_checkable
-        class SessionProtocol(FlextProtocols.Service[bool], Protocol):
+        class Session(FlextProtocols.Service[bool], Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -147,7 +147,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
         @runtime_checkable
-        class TokenProtocol(Protocol):
+        class Token(Protocol):
             """Protocol for token-like objects in authentication.
 
             Structural typing interface for authentication tokens.
@@ -195,7 +195,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
         @runtime_checkable
-        class AuthenticationResponseProtocol(Protocol):
+        class AuthenticationResponse(Protocol):
             """Protocol for authentication response objects.
 
             Structural typing interface for authentication responses.
@@ -214,7 +214,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             "Operation success status."
 
         @runtime_checkable
-        class ServiceProtocol(FlextProtocols.Service[bool], Protocol):
+        class Service(FlextProtocols.Service[bool], Protocol):
             """Protocol for authentication service-like objects."""
 
             def authenticate_user(
@@ -223,10 +223,10 @@ class FlextAuthProtocols(FlextApiProtocols):
                 password: str,
                 client_ip: str | None = None,
                 user_agent: str | None = None,
-            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
+            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.Identity]:
                 """Authenticate user and return identity.
 
-                Returns IdentityProtocol-compatible identity through structural typing.
+                Returns Identity-compatible identity through structural typing.
                 """
                 ...
 
@@ -246,10 +246,10 @@ class FlextAuthProtocols(FlextApiProtocols):
                 password: str,
                 full_name: str | None = None,
                 roles: list[str] | None = None,
-            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
+            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.Identity]:
                 """Register new user.
 
-                Returns IdentityProtocol-compatible identity through structural typing.
+                Returns Identity-compatible identity through structural typing.
                 """
                 ...
 

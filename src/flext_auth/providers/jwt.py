@@ -25,12 +25,10 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using JWT credentials."""
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.

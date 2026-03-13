@@ -31,20 +31,18 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """
 
     @override
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using LDAP credentials.
 
         Args:
             credentials: Dictionary containing "username" and "password" keys
 
         Returns:
-            r[TokenProtocol]: Authentication token on success, error on failure
+            r[Token]: Authentication token on success, error on failure
 
         """
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
     @override
     def supports(self) -> set[str]:
@@ -57,7 +55,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return {"ldap", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
         """Validate authentication token.
 
         Args:

@@ -59,11 +59,11 @@ class FlextAuthProviderMixin:
             )
         return r[bool].ok(value=True)
 
-    def _extract_token_string(self, token: str | p.Auth.TokenProtocol) -> str:
-        """Extract token string from token or TokenProtocol object.
+    def _extract_token_string(self, token: str | p.Auth.Token) -> str:
+        """Extract token string from token or Token object.
 
         Args:
-        token: Token as string or TokenProtocol object
+        token: Token as string or Token object
 
         Returns:
         str: Token string
@@ -72,13 +72,11 @@ class FlextAuthProviderMixin:
         ValueError: If token cannot be extracted
 
         """
-        token_value = token.token if isinstance(token, p.Auth.TokenProtocol) else token
+        token_value = token.token if isinstance(token, p.Auth.Token) else token
         token_text = str(token_value)
         if token_text:
             return token_text
-        error_msg = (
-            f"Invalid token type: expected str or TokenProtocol, got {type(token)}"
-        )
+        error_msg = f"Invalid token type: expected str or Token, got {type(token)}"
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
     def _get_capability_metadata(self) -> Mapping[str, object]:

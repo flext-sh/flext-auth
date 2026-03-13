@@ -28,11 +28,9 @@ class HttpRequest:
 
 class _BaseProviderForTokenTests(FlextAuthBaseProvider):
     @override
-    def authenticate(
-        self, credentials: m.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not used in token tests")
+        return r[p.Auth.Token].fail("Not used in token tests")
 
     @override
     def validate(self, token: str) -> r[bool]:
@@ -53,11 +51,9 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
         self.refresh_called = False
 
     @override
-    def authenticate(
-        self, credentials: m.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not used in token tests")
+        return r[p.Auth.Token].fail("Not used in token tests")
 
     @override
     def validate(self, token: str) -> r[bool]:
@@ -65,7 +61,7 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
         return r[bool].fail("Refresh source token is invalid")
 
     @override
-    def refresh(self, token: str) -> r[p.Auth.TokenProtocol]:
+    def refresh(self, token: str) -> r[p.Auth.Token]:
         _ = token
         self.refresh_called = True
         refreshed = m.Auth.AuthToken(
@@ -75,16 +71,14 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
             refresh_token="next-refresh-token",
         )
-        return r[p.Auth.TokenProtocol].ok(refreshed)
+        return r[p.Auth.Token].ok(refreshed)
 
 
 class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
     @override
-    def authenticate(
-        self, credentials: m.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not used in token tests")
+        return r[p.Auth.Token].fail("Not used in token tests")
 
     @override
     def validate(self, token: str) -> r[bool]:

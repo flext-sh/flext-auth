@@ -25,12 +25,10 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def authenticate(
-        self, credentials: m.Auth.CredentialValidation
-    ) -> r[p.Auth.TokenProtocol]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using certificate credentials."""
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
     @override
     def supports(self) -> set[str]:
@@ -43,7 +41,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         return {"certificate", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
         """Validate certificate token.
 
         Args:
@@ -56,7 +54,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         if isinstance(token, str):
             token_value = token
         else:
-            token_protocol: p.Auth.TokenProtocol = token
+            token_protocol: p.Auth.Token = token
             token_value = token_protocol.token
         return self.validate_token(str(token_value))
 
