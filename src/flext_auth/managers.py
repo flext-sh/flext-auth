@@ -213,7 +213,7 @@ class FlextAuthManagers:
                 "token": token,
                 "session_id": session_id,
             }
-            user = m.Auth.AuthIdentity(identity_dict)
+            user = m.Auth.AuthIdentity.model_validate(identity_dict)
             return r[m.Auth.AuthIdentity].ok(user)
 
         def delete_user(self, user_id: str) -> r[bool]:
@@ -377,7 +377,7 @@ class FlextAuthManagers:
             filtered_identity_data = {
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }
-            return m.Auth.AuthIdentity(filtered_identity_data)
+            return m.Auth.AuthIdentity.model_validate(filtered_identity_data)
 
         def _extract_identity_id(self, storage_data: Mapping[str, object]) -> str:
             """Extract identity ID from storage data with fast fail."""
@@ -841,7 +841,7 @@ class FlextAuthManagers:
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._registry = FlextRegistry(dispatcher)
+            self._registry = FlextRegistry(dispatcher=dispatcher)
             self._attempts: dict[str, dict[str, object]] = {}
             self._max_attempts = 5
             self._window_minutes = 15

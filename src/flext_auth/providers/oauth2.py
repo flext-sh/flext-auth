@@ -11,14 +11,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import hashlib
+import http.client
 import secrets
 from base64 import b64encode, urlsafe_b64encode
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import Final, override
-from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
-from urllib.request import Request, urlopen
 
 from flext_core import e, r
 from pydantic import TypeAdapter, ValidationError
@@ -30,6 +29,7 @@ _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
     dict[str, t.Scalar]
 )
 _LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
+_HTTP_BAD_REQUEST: Final[int] = 400
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -428,7 +428,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | object,
+        user: m.Auth.AuthIdentity | Mapping[str, object],
         token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -635,38 +635,38 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 body_result.error or "OAuth2 introspection payload is invalid"
             )
         parsed = urlparse(endpoint_result.value)
-        if parsed.scheme not in {"https", "http"}:
+        if parsed.scheme != "https":
             return r[Mapping[str, t.Scalar]].fail(
                 f"Unsupported URL scheme: {parsed.scheme}"
             )
-        request = Request(
-            endpoint_result.value,
-            data=body_result.value.encode("utf-8"),
-            headers=headers_result.value,
-            method="POST",
-        )
+        request_path = parsed.path or "/"
+        if parsed.query:
+            request_path = f"{request_path}?{parsed.query}"
+        connection = http.client.HTTPSConnection(parsed.netloc, timeout=10.0)
         try:
-            with urlopen(request, timeout=10.0) as response:
-                response_payload = response.read().decode("utf-8")
-        except HTTPError as exc:
-            try:
-                error_body = exc.read().decode("utf-8")
-            except (ValueError, TypeError, OSError, RuntimeError, AttributeError):
-                error_body = ""
-            error_message = (
-                f"OAuth2 introspection request failed with status {exc.code}: {error_body}"
-                if error_body
-                else f"OAuth2 introspection request failed with status {exc.code}"
+            connection.request(
+                "POST",
+                request_path,
+                body=body_result.value,
+                headers=headers_result.value,
             )
-            return r[Mapping[str, t.Scalar]].fail(error_message)
-        except URLError as exc:
-            return r[Mapping[str, t.Scalar]].fail(
-                f"OAuth2 introspection network failure: {exc}"
-            )
-        except (ValueError, TypeError, OSError, RuntimeError, AttributeError) as exc:
+            response = connection.getresponse()
+            status_code = response.status
+            response_payload = response.read().decode("utf-8")
+        except (http.client.HTTPException, OSError, ValueError, TypeError) as exc:
             return r[Mapping[str, t.Scalar]].fail(
                 f"OAuth2 introspection request failed: {exc}"
             )
+        finally:
+            connection.close()
+        if status_code >= _HTTP_BAD_REQUEST:
+            error_body = response_payload.strip()
+            error_message = (
+                f"OAuth2 introspection request failed with status {status_code}: {error_body}"
+                if error_body
+                else f"OAuth2 introspection request failed with status {status_code}"
+            )
+            return r[Mapping[str, t.Scalar]].fail(error_message)
         try:
             parsed_mapping: dict[str, t.Scalar] = (
                 _DICT_STR_SCALAR_ADAPTER.validate_json(response_payload)
@@ -722,6 +722,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         roles_value = payload.get("roles")
         if isinstance(roles_value, list):
+            typed_roles: list[str]
             try:
                 typed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:

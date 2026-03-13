@@ -202,7 +202,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Auth.AuthIdentity | object,
+        user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, object],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -299,6 +299,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = f"{identity_id}@kerberos.local"
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
+            parsed_roles: list[str]
             try:
                 parsed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:
@@ -322,7 +323,17 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             )
         return r[FlextAuthModels.Auth.AuthIdentity].ok(identity)
 
-    def _ticket_validator_callable(self) -> Callable[[str], object] | None:
+    def _ticket_validator_callable(
+        self,
+    ) -> (
+        Callable[
+            [str],
+            FlextAuthModels.Auth.AuthIdentity
+            | Mapping[str, object]
+            | FlextAuthModels.Auth.KerberosTicketData,
+        ]
+        | None
+    ):
         config = self._config
         if config is None:
             return None

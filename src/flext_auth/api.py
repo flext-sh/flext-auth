@@ -120,7 +120,7 @@ class FlextAuth:
             Initialized FlextAuth instance with custom configuration
 
         """
-        custom_config = FlextAuthSettings(config_overrides)
+        custom_config = FlextAuthSettings.model_validate(config_overrides)
         return cls(config=custom_config)
 
     @classmethod
@@ -207,11 +207,13 @@ class FlextAuth:
                     ip_address=_ip_address or "",
                     user_agent=_user_agent or "",
                 )
-                session_result.tap_error(
-                    lambda err: self.logger.warning(
+
+                def _log_session_error(err: str) -> None:
+                    self.logger.warning(
                         f"Failed to create session for user {identity.name}: {err}"
                     )
-                )
+
+                session_result.tap_error(_log_session_error)
         return auth_result
 
     def cleanup_expired_sessions(self) -> r[int]:

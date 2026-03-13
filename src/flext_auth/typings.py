@@ -153,29 +153,29 @@ class FlextAuthTypes(FlextApiTypes):
             """Token-related type definitions."""
 
             type TokenType = c.Auth.TokenTypes
-            type ClaimMap = FlextApiTypes.JsonDict
-            Claims = FlextApiTypes.JsonDict
-            Introspection = FlextApiTypes.JsonDict
+            type ClaimMap = FlextApiTypes.Api.JsonObject
+            Claims = FlextApiTypes.Api.JsonObject
+            Introspection = FlextApiTypes.Api.JsonObject
 
         class Sessions:
             """Session-related type definitions."""
 
-            Activity = FlextApiTypes.JsonDict
+            Activity = FlextApiTypes.Api.JsonObject
 
         class Responses:
             """Response payload abstractions."""
 
             Authentication = m.Auth.AuthResponse
-            AuthenticationPayload = FlextApiTypes.JsonDict
+            AuthenticationPayload = FlextApiTypes.Api.JsonObject
 
         class Managers:
             """Manager-specific supporting types."""
 
-            UserData = FlextApiTypes.JsonDict
-            SessionData = FlextApiTypes.JsonDict
-            LogEntry = FlextApiTypes.JsonDict
-            AuditEntry = FlextApiTypes.JsonDict
-            AttemptData = FlextApiTypes.JsonDict
+            UserData = FlextApiTypes.Api.JsonObject
+            SessionData = FlextApiTypes.Api.JsonObject
+            LogEntry = FlextApiTypes.Api.JsonObject
+            AuditEntry = FlextApiTypes.Api.JsonObject
+            AttemptData = FlextApiTypes.Api.JsonObject
             AttemptWindow = m.Auth.ValidationResult
 
         class Domain:

@@ -144,7 +144,7 @@ class FlextWebTransportAdapter:
         self.logger.debug(
             "Sending token request to %s",
             url,
-            extra={"grant_type": data.get("grant_type")},
+            grant_type=str(data.get("grant_type", "")),
         )
         request_body = urlencode(data, doseq=True)
         response = self._execute_request(
@@ -281,11 +281,9 @@ class FlextWebTransportAdapter:
             )
         self.logger.info(
             "Token response validated successfully",
-            extra={
-                "token_type": response_data.get("token_type"),
-                "has_refresh_token": "refresh_token" in response_data,
-                "expires_in": response_data.get("expires_in"),
-            },
+            token_type=str(response_data.get("token_type", "")),
+            has_refresh_token="refresh_token" in response_data,
+            expires_in=str(response_data.get("expires_in", "")),
         )
         return r[t.Api.ResponseDict].ok(response_data)
 
@@ -341,7 +339,7 @@ class FlextWebTransportAdapter:
                 "UserInfo response missing required 'sub' claim"
             )
         self.logger.info(
-            "UserInfo retrieved successfully", extra={"subject": payload["sub"]}
+            "UserInfo retrieved successfully", subject=str(payload.get("sub", ""))
         )
         return r[t.Api.ResponseDict].ok(payload)
 

@@ -80,7 +80,7 @@ class FlextAuthTokenService(s[bool]):
                 user_id=user_id,
                 token_type=token_type,
                 success=False,
-                reason=error,
+                reason=error or "",
             )
             return r[str].fail(error or "User lookup failed")
         user = user_result.value
@@ -97,7 +97,7 @@ class FlextAuthTokenService(s[bool]):
                 user_id=user_id,
                 token_type=token_type,
                 success=False,
-                reason=error,
+                reason=error or "",
             )
             return r[str].fail(error or "Token generation failed")
         token_value = token_result.value
@@ -117,7 +117,7 @@ class FlextAuthTokenService(s[bool]):
                 "Token refresh",
                 success=False,
                 old_token_id=self._short_token(token),
-                reason=error,
+                reason=error or "",
             )
             return r[m.Auth.AuthToken].fail(error or "Token refresh failed")
         refreshed = result.value
@@ -136,18 +136,20 @@ class FlextAuthTokenService(s[bool]):
 
     def validate_token(self, token: str) -> r[bool]:
         """Railway-oriented token validation with audit logging."""
+
+        def _log_token_validation_error(error: str) -> None:
+            FlextLogger(__name__).debug(
+                "Token validation",
+                success=False,
+                token_id=self._short_token(token),
+                reason=error or "Unknown error",
+            )
+
         return (
             self
             ._get_jwt_provider_cached()
             .flat_map(lambda provider: provider.validate_token(token))
-            .tap_error(
-                lambda e: FlextLogger(__name__).debug(
-                    "Token validation",
-                    success=False,
-                    token_id=self._short_token(token),
-                    reason=e or "Unknown error",
-                )
-            )
+            .tap_error(_log_token_validation_error)
         )
 
     def _get_jwt_provider_cached(self) -> r[FlextAuthJwtProvider]:
