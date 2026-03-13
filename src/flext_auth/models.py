@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections import UserDict
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
@@ -65,16 +65,22 @@ class FlextAuthModels(FlextApiModels):
         class ValidationResult(FlextApiModels.Value):
             """Generic validation result for any operation (immutable value object)."""
 
-            is_valid: bool = Field(..., description="Validation outcome")
-            data: dict[str, object] = Field(
-                default_factory=dict,
-                description="Result data",
-            )
-            error: str = Field(default="", description="Error message")
-            metadata: dict[str, object] = Field(
-                default_factory=dict,
-                description="Additional metadata",
-            )
+            is_valid: Annotated[bool, Field(..., description="Validation outcome")]
+            data: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Result data",
+                ),
+            ]
+            error: Annotated[str, Field(default="", description="Error message")]
+            metadata: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Additional metadata",
+                ),
+            ]
 
             @property
             def status(self) -> str:
@@ -92,62 +98,85 @@ class FlextAuthModels(FlextApiModels):
         class TokenPayload(FlextApiModels.Value):
             """Generic JWT token payload (immutable value object)."""
 
-            sub: str = Field(..., description="Subject (identity ID)")
-            exp: int = Field(..., description="Expiration timestamp (UNIX)")
-            iat: int = Field(..., description="Issued at timestamp (UNIX)")
-            jti: str = Field(default="", description="Token ID")
-            iss: str = Field(
-                default="flext-auth",
-                description="Issuer",
-            )
-            aud: str = Field(
-                default="flext-api",
-                description="Audience",
-            )
-            session_id: str = Field(default="", description="Session ID")
+            sub: Annotated[str, Field(..., description="Subject (identity ID)")]
+            exp: Annotated[int, Field(..., description="Expiration timestamp (UNIX)")]
+            iat: Annotated[int, Field(..., description="Issued at timestamp (UNIX)")]
+            jti: Annotated[str, Field(default="", description="Token ID")]
+            iss: Annotated[
+                str,
+                Field(
+                    default="flext-auth",
+                    description="Issuer",
+                ),
+            ]
+            aud: Annotated[
+                str,
+                Field(
+                    default="flext-api",
+                    description="Audience",
+                ),
+            ]
+            session_id: Annotated[str, Field(default="", description="Session ID")]
 
         class TokenRequest(FlextApiModels.Value):
             """Generic token generation request (immutable value object)."""
 
-            identity_id: str = Field(..., description="Identity ID")
-            token_type: Literal["access", "refresh", "id", "bearer"] = Field(
-                default="access",
-                description="Token type",
-            )
-            expiry_minutes: int = Field(
-                default=c.Auth.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES,
-                ge=1,
-                description="Token expiry",
-            )
-            extra_claims: dict[str, object] = Field(
-                default_factory=dict,
-                description="Additional claims",
-            )
-            session_id: str = Field(default="", description="Session ID")
+            identity_id: Annotated[str, Field(..., description="Identity ID")]
+            token_type: Annotated[
+                Literal["access", "refresh", "id", "bearer"],
+                Field(
+                    default="access",
+                    description="Token type",
+                ),
+            ]
+            expiry_minutes: Annotated[
+                int,
+                Field(
+                    default=c.Auth.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES,
+                    ge=1,
+                    description="Token expiry",
+                ),
+            ]
+            extra_claims: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Additional claims",
+                ),
+            ]
+            session_id: Annotated[str, Field(default="", description="Session ID")]
 
         class AuthToken(FlextApiModels.Entity):
             """Generic authentication token entity."""
 
-            identity_id: str = Field(..., description="Identity ID")
-            token: str = Field(..., description="Token value", exclude=True)
+            identity_id: Annotated[str, Field(..., description="Identity ID")]
+            token: Annotated[str, Field(..., description="Token value", exclude=True)]
 
             @property
             def user_id(self) -> str:
                 """User ID property for protocol compatibility."""
                 return self.identity_id
 
-            token_type: str = Field(
-                default="bearer",
-                description="Token type",
-            )
-            expires_at: datetime = Field(..., description="Expiration time")
-            session_id: str = Field(default="", description="Session ID")
-            is_revoked: bool = Field(default=False, description="Revoked status")
-            refresh_token: str = Field(
-                default="",
-                description="Refresh token",
-                exclude=True,
-            )
+            token_type: Annotated[
+                str,
+                Field(
+                    default="bearer",
+                    description="Token type",
+                ),
+            ]
+            expires_at: Annotated[datetime, Field(..., description="Expiration time")]
+            session_id: Annotated[str, Field(default="", description="Session ID")]
+            is_revoked: Annotated[
+                bool, Field(default=False, description="Revoked status")
+            ]
+            refresh_token: Annotated[
+                str,
+                Field(
+                    default="",
+                    description="Refresh token",
+                    exclude=True,
+                ),
+            ]
 
             @property
             def is_expired(self) -> bool:
@@ -161,29 +190,41 @@ class FlextAuthModels(FlextApiModels):
         class AuthIdentityRequest(FlextApiModels.Value):
             """Generic identity creation request (immutable value object)."""
 
-            name: str = Field(
-                ...,
-                min_length=c.Auth.Credentials.Username.MIN_LENGTH,
-                max_length=c.Auth.Credentials.Username.MAX_LENGTH,
-                description="Unique identity name",
-            )
-            contact: str = Field(
-                ...,
-                min_length=1,
-                pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                description="Contact info (email)",
-            )
-            credential: str = Field(
-                ...,
-                min_length=c.Auth.Credentials.Password.MIN_LENGTH,
-                description="Credential (password/key)",
-                exclude=True,
-            )
-            full_name: str = Field(default="", description="Full name")
-            roles: list[str] = Field(
-                default_factory=lambda: ["user"],
-                description="Roles",
-            )
+            name: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=c.Auth.Credentials.Username.MIN_LENGTH,
+                    max_length=c.Auth.Credentials.Username.MAX_LENGTH,
+                    description="Unique identity name",
+                ),
+            ]
+            contact: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=1,
+                    pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                    description="Contact info (email)",
+                ),
+            ]
+            credential: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=c.Auth.Credentials.Password.MIN_LENGTH,
+                    description="Credential (password/key)",
+                    exclude=True,
+                ),
+            ]
+            full_name: Annotated[str, Field(default="", description="Full name")]
+            roles: Annotated[
+                list[str],
+                Field(
+                    default_factory=lambda: ["user"],
+                    description="Roles",
+                ),
+            ]
 
         class AuthIdentity(FlextApiModels.Entity):
             """Generic identity/user entity with minimal fields."""
@@ -193,41 +234,63 @@ class FlextAuthModels(FlextApiModels):
                 None  # Will be set to Auth.PasswordUtil at class definition time
             )
 
-            name: str = Field(
-                ...,
-                min_length=c.Auth.Credentials.Username.MIN_LENGTH,
-                max_length=c.Auth.Credentials.Username.MAX_LENGTH,
-                description="Unique identity name",
-            )
-            contact: str = Field(..., description="Contact info")
-            credential_hash: str = Field(
-                default="",
-                description="Hashed credential",
-                exclude=True,
-            )
-            full_name: str = Field(default="", description="Full name")
-            is_active: bool = Field(default=True, description="Active status")
-            roles: list[str] = Field(
-                default_factory=lambda: ["user"],
-                description="Roles",
-            )
-            permissions: list[str] = Field(
-                default_factory=list,
-                description="Permissions",
-            )
-            failed_attempts: int = Field(default=0, ge=0, description="Failed attempts")
-            locked_until: datetime = Field(
-                default_factory=lambda: datetime.min.replace(tzinfo=UTC),
-                description="Lock time (datetime.min means not locked)",
-            )
-            last_access: datetime = Field(
-                default_factory=lambda: datetime.min.replace(tzinfo=UTC),
-                description="Last access (datetime.min means never accessed)",
-            )
+            name: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=c.Auth.Credentials.Username.MIN_LENGTH,
+                    max_length=c.Auth.Credentials.Username.MAX_LENGTH,
+                    description="Unique identity name",
+                ),
+            ]
+            contact: Annotated[str, Field(..., description="Contact info")]
+            credential_hash: Annotated[
+                str,
+                Field(
+                    default="",
+                    description="Hashed credential",
+                    exclude=True,
+                ),
+            ]
+            full_name: Annotated[str, Field(default="", description="Full name")]
+            is_active: Annotated[bool, Field(default=True, description="Active status")]
+            roles: Annotated[
+                list[str],
+                Field(
+                    default_factory=lambda: ["user"],
+                    description="Roles",
+                ),
+            ]
+            permissions: Annotated[
+                list[str],
+                Field(
+                    default_factory=list,
+                    description="Permissions",
+                ),
+            ]
+            failed_attempts: Annotated[
+                int, Field(default=0, ge=0, description="Failed attempts")
+            ]
+            locked_until: Annotated[
+                datetime,
+                Field(
+                    default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+                    description="Lock time (datetime.min means not locked)",
+                ),
+            ]
+            last_access: Annotated[
+                datetime,
+                Field(
+                    default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+                    description="Last access (datetime.min means never accessed)",
+                ),
+            ]
 
             # Additional attributes expected by tests
-            token: str = Field(default="", description="Associated token", exclude=True)
-            session_id: str = Field(default="", description="Session ID")
+            token: Annotated[
+                str, Field(default="", description="Associated token", exclude=True)
+            ]
+            session_id: Annotated[str, Field(default="", description="Session ID")]
 
             def is_locked(self) -> bool:
                 """Check if identity is locked."""
@@ -286,16 +349,21 @@ class FlextAuthModels(FlextApiModels):
         class Session(FlextApiModels.Entity):
             """Generic session entity."""
 
-            identity_id: str = Field(..., description="Identity ID")
-            session_token: str = Field(..., description="Session token", exclude=True)
-            expires_at: datetime = Field(..., description="Expiration time")
-            is_active: bool = Field(default=True, description="Active status")
-            ip_address: str = Field(default="", description="IP address")
-            user_agent: str = Field(default="", description="User agent")
-            last_accessed: datetime = Field(
-                default_factory=lambda: datetime.now(UTC),
-                description="Last access",
-            )
+            identity_id: Annotated[str, Field(..., description="Identity ID")]
+            session_token: Annotated[
+                str, Field(..., description="Session token", exclude=True)
+            ]
+            expires_at: Annotated[datetime, Field(..., description="Expiration time")]
+            is_active: Annotated[bool, Field(default=True, description="Active status")]
+            ip_address: Annotated[str, Field(default="", description="IP address")]
+            user_agent: Annotated[str, Field(default="", description="User agent")]
+            last_accessed: Annotated[
+                datetime,
+                Field(
+                    default_factory=lambda: datetime.now(UTC),
+                    description="Last access",
+                ),
+            ]
 
             @property
             def is_expired(self) -> bool:
@@ -309,38 +377,53 @@ class FlextAuthModels(FlextApiModels):
         class Role(FlextApiModels.Entity):
             """Generic role entity."""
 
-            name: str = Field(
-                ...,
-                min_length=1,
-                max_length=c.Auth.ModelValidation.MAX_ROLE_NAME_LENGTH,
-                description="Role name",
-            )
-            description: str = Field(
-                default="",
-                max_length=c.Auth.ModelValidation.MAX_ROLE_DESCRIPTION_LENGTH,
-                description="Description",
-            )
-            permissions: list[str] = Field(
-                default_factory=list,
-                description="Permissions",
-            )
+            name: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=1,
+                    max_length=c.Auth.ModelValidation.MAX_ROLE_NAME_LENGTH,
+                    description="Role name",
+                ),
+            ]
+            description: Annotated[
+                str,
+                Field(
+                    default="",
+                    max_length=c.Auth.ModelValidation.MAX_ROLE_DESCRIPTION_LENGTH,
+                    description="Description",
+                ),
+            ]
+            permissions: Annotated[
+                list[str],
+                Field(
+                    default_factory=list,
+                    description="Permissions",
+                ),
+            ]
 
         class Permission(FlextApiModels.Entity):
             """Generic permission entity."""
 
-            name: str = Field(
-                ...,
-                min_length=1,
-                max_length=c.Auth.ModelValidation.MAX_PERMISSION_NAME_LENGTH,
-                description="Permission",
-            )
-            description: str = Field(
-                default="",
-                max_length=c.Auth.ModelValidation.MAX_PERMISSION_DESCRIPTION_LENGTH,
-                description="Description",
-            )
-            resource: str = Field(default="", description="Resource path")
-            action: str = Field(default="", description="Action type")
+            name: Annotated[
+                str,
+                Field(
+                    ...,
+                    min_length=1,
+                    max_length=c.Auth.ModelValidation.MAX_PERMISSION_NAME_LENGTH,
+                    description="Permission",
+                ),
+            ]
+            description: Annotated[
+                str,
+                Field(
+                    default="",
+                    max_length=c.Auth.ModelValidation.MAX_PERMISSION_DESCRIPTION_LENGTH,
+                    description="Description",
+                ),
+            ]
+            resource: Annotated[str, Field(default="", description="Resource path")]
+            action: Annotated[str, Field(default="", description="Action type")]
 
         # =========================================================================
         # PROVIDER MODELS - Generic provider configuration
@@ -351,9 +434,9 @@ class FlextAuthModels(FlextApiModels):
 
             model_config = ConfigDict(extra="allow")
 
-            name: str = Field(..., description="Provider name")
-            type: str = Field(..., description="Provider type")
-            enabled: bool = Field(default=True, description="Enabled status")
+            name: Annotated[str, Field(..., description="Provider name")]
+            type: Annotated[str, Field(..., description="Provider type")]
+            enabled: Annotated[bool, Field(default=True, description="Enabled status")]
 
             # Extended configuration fields (migrated from TypedDict)
             # All optional to support various provider types
@@ -421,40 +504,57 @@ class FlextAuthModels(FlextApiModels):
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value object)."""
 
-            api_key: str = Field(..., description="API key to validate")
-            metadata: dict[str, object] = Field(
-                default_factory=dict,
-                description="Additional validation data",
-            )
+            api_key: Annotated[str, Field(..., description="API key to validate")]
+            metadata: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Additional validation data",
+                ),
+            ]
 
         class ApiKeyData(FlextApiModels.Value):
             """API key data structure (immutable value object)."""
 
-            key_hash: str = Field(..., description="Hashed API key")
-            name: str = Field(..., description="Key name")
-            permissions: list[str] = Field(
-                default_factory=list,
-                description="Key permissions",
-            )
-            is_active: bool = Field(default=True, description="Key active status")
-            expires_at: datetime = Field(
-                default_factory=lambda: datetime.max.replace(tzinfo=UTC),
-                description="Key expiration (datetime.max means never expires)",
-            )
-            created_at: datetime = Field(
-                default_factory=lambda: datetime.now(UTC),
-                description="Creation time",
-            )
+            key_hash: Annotated[str, Field(..., description="Hashed API key")]
+            name: Annotated[str, Field(..., description="Key name")]
+            permissions: Annotated[
+                list[str],
+                Field(
+                    default_factory=list,
+                    description="Key permissions",
+                ),
+            ]
+            is_active: Annotated[
+                bool, Field(default=True, description="Key active status")
+            ]
+            expires_at: Annotated[
+                datetime,
+                Field(
+                    default_factory=lambda: datetime.max.replace(tzinfo=UTC),
+                    description="Key expiration (datetime.max means never expires)",
+                ),
+            ]
+            created_at: Annotated[
+                datetime,
+                Field(
+                    default_factory=lambda: datetime.now(UTC),
+                    description="Creation time",
+                ),
+            ]
 
         class CredentialValidation(FlextApiModels.Value):
             """Credential validation request (immutable value object)."""
 
-            username: str = Field(..., description="Username")
-            password: str = Field(..., description="Password", exclude=True)
-            metadata: dict[str, object] = Field(
-                default_factory=dict,
-                description="Additional validation data",
-            )
+            username: Annotated[str, Field(..., description="Username")]
+            password: Annotated[str, Field(..., description="Password", exclude=True)]
+            metadata: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Additional validation data",
+                ),
+            ]
 
         # =========================================================================
         # CREDENTIAL MODELS - Generic credential handling
@@ -463,12 +563,17 @@ class FlextAuthModels(FlextApiModels):
         class Credential(FlextApiModels.Value):
             """Generic credential container (immutable value object)."""
 
-            credential_type: str = Field(..., description="Credential type")
-            value: str = Field(..., description="Credential value", exclude=True)
-            metadata: dict[str, object] = Field(
-                default_factory=dict,
-                description="Additional data",
-            )
+            credential_type: Annotated[str, Field(..., description="Credential type")]
+            value: Annotated[
+                str, Field(..., description="Credential value", exclude=True)
+            ]
+            metadata: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Additional data",
+                ),
+            ]
 
         # =========================================================================
         # AUTHENTICATION RESPONSE - Generic response
@@ -477,17 +582,23 @@ class FlextAuthModels(FlextApiModels):
         class AuthResponse(FlextApiModels.Value):
             """Generic authentication response (immutable value object)."""
 
-            success: bool = Field(..., description="Authentication success")
-            identity: dict[str, object] = Field(
-                default_factory=dict,
-                description="Identity data",
-            )
-            token: str = Field(default="", description="Token", exclude=True)
-            message: str = Field(default="", description="Response message")
-            metadata: dict[str, object] = Field(
-                default_factory=dict,
-                description="Additional data",
-            )
+            success: Annotated[bool, Field(..., description="Authentication success")]
+            identity: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Identity data",
+                ),
+            ]
+            token: Annotated[str, Field(default="", description="Token", exclude=True)]
+            message: Annotated[str, Field(default="", description="Response message")]
+            metadata: Annotated[
+                dict[str, object],
+                Field(
+                    default_factory=dict,
+                    description="Additional data",
+                ),
+            ]
 
         # =========================================================================
         # OAUTH2 TOKEN RESPONSE - OAuth2 token exchange result
@@ -496,15 +607,22 @@ class FlextAuthModels(FlextApiModels):
         class OAuth2TokenResponse(FlextApiModels.Value):
             """OAuth2 token response from token endpoint."""
 
-            access_token: str = Field(..., description="Access token")
-            token_type: str = Field(default="Bearer", description="Token type")
-            expires_in: int = Field(default=3600, ge=0, description="Expiry seconds")
-            scope: str = Field(default="", description="Granted scope")
-            refresh_token: str = Field(
-                default="",
-                description="Refresh token",
-                exclude=True,
-            )
+            access_token: Annotated[str, Field(..., description="Access token")]
+            token_type: Annotated[
+                str, Field(default="Bearer", description="Token type")
+            ]
+            expires_in: Annotated[
+                int, Field(default=3600, ge=0, description="Expiry seconds")
+            ]
+            scope: Annotated[str, Field(default="", description="Granted scope")]
+            refresh_token: Annotated[
+                str,
+                Field(
+                    default="",
+                    description="Refresh token",
+                    exclude=True,
+                ),
+            ]
 
         # =========================================================================
         # KERBEROS TICKET DATA - Kerberos ticket information
@@ -513,9 +631,11 @@ class FlextAuthModels(FlextApiModels):
         class KerberosTicketData(FlextApiModels.Value):
             """Kerberos ticket information."""
 
-            ticket: str = Field(..., description="Kerberos ticket")
-            principal: str = Field(default="", description="Kerberos principal")
-            realm: str = Field(default="", description="Kerberos realm")
+            ticket: Annotated[str, Field(..., description="Kerberos ticket")]
+            principal: Annotated[
+                str, Field(default="", description="Kerberos principal")
+            ]
+            realm: Annotated[str, Field(default="", description="Kerberos realm")]
 
         # =========================================================================
         # HTTP RESPONSE DATA - Generic HTTP response container
@@ -524,12 +644,15 @@ class FlextAuthModels(FlextApiModels):
         class HttpResponseData(FlextApiModels.Value):
             """Generic HTTP response data."""
 
-            status_code: int = Field(..., description="HTTP status code")
-            body: str = Field(default="", description="Response body")
-            headers: dict[str, str] = Field(
-                default_factory=dict,
-                description="Response headers",
-            )
+            status_code: Annotated[int, Field(..., description="HTTP status code")]
+            body: Annotated[str, Field(default="", description="Response body")]
+            headers: Annotated[
+                dict[str, str],
+                Field(
+                    default_factory=dict,
+                    description="Response headers",
+                ),
+            ]
 
         # =========================================================================
         # PROVIDERS NAMESPACE - Provider metadata and related models
@@ -541,16 +664,24 @@ class FlextAuthModels(FlextApiModels):
             class Metadata(FlextApiModels.Value):
                 """Provider metadata for registry."""
 
-                name: str = Field(..., description="Provider name")
-                version: str = Field(default="1.0.0", description="Provider version")
-                capabilities: tuple[str, ...] = Field(
-                    default_factory=tuple,
-                    description="Provider capabilities",
-                )
-                extras: dict[str, object] = Field(
-                    default_factory=dict,
-                    description="Extra metadata",
-                )
+                name: Annotated[str, Field(..., description="Provider name")]
+                version: Annotated[
+                    str, Field(default="1.0.0", description="Provider version")
+                ]
+                capabilities: Annotated[
+                    tuple[str, ...],
+                    Field(
+                        default_factory=tuple,
+                        description="Provider capabilities",
+                    ),
+                ]
+                extras: Annotated[
+                    dict[str, object],
+                    Field(
+                        default_factory=dict,
+                        description="Extra metadata",
+                    ),
+                ]
 
 
 # Forward references resolved via from __future__ import annotations at module top

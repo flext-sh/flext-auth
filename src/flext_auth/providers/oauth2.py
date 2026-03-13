@@ -15,7 +15,7 @@ import secrets
 from base64 import b64encode, urlsafe_b64encode
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import override
+from typing import Final, override
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
@@ -25,6 +25,11 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthProtocols, c, m, t, u
 from flext_auth.providers.rfc import FlextAuthRfcProvider
+
+_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
+    dict[str, t.Scalar]
+)
+_LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -665,9 +670,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 f"OAuth2 introspection request failed: {exc}"
             )
         try:
-            parsed_mapping: dict[str, t.Scalar] = TypeAdapter(
-                dict[str, t.Scalar]
-            ).validate_json(response_payload)
+            parsed_mapping: dict[str, t.Scalar] = (
+                _DICT_STR_SCALAR_ADAPTER.validate_json(response_payload)
+            )
         except (ValueError, ValidationError) as exc:
             return r[Mapping[str, t.Scalar]].fail(
                 f"OAuth2 introspection payload is not valid JSON: {exc}"
@@ -720,7 +725,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         roles_value = payload.get("roles")
         if isinstance(roles_value, list):
             try:
-                typed_roles = TypeAdapter(list[str]).validate_python(roles_value)
+                typed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:
                 typed_roles = []
             roles = [role for role in typed_roles if role]

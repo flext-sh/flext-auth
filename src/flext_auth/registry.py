@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import ClassVar, TypeGuard
+from typing import Annotated, ClassVar, TypeGuard
 
 from flext_core import FlextRegistry, r, t
 from pydantic import BaseModel, ConfigDict, Field
@@ -19,23 +19,23 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 class _ProviderWrapper(BaseModel):
     """Wrapper for auth provider instances."""
 
-    category: str = Field(description="Provider category")
-    provider: object = Field(description="Provider instance")
+    category: Annotated[str, Field(description="Provider category")]
+    provider: Annotated[object, Field(description="Provider instance")]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class _ConfigWrapper(BaseModel):
     """Protocol-conformant wrapper for config data."""
 
-    category: str = Field(description="Config category")
-    data: dict[str, t.Scalar] = Field(description="Config data")
+    category: Annotated[str, Field(description="Config category")]
+    data: Annotated[dict[str, t.Scalar], Field(description="Config data")]
 
 
 class _MetadataWrapper(BaseModel):
     """Protocol-conformant wrapper for metadata."""
 
-    category: str = Field(description="Metadata category")
-    data: am.Auth.Providers.Metadata = Field(description="Metadata")
+    category: Annotated[str, Field(description="Metadata category")]
+    data: Annotated[am.Auth.Providers.Metadata, Field(description="Metadata")]
 
 
 def _is_auth_provider(value: object) -> TypeGuard[FlextAuthBaseProvider]:

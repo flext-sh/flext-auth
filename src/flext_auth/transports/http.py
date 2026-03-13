@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import base64
 from collections.abc import Mapping
+from typing import Final
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings
@@ -19,6 +20,10 @@ from flext_core import FlextLogger, r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import m, t
+
+_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
+    dict[str, t.Scalar]
+)
 
 
 class FlextWebTransportAdapter:
@@ -228,8 +233,7 @@ class FlextWebTransportAdapter:
                     f"Unsupported response body type: {type(body)}"
                 )
         try:
-            adapter = TypeAdapter(dict[str, t.Scalar])
-            parsed = adapter.validate_json(decoded)
+            parsed = _DICT_STR_SCALAR_ADAPTER.validate_json(decoded)
             return r[t.Api.ResponseDict].ok(parsed)
         except (ValueError, ValidationError):
             return r[t.Api.ResponseDict].fail("Unable to parse response body as JSON")

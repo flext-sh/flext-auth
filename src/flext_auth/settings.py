@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import Annotated, ClassVar
 
 from flext_core import FlextModels, r
 from pydantic import ConfigDict, Field, SecretStr, field_validator
@@ -23,42 +23,65 @@ class FlextAuthSettings(FlextModels.Value):
     _global_instance: ClassVar[FlextAuthSettings | None] = None
     model_config = ConfigDict(validate_assignment=True, populate_by_name=True)
 
-    secret_key: str = Field(
-        default="change-me-in-production-minimum-32-characters",
-        alias="auth_secret",
-        min_length=c.Auth.SECRET_MIN_LENGTH,
-        description="Signing secret",
-    )
-    algorithm: str = Field(
-        default=c.Auth.DEFAULT_JWT_ALGORITHM,
-        description="JWT signing algorithm",
-    )
-    issuer: str = Field(default=c.Auth.DEFAULT_ISSUER, description="Token issuer")
-    audience: str = Field(
-        default=c.Auth.DEFAULT_AUDIENCE,
-        description="Token audience",
-    )
-    expiry_minutes: int = Field(
-        default=c.Auth.DEFAULT_JWT_EXPIRY_MINUTES,
-        ge=1,
-        description="Access token expiry in minutes",
-    )
-    session_expiry_minutes: int = Field(
-        default=c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES,
-        ge=1,
-        description="Session expiry in minutes",
-    )
-    max_sessions_per_user: int = Field(
-        default=c.Auth.DEFAULT_MAX_SESSIONS_PER_USER,
-        ge=1,
-        description="Max parallel sessions per user",
-    )
-    hash_rounds: int = Field(
-        default=c.Auth.DEFAULT_HASH_ROUNDS,
-        ge=c.Auth.HASH_ROUNDS_MIN,
-        le=c.Auth.HASH_ROUNDS_MAX,
-        description="Password hash rounds",
-    )
+    secret_key: Annotated[
+        str,
+        Field(
+            default="change-me-in-production-minimum-32-characters",
+            alias="auth_secret",
+            min_length=c.Auth.SECRET_MIN_LENGTH,
+            description="Signing secret",
+        ),
+    ]
+    algorithm: Annotated[
+        str,
+        Field(
+            default=c.Auth.DEFAULT_JWT_ALGORITHM,
+            description="JWT signing algorithm",
+        ),
+    ]
+    issuer: Annotated[
+        str, Field(default=c.Auth.DEFAULT_ISSUER, description="Token issuer")
+    ]
+    audience: Annotated[
+        str,
+        Field(
+            default=c.Auth.DEFAULT_AUDIENCE,
+            description="Token audience",
+        ),
+    ]
+    expiry_minutes: Annotated[
+        int,
+        Field(
+            default=c.Auth.DEFAULT_JWT_EXPIRY_MINUTES,
+            ge=1,
+            description="Access token expiry in minutes",
+        ),
+    ]
+    session_expiry_minutes: Annotated[
+        int,
+        Field(
+            default=c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES,
+            ge=1,
+            description="Session expiry in minutes",
+        ),
+    ]
+    max_sessions_per_user: Annotated[
+        int,
+        Field(
+            default=c.Auth.DEFAULT_MAX_SESSIONS_PER_USER,
+            ge=1,
+            description="Max parallel sessions per user",
+        ),
+    ]
+    hash_rounds: Annotated[
+        int,
+        Field(
+            default=c.Auth.DEFAULT_HASH_ROUNDS,
+            ge=c.Auth.HASH_ROUNDS_MIN,
+            le=c.Auth.HASH_ROUNDS_MAX,
+            description="Password hash rounds",
+        ),
+    ]
 
     @property
     def auth_secret(self) -> SecretStr:

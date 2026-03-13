@@ -18,13 +18,18 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
-from typing import override
+from typing import Final, override
 
 from flext_core import r, t, u
 from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthModels
 from flext_auth.providers.rfc import FlextAuthRfcProvider
+
+_DICT_STR_OBJECT_ADAPTER: Final[TypeAdapter[dict[str, object]]] = TypeAdapter(
+    dict[str, object]
+)
+_LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -243,7 +248,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 return r[FlextAuthModels.Auth.AuthIdentity].ok(validator_result)
             if isinstance(validator_result, Mapping):
                 try:
-                    parsed_claims = TypeAdapter(dict[str, object]).validate_python(
+                    parsed_claims = _DICT_STR_OBJECT_ADAPTER.validate_python(
                         validator_result
                     )
                 except ValidationError as exc:
@@ -295,7 +300,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
             try:
-                parsed_roles = TypeAdapter(list[str]).validate_python(roles_value)
+                parsed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:
                 parsed_roles = []
             roles = [role for role in parsed_roles if role]
