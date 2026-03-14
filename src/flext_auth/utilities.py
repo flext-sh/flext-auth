@@ -16,8 +16,10 @@ import jwt
 from flext_api import FlextApiUtilities
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr, ValidationError
+from src.flext_auth.constants import FlextAuthConstants
 
-from flext_auth import c, t
+from flext_auth import FlextAuthConstants, c, t
+from flext_auth.constants import FlextAuthConstants
 
 
 class FlextAuthUtilities(FlextApiUtilities):
@@ -100,7 +102,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_provider_type():
+            def coerced_provider_type() -> type[FlextAuthConstants.Auth.ProviderTypes]:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.ProviderTypes,
@@ -110,7 +112,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 ]
 
             @staticmethod
-            def coerced_role_type():
+            def coerced_role_type() -> type[FlextAuthConstants.Auth.RoleTypes]:
                 """Return Annotated[RoleTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.RoleTypes,
@@ -118,7 +120,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 ]
 
             @staticmethod
-            def coerced_token_type():
+            def coerced_token_type() -> type[FlextAuthConstants.Auth.TokenTypes]:
                 """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.TokenTypes,

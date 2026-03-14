@@ -30,7 +30,7 @@ def _reset_singletons() -> Iterator[None]:
 
 
 @pytest.fixture
-def mock_get_global():
+def mock_get_global() -> mock_get_global.MockGlobal:
     """Mock for FlextAuthSettings.get_global.
 
     Returns:
