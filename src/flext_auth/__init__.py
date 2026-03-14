@@ -64,7 +64,6 @@ if TYPE_CHECKING:
     from flext_auth.user_service import FlextAuthIdentityService
     from flext_auth.utilities import FlextAuthUtilities, u
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "BaseTransportAdapter": ("flext_auth.transports.base", "BaseTransportAdapter"),
     "FlextAuth": ("flext_auth.api", "FlextAuth"),

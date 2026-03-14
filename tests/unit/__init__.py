@@ -47,7 +47,6 @@ if TYPE_CHECKING:
     from tests.unit.test_token_real_flows import HttpRequest, TestTokenRealFlows
     from tests.unit.test_typings import TestFlextAuthTypes, TestFlextAuthTypes as t
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "HttpRequest": ("tests.unit.test_token_real_flows", "HttpRequest"),
     "TestAuthModule": ("tests.unit.test_api", "TestAuthModule"),

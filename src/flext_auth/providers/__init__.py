@@ -37,7 +37,6 @@ if TYPE_CHECKING:
     from flext_auth.providers.rfc import FlextAuthRfcProvider
     from flext_auth.providers.saml import FlextAuthSamlProvider
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthApiKeyProvider": (
         "flext_auth.providers.apikey",

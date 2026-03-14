@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from flext_auth.transports.base import BaseTransportAdapter
     from flext_auth.transports.http import FlextWebTransportAdapter
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "BaseTransportAdapter": ("flext_auth.transports.base", "BaseTransportAdapter"),
     "FlextWebTransportAdapter": (

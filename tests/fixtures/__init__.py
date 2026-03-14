@@ -20,7 +20,6 @@ if TYPE_CHECKING:
         generate_self_signed_cert,
     )
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
     "generate_client_cert": ("tests.fixtures.certificates", "generate_client_cert"),

@@ -60,7 +60,6 @@ if TYPE_CHECKING:
     from examples.utils import basic_example_runner
     from flext_core.typings import FlextTypes
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthDemo": ("examples.basic_refactored_usage_06", "FlextAuthDemo"),
     "basic_example_runner": ("examples.utils", "basic_example_runner"),

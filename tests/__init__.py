@@ -67,7 +67,6 @@ if TYPE_CHECKING:
     from tests.unit.test_typings import TestFlextAuthTypes
     from tests.utilities import TestsFlextAuthUtilities, u
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
     "HttpRequest": ("tests.unit.test_token_real_flows", "HttpRequest"),
