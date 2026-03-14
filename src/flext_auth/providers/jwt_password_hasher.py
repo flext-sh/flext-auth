@@ -11,11 +11,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import bcrypt
-from flext_auth.providers.jwt import FlextAuthJwtProvider
-from flext_core import r
+from flext_core import r, u
 
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
+from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
 class FlextAuthPasswordHasher:
@@ -36,17 +34,20 @@ class FlextAuthPasswordHasher:
         password: Plain text password to hash
 
         Returns:
-        FlextResult containing hashed password or error
+        r containing hashed password or error
 
         """
-        try:
+
+        def _hash() -> str:
             salt_rounds = 12
             salt = bcrypt.gensalt(rounds=salt_rounds)
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-            return r.ok(hashed.decode("utf-8"))
+            return hashed.decode("utf-8")
 
-        except Exception as e:
-            return r.fail(f"Password hashing failed: {e}")
+        return u.try_(
+            _hash,
+            catch=(ValueError, TypeError),
+        ).map_error(lambda e: f"Password hashing failed: {type(e).__name__}: {e}")
 
     def verify_password(self, password: str, hashed_password: str) -> r[bool]:
         """Verify password against hash using bcrypt.
@@ -59,15 +60,16 @@ class FlextAuthPasswordHasher:
         r containing verification result or error
 
         """
-        try:
-            result = bcrypt.checkpw(
-                password.encode("utf-8"),
-                hashed_password.encode("utf-8"),
-            )
-            return r.ok(result)
 
-        except Exception as e:
-            return r.fail(f"Password verification failed: {e}")
+        def _verify() -> bool:
+            return bcrypt.checkpw(
+                password.encode("utf-8"), hashed_password.encode("utf-8")
+            )
+
+        return u.try_(
+            _verify,
+            catch=(ValueError, TypeError),
+        ).map_error(lambda e: f"Password verification failed: {type(e).__name__}: {e}")
 
 
 __all__ = ["FlextAuthPasswordHasher"]

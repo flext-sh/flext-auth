@@ -10,9 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import jwt
+from flext_core import r, t
+
 from flext_auth.providers.jwt import FlextAuthJwtProvider
-from flext_core import FlextTypes as t, r
 
 
 class FlextAuthJwtTokenValidator:
@@ -26,49 +29,49 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> r[dict[str, t.GeneralValueType]]:
+    def validate_token(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
         """Validate JWT token with railway-oriented programming.
 
         Args:
         token: JWT token string to validate
 
         Returns:
-        FlextResult containing token payload or error
+        r containing token payload or error
 
         """
         try:
-            # Get configuration from provider
             config = self._provider.config
             if not config:
-                return r[dict[str, t.GeneralValueType]].fail(
+                return r[Mapping[str, t.ContainerValue]].fail(
                     "JWT configuration not provided"
                 )
-
             secret_key_value = config.get("secret_key")
-            if not isinstance(secret_key_value, str) or not secret_key_value:
-                return r[dict[str, t.GeneralValueType]].fail(
-                    "JWT secret key not configured"
-                )
-            secret_key = secret_key_value
-
+            match secret_key_value:
+                case str() as secret if secret:
+                    secret_key = secret
+                case _:
+                    return r[Mapping[str, t.ContainerValue]].fail(
+                        "JWT secret key not configured"
+                    )
             algorithm_value = config.get("algorithm")
-            if not isinstance(algorithm_value, str):
-                return r[dict[str, t.GeneralValueType]].fail(
-                    "JWT algorithm not configured"
-                )
-            algorithm = algorithm_value
-
+            match algorithm_value:
+                case str() as algorithm_str:
+                    algorithm = algorithm_str
+                case _:
+                    return r[Mapping[str, t.ContainerValue]].fail(
+                        "JWT algorithm not configured"
+                    )
             audience_value = config.get("audience")
             if audience_value is not None:
-                if not isinstance(audience_value, str):
-                    return r[dict[str, t.GeneralValueType]].fail(
-                        "JWT audience must be a string if provided",
-                    )
-                audience = audience_value
+                match audience_value:
+                    case str() as audience_str:
+                        audience = audience_str
+                    case _:
+                        return r[Mapping[str, t.ContainerValue]].fail(
+                            "JWT audience must be a string if provided"
+                        )
             else:
                 audience = None
-
-            # Decode and validate token
             decode_options = {"verify_exp": True, "verify_iat": True}
             if audience is not None:
                 payload = jwt.decode(
@@ -80,20 +83,23 @@ class FlextAuthJwtTokenValidator:
                 )
             else:
                 payload = jwt.decode(
-                    token,
-                    secret_key,
-                    algorithms=[algorithm],
-                    options=decode_options,
+                    token, secret_key, algorithms=[algorithm], options=decode_options
                 )
-
-            return r[dict[str, t.GeneralValueType]].ok(payload)
-
+            return r[Mapping[str, t.ContainerValue]].ok(payload)
         except jwt.ExpiredSignatureError:
-            return r[dict[str, t.GeneralValueType]].fail("Token has expired")
+            return r[Mapping[str, t.ContainerValue]].fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return r[dict[str, t.GeneralValueType]].fail(f"Invalid token: {e}")
-        except Exception as e:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.ContainerValue]].fail(f"Invalid token: {e}")
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            return r[Mapping[str, t.ContainerValue]].fail(
                 f"Token validation failed: {e}"
             )
 

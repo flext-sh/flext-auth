@@ -12,14 +12,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
+from collections.abc import Mapping
+from typing import override
 
+from flext_core import r, t
+
+from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_core import FlextTypes as t, r
 
 
-class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
+class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """Base class for RFC-compliant authentication providers.
 
     This class extends FlextAuthBaseProvider with RFC-specific functionality
@@ -35,26 +38,9 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     """
 
-    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.Primitives] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(config)
-
-    def validate_rfc_compliance(self, operation: str) -> r[bool]:
-        """Validate that an operation follows RFC standards.
-
-        Args:
-            operation: Operation name to validate (e.g., "authenticate", "validate")
-
-        Returns:
-            r[bool]: True if compliant, False if not, error on failure
-
-        This method can be overridden by subclasses to implement
-        RFC-specific validation logic.
-
-        """
-        # Base implementation - subclasses should override for specific RFCs
-        _ = operation  # Mark as intentionally unused in base implementation
-        return r[bool].ok(value=True)
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
@@ -80,8 +66,56 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
         RFC-specific feature support.
 
         """
-        _ = feature  # Mark as intentionally unused in base implementation
+        _ = feature
         return False
+
+    def validate_rfc_compliance(self, operation: str) -> r[bool]:
+        """Validate that an operation follows RFC standards.
+
+        Args:
+            operation: Operation name to validate (e.g., "authenticate", "validate")
+
+        Returns:
+            r[bool]: True if compliant, False if not, error on failure
+
+        This method can be overridden by subclasses to implement
+        RFC-specific validation logic.
+
+        """
+        _ = operation
+        return r[bool].ok(value=True)
+
+    @override
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+        """Authenticate user with provided credentials.
+
+        This is an abstract method that must be implemented by RFC-specific providers.
+
+        Args:
+            credentials: Dictionary containing authentication credentials.
+
+        Returns:
+            r[p.Auth.Token]: Authentication token on success, error on failure
+
+        """
+        return r[p.Auth.Token].fail(
+            "RFC provider authenticate() must be implemented by subclass"
+        )
+
+    @override
+    def validate(self, token: str) -> r[bool]:
+        """Validate authentication token.
+
+        This is an abstract method that must be implemented by RFC-specific providers.
+
+        Args:
+            token: Token to validate
+
+        Returns:
+            r[bool]: True if valid, False if invalid, error on failure
+
+        """
+        return r[bool].fail("RFC provider validate() must be implemented by subclass")
 
 
 __all__ = ["FlextAuthRfcProvider"]

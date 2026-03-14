@@ -13,21 +13,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Protocol, runtime_checkable
+from typing import Protocol, TypeAlias, override, runtime_checkable
 
-from flext_core.protocols import FlextProtocols
-from flext_core.typings import FlextTypes
-
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-t = FlextTypes
-p = FlextProtocols
-
-# Note: Protocols avoid importing models to prevent circular dependencies
-# Protocols use structural typing - models satisfy protocols through attributes
+from flext_api import FlextApiProtocols
+from flext_core import FlextProtocols
 
 
-class FlextAuthProtocols(FlextProtocols):
+class FlextAuthProtocols(FlextApiProtocols):
     """Unified authentication protocols following FLEXT domain extension pattern.
 
     This class consolidates authentication-specific protocols while explicitly
@@ -40,19 +32,14 @@ class FlextAuthProtocols(FlextProtocols):
     - STRUCTURAL TYPING: No model imports - protocols define structural contracts
 
     Usage:
-    from flext_auth.protocols import p
+    from flext_auth import p
 
     # Foundation access (inherited)
     p.Result
 
     # Authentication-specific access
-    p.Auth.UserProtocol
+    p.Auth.User
     """
-
-    # =========================================================================
-    # AUTHENTICATION-SPECIFIC PROTOCOLS
-    # =========================================================================
-    # Domain-specific protocols for authentication and authorization operations.
 
     class Auth:
         """Authentication domain-specific protocols.
@@ -62,8 +49,10 @@ class FlextAuthProtocols(FlextProtocols):
         structural typing - no model imports required.
         """
 
+        AuthValue: TypeAlias = object
+
         @runtime_checkable
-        class IdentityProtocol(FlextProtocols.Service[object], Protocol):
+        class Identity(FlextProtocols.Service[bool], Protocol):
             """Protocol for identity/user-like objects in authentication.
 
             Structural typing interface for identity objects. Models implement
@@ -71,54 +60,48 @@ class FlextAuthProtocols(FlextProtocols):
             """
 
             id: str
-            """Unique identity identifier."""
-
+            "Unique identity identifier."
             name: str
-            """Identity name/username."""
-
+            "Identity name/username."
             contact: str
-            """Contact information (e.g., email)."""
-
+            "Contact information (e.g., email)."
             is_active: bool
-            """Active status."""
-
+            "Active status."
             roles: list[str]
-            """Identity roles."""
-
+            "Identity roles."
             failed_attempts: int
-            """Failed login attempts count."""
-
+            "Failed login attempts count."
             locked_until: datetime
-            """Lock expiration time (datetime.min means not locked)."""
-
-            @property
-            def username(self) -> str:
-                """Alias for name property (backward compatibility)."""
-                ...
+            "Lock expiration time (datetime.min means not locked)."
 
             @property
             def email(self) -> str:
                 """Alias for contact property (backward compatibility)."""
                 ...
 
-            def verify_credential(self, credential: str) -> FlextProtocols.Result[bool]:
-                """Verify credential against stored hash."""
-                ...
-
-            def set_credential(self, credential: str) -> FlextProtocols.Result[bool]:
-                """Set credential with secure hashing."""
+            @property
+            def username(self) -> str:
+                """Alias for name property (backward compatibility)."""
                 ...
 
             def is_locked(self) -> bool:
                 """Check if identity is locked."""
                 ...
 
+            def set_credential(self, credential: str) -> FlextProtocols.Result[bool]:
+                """Set credential with secure hashing."""
+                ...
+
+            def verify_credential(self, credential: str) -> FlextProtocols.Result[bool]:
+                """Verify credential against stored hash."""
+                ...
+
         @runtime_checkable
-        class UserProtocol(IdentityProtocol, Protocol):
+        class User(Identity, Protocol):
             """Protocol for user-like objects in authentication.
 
-            Extends IdentityProtocol with user-specific methods. Maintains
-            backward compatibility with existing UserProtocol interface.
+            Extends Identity with user-specific methods. Maintains
+            backward compatibility with existing User interface.
             """
 
             @property
@@ -126,16 +109,16 @@ class FlextAuthProtocols(FlextProtocols):
                 """Check if user can attempt login."""
                 ...
 
-            def record_successful_login(self) -> None:
-                """Record successful login and reset failed attempts."""
-                ...
-
             def record_failed_login(self) -> None:
                 """Record failed login attempt and apply lockout if needed."""
                 ...
 
+            def record_successful_login(self) -> None:
+                """Record successful login and reset failed attempts."""
+                ...
+
         @runtime_checkable
-        class SessionProtocol(FlextProtocols.Service[object], Protocol):
+        class Session(FlextProtocols.Service[bool], Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -146,17 +129,15 @@ class FlextAuthProtocols(FlextProtocols):
             ip_address: str | None
             user_agent: str | None
 
+            def extend_session(self, hours: int = 1) -> FlextProtocols.Result[bool]:
+                """Extend session expiration time."""
+                ...
+
             def is_expired(self) -> bool:
                 """Check if session is expired."""
                 ...
 
-            def extend_session(
-                self,
-                hours: int = 1,
-            ) -> FlextProtocols.Result[bool]:
-                """Extend session expiration time."""
-                ...
-
+            @override
             def is_valid(self) -> bool:
                 """Check if session is valid (active and not expired)."""
                 ...
@@ -166,7 +147,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class TokenProtocol(Protocol):
+        class Token(Protocol):
             """Protocol for token-like objects in authentication.
 
             Structural typing interface for authentication tokens.
@@ -174,18 +155,18 @@ class FlextAuthProtocols(FlextProtocols):
             """
 
             @property
-            def token(self) -> str:
-                """Token value."""
-                ...
-
-            @property
-            def user_id(self) -> str:
-                """User identifier."""
-                ...
-
-            @property
             def expires_at(self) -> datetime:
                 """Token expiration time."""
+                ...
+
+            @property
+            def identity_id(self) -> str:
+                """Identity ID (alias for user_id in token context)."""
+                ...
+
+            @property
+            def is_expired(self) -> bool:
+                """Check if token is expired."""
                 ...
 
             @property
@@ -194,50 +175,47 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
             @property
-            def is_expired(self) -> bool:
-                """Check if token is expired."""
+            def refresh_token(self) -> str:
+                """Refresh token value if applicable."""
+                ...
+
+            @property
+            def token(self) -> str:
+                """Token value."""
+                ...
+
+            @property
+            def token_type(self) -> str:
+                """Token type (e.g. bearer, access)."""
+                ...
+
+            @property
+            def user_id(self) -> str:
+                """User identifier."""
                 ...
 
         @runtime_checkable
-        class AuthenticationResponseProtocol(Protocol):
+        class AuthenticationResponse(Protocol):
             """Protocol for authentication response objects.
 
             Structural typing interface for authentication responses.
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, t.GeneralValueType]
-            """User/identity data."""
-
-            session: Mapping[str, t.GeneralValueType]
-            """Session data."""
-
+            user: Mapping[str, object]
+            "User/identity data."
+            session: Mapping[str, object]
+            "Session data."
             jwt_token: str
-            """JWT token string."""
-
+            "JWT token string."
             authenticated: bool
-            """Authentication status."""
-
+            "Authentication status."
             success: bool
-            """Operation success status."""
+            "Operation success status."
 
         @runtime_checkable
-        class ServiceProtocol(FlextProtocols.Service[object], Protocol):
+        class Service(FlextProtocols.Service[bool], Protocol):
             """Protocol for authentication service-like objects."""
-
-            def register_user(
-                self,
-                username: str,
-                email: str,
-                password: str,
-                full_name: str | None = None,
-                roles: list[str] | None = None,
-            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
-                """Register new user.
-
-                Returns IdentityProtocol-compatible object through structural typing.
-                """
-                ...
 
             def authenticate_user(
                 self,
@@ -245,10 +223,10 @@ class FlextAuthProtocols(FlextProtocols):
                 password: str,
                 client_ip: str | None = None,
                 user_agent: str | None = None,
-            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
+            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.Identity]:
                 """Authenticate user and return identity.
 
-                Returns IdentityProtocol-compatible object through structural typing.
+                Returns Identity-compatible identity through structural typing.
                 """
                 ...
 
@@ -261,10 +239,20 @@ class FlextAuthProtocols(FlextProtocols):
                 """
                 ...
 
+            def register_user(
+                self,
+                username: str,
+                email: str,
+                password: str,
+                full_name: str | None = None,
+                roles: list[str] | None = None,
+            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.Identity]:
+                """Register new user.
 
-p = FlextAuthProtocols  # Runtime alias (not TypeAlias to avoid PYI042)
+                Returns Identity-compatible identity through structural typing.
+                """
+                ...
 
-__all__ = [
-    "FlextAuthProtocols",
-    "p",
-]
+
+p = FlextAuthProtocols
+__all__ = ["FlextAuthProtocols", "p"]

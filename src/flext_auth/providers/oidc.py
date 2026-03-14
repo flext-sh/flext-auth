@@ -10,17 +10,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
+from typing import override
 
-from flext_auth.protocols import FlextAuthProtocols
+from flext_core import r
 
-# Forward reference to avoid circular import
+from flext_auth import m, p
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.providers.rfc import FlextAuthRfcProvider
-from flext_core import FlextTypes as t, r
 
 
-class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
+class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     """OpenID Connect (OIDC) authentication provider.
 
     This provider implements OpenID Connect authentication. It validates
@@ -35,10 +34,8 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
 
     """
 
-    def authenticate(
-        self,
-        credentials: dict[str, t.JsonValue],
-    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
+    @override
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using OIDC credentials.
 
         Args:
@@ -49,12 +46,30 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
 
         """
         _ = credentials
-        return r[FlextAuthProtocols.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
-    def validate(
-        self,
-        token: str | FlextAuthProtocols.Auth.TokenProtocol,
-    ) -> r[bool]:
+    @override
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version (OpenID Connect Core 1.0)
+
+        """
+        return "OpenID Connect Core 1.0"
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"oidc", "validate", "refresh"})
+
+        """
+        return {"oidc", "validate", "refresh"}
+
+    @override
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
         """Validate OIDC token.
 
         Args:
@@ -66,24 +81,6 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
         """
         _ = token
         return r[bool].fail("Not implemented")
-
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"oidc", "validate", "refresh"})
-
-        """
-        return {"oidc", "validate", "refresh"}
-
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (OpenID Connect Core 1.0)
-
-        """
-        return "OpenID Connect Core 1.0"
 
 
 __all__ = ["FlextAuthOidcProvider"]

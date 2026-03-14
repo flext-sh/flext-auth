@@ -15,8 +15,9 @@ from __future__ import annotations
 
 from typing import Final, Literal, TypeAlias
 
-from flext_auth.constants import FlextAuthConstants
-from flext_tests.constants import FlextTestsConstants
+from flext_tests import FlextTestsConstants
+
+from flext_auth import FlextAuthConstants
 
 
 class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
@@ -27,11 +28,11 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     2. FlextAuthConstants - for domain constants (.Auth.*)
 
     Access patterns:
-    - tc.Tests.Docker.* (container testing)
-    - tc.Tests.Matcher.* (assertion messages)
-    - tc.Tests.Factory.* (test data generation)
-    - tc.Auth.* (domain constants from production)
-    - tc.TestData.* (project-specific test data)
+    - c.Tests.Docker.* (container testing)
+    - c.Tests.Matcher.* (assertion messages)
+    - c.Tests.Factory.* (test data generation)
+    - c.Auth.* (domain constants from production)
+    - c.TestData.* (project-specific test data)
 
     Rules:
     - NEVER duplicate constants from FlextTestsConstants or FlextAuthConstants
@@ -50,24 +51,19 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     class TestAuth:
         """Authentication test constants."""
 
-        # Test credentials
         TEST_USERNAME: Final[str] = "testuser"
         TEST_PASSWORD: Final[str] = "TestPassword123!"
         TEST_EMAIL: Final[str] = "testuser@example.com"
-
-        # Test tokens
         TEST_TOKEN_PREFIX: Final[str] = "test_token_"
         TEST_ACCESS_TOKEN: Final[str] = "test_access_token_12345"
         TEST_REFRESH_TOKEN: Final[str] = "test_refresh_token_12345"
-
-        # Test sessions
         TEST_SESSION_ID: Final[str] = "test_session_12345"
         TEST_SESSION_TOKEN: Final[str] = "test_session_token_12345"
 
     class TestJWT:
         """JWT test constants."""
 
-        TEST_SECRET: Final[str] = "test_secret_key_for_jwt_signing"
+        TEST_SECRET: Final[str] = "test_secret_key_for_jwt_signing_32bytes"
         TEST_ISSUER: Final[str] = "test-issuer"
         TEST_AUDIENCE: Final[str] = "test-audience"
         TEST_ALGORITHM: Final[str] = "HS256"
@@ -110,16 +106,13 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
             "kerberos",
             "apikey",
         ]
-        RoleTypeLiteral: TypeAlias = Literal["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
-        PermissionTypeLiteral: TypeAlias = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+        RoleTypeLiteral: TypeAlias = Literal[
+            "REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"
+        ]
+        PermissionTypeLiteral: TypeAlias = Literal[
+            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
+        ]
 
 
-# Short aliases per FLEXT convention
-tc = TestsFlextAuthConstants  # Primary test constants alias
-c = TestsFlextAuthConstants  # Alternative alias for compatibility
-
-__all__ = [
-    "TestsFlextAuthConstants",
-    "c",
-    "tc",
-]
+c = TestsFlextAuthConstants
+__all__ = ["TestsFlextAuthConstants", "c"]

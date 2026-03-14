@@ -177,10 +177,7 @@ if config.is_failure:
 
    ```python
    # Create configuration manually if environment fails
-   config = FlextAuthSettings(
-       jwt_secret_key="manual-secret-key",
-       jwt_expiry_minutes=60
-   )
+   config = FlextAuthSettings(jwt_secret_key="manual-secret-key", jwt_expiry_minutes=60)
    ```
 
 ### JWT Configuration
@@ -348,7 +345,7 @@ mypy src/flext_auth/
 
 # Common errors:
 # - Missing type annotations
-# - FlextResult type issues
+# - r type issues
 # - Generic type problems
 ```
 
@@ -360,15 +357,16 @@ mypy src/flext_auth/
    # Always use proper type hints
    from typing import Optional
 
-   def find_user(username: str) -> FlextResult[Optional[User]]:
+
+   def find_user(username: str) -> r[Optional[User]]:
        pass
    ```
 
-1. **FlextResult Types**:
+1. **r Types**:
 
    ```python
-   # Specify generic type for FlextResult
-   result: FlextResult[User] = auth.register_user(...)
+   # Specify generic type for r
+   result: r[User] = auth.register_user(...)
    ```
 
 ### Import Issues
@@ -378,13 +376,11 @@ mypy src/flext_auth/
 **Solution**:
 
 ```python
-# Use late imports if needed
-from typing import TYPE_CHECKING
+# Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
+from flext_auth import m
 
-if TYPE_CHECKING:
-    from flext_auth.models import User
-
-# Or restructure imports to avoid cycles
+# Access models via namespace
+user = m.Auth.User(...)
 ```
 
 ______________________________________________________________________
@@ -448,7 +444,6 @@ ______________________________________________________________________
 Enable debug logging:
 
 ```python
-
 logging.basicConfig(level=logging.DEBUG)
 
 # Test authentication with debug output

@@ -10,11 +10,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.protocols import FlextAuthProtocols
-from flext_core import FlextTypes as t, FlextUtilities as u, e, r
+from collections.abc import Mapping
 
-# Forward references to avoid circular import
-# Use string annotations for all FlextAuthModels references
+from flext_core import e, r, u
+
+from flext_auth.protocols import p
 
 
 class FlextAuthProviderMixin:
@@ -30,34 +30,6 @@ class FlextAuthProviderMixin:
 
     """
 
-    def _extract_token_string(
-        self,
-        token: str | FlextAuthProtocols.Auth.TokenProtocol,
-    ) -> str:
-        """Extract token string from token or TokenProtocol object.
-
-        Args:
-        token: Token as string or TokenProtocol object
-
-        Returns:
-        str: Token string
-
-        Raises:
-        ValueError: If token cannot be extracted
-
-        """
-        if isinstance(token, str):
-            return token
-
-        # Structural typing: TokenProtocol requires a 'token' attribute
-        if hasattr(token, "token"):
-            return token.token
-
-        error_msg = (
-            f"Invalid token type: expected str or TokenProtocol, got {type(token)}"
-        )
-        raise e.ValidationError(error_msg, field="token", value=str(type(token)))
-
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.
 
@@ -66,55 +38,7 @@ class FlextAuthProviderMixin:
         """
         return set()
 
-    def _validate_credentials_dict(
-        self,
-        credentials: dict[str, t.GeneralValueType],
-        required_fields: list[str],
-    ) -> r[bool]:
-        """Validate that credentials contain required fields.
-
-        Args:
-        credentials: Credentials dictionary to validate
-        required_fields: List of required field names
-
-        Returns:
-        r[bool]: True if valid, False if invalid, error message on failure
-
-        """
-        # Use u.filter() for unified filtering (DSL pattern)
-        missing_fields = u.filter(
-            required_fields,
-            lambda field: field not in credentials,
-        )
-
-        if missing_fields:
-            error_msg = f"Missing required fields: {', '.join(missing_fields)}"
-            return r[bool].fail(error_msg)
-
-        return r[bool].ok(value=True)
-
-    def _validate_token_string(self, token: str) -> r[bool]:
-        """Validate token string format.
-
-        Args:
-        token: Token string to validate
-
-        Returns:
-        r[bool]: True if valid, False if invalid, error message on failure
-
-        """
-        if not token or not isinstance(token, str):
-            return r[bool].fail("Token must be a non-empty string")
-
-        if len(token.strip()) == 0:
-            return r[bool].fail("Token cannot be empty or whitespace only")
-
-        return r[bool].ok(value=True)
-
-    def _check_capability_supported(
-        self,
-        capability: str,
-    ) -> r[bool]:
+    def _check_capability_supported(self, capability: str) -> r[bool]:
         """Check if a capability is supported by this provider.
 
         Args:
@@ -131,17 +55,35 @@ class FlextAuthProviderMixin:
         """
         if capability not in self.supports():
             return r[bool].fail(
-                f"Provider does not support '{capability}' capability. "
-                f"Supported capabilities: {', '.join(sorted(self.supports()))}",
+                f"Provider does not support '{capability}' capability. Supported capabilities: {', '.join(sorted(self.supports()))}"
             )
-
         return r[bool].ok(value=True)
 
-    def _get_capability_metadata(self) -> dict[str, t.GeneralValueType]:
+    def _extract_token_string(self, token: str | p.Auth.Token) -> str:
+        """Extract token string from token or Token object.
+
+        Args:
+        token: Token as string or Token object
+
+        Returns:
+        str: Token string
+
+        Raises:
+        ValueError: If token cannot be extracted
+
+        """
+        token_value = token.token if isinstance(token, p.Auth.Token) else token
+        token_text = str(token_value)
+        if token_text:
+            return token_text
+        error_msg = f"Invalid token type: expected str or Token, got {type(token)}"
+        raise e.ValidationError(error_msg, field="token", value=str(type(token)))
+
+    def _get_capability_metadata(self) -> Mapping[str, object]:
         """Get metadata about provider capabilities.
 
         Returns:
-            dict[str, t.GeneralValueType]: Metadata including supported capabilities
+            Mapping[str, object]: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()
@@ -152,6 +94,43 @@ class FlextAuthProviderMixin:
             "capabilities": list(self.supports()),
             "provider_type": self.__class__.__name__,
         }
+
+    def _validate_credentials_dict(
+        self, credentials: Mapping[str, object], required_fields: list[str]
+    ) -> r[bool]:
+        """Validate that credentials contain required fields.
+
+        Args:
+        credentials: Credentials dictionary to validate
+        required_fields: List of required field names
+
+        Returns:
+        r[bool]: True if valid, False if invalid, error message on failure
+
+        """
+        missing_fields = u.filter(
+            required_fields, lambda field: field not in credentials
+        )
+        if missing_fields:
+            error_msg = f"Missing required fields: {', '.join(missing_fields)}"
+            return r[bool].fail(error_msg)
+        return r[bool].ok(value=True)
+
+    def _validate_token_string(self, token: str) -> r[bool]:
+        """Validate token string format.
+
+        Args:
+        token: Token string to validate
+
+        Returns:
+        r[bool]: True if valid, False if invalid, error message on failure
+
+        """
+        if not token:
+            return r[bool].fail("Token must be a non-empty string")
+        if len(token.strip()) == 0:
+            return r[bool].fail("Token cannot be empty or whitespace only")
+        return r[bool].ok(value=True)
 
 
 __all__ = ["FlextAuthProviderMixin"]

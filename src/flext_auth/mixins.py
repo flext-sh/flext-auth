@@ -9,13 +9,10 @@ from __future__ import annotations
 
 import re
 
-from flext_auth.constants import FlextAuthConstants
 from flext_core import r, x
 
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
+from flext_auth import FlextAuthConstants
 
-# Constants for validation
 MAX_USERNAME_LENGTH = 255
 
 
@@ -38,26 +35,20 @@ class FlextAuthMixins(x):
             """
             if not password:
                 return r[str].fail("Password cannot be empty")
-
             if len(password) < FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH:
                 return r[str].fail(
-                    f"Password must be at least {FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH} characters",
+                    f"Password must be at least {FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH} characters"
                 )
-
             if len(password) > FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH:
                 return r[str].fail(f"Password must be no more than {128} characters")
-
-            # Check for password complexity
             has_upper = any(c.isupper() for c in password)
             has_lower = any(c.islower() for c in password)
             has_digit = any(c.isdigit() for c in password)
             has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password)
-
             if not (has_upper and has_lower and has_digit and has_special):
                 return r[str].fail(
-                    "Password must contain at least one uppercase letter, lowercase letter, digit, and special character",
+                    "Password must contain at least one uppercase letter, lowercase letter, digit, and special character"
                 )
-
             return r[str].ok(password)
 
         @staticmethod
@@ -73,23 +64,17 @@ class FlextAuthMixins(x):
             """
             if not username or not username.strip():
                 return r[str].fail("Username cannot be empty")
-
             username = username.strip()
-
             if len(username) < 1:
                 return r[str].fail(f"Username must be at least {1} characters")
-
             if len(username) > MAX_USERNAME_LENGTH:
                 return r[str].fail(
-                    f"Username must be no more than {MAX_USERNAME_LENGTH} characters",
-                )  # MAX_USERNAME_LENGTH = 255
-
-            # Check for valid characters
+                    f"Username must be no more than {MAX_USERNAME_LENGTH} characters"
+                )
             if not re.match(r"^[a-zA-Z0-9_-]+$", username):
                 return r[str].fail(
-                    "Username can only contain letters, numbers, underscores, and hyphens",
+                    "Username can only contain letters, numbers, underscores, and hyphens"
                 )
-
             return r[str].ok(username)
 
 

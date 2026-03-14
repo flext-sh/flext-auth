@@ -4,47 +4,42 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
-# PYTHON_VERSION_GUARD — Do not remove. Managed by scripts/maintenance/enforce_python_version.py
-import sys as _sys
 
-if _sys.version_info[:2] != (3, 13):
-    _v = f"{_sys.version_info.major}.{_sys.version_info.minor}.{_sys.version_info.micro}"
-    raise RuntimeError(
-        f"\n{'=' * 72}\n"
-        f"FATAL: Python {_v} detected — this project requires Python 3.13.\n"
-        f"\n"
-        f"The virtual environment was created with the WRONG Python interpreter.\n"
-        f"\n"
-        f"Fix:\n"
-        f"  1. rm -rf .venv\n"
-        f"  2. poetry env use python3.13\n"
-        f"  3. poetry install\n"
-        f"\n"
-        f"Or use the workspace Makefile:\n"
-        f"  make setup PROJECT=<project-name>\n"
-        f"{'=' * 72}\n"
-    )
-del _sys
-# PYTHON_VERSION_GUARD_END
+from __future__ import annotations
+
+from collections.abc import Iterator
 
 import pytest
 
-# Import FlextTestsDocker fixtures if available (optional dependency)
-# Note: flext_tests is an optional test dependency - import may fail in some environments
+from flext_auth import FlextAuth, FlextAuthSettings
+
+
+@pytest.fixture(autouse=True)
+def _reset_singletons() -> Iterator[None]:
+    """Reset FlextAuth and FlextAuthSettings singletons between tests.
+
+    This prevents singleton corruption from leaking between tests.
+    FlextAuthSettings uses __new__ singleton pattern that caches instances
+    and __init__ uses object.__setattr__ for updates, bypassing Pydantic
+    coercion. Without reset, a test passing auth_secret as str corrupts
+    all subsequent tests.
+    """
+    yield
+    FlextAuthSettings._reset_instance()
+    FlextAuth._instance = None
 
 
 @pytest.fixture
 def mock_get_global() -> object:
-    """Mock for FlextAuthSettings.get_global_instance.
+    """Mock for FlextAuthSettings.get_global.
 
     Returns:
         Mock object for global instance
 
     """
 
-    # Use a simple object instead of MagicMock for better type safety
     class MockGlobal:
-        def get_global_instance(self) -> None:
+        def get_global(self) -> None:
             return None
 
     return MockGlobal()

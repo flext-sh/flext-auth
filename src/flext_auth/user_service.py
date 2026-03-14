@@ -10,29 +10,22 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import override
 
-from flext_auth.constants import c
-from flext_auth.managers import FlextAuthManagers, ServiceManagers
-from flext_auth.models import FlextAuthModels as m
-from flext_auth.settings import FlextAuthSettings
-from flext_core import FlextResult as r, FlextService as s
-from flext_core.dispatcher import FlextDispatcher
+from flext_core import FlextService as s, p, r
 from pydantic import ValidationError
 
+from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers, c, m
 
-class FlextAuthIdentityService(s[object]):
+
+class FlextAuthIdentityService(s[bool]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
     SOLID principles with dependency injection and railway error handling.
     """
 
-    def __init__(
-        self,
-        *,
-        config: FlextAuthSettings,
-        dispatcher: FlextDispatcher,
-    ) -> None:
+    def __init__(self, *, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
         self._managers = ServiceManagers(config, dispatcher)
@@ -42,76 +35,77 @@ class FlextAuthIdentityService(s[object]):
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
 
-    @identity_manager.setter
-    def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
-        """Set identity manager (for service composition)."""
-        self._managers.user_manager = value
-
-    def execute(self) -> r[object]:
-        """Railway-oriented execute with focused service pattern."""
-        return r[object].fail(
-            "Use specific identity methods: create_identity, authenticate_identity, etc.",
-        )
-
     def authenticate_identity(
-        self,
-        name: str,
-        credential: str,
+        self, name: str, credential: str
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
+        identity_result = self.identity_manager.get_user_by_username(name)
+        if identity_result.is_failure:
+            return r[m.Auth.AuthIdentity].fail(identity_result.error)
+        identity = identity_result.value
+        if identity.is_locked():
+            return r[m.Auth.AuthIdentity].fail(
+                "Account is locked due to too many failed attempts"
+            )
+        verification_result = identity.verify_credential(credential)
+        if verification_result.is_failure:
+            return r[m.Auth.AuthIdentity].fail(verification_result.error)
+        if verification_result.value:
+            return r[m.Auth.AuthIdentity].ok(identity.with_successful_access())
+        failed_attempt_result = self._handle_failed_attempt(identity)
+        if failed_attempt_result.is_failure:
+            return r[m.Auth.AuthIdentity].fail(failed_attempt_result.error)
+        return r[m.Auth.AuthIdentity].fail("Invalid credentials")
+
+    def authorize_identity(
+        self, identity_id: str, permission: str, resource: str | None = None
+    ) -> r[bool]:
+        """Railway-oriented authorization with audit logging."""
         return (
             self.identity_manager
-            .get_user_by_username(name)
-            .flat_map(lambda identity: r.ok((identity, credential)))
-            .flat_map(
-                lambda ic: (
-                    # Check if account is locked
-                    r.fail(
-                        "Account is locked due to too many failed attempts",
-                    )
-                    if ic[0].is_locked()
-                    else r.ok(ic)
-                ),
+            .get_user(identity_id)
+            .map(lambda identity: (identity, permission in identity.permissions))
+            .map(
+                lambda ip: self._log_authorization_result(
+                    ip[0], permission, resource, allowed=ip[1]
+                )
             )
-            .flat_map(
-                lambda ic: (
-                    ic[0]
-                    .verify_credential(ic[1])
-                    .flat_map(
-                        lambda is_valid: (
-                            # Success: reset failed attempts and unlock
-                            r.ok(ic[0].with_successful_access())
-                            if is_valid
-                            # Failure: increment failed attempts and lock if threshold reached
-                            else (
-                                self._handle_failed_attempt(ic[0]).flat_map(
-                                    lambda _: r.fail("Invalid credentials"),
-                                )
-                            )
-                        ),
-                    )
-                ),
+        )
+
+    def change_credential(
+        self, identity_id: str, current_credential: str, new_credential: str
+    ) -> r[bool]:
+        """Railway-oriented credential change with validation."""
+        identity_result = self.identity_manager.get_user(identity_id)
+        if identity_result.is_failure:
+            return r[bool].fail(identity_result.error)
+        identity = identity_result.value
+        verify_result = identity.verify_credential(current_credential)
+        if verify_result.is_failure:
+            return r[bool].fail(verify_result.error)
+        if not verify_result.value:
+            return r[bool].fail("Current credential is incorrect")
+        if len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
+            return r[bool].fail(
+                f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
+        set_result = identity.set_credential(new_credential)
+        return set_result.fold(
+            on_failure=lambda e: r[bool].fail(e),
+            on_success=lambda _: r[bool].ok(
+                self._log_success("Password change successful", identity.name)
+            ),
         )
 
     def create_identity(
-        self,
-        name: str,
-        contact: str,
-        credential: str,
-        roles: list[str] | None = None,
+        self, name: str, contact: str, credential: str, roles: list[str] | None = None
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: list[str] = []
         else:
             user_roles = roles
-        # Normalize email to lowercase for consistency
-        if not isinstance(contact, str):
-            return r[m.Auth.AuthIdentity].fail("Contact must be a string")
         normalized_contact = contact.lower()
-
-        # Validate using Pydantic model to ensure proper validation errors
         try:
             request = m.Auth.AuthIdentityRequest(
                 name=name,
@@ -120,8 +114,7 @@ class FlextAuthIdentityService(s[object]):
                 roles=user_roles,
             )
         except ValidationError as e:
-            # Convert ValidationError to FlextResult with error message
-            error_messages = []
+            error_messages: list[str] = []
             for error in e.errors():
                 field = (
                     error.get("loc", ("unknown",))[0] if error.get("loc") else "unknown"
@@ -130,17 +123,20 @@ class FlextAuthIdentityService(s[object]):
                 error_messages.append(f"{field}: {msg}")
             error_msg = "; ".join(error_messages) if error_messages else str(e)
             return r[m.Auth.AuthIdentity].fail(error_msg)
-        except Exception as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             return r[m.Auth.AuthIdentity].fail(str(e))
-
-        # Validate credential strength before hashing
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.Auth.AuthIdentity].fail(
-                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
-
-        # Create user with basic fields - extra_fields not currently supported
-        # due to type constraints in the manager interface
         return (
             r[str]
             .ok(m.Auth.PasswordUtil.hash_password(credential))
@@ -150,96 +146,42 @@ class FlextAuthIdentityService(s[object]):
                     email=request.contact,
                     password_hash=ch,
                     roles=request.roles,
-                ),
+                )
             )
         )
 
-    # =========================================================================
-    # COMPLEX CREDENTIAL OPERATIONS (Non-Thin Wrappers)
-    # =========================================================================
-
-    def change_credential(
-        self,
-        identity_id: str,
-        current_credential: str,
-        new_credential: str,
-    ) -> r[bool]:
-        """Railway-oriented credential change with validation."""
-        return (
-            self.identity_manager
-            .get_user(identity_id)
-            .flat_map(
-                lambda identity: identity.verify_credential(
-                    current_credential,
-                ).flat_map(
-                    lambda is_valid: (
-                        r.ok(identity)
-                        if is_valid
-                        else r.fail("Current credential is incorrect")
-                    ),
-                ),
-            )
-            .flat_map(
-                lambda identity: (
-                    r.ok(identity)
-                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
-                    else r.fail(
-                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
-                    )
-                ),
-            )
-            .flat_map(
-                lambda identity: identity.set_credential(new_credential).map(
-                    lambda _: (
-                        self.logger.info(
-                            "Password change successful",
-                            identity=identity.name,
-                        ),
-                        True,
-                    )[1],
-                ),
-            )
+    @override
+    def execute(self) -> r[bool]:
+        """Railway-oriented execute with focused service pattern."""
+        return r[bool].fail(
+            "Use specific identity methods: create_identity, authenticate_identity, etc."
         )
 
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
-        return (
-            self.identity_manager
-            .get_user(identity_id)
-            .flat_map(
-                lambda identity: (
-                    r.ok(identity)
-                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
-                    else r.fail(
-                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
-                    )
-                ),
+        identity_result = self.identity_manager.get_user(identity_id)
+        if identity_result.is_failure:
+            return r[bool].fail(identity_result.error)
+        identity = identity_result.value
+        if len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
+            return r[bool].fail(
+                f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
-            .flat_map(
-                lambda identity: identity.set_credential(new_credential).map(
-                    lambda _: (
-                        self.logger.info(
-                            "Password reset successful",
-                            identity=identity.name,
-                        ),
-                        True,
-                    )[1],
-                ),
-            )
+        set_result = identity.set_credential(new_credential)
+        return set_result.fold(
+            on_failure=lambda e: r[bool].fail(e),
+            on_success=lambda _: r[bool].ok(
+                self._log_success("Password reset successful", identity.name)
+            ),
         )
-
-    # =========================================================================
-    # ACCOUNT LOCKOUT HANDLING
-    # =========================================================================
 
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
-        max_attempts = self._managers.config.max_attempts
-
+        max_attempts = c.Auth.AuthSecurity.MAX_LOGIN_ATTEMPTS
         if identity.failed_attempts >= max_attempts:
             lockout_duration = timedelta(
-                minutes=self._managers.config.lockout_duration_minutes
+                minutes=c.Auth.AuthSecurity.LOCKOUT_DURATION_MINUTES
             )
             identity.locked_until = datetime.now(UTC) + lockout_duration
             self.logger.warning(
@@ -255,42 +197,34 @@ class FlextAuthIdentityService(s[object]):
                 provider="internal",
                 reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
             )
-
-        # Update user in storage
         return self.identity_manager.update_user(
             identity.unique_id,
             failed_attempts=identity.failed_attempts,
             locked_until=identity.locked_until,
         ).map(lambda _: True)
 
-    # =========================================================================
-    # COMPLEX AUTHORIZATION WITH AUDIT LOGGING
-    # =========================================================================
-
-    def authorize_identity(
+    def _log_authorization_result(
         self,
-        identity_id: str,
+        identity: m.Auth.AuthIdentity,
         permission: str,
-        resource: str | None = None,
-    ) -> r[bool]:
-        """Railway-oriented authorization with audit logging."""
-        return (
-            self.identity_manager
-            .get_user(identity_id)
-            .map(lambda identity: (identity, permission in identity.permissions))
-            .map(
-                lambda ip: (
-                    self.logger.debug(
-                        "Authorization check",
-                        username=ip[0].name,
-                        resource=resource if resource is not None else "",
-                        action=permission,
-                        allowed=ip[1],
-                    ),
-                    ip[1],
-                )[1],
-            )
+        resource: str | None,
+        *,
+        allowed: bool,
+    ) -> bool:
+        """Log authorization result and return decision."""
+        self.logger.debug(
+            "Authorization check",
+            username=identity.name,
+            resource=resource if resource is not None else "",
+            action=permission,
+            allowed=allowed,
         )
+        return allowed
+
+    def _log_success(self, message: str, identity_name: str) -> bool:
+        """Log service success message and return truthy sentinel."""
+        self.logger.info(message, identity=identity_name)
+        return True
 
 
 __all__ = ["FlextAuthIdentityService"]

@@ -9,8 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.models import FlextAuthModels
-from flext_tests.models import FlextTestsModels
+from flext_tests import FlextTestsModels
+
+from flext_auth import FlextAuthModels
 
 
 class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
@@ -26,13 +27,6 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
     - m.AuthToken - Production domain models (inherited)
     - FlextTestsModels.Tests.* - Generic test utilities
     """
-
-    class Tests:
-        """Test fixtures namespace for flext-auth.
-
-        Contains test-specific models and fixtures that should not
-        be part of production code.
-        """
 
 
 # Short aliases for tests

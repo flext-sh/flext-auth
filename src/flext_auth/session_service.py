@@ -7,16 +7,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.managers import FlextAuthManagers, ServiceManagers
-from flext_auth.settings import FlextAuthSettings
-from flext_core import FlextLogger, FlextResult as r, FlextService as s
-from flext_core.dispatcher import FlextDispatcher
+from typing import override
+
+from flext_core import FlextLogger, FlextService as s, p, r
+
+from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers
 
 
-class FlextAuthSessionService(s[object]):
+class FlextAuthSessionService(s[bool]):
     """Focused service for session management with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthSettings, dispatcher: FlextDispatcher) -> None:
+    def __init__(self, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._managers = ServiceManagers(config, dispatcher)
@@ -26,25 +27,21 @@ class FlextAuthSessionService(s[object]):
         """Direct access to session manager for client orchestration."""
         return self._managers.session_manager
 
-    @session_manager.setter
-    def session_manager(self, value: FlextAuthManagers.FlextAuthSessionManager) -> None:
-        """Set session manager (for service composition)."""
-        self._managers.session_manager = value
+    def cleanup_expired_sessions(self) -> r[int]:
+        """Railway-oriented cleanup of expired sessions from the system."""
+        FlextLogger(__name__).info("Cleanup of expired sessions requested")
+        return self.session_manager.cleanup_expired_sessions()
 
-    def execute(self) -> r[object]:
+    @override
+    def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 
         Session service doesn't use generic execute pattern.
         Use specific session methods instead.
         """
-        return r[object].fail(
-            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()",
+        return r[bool].fail(
+            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()"
         )
-
-    def cleanup_expired_sessions(self) -> r[int]:
-        """Railway-oriented cleanup of expired sessions from the system."""
-        FlextLogger(__name__).info("Cleanup of expired sessions requested")
-        return self.session_manager.cleanup_expired_sessions()
 
 
 __all__ = ["FlextAuthSessionService"]

@@ -108,7 +108,7 @@ All ADRs follow a consistent template:
 | --- | ------------------------------------------------ | -------- | ---------- |
 | 001 | Multi-Provider Authentication Architecture       | Accepted | 2025-10-10 |
 | 002 | Provider Registry Pattern Implementation         | Accepted | 2025-10-10 |
-| 003 | Railway-Oriented Error Handling with FlextResult | Accepted | 2025-10-10 |
+| 003 | Railway-Oriented Error Handling with r | Accepted | 2025-10-10 |
 | 004 | JWT Provider as Production-Ready Reference       | Accepted | 2025-10-10 |
 
 ## ADR Categories

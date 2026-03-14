@@ -7,81 +7,60 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, TypeIs
+from typing import Annotated
 
 import bcrypt
 import jwt
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.typings import t
+from flext_api import FlextApiUtilities
 from flext_core import FlextUtilities, r
-from pydantic import BeforeValidator, SecretStr
+from pydantic import BeforeValidator, SecretStr, ValidationError
 
-# Runtime alias for utilities namespace access
-u = FlextUtilities
+from flext_auth import c, t
 
 
-class FlextAuthUtilities(FlextUtilities):
+class FlextAuthUtilities(FlextApiUtilities):
     """FlextAuth advanced utilities extending u with domain-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
-    - TypeIs/TypeGuard for narrowing (PEP 742)
+    - Unified guard APIs for runtime validation
     - BeforeValidator factories for Pydantic coercion
     - @validated decorators eliminating manual validation
     - Generic parsing utilities for StrEnums
     """
 
-    # ═══════════════════════════════════════════════════════════════════
-    # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
-    # ═══════════════════════════════════════════════════════════════════
-
     @classmethod
-    def is_valid_token_type(
-        cls,
-        value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.TokenTypes]:
-        """TypeIs for TokenTypes validation - narrowing in if/else.
+    def is_valid_permission_type(cls, value: str) -> bool:
+        """Validate PermissionTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(FlextAuthConstants.Auth.TokenTypes, value)
+        return FlextUtilities.is_member(c.Auth.PermissionTypes, value)
 
     @classmethod
-    def is_valid_provider_type(
-        cls,
-        value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.ProviderTypes]:
-        """TypeIs for ProviderTypes validation.
+    def is_valid_provider_type(cls, value: str) -> bool:
+        """Validate ProviderTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(FlextAuthConstants.Auth.ProviderTypes, value)
+        return FlextUtilities.is_member(c.Auth.ProviderTypes, value)
 
     @classmethod
-    def is_valid_role_type(
-        cls,
-        value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.RoleTypes]:
-        """TypeIs for RoleTypes validation.
+    def is_valid_role_type(cls, value: str) -> bool:
+        """Validate RoleTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(FlextAuthConstants.Auth.RoleTypes, value)
+        return FlextUtilities.is_member(c.Auth.RoleTypes, value)
 
     @classmethod
-    def is_valid_permission_type(
-        cls,
-        value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.PermissionTypes]:
-        """TypeIs for PermissionTypes validation.
+    def is_valid_token_type(cls, value: str) -> bool:
+        """Validate TokenTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(FlextAuthConstants.Auth.PermissionTypes, value)
-
-    # ═══════════════════════════════════════════════════════════════════
-    # AUTH NAMESPACE: Project-specific utilities
-    # ═══════════════════════════════════════════════════════════════════
+        return FlextUtilities.is_member(c.Auth.TokenTypes, value)
 
     class Auth:
         """Auth-specific utility namespace.
@@ -90,144 +69,77 @@ class FlextAuthUtilities(FlextUtilities):
         and cross-project access. Access via u.Auth.* pattern.
 
         Example:
-            from flext_auth.utilities import u
+            from flext_auth import u
             result = u.Auth.Collection.parse_sequence(Status, ["active", "pending"])
             validator = u.Auth.Collection.coerce_list_validator(Status)
 
         """
 
-        class Collection(u.Collection):
-            """Collection utilities extending u.Collection via inheritance.
+    class Collection(FlextUtilities):
+        """Collection utilities extending u via inheritance.
 
-            Exposes all flext-core Collection methods through inheritance hierarchy.
-            Access via u.Auth.Collection.* pattern.
-            """
+        Exposes all flext-core Collection methods through inheritance hierarchy.
+        Access via u.Auth.Collection.* pattern.
+        """
 
-        # ═══════════════════════════════════════════════════════════════════
-        # ARGS UTILITIES: @validated decorators - ZERO boilerplate
-        # ═══════════════════════════════════════════════════════════════════
+    class Args(FlextUtilities):
+        """Args utilities extending u via inheritance.
 
-        class Args(u.Args):
-            """Args utilities extending u.Args via inheritance.
+        Exposes all flext-core Args methods through inheritance hierarchy.
+        Access via u.Auth.Args.* pattern.
+        """
 
-            Exposes all flext-core Args methods through inheritance hierarchy.
-            Access via u.Auth.Args.* pattern.
-            """
+    class Model(FlextUtilities):
+        """Model utilities extending u via inheritance.
 
-        # ═══════════════════════════════════════════════════════════════════
-        # MODEL UTILITIES: from_dict, merge_defaults, update - ZERO try/except
-        # ═══════════════════════════════════════════════════════════════════
-
-        class Model(u.Model):
-            """Model utilities extending u.Model via inheritance.
-
-            Exposes all flext-core Model methods through inheritance hierarchy.
-            Access via u.Auth.Model.* pattern.
-            """
-
-        # ═══════════════════════════════════════════════════════════════════
-        # PYDANTIC UTILITIES: Annotated types factories
-        # ═══════════════════════════════════════════════════════════════════
+        Exposes all flext-core Model methods through inheritance hierarchy.
+        Access via u.Auth.Model.* pattern.
+        """
 
         class Pydantic:
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_token_type() -> object:
-                """Return Annotated[TokenTypes, BeforeValidator(...)] type for Pydantic models.
-
-                Note: Return type is object because Annotated types cannot be properly
-                annotated in return type signatures. The actual return value is an
-                Annotated type suitable for use in Pydantic model field definitions.
-                """
-                return Annotated[
-                    FlextAuthConstants.Auth.TokenTypes,
-                    BeforeValidator(
-                        u.Enum.coerce_validator(
-                            FlextAuthConstants.Auth.TokenTypes,
-                        ),
-                    ),
-                ]
-
-            @staticmethod
             def coerced_provider_type() -> object:
-                """Return Annotated[ProviderTypes, BeforeValidator(...)] type for Pydantic models.
-
-                Note: Return type is object because Annotated types cannot be properly
-                annotated in return type signatures. The actual return value is an
-                Annotated type suitable for use in Pydantic model field definitions.
-                """
+                """Return Annotated[ProviderTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
-                    FlextAuthConstants.Auth.ProviderTypes,
+                    c.Auth.ProviderTypes,
                     BeforeValidator(
-                        u.Enum.coerce_validator(
-                            FlextAuthConstants.Auth.ProviderTypes,
-                        ),
+                        FlextUtilities.coerce_validator(c.Auth.ProviderTypes)
                     ),
                 ]
 
             @staticmethod
             def coerced_role_type() -> object:
-                """Return Annotated[RoleTypes, BeforeValidator(...)] type for Pydantic models.
-
-                Note: Return type is object because Annotated types cannot be properly
-                annotated in return type signatures. The actual return value is an
-                Annotated type suitable for use in Pydantic model field definitions.
-                """
+                """Return Annotated[RoleTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
-                    FlextAuthConstants.Auth.RoleTypes,
-                    BeforeValidator(
-                        u.Enum.coerce_validator(
-                            FlextAuthConstants.Auth.RoleTypes,
-                        ),
-                    ),
+                    c.Auth.RoleTypes,
+                    BeforeValidator(FlextUtilities.coerce_validator(c.Auth.RoleTypes)),
                 ]
 
-        # ═══════════════════════════════════════════════════════════════════
-        # VALIDATION UTILITIES: Domain-specific validation
-        # ═══════════════════════════════════════════════════════════════════
+            @staticmethod
+            def coerced_token_type() -> object:
+                """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field."""
+                return Annotated[
+                    c.Auth.TokenTypes,
+                    BeforeValidator(FlextUtilities.coerce_validator(c.Auth.TokenTypes)),
+                ]
 
         class Validation:
             """Domain-specific validation utilities."""
-
-            @staticmethod
-            def validate_username(username: str) -> r[str]:
-                """Validate username with auth-specific rules."""
-                if not username or not username.strip():
-                    return r[str].fail("Username cannot be empty")
-
-                username = username.strip()
-                if (
-                    len(username)
-                    < FlextAuthConstants.Auth.Credentials.Username.MIN_LENGTH
-                ):
-                    return r[str].fail(
-                        f"Username too short (min {FlextAuthConstants.Auth.Credentials.Username.MIN_LENGTH} chars)",
-                    )
-                if (
-                    len(username)
-                    > FlextAuthConstants.Auth.Credentials.Username.MAX_LENGTH
-                ):
-                    return r[str].fail(
-                        f"Username too long (max {FlextAuthConstants.Auth.Credentials.Username.MAX_LENGTH} chars)",
-                    )
-                return r[str].ok(username)
 
             @staticmethod
             def validate_email(email: str) -> r[str]:
                 """Validate email format."""
                 if not email or not email.strip():
                     return r[str].fail("Email cannot be empty")
-
                 email = email.strip()
-                if len(email) > FlextAuthConstants.Auth.MAX_EMAIL_LENGTH:
+                if len(email) > c.Auth.MAX_EMAIL_LENGTH:
                     return r[str].fail(
-                        f"Email too long (max {FlextAuthConstants.Auth.MAX_EMAIL_LENGTH} chars)",
+                        f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)"
                     )
-
                 if "@" not in email or "." not in email.split("@")[1]:
                     return r[str].fail("Invalid email format")
-
                 return r[str].ok(email)
 
             @staticmethod
@@ -235,38 +147,34 @@ class FlextAuthUtilities(FlextUtilities):
                 """Validate password strength."""
                 if not password:
                     return r[str].fail("Password cannot be empty")
-
-                if (
-                    len(password)
-                    < FlextAuthConstants.Auth.Credentials.Password.MIN_LENGTH
-                ):
+                if len(password) < c.Auth.Credentials.Password.MIN_LENGTH:
                     return r[str].fail(
-                        f"Password too short (min {FlextAuthConstants.Auth.Credentials.Password.MIN_LENGTH} chars)",
+                        f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)"
                     )
-                if (
-                    len(password)
-                    > FlextAuthConstants.Auth.Credentials.Password.MAX_LENGTH
-                ):
+                if len(password) > c.Auth.Credentials.Password.MAX_LENGTH:
                     return r[str].fail(
-                        f"Password too long (max {FlextAuthConstants.Auth.Credentials.Password.MAX_LENGTH} chars)",
+                        f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)"
                     )
-
-                # Note: WEAK_CREDENTIALS not defined - removed check or define constant if needed
-                # Additional password strength validation can be added here if needed
-
                 return r[str].ok(password)
 
-        # ═══════════════════════════════════════════════════════════════════
-        # TOKEN UTILITIES: Token/session management
-        # ═══════════════════════════════════════════════════════════════════
+            @staticmethod
+            def validate_username(username: str) -> r[str]:
+                """Validate username with auth-specific rules."""
+                if not username or not username.strip():
+                    return r[str].fail("Username cannot be empty")
+                username = username.strip()
+                if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
+                    return r[str].fail(
+                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)"
+                    )
+                if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
+                    return r[str].fail(
+                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)"
+                    )
+                return r[str].ok(username)
 
         class Token:
             """Token manipulation utilities."""
-
-            @staticmethod
-            def generate_session_id() -> str:
-                """Generate a secure session ID."""
-                return secrets.token_hex(16)
 
             @staticmethod
             def calculate_expiry_time(minutes: int) -> datetime:
@@ -274,13 +182,14 @@ class FlextAuthUtilities(FlextUtilities):
                 return datetime.now(UTC) + timedelta(minutes=minutes)
 
             @staticmethod
+            def generate_session_id() -> str:
+                """Generate a secure session ID."""
+                return secrets.token_hex(16)
+
+            @staticmethod
             def is_expired(expiry_time: datetime) -> bool:
                 """Check if a timestamp is expired."""
                 return datetime.now(UTC) > expiry_time
-
-        # ═══════════════════════════════════════════════════════════════════
-        # PASSWORD UTILITIES: Secure password handling
-        # ═══════════════════════════════════════════════════════════════════
 
         class Password:
             """Password hashing utilities using best practices."""
@@ -288,9 +197,7 @@ class FlextAuthUtilities(FlextUtilities):
             @staticmethod
             def hash_password(password: str) -> str:
                 """Hash a password using bcrypt."""
-                salt = bcrypt.gensalt(
-                    rounds=FlextAuthConstants.Auth.DEFAULT_HASH_ROUNDS,
-                )
+                salt = bcrypt.gensalt(rounds=c.Auth.DEFAULT_HASH_ROUNDS)
                 return bcrypt.hashpw(password.encode(), salt).decode()
 
             @staticmethod
@@ -298,40 +205,13 @@ class FlextAuthUtilities(FlextUtilities):
                 """Verify a password against its hash."""
                 return bcrypt.checkpw(password.encode(), hashed.encode())
 
-        # ═══════════════════════════════════════════════════════════════════
-        # RESPONSE UTILITIES: Response building
-        # ═══════════════════════════════════════════════════════════════════
-
         class Response:
             """Utilities for building authentication responses."""
 
             @staticmethod
-            def build_auth_success_response(
-                token: str | None = None,
-                user_id: str | None = None,
-                expires_at: datetime | None = None,
-            ) -> dict[str, t.JsonValue]:
-                """Build a successful authentication response."""
-                response: dict[str, t.JsonValue] = {
-                    "success": True,
-                    "message": "Authentication successful",
-                    "timestamp": datetime.now(UTC).isoformat(),
-                }
-
-                if token:
-                    response["token"] = token
-                if user_id:
-                    response["user_id"] = user_id
-                if expires_at:
-                    response["expires_at"] = expires_at.isoformat()
-
-                return response
-
-            @staticmethod
             def build_auth_error_response(
-                error: str,
-                error_code: str = "AUTH_ERROR",
-            ) -> dict[str, t.JsonValue]:
+                error: str, error_code: str = "AUTH_ERROR"
+            ) -> Mapping[str, t.Scalar]:
                 """Build an authentication error response."""
                 return {
                     "success": False,
@@ -340,11 +220,87 @@ class FlextAuthUtilities(FlextUtilities):
                     "timestamp": datetime.now(UTC).isoformat(),
                 }
 
+            @staticmethod
+            def build_auth_success_response(
+                token: str | None = None,
+                user_id: str | None = None,
+                expires_at: datetime | None = None,
+            ) -> Mapping[str, t.Scalar]:
+                """Build a successful authentication response."""
+                response: dict[str, t.Scalar] = {
+                    "success": True,
+                    "message": "Authentication successful",
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+                if token:
+                    response["token"] = token
+                if user_id:
+                    response["user_id"] = user_id
+                if expires_at:
+                    response["expires_at"] = expires_at.isoformat()
+                return response
+
+    @staticmethod
+    def decode_token(
+        token: str,
+        secret: SecretStr,
+        *,
+        verify: bool = True,
+        algorithms: tuple[str, ...] | None = None,
+    ) -> r[t.Auth.Tokens.ClaimMap]:
+        """Generic JWT token decoding.
+
+        Args:
+        token: JWT token to decode
+        secret: Secret key for verification
+        verify: Whether to verify signature
+
+        Returns:
+        r with decoded payload or error
+
+        """
+        try:
+            algorithms_list: list[str]
+            if algorithms is None:
+                algorithms_list = [c.Auth.DEFAULT_JWT_ALGORITHM]
+            else:
+                algorithms_list = list(algorithms)
+            payload = jwt.decode(
+                token,
+                secret.get_secret_value(),
+                algorithms=algorithms_list,
+                options={"verify_signature": verify},
+            )
+            if not FlextUtilities.is_dict_like(payload):
+                return r[t.Auth.Tokens.ClaimMap].fail(
+                    "Decoded token payload is not a dictionary"
+                )
+            typed_payload: t.Auth.Tokens.ClaimMap = {
+                str(key): value for key, value in payload.items()
+            }
+            return r[t.Auth.Tokens.ClaimMap].ok(typed_payload)
+        except jwt.InvalidTokenError as e:
+            return r[t.Auth.Tokens.ClaimMap].fail(f"Invalid token: {e}")
+        except ValidationError as e:
+            return r[t.Auth.Tokens.ClaimMap].fail(
+                f"Decoded token payload validation failed: {e}"
+            )
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            return r[t.Auth.Tokens.ClaimMap].fail(f"Decoding failed: {e}")
+
     @staticmethod
     def encode_token(
-        payload: t.Tokens.ClaimMap,
+        payload: t.Auth.Tokens.ClaimMap,
         secret: str,
-        algorithm: str = FlextAuthConstants.Auth.DEFAULT_JWT_ALGORITHM,
+        algorithm: str = c.Auth.DEFAULT_JWT_ALGORITHM,
     ) -> r[str]:
         """Generic JWT token encoding.
 
@@ -354,61 +310,29 @@ class FlextAuthUtilities(FlextUtilities):
         algorithm: JWT algorithm
 
         Returns:
-        FlextResult with encoded token or error
+        r with encoded token or error
 
         """
-        try:
+
+        def _encode() -> str:
             token = jwt.encode(dict(payload), secret, algorithm=algorithm)
-            return r[str].ok(token if isinstance(token, str) else token.decode())
-        except Exception as e:
-            return r[str].fail(f"Encoding failed: {e}")
+            if isinstance(token, str):
+                return token
+            return str(token)
 
-    @staticmethod
-    def decode_token(
-        token: str,
-        secret: SecretStr,
-        *,
-        verify: bool = True,
-        algorithms: tuple[str, ...] | None = None,
-    ) -> r[t.Tokens.ClaimMap]:
-        """Generic JWT token decoding.
-
-        Args:
-        token: JWT token to decode
-        secret: Secret key for verification
-        verify: Whether to verify signature
-
-        Returns:
-        FlextResult with decoded payload or error
-
-        """
-        try:
-            algorithms_list: list[str]
-            if algorithms is None:
-                algorithms_list = [FlextAuthConstants.Auth.DEFAULT_JWT_ALGORITHM]
-            else:
-                algorithms_list = list(algorithms)
-            payload = jwt.decode(
-                token,
-                secret.get_secret_value(),
-                algorithms=algorithms_list,
-                options={"verify_signature": verify},
-            )
-            if not isinstance(payload, dict):
-                return r[t.Tokens.ClaimMap].fail(
-                    "Decoded token payload is not a dictionary",
-                )
-
-            typed_payload: t.Tokens.ClaimMap = {
-                str(key): value for key, value in payload.items()
-            }
-            return r[t.Tokens.ClaimMap].ok(typed_payload)
-        except jwt.InvalidTokenError as e:
-            return r[t.Tokens.ClaimMap].fail(f"Invalid token: {e}")
-        except Exception as e:
-            return r[t.Tokens.ClaimMap].fail(f"Decoding failed: {e}")
+        return FlextUtilities.try_(
+            _encode,
+            catch=(
+                ValueError,
+                TypeError,
+                KeyError,
+                AttributeError,
+                OSError,
+                RuntimeError,
+                ImportError,
+            ),
+        ).map_error(lambda e: f"Encoding failed: {e}")
 
 
-u = FlextAuthUtilities  # Runtime alias (not TypeAlias to avoid PYI042)
-
+u = FlextAuthUtilities
 __all__ = ["FlextAuthUtilities", "u"]

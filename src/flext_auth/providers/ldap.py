@@ -6,17 +6,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
+from typing import override
 
-from flext_auth.protocols import FlextAuthProtocols
+from flext_core import r
 
-# Forward reference to avoid circular import
+from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_core import FlextTypes as t, r
 
 
-class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
+class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.
@@ -31,26 +30,32 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     """
 
-    def authenticate(
-        self,
-        credentials: dict[str, t.JsonValue],
-    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
+    @override
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using LDAP credentials.
 
         Args:
             credentials: Dictionary containing "username" and "password" keys
 
         Returns:
-            r[TokenProtocol]: Authentication token on success, error on failure
+            r[Token]: Authentication token on success, error on failure
 
         """
         _ = credentials
-        return r[FlextAuthProtocols.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
-    def validate(
-        self,
-        token: str | FlextAuthProtocols.Auth.TokenProtocol,
-    ) -> r[bool]:
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"ldap", "validate"})
+
+        """
+        return {"ldap", "validate"}
+
+    @override
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
         """Validate authentication token.
 
         Args:
@@ -62,15 +67,6 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
         """
         _ = token
         return r[bool].fail("Not implemented")
-
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"ldap", "validate"})
-
-        """
-        return {"ldap", "validate"}
 
 
 __all__ = ["FlextAuthLdapProvider"]

@@ -10,11 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.protocols import FlextAuthProtocols
+from typing import override
 
-# Forward reference to avoid circular import
+from flext_core import r
+
+from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextTypes as t, r
 
 
 class FlextAuthSamlProvider(FlextAuthBaseProvider):
@@ -40,10 +41,8 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
     Status: Basic implementation - can be extended with full SAML 2.0 support
     """
 
-    def authenticate(
-        self,
-        credentials: dict[str, t.JsonValue],
-    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
+    @override
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using SAML 2.0 assertion.
 
         Args:
@@ -55,42 +54,14 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         Business Rule: Validates SAML assertion and extracts identity information.
 
         """
-        _ = credentials  # Placeholder for SAML 2.0 authentication implementation
-        return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
-            "SAML provider not yet fully implemented",
-        )
+        _ = credentials
+        return r[p.Auth.Token].fail("SAML provider not yet fully implemented")
 
-    def validate(self, token: str | FlextAuthProtocols.Auth.TokenProtocol) -> r[bool]:
-        """Validate SAML assertion token.
-
-        Args:
-            token: SAML assertion token to validate
-
-        Returns:
-            r[bool]: True if valid, False with error message if invalid
-
-        Business Rule: Validates SAML assertion signature and expiration.
-
-        """
-        _ = token  # Placeholder for SAML assertion validation implementation
-        return r[bool].fail("SAML provider not yet fully implemented")
-
-    def supports(self) -> set[str]:
-        """Get supported authentication capabilities.
-
-        Returns:
-            set[str]: Set of supported capabilities
-
-        Business Rule: Returns capabilities supported by SAML provider.
-
-        """
-        return {"authenticate", "validate"}
-
-    def get_metadata(self) -> dict[str, t.GeneralValueType]:
+    def get_metadata(self) -> dict[str, str | list[str]]:
         """Get provider metadata.
 
         Returns:
-            dict[str, t.GeneralValueType]: Provider metadata (name, version, capabilities, etc.)
+            Mapping[str, object]: Provider metadata (name, version, capabilities, etc.)
 
         Business Rule: Returns metadata for provider discovery and configuration.
 
@@ -102,3 +73,31 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
             "capabilities": list(self.supports()),
             "status": "basic_implementation",
         }
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication capabilities.
+
+        Returns:
+            set[str]: Set of supported capabilities
+
+        Business Rule: Returns capabilities supported by SAML provider.
+
+        """
+        return {"authenticate", "validate"}
+
+    @override
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+        """Validate SAML assertion token.
+
+        Args:
+            token: SAML assertion token to validate
+
+        Returns:
+            r[bool]: True if valid, False with error message if invalid
+
+        Business Rule: Validates SAML assertion signature and expiration.
+
+        """
+        _ = token
+        return r[bool].fail("SAML provider not yet fully implemented")

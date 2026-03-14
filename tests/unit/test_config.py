@@ -8,10 +8,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-from pydantic_settings import BaseSettings
-
-from flext_auth import FlextAuthSettings
+from flext_auth import FlextAuthJwtProvider, FlextAuthSettings
+from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
 
 
 class TestFlextAuthSettingsBasic:
@@ -26,23 +24,18 @@ class TestFlextAuthSettingsBasic:
 
     def test_config_with_custom_values(self) -> None:
         """Test config with custom values."""
-        config = FlextAuthSettings(
-            expiry_minutes=60,
-            hash_rounds=12,
-        )
+        config = FlextAuthSettings(expiry_minutes=60, hash_rounds=12)
         assert config.expiry_minutes == 60
         assert config.hash_rounds == 12
 
     def test_config_validation(self) -> None:
         """Test config validation."""
-        # Should work with valid values
         config = FlextAuthSettings(expiry_minutes=30)
         assert config.expiry_minutes == 30
 
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
-        # This should work with the AutoConfig pattern
-        result = FlextAuthSettings.get_or_create_global(config_class=BaseSettings)
+        result = FlextAuthSettings.get_or_create_global()
         assert result.is_success
         config = result.value
         assert isinstance(config, FlextAuthSettings)
@@ -51,12 +44,27 @@ class TestFlextAuthSettingsBasic:
 class TestJwtTokenGenerator:
     """Test JWT token generator functionality."""
 
-    @pytest.mark.skip(reason="Requires concrete JWT provider implementation")
     def test_generate_token_missing_config(self) -> None:
         """Test token generation with missing configuration."""
-        # TODO: Implement when concrete JWT provider is available
+        provider = FlextAuthJwtProvider(config=None)
+        generator = FlextAuthJwtTokenGenerator(provider)
+        result = generator.generate_token(identity_id="user-123")
+        assert result.is_failure
+        assert "not configured" in (result.error or "").lower()
 
-    @pytest.mark.skip(reason="Requires concrete JWT provider implementation")
     def test_generate_token_success(self) -> None:
         """Test successful token generation."""
-        # TODO: Implement when concrete JWT provider is available
+        config = {
+            "secret_key": "test-secret-key-for-jwt-minimum-32-chars",
+            "algorithm": "HS256",
+            "expiry_minutes": 30,
+            "issuer": "flext-auth-test",
+        }
+        provider = FlextAuthJwtProvider(config=config)
+        generator = FlextAuthJwtTokenGenerator(provider)
+        result = generator.generate_token(identity_id="user-456")
+        assert result.is_success
+        token = result.value
+        assert isinstance(token, str)
+        assert len(token) > 0
+        assert token.count(".") == 2

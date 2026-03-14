@@ -15,7 +15,4 @@ from __future__ import annotations
 from flext_auth.transports.base import BaseTransportAdapter
 from flext_auth.transports.http import FlextWebTransportAdapter
 
-__all__: list[str] = [
-    "BaseTransportAdapter",
-    "FlextWebTransportAdapter",
-]
+__all__: list[str] = ["BaseTransportAdapter", "FlextWebTransportAdapter"]

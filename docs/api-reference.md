@@ -24,7 +24,7 @@
   - [Chaining Pattern](#chaining-pattern)
 - [Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
   - [Container Integration](#container-integration)
-  - [FlextResult Usage](#flextresult-usage)
+  - [r Usage](#flextresult-usage)
 - [Security Considerations](#security-considerations)
   - [Password Security](#password-security)
   - [JWT Security](#jwt-security)
@@ -37,7 +37,7 @@
 
 Complete API documentation for flext-auth enterprise authentication service with FlextService and h architecture.
 
-For general FLEXT patterns and FlextResult usage, see **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** documentation.
+For general FLEXT patterns and r usage, see **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** documentation.
 
 **Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the h refactoring.
 
@@ -84,7 +84,7 @@ def register_user(
     username: str,
     email: str,
     password: str
-) -> FlextResult[User]:
+) -> r[User]:
 ```
 
 **Parameters**:
@@ -93,7 +93,7 @@ def register_user(
 - `email` (str): Valid email address
 - `password` (str): User password (will be hashed with bcrypt)
 
-**Returns**: `FlextResult[User]` - Created user or error
+**Returns**: `r[User]` - Created user or error
 
 **Example**:
 
@@ -113,7 +113,7 @@ def authenticate_user(
     self,
     username: str,
     password: str
-) -> FlextResult[t.Dict]:
+) -> r[t.Dict]:
 ```
 
 **Parameters**:
@@ -121,7 +121,7 @@ def authenticate_user(
 - `username` (str): Username to authenticate
 - `password` (str): User password
 
-**Returns**: `FlextResult[t.Dict]` with session and token data
+**Returns**: `r[t.Dict]` with session and token data
 
 **Example**:
 
@@ -129,8 +129,8 @@ def authenticate_user(
 auth_result = auth.authenticate_user("demo", "secure123")
 if auth_result.is_success:
     session_data = auth_result.unwrap()
-    token = session_data['token']
-    session = session_data['session']
+    token = session_data["token"]
+    session = session_data["session"]
 ```
 
 ### validate_token()
@@ -138,14 +138,14 @@ if auth_result.is_success:
 Validate JWT token and extract user information.
 
 ```python
-def validate_token(self, token: str) -> FlextResult[t.Dict]:
+def validate_token(self, token: str) -> r[t.Dict]:
 ```
 
 **Parameters**:
 
 - `token` (str): JWT token (with or without Bearer prefix)
 
-**Returns**: `FlextResult[t.Dict]` with token payload or error
+**Returns**: `r[t.Dict]` with token payload or error
 
 **Example**:
 
@@ -153,7 +153,7 @@ def validate_token(self, token: str) -> FlextResult[t.Dict]:
 validation_result = auth.validate_token(token)
 if validation_result.is_success:
     token_data = validation_result.unwrap()
-    username = token_data['username']
+    username = token_data["username"]
 ```
 
 ______________________________________________________________________
@@ -179,7 +179,7 @@ class User(FlextModels.Entity):
 #### set_password()
 
 ```python
-def set_password(self, password: str) -> FlextResult[bool]:
+def set_password(self, password: str) -> r[bool]:
 ```
 
 Hash and set user password using bcrypt.
@@ -187,7 +187,7 @@ Hash and set user password using bcrypt.
 #### verify_password()
 
 ```python
-def verify_password(self, password: str) -> FlextResult[bool]:
+def verify_password(self, password: str) -> r[bool]:
 ```
 
 Verify password against stored hash.
@@ -242,7 +242,7 @@ class FlextAuthSettings(FlextSettings):
 
 ```python
 @classmethod
-def create_for_environment(cls, env: str) -> FlextResult[FlextAuthSettings]:
+def create_for_environment(cls, env: str) -> r[FlextAuthSettings]:
 ```
 
 Create configuration for specific environment.
@@ -296,7 +296,7 @@ ______________________________________________________________________
 
 ## Error Handling
 
-All operations return `FlextResult[T]` for type-safe error handling.
+All operations return `r[T]` for type-safe error handling.
 
 ### Success Pattern
 
@@ -327,21 +327,25 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
-def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
+
+def complete_auth_flow(username: str, password: str) -> r[t.Dict]:
     return (
-        auth.authenticate_user(username, password)
-        .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
-        .map(lambda token_data: {
-            "user": token_data['username'],
-            "authenticated": True,
-            "expires": token_data['exp']
-        })
+        auth
+        .authenticate_user(username, password)
+        .flat_map(lambda auth_data: auth.validate_token(auth_data["token"]))
+        .map(
+            lambda token_data: {
+                "user": token_data["username"],
+                "authenticated": True,
+                "expires": token_data["exp"],
+            }
+        )
     )
 ```
 
@@ -367,7 +371,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -381,9 +385,9 @@ if auth_result.is_success:
     auth = auth_result.unwrap()
 ```
 
-### FlextResult Usage
+### r Usage
 
-All flext-auth operations follow FlextResult pattern from flext-core:
+All flext-auth operations follow r pattern from flext-core:
 
 - Use `.is_success` to check success
 - Use `.unwrap()` to extract value on success
@@ -429,7 +433,7 @@ This API reference covers the current implementation as of September 17, 2025. F
 **Across Projects**:
 
 - [flext-core Foundation](https://github.com/organization/flext/tree/main/flext-core/docs/api-reference/foundation.md) - Core APIs and patterns
-- [flext-core Railway-Oriented Programming](https://github.com/organization/flext/tree/main/flext-core/docs/guides/railway-oriented-programming.md) - FlextResult patterns
+- [flext-core Railway-Oriented Programming](https://github.com/organization/flext/tree/main/flext-core/docs/guides/railway-oriented-programming.md) - r patterns
 - [flext-cli Authentication](https://github.com/organization/flext/tree/main/flext-cli/docs/api-reference.md) - CLI authentication patterns
 
 **External Resources**:

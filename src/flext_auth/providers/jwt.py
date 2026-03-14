@@ -8,30 +8,49 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.protocols import FlextAuthProtocols as p
+from collections.abc import Mapping
+from typing import override
+
+from flext_core import r
+
+from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextResult as r, FlextTypes as t
 
 
 class FlextAuthJwtProvider(FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
-    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
-    def authenticate(
-        self,
-        credentials: dict[str, t.JsonValue],
-    ) -> r[p.Auth.TokenProtocol]:
+    @override
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using JWT credentials."""
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version (RFC 7519 for JWT)
+
+        """
+        return "RFC 7519"
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"jwt", "validate", "refresh"})
+
+        """
+        return {"jwt", "validate", "refresh"}
+
+    @override
+    def validate(self, token: str) -> r[bool]:
         """Validate JWT token.
 
         Args:
@@ -41,8 +60,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        token_str = token if isinstance(token, str) else str(token)
-        return self.validate_token(token_str)
+        return self.validate_token(token)
 
     def validate_token(self, token: str) -> r[bool]:
         """Validate JWT token.
@@ -56,24 +74,6 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         """
         _ = token
         return r[bool].fail("Not implemented")
-
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"jwt", "validate", "refresh"})
-
-        """
-        return {"jwt", "validate", "refresh"}
-
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (RFC 7519 for JWT)
-
-        """
-        return "RFC 7519"
 
 
 __all__ = ["FlextAuthJwtProvider"]

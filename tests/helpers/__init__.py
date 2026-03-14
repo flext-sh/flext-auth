@@ -14,18 +14,34 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from .models import TestsModels, m
-from .protocols import TestsProtocols, p
-from .typings import TestsTypings, t
-from .utilities import TestsUtilities, u
+from typing import TYPE_CHECKING
 
-__all__ = [
-    "TestsModels",
-    "TestsProtocols",
-    "TestsTypings",
-    "TestsUtilities",
-    "m",
-    "p",
-    "t",
-    "u",
-]
+from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+
+if TYPE_CHECKING:
+    from flext_core.typings import FlextTypes
+    from tests.protocols import TestsProtocols, TestsProtocols as p
+    from tests.typings import TestsTypings, t
+    from tests.utilities import TestsUtilities, TestsUtilities as u
+_LAZY_IMPORTS: dict[str, tuple[str, str]] = {
+    "TestsProtocols": ("tests.protocols", "TestsProtocols"),
+    "TestsTypings": ("tests.typings", "TestsTypings"),
+    "TestsUtilities": ("tests.utilities", "TestsUtilities"),
+    "p": ("tests.protocols", "TestsProtocols"),
+    "t": ("tests.typings", "t"),
+    "u": ("tests.utilities", "TestsUtilities"),
+}
+__all__ = ["TestsProtocols", "TestsTypings", "TestsUtilities", "p", "t", "u"]
+
+
+def __getattr__(name: str) -> FlextTypes.ModuleExport:
+    """Lazy-load module attributes on first access (PEP 562)."""
+    return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
+
+
+def __dir__() -> list[str]:
+    """Return list of available attributes for dir() and autocomplete."""
+    return sorted(__all__)
+
+
+cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)

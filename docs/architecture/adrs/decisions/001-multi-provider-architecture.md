@@ -72,7 +72,7 @@ The existing monolithic JWT implementation couldn't easily accommodate these req
 - Hard-coded authentication logic
 - Limited extensibility
 - Production-ready for JWT use cases
-- Strong foundation with FlextResult patterns
+- Strong foundation with r patterns
 
 ### Constraints
 

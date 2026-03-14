@@ -10,12 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Protocol
 
-from flext_core import FlextTypes as t, r
+from flext_core import r
 
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
+from flext_auth import t
 
 
 class BaseTransportAdapter(Protocol):
@@ -33,36 +33,13 @@ class BaseTransportAdapter(Protocol):
         ...         self,
         ...         url: str,
         ...         method: str = "POST",
-        ...         data: dict[str, t.JsonValue] | None = None,
+        ...         data: dict[str, t.Scalar] | None = None,
         ...         headers: dict[str, str] | None = None,
-        ...     ) -> r[dict[str, t.JsonValue]]:
+        ...     ) -> r[dict[str, t.Scalar]]:
         ...         # HTTP-specific implementation
         ...         pass
 
     """
-
-    def send_request(
-        self,
-        url: str,
-        method: str = "POST",
-        data: dict[str, t.JsonValue] | None = None,
-        headers: dict[str, str] | None = None,
-        **kwargs: t.GeneralValueType,
-    ) -> r[dict[str, t.JsonValue]]:
-        """Send a request using this transport.
-
-        Args:
-        url: Target URL or endpoint
-        method: HTTP method or operation type
-        data: Request payload data
-        headers: Request headers or metadata
-        **kwargs: Transport-specific additional parameters
-
-        Returns:
-        FlextResult containing response data or error
-
-        """
-        ...
 
     def get_transport_type(self) -> str:
         """Get the transport type identifier.
@@ -73,7 +50,28 @@ class BaseTransportAdapter(Protocol):
         """
         ...
 
+    def send_request(
+        self,
+        url: str,
+        method: str = "POST",
+        data: Mapping[str, t.Scalar] | None = None,
+        headers: Mapping[str, str] | None = None,
+        **kwargs: t.Scalar,
+    ) -> r[Mapping[str, t.Scalar]]:
+        """Send a request using this transport.
 
-__all__ = [
-    "BaseTransportAdapter",
-]
+        Args:
+        url: Target URL or endpoint
+        method: HTTP method or operation type
+        data: Request payload data
+        headers: Request headers or metadata
+        **kwargs: Transport-specific additional parameters
+
+        Returns:
+        r containing response data or error
+
+        """
+        ...
+
+
+__all__ = ["BaseTransportAdapter"]

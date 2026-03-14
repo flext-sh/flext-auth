@@ -28,51 +28,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar
+from collections.abc import Mapping
+from typing import Protocol, TypeGuard, override, runtime_checkable
 
-from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextResult as r, FlextService as s
-from flext_core.loggings import FlextLogger
+from flext_core import FlextLogger, r, s
 
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-
-
-# Placeholder types for HTTP requests/responses (to avoid circular dependencies)
-class HttpRequest:
-    """Placeholder for HTTP request type."""
-
-    headers: ClassVar[dict[str, str]] = {}
-
-
-class HttpResponse:
-    """Placeholder for HTTP response type."""
-
-
-class _MiddlewareControlMixin:
-    """Shared enable/disable functionality for middleware classes.
-
-    Eliminates duplication of enable/disable pattern (12 lines × 2 classes).
-    This mixin provides the base control functionality for all middleware implementations.
-    """
-
-    def __init__(self) -> None:
-        """Initialize middleware control state."""
-        self._enabled = True
-
-    def enable(self) -> None:
-        """Enable middleware processing."""
-        self._enabled = True
-
-    def disable(self) -> None:
-        """Disable middleware processing."""
-        self._enabled = False
-
-    @property
-    def is_enabled(self) -> bool:
-        """Check if middleware is enabled."""
-        return self._enabled
+from flext_auth import FlextAuthBaseProvider, m
 
 
 class FlextAuthMiddleware(s[bool]):
@@ -83,13 +44,45 @@ class FlextAuthMiddleware(s[bool]):
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
+    @runtime_checkable
+    class RequestWithHeaders(Protocol):
+        """Protocol for request-like objects with a headers attribute."""
+
+        headers: dict[str, str]
+
+    @staticmethod
+    def _request_has_headers(req: RequestWithHeaders) -> TypeGuard[RequestWithHeaders]:
+        """TypeGuard: request has a headers attribute."""
+        return hasattr(req, "headers")
+
+    class _MiddlewareControlMixin:
+        """Shared enable/disable functionality for middleware classes."""
+
+        def __init__(self) -> None:
+            """Initialize middleware control state."""
+            self._enabled = True
+
+        @property
+        def is_enabled(self) -> bool:
+            """Check if middleware is enabled."""
+            return self._enabled
+
+        def disable(self) -> None:
+            """Disable middleware processing."""
+            self._enabled = False
+
+        def enable(self) -> None:
+            """Enable middleware processing."""
+            self._enabled = True
+
+    @override
     def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
         return r[bool].fail(
-            "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware",
+            "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware"
         )
 
     class FlextWebAuthMiddleware(_MiddlewareControlMixin):
@@ -109,9 +102,7 @@ class FlextAuthMiddleware(s[bool]):
         """
 
         def __init__(
-            self,
-            provider: FlextAuthBaseProvider,
-            provider_name: str = "web",
+            self, provider: FlextAuthBaseProvider, provider_name: str = "web"
         ) -> None:
             """Initialize HTTP client authentication middleware.
 
@@ -123,63 +114,122 @@ class FlextAuthMiddleware(s[bool]):
             super().__init__()
             self._provider = provider
             self.logger = FlextLogger(f"flext_auth.middleware.http.{provider_name}")
-            self._current_token: FlextAuthModels.Auth.AuthToken | None = None
+            self._current_token: m.Auth.AuthToken | None = None
 
         def process_request(
-            self,
-            request: HttpRequest,
-        ) -> r[HttpRequest]:
+            self, request: FlextAuthMiddleware.RequestWithHeaders
+        ) -> r[FlextAuthMiddleware.RequestWithHeaders]:
             """Process HTTP request by adding authentication headers.
 
             Args:
-                request: HTTP request to authenticate
+                request: HTTP request with headers to authenticate
 
             Returns:
                 r with authenticated request or error
 
             """
             if not self._enabled:
-                return r[HttpRequest].ok(request)
-
-            # Ensure we have a valid token
-            if not self._current_token:
+                return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
+            if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
-                    return r[HttpRequest].fail(
-                        token_result.error or "Authentication failed",
+                    return r[FlextAuthMiddleware.RequestWithHeaders].fail(
+                        token_result.error or "Authentication failed"
                     )
+                self._current_token = token_result.value
+            if self._current_token is None:
+                return r[FlextAuthMiddleware.RequestWithHeaders].fail(
+                    "Authentication token is not available"
+                )
+            try:
+                headers_val = request.headers
+                if isinstance(headers_val, Mapping):
+                    mutable_headers: dict[str, str] = {
+                        str(key): str(value) for key, value in headers_val.items()
+                    }
+                    mutable_headers["Authorization"] = (
+                        f"Bearer {self._current_token.token}"
+                    )
+                    request.headers = mutable_headers
+            except (AttributeError, TypeError):
+                pass
+            return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
 
-            # Add authorization header (if headers is writable)
-            if hasattr(request, "headers"):
-                try:
-                    headers = getattr(request, "headers", {})
-                    if isinstance(headers, dict):
-                        headers["Authorization"] = f"Bearer {self._current_token}"
-                        setattr(request, "headers", headers)
-                except (AttributeError, TypeError):
-                    # Headers might be read-only, skip if not writable
-                    pass
-
-            return r[HttpRequest].ok(request)
-
-        def _authenticate_or_refresh(self) -> r[FlextAuthModels.Auth.AuthToken]:
+        def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""
             if self._is_token_still_valid() and self._current_token is not None:
-                return r[FlextAuthModels.Auth.AuthToken].ok(self._current_token)
-
+                return r[m.Auth.AuthToken].ok(self._current_token)
             return self._refresh_or_reauthenticate()
 
         def _is_token_still_valid(self) -> bool:
             """Check if current token is still valid."""
-            return self._current_token is not None
-
-        def _refresh_or_reauthenticate(self) -> r[FlextAuthModels.Auth.AuthToken]:
-            """Refresh token or re-authenticate if refresh fails."""
-            # For now, just mark as needing new authentication
-            # In production, implement token refresh logic
-            return r[FlextAuthModels.Auth.AuthToken].fail(
-                "Token refresh not implemented"
+            token = self._current_token
+            if token is None:
+                return False
+            if token.is_expired or token.is_revoked:
+                return False
+            validation_result = self._provider.validate(token.token)
+            return validation_result.fold(
+                on_failure=lambda _: False,
+                on_success=lambda v: v,
             )
+
+        def _refresh_or_reauthenticate(self) -> r[m.Auth.AuthToken]:
+            """Refresh token or re-authenticate if refresh fails."""
+            current_token = self._current_token
+            if current_token is None:
+                return r[m.Auth.AuthToken].fail("No token available for refresh")
+            refresh_input = current_token.refresh_token or current_token.token
+            if not refresh_input:
+                return r[m.Auth.AuthToken].fail("No refresh token available")
+            validation_result = self._provider.validate(refresh_input)
+            if validation_result.is_failure:
+                return r[m.Auth.AuthToken].fail(
+                    validation_result.error or "Refresh source token is invalid"
+                )
+            if not validation_result.value:
+                return r[m.Auth.AuthToken].fail("Refresh source token is invalid")
+            refresh_result = self._provider.refresh(refresh_input)
+            if refresh_result.is_failure:
+                return r[m.Auth.AuthToken].fail(
+                    refresh_result.error or "Token refresh failed"
+                )
+            refreshed_payload = refresh_result.value
+            identity_id_value = (
+                refreshed_payload.identity_id
+                if hasattr(refreshed_payload, "identity_id")
+                else ""
+            )
+            if not identity_id_value:
+                user_id_value = (
+                    refreshed_payload.user_id
+                    if hasattr(refreshed_payload, "user_id")
+                    else ""
+                )
+                identity_id_value = user_id_value or current_token.identity_id
+            try:
+                refreshed_token = m.Auth.AuthToken(
+                    identity_id=identity_id_value,
+                    token=refreshed_payload.token,
+                    token_type=refreshed_payload.token_type
+                    if hasattr(refreshed_payload, "token_type")
+                    else "Bearer",
+                    expires_at=refreshed_payload.expires_at,
+                    is_revoked=bool(
+                        refreshed_payload.is_revoked
+                        if hasattr(refreshed_payload, "is_revoked")
+                        else False
+                    ),
+                    refresh_token=refreshed_payload.refresh_token
+                    if hasattr(refreshed_payload, "refresh_token")
+                    else "",
+                )
+            except (AttributeError, TypeError, ValueError):
+                return r[m.Auth.AuthToken].fail(
+                    "Provider refresh returned invalid token payload"
+                )
+            self._current_token = refreshed_token
+            return r[m.Auth.AuthToken].ok(refreshed_token)
 
 
 __all__ = ["FlextAuthMiddleware"]

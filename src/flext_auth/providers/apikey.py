@@ -10,9 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.protocols import FlextAuthProtocols as p
+from collections.abc import Mapping
+from typing import override
+
+from flext_core import r
+
+from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextResult as r, FlextTypes as t
 
 
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
@@ -21,26 +25,17 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     Provides API key-based authentication with token validation.
     """
 
-    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
-    def authenticate(
-        self,
-        credentials: dict[str, t.JsonValue],
-    ) -> r[p.Auth.TokenProtocol]:
+    @override
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using API key credentials."""
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.Token].fail("Not implemented")
 
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
-        """Validate authentication token."""
-        _ = token
-        return r[bool].fail("Not implemented")
-
+    @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 
@@ -49,6 +44,12 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
 
         """
         return {"api_key", "validate"}
+
+    @override
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+        """Validate authentication token."""
+        _ = token
+        return r[bool].fail("Not implemented")
 
 
 __all__ = ["FlextAuthApiKeyProvider"]

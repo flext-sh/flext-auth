@@ -9,9 +9,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.protocols import FlextAuthProtocols as p
+from collections.abc import Mapping
+from typing import override
+
+from flext_core import r
+
+from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextResult as r, FlextTypes as t
 
 
 class FlextAuthBasicProvider(FlextAuthBaseProvider):
@@ -20,34 +24,15 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).
     """
 
-    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
-    def authenticate(
-        self,
-        credentials: dict[str, t.JsonValue],
-    ) -> r[p.Auth.TokenProtocol]:
+    @override
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         """Authenticate using HTTP Basic credentials."""
         _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
-
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
-        """Validate authentication token."""
-        _ = token
-        return r[bool].fail("Not implemented")
-
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"basic", "validate"})
-
-        """
-        return {"basic", "validate"}
+        return r[p.Auth.Token].fail("Not implemented")
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
@@ -57,6 +42,22 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
 
         """
         return "RFC 7617"
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"basic", "validate"})
+
+        """
+        return {"basic", "validate"}
+
+    @override
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+        """Validate authentication token."""
+        _ = token
+        return r[bool].fail("Not implemented")
 
 
 __all__ = ["FlextAuthBasicProvider"]
