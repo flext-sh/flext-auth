@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import jwt
-from flext_core import r
+from flext_core import r, t
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -29,7 +29,7 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> r[Mapping[str, object]]:
+    def validate_token(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
         """Validate JWT token with railway-oriented programming.
 
         Args:
@@ -42,26 +42,32 @@ class FlextAuthJwtTokenValidator:
         try:
             config = self._provider.config
             if not config:
-                return r[Mapping[str, object]].fail("JWT configuration not provided")
+                return r[Mapping[str, t.ContainerValue]].fail(
+                    "JWT configuration not provided"
+                )
             secret_key_value = config.get("secret_key")
             match secret_key_value:
                 case str() as secret if secret:
                     secret_key = secret
                 case _:
-                    return r[Mapping[str, object]].fail("JWT secret key not configured")
+                    return r[Mapping[str, t.ContainerValue]].fail(
+                        "JWT secret key not configured"
+                    )
             algorithm_value = config.get("algorithm")
             match algorithm_value:
                 case str() as algorithm_str:
                     algorithm = algorithm_str
                 case _:
-                    return r[Mapping[str, object]].fail("JWT algorithm not configured")
+                    return r[Mapping[str, t.ContainerValue]].fail(
+                        "JWT algorithm not configured"
+                    )
             audience_value = config.get("audience")
             if audience_value is not None:
                 match audience_value:
                     case str() as audience_str:
                         audience = audience_str
                     case _:
-                        return r[Mapping[str, object]].fail(
+                        return r[Mapping[str, t.ContainerValue]].fail(
                             "JWT audience must be a string if provided"
                         )
             else:
@@ -79,11 +85,11 @@ class FlextAuthJwtTokenValidator:
                 payload = jwt.decode(
                     token, secret_key, algorithms=[algorithm], options=decode_options
                 )
-            return r[Mapping[str, object]].ok(payload)
+            return r[Mapping[str, t.ContainerValue]].ok(payload)
         except jwt.ExpiredSignatureError:
-            return r[Mapping[str, object]].fail("Token has expired")
+            return r[Mapping[str, t.ContainerValue]].fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return r[Mapping[str, object]].fail(f"Invalid token: {e}")
+            return r[Mapping[str, t.ContainerValue]].fail(f"Invalid token: {e}")
         except (
             ValueError,
             TypeError,
@@ -93,7 +99,9 @@ class FlextAuthJwtTokenValidator:
             RuntimeError,
             ImportError,
         ) as e:
-            return r[Mapping[str, object]].fail(f"Token validation failed: {e}")
+            return r[Mapping[str, t.ContainerValue]].fail(
+                f"Token validation failed: {e}"
+            )
 
 
 __all__ = ["FlextAuthJwtTokenValidator"]

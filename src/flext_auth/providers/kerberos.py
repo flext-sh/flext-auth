@@ -27,7 +27,7 @@ from flext_auth import FlextAuthModels
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 _DICT_STR_OBJECT_ADAPTER: Final[TypeAdapter[dict[str, object]]] = TypeAdapter(
-    dict[str, object]
+    dict[str, t.ContainerValue]
 )
 _LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
 
@@ -202,7 +202,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, object],
+        user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -329,7 +329,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         Callable[
             [str],
             FlextAuthModels.Auth.AuthIdentity
-            | Mapping[str, object]
+            | Mapping[str, t.ContainerValue]
             | FlextAuthModels.Auth.KerberosTicketData,
         ]
         | None

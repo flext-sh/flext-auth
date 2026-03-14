@@ -402,11 +402,11 @@ class FlextAuthManagers:
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, dict[str, object]]].ok((
+                    return r[tuple[str, dict[str, t.ContainerValue]]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, dict[str, object]]].fail("User not found")
+            return r[tuple[str, dict[str, t.ContainerValue]]].fail("User not found")
 
         def _modify_user_list_field(
             self, user_id: str, field: str, value: str, *, add: bool = True
@@ -667,7 +667,7 @@ class FlextAuthManagers:
                     ):
                         continue
                 filtered_logs.append(log)
-            return r[list[object]].ok(filtered_logs[-limit:])
+            return r[list[t.ContainerValue]].ok(filtered_logs[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""
