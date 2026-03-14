@@ -56,12 +56,12 @@ class FlextAuthManagers:
     providing a single import point while maintaining clean separation of concerns.
     """
 
-    def execute(self) -> r[object]:
+    def execute(self) -> r:
         """Execute method for FlextService interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
         """
-        return r[object].fail(
+        return r.fail(
             "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
         )
 

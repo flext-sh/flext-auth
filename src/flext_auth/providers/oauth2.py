@@ -82,7 +82,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
         self._pkce_verifiers: dict[str, str] = {}
-        self._http_client: object | None = None
+        self._http_client = None
 
     @staticmethod
     def _to_scalar_config(config: Mapping[str, t.Scalar]) -> dict[str, t.Primitives]:
@@ -198,7 +198,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required OAuth2 configuration fields: {fields_str}"
             )
-        validations: list[tuple[str, tuple[type[object], ...], str]] = [
+        validations: list[tuple[str, tuple[type, ...], str]] = [
             ("client_id", (str,), "OAuth2 client_id must be a string"),
             (
                 "client_secret",

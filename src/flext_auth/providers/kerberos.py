@@ -95,7 +95,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}"
             )
-        validations: list[tuple[str, tuple[type[object], ...], str]] = [
+        validations: list[tuple[str, tuple[type, ...], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
             ("kdc", (str,), "Kerberos kdc must be a string"),
             (

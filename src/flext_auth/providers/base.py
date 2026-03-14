@@ -74,7 +74,7 @@ class FlextAuthBaseProvider(Protocol):
         return r[str].fail("User payload must include identity identifier")
 
     @staticmethod
-    def _normalize_claim_value(value: object) -> object | None:
+    def _normalize_claim_value(value) | None:
         if value is None:
             return None
         if isinstance(value, (str, int, float, bool)):
@@ -82,7 +82,7 @@ class FlextAuthBaseProvider(Protocol):
         if isinstance(value, datetime):
             return value.isoformat()
         if isinstance(value, (list, tuple)):
-            normalized_items: list[object] = []
+            normalized_items: list = []
             for item in value:
                 normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
                 if normalized_item is not None:

@@ -38,7 +38,7 @@ class _MetadataWrapper(BaseModel):
     data: Annotated[am.Auth.Providers.Metadata, Field(description="Metadata")]
 
 
-def _is_auth_provider(value: object) -> TypeGuard[FlextAuthBaseProvider]:
+def _is_auth_provider(value) -> TypeGuard[FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 

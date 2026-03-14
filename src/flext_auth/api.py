@@ -251,9 +251,9 @@ class FlextAuth:
         """Delete identity - delegation to identity_service."""
         return self._identity_service.identity_manager.delete_user(user_id)
 
-    def execute(self) -> r[object]:
+    def execute(self) -> r:
         """Flexible execute implementation with railway orchestration."""
-        return r[object].fail(
+        return r.fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"
         )
 
