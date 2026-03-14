@@ -1,13 +1,7 @@
 # AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
 # Regenerate with: make codegen
 #
-"""FLEXT Auth Tests - Test infrastructure and utilities.
-
-Provides TestsFlextAuth classes extending FlextTests and FlextAuth for comprehensive testing.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""Unit package."""
 
 from __future__ import annotations
 
@@ -16,19 +10,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from tests.conftest import mock_get_global
-    from tests.constants import TestsFlextAuthConstants, c
-    from tests.fixtures.certificates import (
-        CertificateFixture,
-        generate_client_cert,
-        generate_self_signed_cert,
-    )
-    from tests.helpers.protocols import TestsProtocols
-    from tests.helpers.typings import TestsTypings
-    from tests.helpers.utilities import TestsUtilities
-    from tests.models import TestsFlextAuthModels, m, tm
-    from tests.protocols import TestsFlextAuthProtocols, p
-    from tests.typings import TestsFlextAuthTypes, t
     from tests.unit.test_api import (
         TestAuthModule,
         TestFlextAuth,
@@ -61,14 +42,12 @@ if TYPE_CHECKING:
         TestProviderTokenFlows,
     )
     from tests.unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
-    from tests.unit.test_constants import TestFlextAuthConstants
+    from tests.unit.test_constants import TestFlextAuthConstants, c
     from tests.unit.test_token_real_flows import HttpRequest, TestTokenRealFlows
-    from tests.unit.test_typings import TestFlextAuthTypes
-    from tests.utilities import TestsFlextAuthUtilities, u
+    from tests.unit.test_typings import TestFlextAuthTypes, TestFlextAuthTypes as t
 
 # Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
     "HttpRequest": ("tests.unit.test_token_real_flows", "HttpRequest"),
     "TestAuthModule": ("tests.unit.test_api", "TestAuthModule"),
     "TestFlextAuth": ("tests.unit.test_api", "TestFlextAuth"),
@@ -164,30 +143,11 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestJwtTokenGenerator": ("tests.unit.test_config", "TestJwtTokenGenerator"),
     "TestProviderTokenFlows": ("tests.unit.test_api", "TestProviderTokenFlows"),
     "TestTokenRealFlows": ("tests.unit.test_token_real_flows", "TestTokenRealFlows"),
-    "TestsFlextAuthConstants": ("tests.constants", "TestsFlextAuthConstants"),
-    "TestsFlextAuthModels": ("tests.models", "TestsFlextAuthModels"),
-    "TestsFlextAuthProtocols": ("tests.protocols", "TestsFlextAuthProtocols"),
-    "TestsFlextAuthTypes": ("tests.typings", "TestsFlextAuthTypes"),
-    "TestsFlextAuthUtilities": ("tests.utilities", "TestsFlextAuthUtilities"),
-    "TestsProtocols": ("tests.helpers.protocols", "TestsProtocols"),
-    "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
-    "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
-    "c": ("tests.constants", "c"),
-    "generate_client_cert": ("tests.fixtures.certificates", "generate_client_cert"),
-    "generate_self_signed_cert": (
-        "tests.fixtures.certificates",
-        "generate_self_signed_cert",
-    ),
-    "m": ("tests.models", "m"),
-    "mock_get_global": ("tests.conftest", "mock_get_global"),
-    "p": ("tests.protocols", "p"),
-    "t": ("tests.typings", "t"),
-    "tm": ("tests.models", "tm"),
-    "u": ("tests.utilities", "u"),
+    "c": ("tests.unit.test_constants", "c"),
+    "t": ("tests.unit.test_typings", "TestFlextAuthTypes"),
 }
 
 __all__ = [
-    "CertificateFixture",
     "HttpRequest",
     "TestAuthModule",
     "TestFlextAuth",
@@ -223,23 +183,8 @@ __all__ = [
     "TestJwtTokenGenerator",
     "TestProviderTokenFlows",
     "TestTokenRealFlows",
-    "TestsFlextAuthConstants",
-    "TestsFlextAuthModels",
-    "TestsFlextAuthProtocols",
-    "TestsFlextAuthTypes",
-    "TestsFlextAuthUtilities",
-    "TestsProtocols",
-    "TestsTypings",
-    "TestsUtilities",
     "c",
-    "generate_client_cert",
-    "generate_self_signed_cert",
-    "m",
-    "mock_get_global",
-    "p",
     "t",
-    "tm",
-    "u",
 ]
 
 
