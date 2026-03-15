@@ -1,11 +1,7 @@
 # AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
 # Regenerate with: make codegen
 #
-"""FLEXT Auth - Authentication Library.
-
-Provides authentication framework with multi-provider support.
-
-"""
+"""Flext auth package."""
 
 from __future__ import annotations
 
@@ -16,6 +12,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
+    from flext_auth import providers, transports
     from flext_auth.__version__ import (
         __all__,
         __author__,
@@ -141,8 +138,10 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "c": ("flext_auth.constants", "c"),
     "m": ("flext_auth.models", "m"),
     "p": ("flext_auth.protocols", "p"),
+    "providers": ("flext_auth.providers", ""),
     "s": ("flext_auth.provider_service", "FlextAuthProviderService"),
     "t": ("flext_auth.typings", "t"),
+    "transports": ("flext_auth.transports", ""),
     "u": ("flext_auth.utilities", "u"),
     "x": ("flext_auth.mixins", "FlextAuthMixins"),
 }
@@ -194,8 +193,10 @@ __all__ = [
     "c",
     "m",
     "p",
+    "providers",
     "s",
     "t",
+    "transports",
     "u",
     "x",
 ]

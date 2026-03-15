@@ -1,13 +1,7 @@
 # AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
 # Regenerate with: make codegen
 #
-"""FLEXT Auth Tests - Test infrastructure and utilities.
-
-Provides TestsFlextAuth classes extending FlextTests and FlextAuth for comprehensive testing.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""Tests package."""
 
 from __future__ import annotations
 
@@ -17,6 +11,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
+    from tests import fixtures, helpers, unit
     from tests.conftest import mock_get_global
     from tests.constants import TestsFlextAuthConstants, c
     from tests.fixtures.certificates import (
@@ -173,17 +168,20 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
     "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
     "c": ("tests.constants", "c"),
+    "fixtures": ("tests.fixtures", ""),
     "generate_client_cert": ("tests.fixtures.certificates", "generate_client_cert"),
     "generate_self_signed_cert": (
         "tests.fixtures.certificates",
         "generate_self_signed_cert",
     ),
+    "helpers": ("tests.helpers", ""),
     "m": ("tests.models", "m"),
     "mock_get_global": ("tests.conftest", "mock_get_global"),
     "p": ("tests.protocols", "p"),
     "t": ("tests.typings", "t"),
     "tm": ("tests.models", "tm"),
     "u": ("tests.utilities", "u"),
+    "unit": ("tests.unit", ""),
 }
 
 __all__ = [
@@ -232,14 +230,17 @@ __all__ = [
     "TestsTypings",
     "TestsUtilities",
     "c",
+    "fixtures",
     "generate_client_cert",
     "generate_self_signed_cert",
+    "helpers",
     "m",
     "mock_get_global",
     "p",
     "t",
     "tm",
     "u",
+    "unit",
 ]
 
 
