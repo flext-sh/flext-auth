@@ -43,7 +43,7 @@ class FlextAuth:
 
     _instance: ClassVar[FlextAuth | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
-    logger: FlextLogger
+    logger: p.StructlogLogger
     _registry: FlextAuthRegistry
     _provider_service: FlextAuthProviderService
     _identity_service: FlextAuthIdentityService

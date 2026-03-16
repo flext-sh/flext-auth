@@ -73,8 +73,8 @@ class FlextAuthManagers:
         """
 
         _config: FlextAuthSettings
-        logger: FlextLogger
-        _context: FlextContext
+        logger: p.StructlogLogger
+        _context: p.Context
         _users: dict[str, dict[str, object]]
 
         def __init__(self, config: FlextAuthSettings) -> None:
