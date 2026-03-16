@@ -25,7 +25,7 @@ class FlextAuthIdentityService(s[bool]):
     SOLID principles with dependency injection and railway error handling.
     """
 
-    def __init__(self, *, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
+    def __init__(self, *, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
         self._managers = ServiceManagers(config, dispatcher)

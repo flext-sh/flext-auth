@@ -40,7 +40,7 @@ class ServiceManagers:
         "user_manager",
     )
 
-    def __init__(self, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
+    def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
         """Initialize all standard managers used by services."""
         self.config = config
         self.dispatcher = dispatcher
@@ -56,7 +56,7 @@ class FlextAuthManagers:
     providing a single import point while maintaining clean separation of concerns.
     """
 
-    def execute(self) -> r:
+    def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
@@ -73,7 +73,7 @@ class FlextAuthManagers:
         """
 
         _config: FlextAuthSettings
-        logger: p.StructlogLogger
+        logger: p.Logger
         _context: p.Context
         _users: dict[str, dict[str, object]]
 
@@ -610,7 +610,7 @@ class FlextAuthManagers:
         _EVENT_AUTHORIZATION_GRANTED = "authorization_granted"
         _EVENT_AUTHORIZATION_DENIED = "authorization_denied"
 
-        def __init__(self, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
+        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
             """Initialize audit logger with configuration."""
             super().__init__()
             self._config = config
@@ -834,7 +834,7 @@ class FlextAuthManagers:
         Uses newer FlextSettings features for complete integration.
         """
 
-        def __init__(self, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
+        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
             """Initialize rate limiter with configuration."""
             super().__init__()
             self._config = config

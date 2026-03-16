@@ -43,7 +43,7 @@ class FlextAuth:
 
     _instance: ClassVar[FlextAuth | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
-    logger: p.StructlogLogger
+    logger: p.Logger
     _registry: FlextAuthRegistry
     _provider_service: FlextAuthProviderService
     _identity_service: FlextAuthIdentityService
@@ -61,7 +61,7 @@ class FlextAuth:
             self._config = FlextAuthSettings()
         self._registry = FlextAuthRegistry()
         command_bus_result = FlextContainer.get_global().get("command_bus").unwrap()
-        if not isinstance(command_bus_result, p.CommandBus):
+        if not isinstance(command_bus_result, p.Dispatcher):
             err_msg = "command_bus is not a CommandBus"
             raise TypeError(err_msg)
         self._dispatcher = command_bus_result
@@ -251,7 +251,7 @@ class FlextAuth:
         """Delete identity - delegation to identity_service."""
         return self._identity_service.identity_manager.delete_user(user_id)
 
-    def execute(self) -> r:
+    def execute(self) -> r[bool]:
         """Flexible execute implementation with railway orchestration."""
         return r.fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"

@@ -37,7 +37,7 @@ class FlextAuthTokenService(s[bool]):
         *,
         config: FlextAuthSettings,
         provider_service: FlextAuthProviderService,
-        dispatcher: p.CommandBus,
+        dispatcher: p.Dispatcher,
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()

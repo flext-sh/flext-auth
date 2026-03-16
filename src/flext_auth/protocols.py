@@ -317,7 +317,7 @@ class FlextAuthBaseProvider(Protocol):
         if isinstance(value, datetime):
             return value.isoformat()
         if isinstance(value, (list, tuple)):
-            normalized_items: list = []
+            normalized_items: list[t.Scalar | None] = []
             for item in value:
                 normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
                 if normalized_item is not None:

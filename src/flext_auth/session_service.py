@@ -17,7 +17,7 @@ from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers
 class FlextAuthSessionService(s[bool]):
     """Focused service for session management with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
+    def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._managers = ServiceManagers(config, dispatcher)

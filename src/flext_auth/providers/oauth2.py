@@ -82,7 +82,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
         self._pkce_verifiers: dict[str, str] = {}
-        self._http_client = None
+        self._http_client: object | None = None
 
     @staticmethod
     def _to_scalar_config(config: Mapping[str, t.Scalar]) -> dict[str, t.Primitives]:
