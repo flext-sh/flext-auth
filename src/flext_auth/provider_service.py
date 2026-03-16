@@ -29,7 +29,7 @@ from flext_auth import (
     p,
     t,
 )
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.protocols import FlextAuthBaseProvider
 
 
 class FlextAuthProviderService(s[bool]):

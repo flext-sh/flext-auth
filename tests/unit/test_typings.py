@@ -5,7 +5,7 @@ Tests the authentication types module following FLEXT standards.
 
 from __future__ import annotations
 
-from flext_core import t
+from tests import t
 
 from flext_auth import FlextAuthTypes as t_auth
 

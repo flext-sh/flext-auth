@@ -22,7 +22,6 @@ if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
-    from flext_auth.providers.base import FlextAuthBaseProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
     from flext_auth.providers.jwt import FlextAuthJwtProvider
@@ -42,7 +41,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "flext_auth.providers.apikey",
         "FlextAuthApiKeyProvider",
     ),
-    "FlextAuthBaseProvider": ("flext_auth.providers.base", "FlextAuthBaseProvider"),
     "FlextAuthBasicProvider": ("flext_auth.providers.basic", "FlextAuthBasicProvider"),
     "FlextAuthCertificateProvider": (
         "flext_auth.providers.certificate",
@@ -78,7 +76,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
 
 __all__ = [
     "FlextAuthApiKeyProvider",
-    "FlextAuthBaseProvider",
     "FlextAuthBasicProvider",
     "FlextAuthCertificateProvider",
     "FlextAuthJwtProvider",

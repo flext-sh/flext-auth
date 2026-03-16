@@ -11,7 +11,7 @@ from typing import override
 from flext_core import r
 
 from flext_auth import m, p
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.protocols import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 

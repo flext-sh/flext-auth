@@ -13,7 +13,7 @@ from flext_core import FlextRegistry, r, t
 from pydantic import BaseModel, ConfigDict, Field
 
 from flext_auth import FlextAuthModels as am
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.protocols import FlextAuthBaseProvider
 
 
 class _ProviderWrapper(BaseModel):
