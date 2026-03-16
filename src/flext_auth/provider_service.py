@@ -78,13 +78,13 @@ class FlextAuthProviderService(s[bool]):
         self,
         user: m.Auth.AuthIdentity,
         provider: str = "jwt",
-        token_type: str = c.Auth.TokenTypes.ACCESS.value,
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Railway-oriented token generation with direct provider access."""
         return self._providers.get(provider).flat_map(
             lambda p: p.generate_token_for_user(
-                user.model_dump(), token_type, expiry_minutes
+                user.model_dump(), token_kind, expiry_minutes
             )
         )
 

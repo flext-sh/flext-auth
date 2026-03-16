@@ -203,12 +203,12 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
-        token_type: str = "access",
+        token_kind: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate Kerberos token for user."""
         return super().generate_token_for_user(
-            user=user, token_type=token_type, expiry_minutes=expiry_minutes
+            user=user, token_kind=token_kind, expiry_minutes=expiry_minutes
         )
 
     def get_metadata(self) -> FlextAuthModels.Auth.Providers.Metadata:

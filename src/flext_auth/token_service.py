@@ -65,38 +65,38 @@ class FlextAuthTokenService(s[bool]):
             "Use specific token methods: validate_token, generate_jwt_token, etc."
         )
 
-    def generate_jwt_token(
-        self,
-        user_id: str,
-        expires_in_minutes: int | None = None,
-        token_type: str = c.Auth.TokenTypes.ACCESS.value,
-    ) -> r[str]:
-        """Railway-oriented JWT token generation with audit logging."""
-        user_result = self.user_manager.get_user(user_id)
-        if user_result.is_failure:
-            error = user_result.error
-            FlextLogger(__name__).info(
-                "Token creation",
-                user_id=user_id,
-                token_type=token_type,
-                success=False,
-                reason=error or "",
-            )
-            return r[str].fail(error or "User lookup failed")
-        user = user_result.value
-        user_dict = user.model_dump(exclude={"credential_hash"})
-        token_result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.generate_token_for_user(
-                user_dict, token_type=token_type, expiry_minutes=expires_in_minutes
-            )
-        )
-        if token_result.is_failure:
-            error = token_result.error
-            FlextLogger(__name__).info(
-                "Token creation",
-                user_id=user_id,
-                token_type=token_type,
-                success=False,
+     def generate_jwt_token(
+         self,
+         user_id: str,
+         expires_in_minutes: int | None = None,
+         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
+     ) -> r[str]:
+         """Railway-oriented JWT token generation with audit logging."""
+         user_result = self.user_manager.get_user(user_id)
+         if user_result.is_failure:
+             error = user_result.error
+             FlextLogger(__name__).info(
+                 "Token creation",
+                 user_id=user_id,
+                 token_type=token_kind,
+                 success=False,
+                 reason=error or "",
+             )
+             return r[str].fail(error or "User lookup failed")
+         user = user_result.value
+         user_dict = user.model_dump(exclude={"credential_hash"})
+         token_result = self._get_jwt_provider_cached().flat_map(
+             lambda provider: provider.generate_token_for_user(
+                 user_dict, token_kind=token_kind, expiry_minutes=expires_in_minutes
+             )
+         )
+         if token_result.is_failure:
+             error = token_result.error
+             FlextLogger(__name__).info(
+                 "Token creation",
+                 user_id=user_id,
+                 token_type=token_kind,
+                 success=False,
                 reason=error or "",
             )
             return r[str].fail(error or "Token generation failed")

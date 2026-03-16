@@ -425,12 +425,16 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class SessionStatus(StrEnum):
+        """Session status enumeration."""
+
         ACTIVE = "active"
         EXPIRED = "expired"
         REVOKED = "revoked"
 
     @unique
     class SessionAction(StrEnum):
+        """Session action enumeration."""
+
         CREATE = "create"
         EXTEND = "extend"
         REVOKE = "revoke"
@@ -438,6 +442,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class TokenType(StrEnum):
+        """Token type enumeration."""
+
         ACCESS = "access"
         REFRESH = "refresh"
         API = "api"
@@ -445,6 +451,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class TokenStatus(StrEnum):
+        """Token status enumeration."""
+
         VALID = "valid"
         EXPIRED = "expired"
         REVOKED = "revoked"
@@ -452,6 +460,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class Permission(StrEnum):
+        """Permission enumeration."""
+
         READ = "read"
         WRITE = "write"
         DELETE = "delete"
@@ -459,6 +469,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class Role(StrEnum):
+        """Role enumeration."""
+
         USER = "user"
         MODERATOR = "moderator"
         REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
@@ -466,6 +478,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class SecurityEvent(StrEnum):
+        """Security event enumeration."""
+
         LOGIN_SUCCESS = "login_success"
         LOGIN_FAILURE = "login_failure"
         TOKEN_CREATED = "token_created"
@@ -473,6 +487,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class ThreatLevel(StrEnum):
+        """Threat level enumeration."""
+
         LOW = "low"
         MEDIUM = "medium"
         HIGH = "high"
@@ -480,33 +496,45 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class ProjectType(StrEnum):
+        """Project type enumeration."""
+
         FLEXT_AUTH = "flext-auth"
         FLEXT_CORE = "flext-core"
         FLEXT_API = "flext-api"
 
     @unique
     class AccessTokens(StrEnum):
+        """Access tokens enumeration."""
+
         ACCESS = "access"
         BEARER = "bearer"
 
     @unique
     class BearerTokens(StrEnum):
+        """Bearer tokens enumeration."""
+
         BEARER = "bearer"
         ACCESS = "access"
 
     @unique
     class UserRoles(StrEnum):
+        """User roles enumeration."""
+
         USER = "user"
         MODERATOR = "moderator"
         GUEST = "guest"
 
     @unique
     class WritePermissions(StrEnum):
+        """Write permissions enumeration."""
+
         WRITE = "write"
         DELETE = "delete"
 
     @unique
     class TokenTypeLiteral(StrEnum):
+        """Token type literal enumeration."""
+
         ACCESS = "access"
         REFRESH = "refresh"
         API = "api"
@@ -514,6 +542,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class ProviderTypeLiteral(StrEnum):
+        """Provider type literal enumeration."""
+
         BASIC = "basic"
         JWT = "jwt"
         OAUTH2 = "oauth2"
@@ -525,6 +555,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class RoleTypeLiteral(StrEnum):
+        """Role type literal enumeration."""
+
         REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
         USER = "user"
         MODERATOR = "moderator"
@@ -532,6 +564,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class PermissionTypeLiteral(StrEnum):
+        """Permission type literal enumeration."""
+
         READ = "read"
         WRITE = "write"
         DELETE = "delete"
@@ -539,6 +573,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class AlgorithmLiteral(StrEnum):
+        """Algorithm literal enumeration."""
+
         HS256 = "HS256"
         RS256 = "RS256"
         ES256 = "ES256"

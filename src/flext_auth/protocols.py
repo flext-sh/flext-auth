@@ -354,7 +354,7 @@ class FlextAuthBaseProvider(Protocol):
     def generate_token(
         self,
         payload: Mapping[str, object],
-        token_type: str = "access",
+        token_kind: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate a signed JWT token from the provided payload."""
@@ -426,7 +426,7 @@ class FlextAuthBaseProvider(Protocol):
             "name": name,
             "email": contact,
             "roles": user_roles,
-            "token_type": token_type or "access",
+            "token_type": token_kind or "access",
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(minutes=effective_expiry)).timestamp()),
             "iss": issuer_name,
@@ -456,7 +456,7 @@ class FlextAuthBaseProvider(Protocol):
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
-        token_type: str = "access",
+        token_kind: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate authentication token for a user.
@@ -466,7 +466,7 @@ class FlextAuthBaseProvider(Protocol):
 
         Args:
             user: User/identity dictionary with user data
-            token_type: Token type (access, refresh, id, bearer)
+            token_kind: Token type (access, refresh, id, bearer)
             expiry_minutes: Token expiration time in minutes (optional)
 
         Returns:
@@ -481,7 +481,7 @@ class FlextAuthBaseProvider(Protocol):
             return r[str].fail(payload_result.error or "Invalid user payload")
         return self.generate_token(
             payload=payload_result.value,
-            token_type=token_type,
+            token_kind=token_kind,
             expiry_minutes=expiry_minutes,
         )
 
@@ -518,7 +518,7 @@ class FlextAuthBaseProvider(Protocol):
             else "access"
         )
         generation_result = self.generate_token(
-            payload=source_claims, token_type=refresh_type, expiry_minutes=None
+            payload=source_claims, token_kind=refresh_type, expiry_minutes=None
         )
         if generation_result.is_failure:
             return r[p.Auth.Token].fail(

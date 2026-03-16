@@ -429,12 +429,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
-        token_type: str = "oauth2_access",
+        token_kind: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate OAuth2 token for user."""
         return super().generate_token_for_user(
-            user=user, token_type=token_type, expiry_minutes=expiry_minutes
+            user=user, token_kind=token_kind, expiry_minutes=expiry_minutes
         )
 
     def get_metadata(self) -> m.Auth.Providers.Metadata:
