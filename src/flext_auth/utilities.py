@@ -16,10 +16,8 @@ import jwt
 from flext_api import FlextApiUtilities
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr, ValidationError
-from src.flext_auth.constants import FlextAuthConstants
 
 from flext_auth import FlextAuthConstants, c, t
-from flext_auth.constants import FlextAuthConstants
 
 
 class FlextAuthUtilities(FlextApiUtilities):
