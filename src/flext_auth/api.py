@@ -26,6 +26,7 @@ from flext_auth import (
     m,
     t,
 )
+from flext_auth.protocols import FlextAuthBaseProvider
 
 
 class FlextAuth:
