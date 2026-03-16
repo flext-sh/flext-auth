@@ -16,7 +16,6 @@ from typing import ClassVar, Self
 from flext_core import FlextContainer, FlextLogger, p, r
 
 from flext_auth import (
-    FlextAuthBaseProvider,
     FlextAuthIdentityService,
     FlextAuthProviderService,
     FlextAuthRegistry,

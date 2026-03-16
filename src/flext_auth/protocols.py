@@ -17,7 +17,9 @@ from typing import Protocol, TypeAlias, override, runtime_checkable
 
 import jwt
 from flext_api import FlextApiProtocols
-from flext_core import FlextProtocols, m, r, t, u
+from flext_core import FlextProtocols, r, t, u
+
+from flext_auth.models import FlextAuthModels as m
 
 
 class FlextAuthProtocols(FlextApiProtocols):
