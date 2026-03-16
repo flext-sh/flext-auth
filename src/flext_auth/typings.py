@@ -25,10 +25,8 @@ class FlextAuthTypes(FlextApiTypes):
     class Auth:
         """Authentication-related type definitions."""
 
-        type AuthMethod = Literal["basic", "jwt", "oauth2", "apikey"]
-        type AuthStatus = Literal[
-            "authenticated", "unauthenticated", "expired", "invalid"
-        ]
+        type AuthMethod = c.AuthMethod
+        type AuthStatus = c.AuthStatus
         type CoercedTokenTypes = Annotated[
             c.Auth.TokenTypes, BeforeValidator(lambda x: x)
         ]
@@ -47,45 +45,37 @@ class FlextAuthTypes(FlextApiTypes):
         class UserManagement:
             """User management type definitions."""
 
-            type UserStatus = Literal["active", "inactive", "locked", "pending"]
-            type UserAction = Literal[
-                "create", "update", "delete", "activate", "deactivate"
-            ]
+            type UserStatus = c.UserStatus
+            type UserAction = c.UserAction
 
         class SessionManagement:
             """Session management type definitions."""
 
-            type SessionStatus = Literal["active", "expired", "revoked"]
-            type SessionAction = Literal["create", "extend", "revoke", "validate"]
+            type SessionStatus = c.SessionStatus
+            type SessionAction = c.SessionAction
 
         class TokenManagement:
             """Token management type definitions."""
 
-            type TokenType = Literal["access", "refresh", "api", "bearer"]
-            type TokenStatus = Literal["valid", "expired", "revoked", "invalid"]
+            type TokenType = c.TokenType
+            type TokenStatus = c.TokenStatus
 
         class Authorization:
             """Authorization type definitions."""
 
-            type Permission = Literal[
-                "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
-            ]
-            type Role = Literal[
-                "user", "moderator", "REDACTED_LDAP_BIND_PASSWORD", "guest"
-            ]
+            type Permission = c.Permission
+            type Role = c.Role
 
         class Security:
             """Security-related type definitions."""
 
-            type SecurityEvent = Literal[
-                "login_success", "login_failure", "token_created", "token_revoked"
-            ]
-            type ThreatLevel = Literal["low", "medium", "high", "critical"]
+            type SecurityEvent = c.SecurityEvent
+            type ThreatLevel = c.ThreatLevel
 
         class Project:
             """Project type namespace."""
 
-            type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
+            type ProjectType = c.ProjectType
             AuthProjectConfig = m.Auth.ProviderConfig
 
         class Providers:
@@ -184,48 +174,29 @@ class FlextAuthTypes(FlextApiTypes):
             type ProviderType = c.Auth.ProviderTypes
             type Role = c.Auth.RoleTypes
             type Permission = c.Auth.PermissionTypes
-            type AccessTokens = Literal["access", "bearer"]
+            type AccessTokens = c.AccessTokens
             "Access token types for operations."
             type RefreshTokens = Literal["refresh"]
             "Refresh token types."
-            type BearerTokens = Literal["bearer", "access"]
+            type BearerTokens = c.BearerTokens
             "Bearer token types."
             type AdminRoles = Literal["REDACTED_LDAP_BIND_PASSWORD"]
             "Admin role types."
-            type UserRoles = Literal["user", "moderator", "guest"]
+            type UserRoles = c.UserRoles
             "User role types."
-            type WritePermissions = Literal["write", "delete"]
+            type WritePermissions = c.WritePermissions
             "Write permission types."
             type AdminPermissions = Literal["REDACTED_LDAP_BIND_PASSWORD"]
             "Admin permission types."
-            type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
+            type TokenTypeLiteral = c.TokenTypeLiteral
             "Token type literal - references TokenTypes StrEnum members."
-            type ProviderTypeLiteral = Literal[
-                "basic",
-                "jwt",
-                "oauth2",
-                "saml",
-                "ldap",
-                "certificate",
-                "kerberos",
-                "apikey",
-            ]
+            type ProviderTypeLiteral = c.ProviderTypeLiteral
             "Provider type literal - references ProviderTypes StrEnum members."
-            type RoleTypeLiteral = Literal[
-                "REDACTED_LDAP_BIND_PASSWORD",
-                "user",
-                "moderator",
-                "guest",
-            ]
+            type RoleTypeLiteral = c.RoleTypeLiteral
             "Role type literal - matches RoleTypes StrEnum values exactly."
-            type PermissionTypeLiteral = Literal[
-                "read",
-                "write",
-                "delete",
-                "REDACTED_LDAP_BIND_PASSWORD",
-            ]
+            type PermissionTypeLiteral = c.PermissionTypeLiteral
             "Permission type literal - matches PermissionTypes StrEnum values exactly."
-            type AlgorithmLiteral = Literal["HS256", "RS256", "ES256"]
+            type AlgorithmLiteral = c.AlgorithmLiteral
             "Algorithm literal - matches Algorithms StrEnum values exactly."
 
         class Unit:
@@ -252,7 +223,7 @@ class FlextAuthTypes(FlextApiTypes):
     class Project(FlextApiTypes.Project):
         """Auth project namespace extending API project namespace."""
 
-        type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
+        type ProjectType = c.ProjectType
         AuthProjectConfig = m.Auth.ProviderConfig
 
     OAuth2TokenResponse = Auth.OAuth2TokenResponse

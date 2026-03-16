@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import Protocol, TypeAlias, override, runtime_checkable
+from typing import Protocol, override, runtime_checkable
 
 import jwt
 from flext_api import FlextApiProtocols
@@ -52,7 +52,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         structural typing - no model imports required.
         """
 
-        AuthValue: TypeAlias = object
+        type AuthValue = object
 
         @runtime_checkable
         class Identity(FlextProtocols.Service[bool], Protocol):

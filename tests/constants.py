@@ -13,7 +13,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final, Literal, TypeAlias
+from typing import Final, Literal
 
 from flext_tests import FlextTestsConstants
 
@@ -95,8 +95,8 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     class TestLiterals:
         """Literal type aliases for test constants."""
 
-        TokenTypeLiteral: TypeAlias = Literal["access", "refresh", "api", "bearer"]
-        ProviderTypeLiteral: TypeAlias = Literal[
+        type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
+        type ProviderTypeLiteral = Literal[
             "basic",
             "jwt",
             "oauth2",
@@ -106,10 +106,10 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
             "kerberos",
             "apikey",
         ]
-        RoleTypeLiteral: TypeAlias = Literal[
+        type RoleTypeLiteral = Literal[
             "REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"
         ]
-        PermissionTypeLiteral: TypeAlias = Literal[
+        type PermissionTypeLiteral = Literal[
             "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
         ]
 

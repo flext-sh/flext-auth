@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated, ClassVar, TypeGuard
+from typing import Annotated, ClassVar, TypeIs
 
 from flext_core import FlextRegistry, r, t
 from pydantic import BaseModel, ConfigDict, Field
@@ -38,7 +38,7 @@ class _MetadataWrapper(BaseModel):
     data: Annotated[am.Auth.Providers.Metadata, Field(description="Metadata")]
 
 
-def _is_auth_provider(value: t.RegisterableService) -> TypeGuard[FlextAuthBaseProvider]:
+def _is_auth_provider(value: BaseModel | t.Container) -> TypeIs[FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 
@@ -81,13 +81,16 @@ class FlextAuthRegistry(FlextRegistry):
             return r[FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{name}' not registered"
             )
-        wrapped_provider = result.value
-        provider = getattr(wrapped_provider, "provider", wrapped_provider)
-        if not _is_auth_provider(provider):
+        wrapped_provider = result.unwrap()
+        inner = getattr(wrapped_provider, "provider", None)
+        candidate: t.RegisterableService = (
+            inner if isinstance(inner, BaseModel) else wrapped_provider
+        )
+        if not _is_auth_provider(candidate):
             return r[FlextAuthBaseProvider].fail(
                 f"Provider '{name}' is not a FlextAuthBaseProvider"
             )
-        return r[FlextAuthBaseProvider].ok(provider)
+        return r[FlextAuthBaseProvider].ok(candidate)
 
     def get_capabilities(self, name: str) -> r[set[str]]:
         """Get provider capabilities."""

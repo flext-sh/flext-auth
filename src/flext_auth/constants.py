@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping, Set as AbstractSet
-from enum import StrEnum
+from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import Final
 
@@ -65,6 +65,7 @@ class FlextAuthConstants(FlextApiConstants):
         organization and to enable composition with other domain constants.
         """
 
+        @unique
         class TokenTypes(StrEnum):
             """Token type enumeration - automatic Pydantic validation.
 
@@ -87,6 +88,7 @@ class FlextAuthConstants(FlextApiConstants):
             API = "api"
             BEARER = "bearer"
 
+        @unique
         class ProviderTypes(StrEnum):
             """Provider type enumeration - automatic Pydantic validation.
 
@@ -104,6 +106,7 @@ class FlextAuthConstants(FlextApiConstants):
             KERBEROS = "kerberos"
             APIKEY = "apikey"
 
+        @unique
         class RoleTypes(StrEnum):
             """Role type enumeration - automatic Pydantic validation.
 
@@ -117,6 +120,7 @@ class FlextAuthConstants(FlextApiConstants):
             MODERATOR = "moderator"
             GUEST = "guest"
 
+        @unique
         class PermissionTypes(StrEnum):
             """Permission type enumeration - automatic Pydantic validation.
 
@@ -130,6 +134,7 @@ class FlextAuthConstants(FlextApiConstants):
             DELETE = "delete"
             ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
 
+        @unique
         class Algorithms(StrEnum):
             """Algorithm type enumeration.
 
@@ -380,6 +385,155 @@ class FlextAuthConstants(FlextApiConstants):
             "Maximum length for permission names."
             MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
             "Maximum length for permission descriptions."
+
+    @unique
+    class AuthMethod(StrEnum):
+        BASIC = "basic"
+        JWT = "jwt"
+        OAUTH2 = "oauth2"
+        APIKEY = "apikey"
+
+    @unique
+    class AuthStatus(StrEnum):
+        AUTHENTICATED = "authenticated"
+        UNAUTHENTICATED = "unauthenticated"
+        EXPIRED = "expired"
+        INVALID = "invalid"
+
+    @unique
+    class UserStatus(StrEnum):
+        ACTIVE = "active"
+        INACTIVE = "inactive"
+        LOCKED = "locked"
+        PENDING = "pending"
+
+    @unique
+    class UserAction(StrEnum):
+        CREATE = "create"
+        UPDATE = "update"
+        DELETE = "delete"
+        ACTIVATE = "activate"
+        DEACTIVATE = "deactivate"
+
+    @unique
+    class SessionStatus(StrEnum):
+        ACTIVE = "active"
+        EXPIRED = "expired"
+        REVOKED = "revoked"
+
+    @unique
+    class SessionAction(StrEnum):
+        CREATE = "create"
+        EXTEND = "extend"
+        REVOKE = "revoke"
+        VALIDATE = "validate"
+
+    @unique
+    class TokenType(StrEnum):
+        ACCESS = "access"
+        REFRESH = "refresh"
+        API = "api"
+        BEARER = "bearer"
+
+    @unique
+    class TokenStatus(StrEnum):
+        VALID = "valid"
+        EXPIRED = "expired"
+        REVOKED = "revoked"
+        INVALID = "invalid"
+
+    @unique
+    class Permission(StrEnum):
+        READ = "read"
+        WRITE = "write"
+        DELETE = "delete"
+        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+
+    @unique
+    class Role(StrEnum):
+        USER = "user"
+        MODERATOR = "moderator"
+        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+        GUEST = "guest"
+
+    @unique
+    class SecurityEvent(StrEnum):
+        LOGIN_SUCCESS = "login_success"
+        LOGIN_FAILURE = "login_failure"
+        TOKEN_CREATED = "token_created"
+        TOKEN_REVOKED = "token_revoked"
+
+    @unique
+    class ThreatLevel(StrEnum):
+        LOW = "low"
+        MEDIUM = "medium"
+        HIGH = "high"
+        CRITICAL = "critical"
+
+    @unique
+    class ProjectType(StrEnum):
+        FLEXT_AUTH = "flext-auth"
+        FLEXT_CORE = "flext-core"
+        FLEXT_API = "flext-api"
+
+    @unique
+    class AccessTokens(StrEnum):
+        ACCESS = "access"
+        BEARER = "bearer"
+
+    @unique
+    class BearerTokens(StrEnum):
+        BEARER = "bearer"
+        ACCESS = "access"
+
+    @unique
+    class UserRoles(StrEnum):
+        USER = "user"
+        MODERATOR = "moderator"
+        GUEST = "guest"
+
+    @unique
+    class WritePermissions(StrEnum):
+        WRITE = "write"
+        DELETE = "delete"
+
+    @unique
+    class TokenTypeLiteral(StrEnum):
+        ACCESS = "access"
+        REFRESH = "refresh"
+        API = "api"
+        BEARER = "bearer"
+
+    @unique
+    class ProviderTypeLiteral(StrEnum):
+        BASIC = "basic"
+        JWT = "jwt"
+        OAUTH2 = "oauth2"
+        SAML = "saml"
+        LDAP = "ldap"
+        CERTIFICATE = "certificate"
+        KERBEROS = "kerberos"
+        APIKEY = "apikey"
+
+    @unique
+    class RoleTypeLiteral(StrEnum):
+        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+        USER = "user"
+        MODERATOR = "moderator"
+        GUEST = "guest"
+
+    @unique
+    class PermissionTypeLiteral(StrEnum):
+        READ = "read"
+        WRITE = "write"
+        DELETE = "delete"
+        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+
+    @unique
+    class AlgorithmLiteral(StrEnum):
+        HS256 = "HS256"
+        RS256 = "RS256"
+        ES256 = "ES256"
 
 
 c = FlextAuthConstants

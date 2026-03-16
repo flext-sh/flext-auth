@@ -29,7 +29,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Protocol, TypeGuard, override, runtime_checkable
+from typing import Protocol, TypeIs, override, runtime_checkable
 
 from flext_core import FlextLogger, r, s
 
@@ -52,7 +52,7 @@ class FlextAuthMiddleware(s[bool]):
         headers: dict[str, str]
 
     @staticmethod
-    def _request_has_headers(req: RequestWithHeaders) -> TypeGuard[RequestWithHeaders]:
+    def _request_has_headers(req: RequestWithHeaders) -> TypeIs[RequestWithHeaders]:
         """TypeGuard: request has a headers attribute."""
         return hasattr(req, "headers")
 
