@@ -54,14 +54,12 @@ if TYPE_CHECKING:
     from flext_auth.session_service import FlextAuthSessionService
     from flext_auth.settings import FlextAuthSettings
     from flext_auth.token_service import FlextAuthTokenService
-    from flext_auth.transports.base import BaseTransportAdapter
     from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes, t
     from flext_auth.user_service import FlextAuthIdentityService
     from flext_auth.utilities import FlextAuthUtilities, u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "BaseTransportAdapter": ("flext_auth.transports.base", "BaseTransportAdapter"),
     "FlextAuth": ("flext_auth.api", "FlextAuth"),
     "FlextAuthApiKeyProvider": (
         "flext_auth.providers.apikey",
@@ -145,7 +143,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
 }
 
 __all__ = [
-    "BaseTransportAdapter",
     "FlextAuth",
     "FlextAuthApiKeyProvider",
     "FlextAuthBasicProvider",

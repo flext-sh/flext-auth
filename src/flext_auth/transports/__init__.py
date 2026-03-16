@@ -22,11 +22,9 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-    from flext_auth.transports.base import BaseTransportAdapter
     from flext_auth.transports.http import FlextWebTransportAdapter
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "BaseTransportAdapter": ("flext_auth.transports.base", "BaseTransportAdapter"),
     "FlextWebTransportAdapter": (
         "flext_auth.transports.http",
         "FlextWebTransportAdapter",
@@ -34,7 +32,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
 }
 
 __all__ = [
-    "BaseTransportAdapter",
     "FlextWebTransportAdapter",
 ]
 
