@@ -415,6 +415,8 @@ class FlextAuthBaseProvider(Protocol):
         for key, value in payload.items():
             if key in reserved_claims:
                 continue
+            if not isinstance(value, (str, int, float, bool)):
+                continue
             normalized_value = self._normalize_claim_value(value)
             if normalized_value is not None:
                 claims[key] = normalized_value

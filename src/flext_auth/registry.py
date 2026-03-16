@@ -38,7 +38,7 @@ class _MetadataWrapper(BaseModel):
     data: Annotated[am.Auth.Providers.Metadata, Field(description="Metadata")]
 
 
-def _is_auth_provider(value: BaseModel | t.Container) -> TypeIs[FlextAuthBaseProvider]:
+def _is_auth_provider(value: object) -> TypeIs[FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 
@@ -83,9 +83,9 @@ class FlextAuthRegistry(FlextRegistry):
             )
         wrapped_provider = result.unwrap()
         inner = getattr(wrapped_provider, "provider", None)
-        candidate: t.RegisterableService = (
-            inner if isinstance(inner, BaseModel) else wrapped_provider
-        )
+        candidate: object = wrapped_provider
+        if isinstance(inner, BaseModel) or _is_auth_provider(inner):
+            candidate = inner
         if not _is_auth_provider(candidate):
             return r[FlextAuthBaseProvider].fail(
                 f"Provider '{name}' is not a FlextAuthBaseProvider"
