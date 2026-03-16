@@ -74,7 +74,7 @@ class FlextAuthBaseProvider(Protocol):
         return r[str].fail("User payload must include identity identifier")
 
     @staticmethod
-    def _normalize_claim_value(value) -> None | None:
+    def _normalize_claim_value(value: t.Scalar | None) -> t.NormalizedValue | None:
         if value is None:
             return None
         if isinstance(value, (str, int, float, bool)):

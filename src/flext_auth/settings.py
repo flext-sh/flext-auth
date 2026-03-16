@@ -90,7 +90,7 @@ class FlextAuthSettings(FlextModels.Value):
 
     @field_validator("secret_key", mode="before")
     @classmethod
-    def _normalize_secret_key(cls, value):
+    def _normalize_secret_key(cls, value: str | SecretStr) -> str:
         if isinstance(value, SecretStr):
             return value.get_secret_value()
         return value

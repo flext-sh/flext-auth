@@ -315,7 +315,7 @@ class FlextWebTransportAdapter:
         return query
 
     @staticmethod
-    def _to_scalar(value) -> t.Scalar:
+    def _to_scalar(value: t.NormalizedValue) -> t.Scalar:
         """Normalize object to t.Scalar for response dict values."""
         match value:
             case str() as text:
