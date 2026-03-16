@@ -415,6 +415,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class UserAction(StrEnum):
+        """User action enumeration."""
+
         CREATE = "create"
         UPDATE = "update"
         DELETE = "delete"

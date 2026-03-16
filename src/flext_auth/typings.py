@@ -205,7 +205,7 @@ class FlextAuthTypes(FlextApiTypes):
             class UnitType:
                 """Singleton unit type for void operations."""
 
-                __slots__ = ()
+                __slots__: tuple[()] = ()
 
                 @override
                 def __repr__(self) -> str:
