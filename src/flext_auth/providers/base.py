@@ -12,16 +12,3 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-
-from collections.abc import Mapping
-from datetime import UTC, datetime, timedelta
-from typing import Protocol, runtime_checkable
-
-import jwt
-from flext_core import r, t, u
-
-from flext_auth import m, p
-
-@runtime_checkable
-
-__all__ = ["FlextAuthBaseProvider"]
