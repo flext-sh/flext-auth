@@ -33,7 +33,8 @@ from typing import Protocol, TypeGuard, override, runtime_checkable
 
 from flext_core import FlextLogger, r, s
 
-from flext_auth import FlextAuthBaseProvider, m
+from flext_auth import m
+from flext_auth.protocols import FlextAuthBaseProvider
 
 
 class FlextAuthMiddleware(s[bool]):
