@@ -12,11 +12,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Protocol, TypeAlias, override, runtime_checkable
 
+import jwt
 from flext_api import FlextApiProtocols
-from flext_core import FlextProtocols
+from flext_core import FlextProtocols, m, r, t, u
 
 
 class FlextAuthProtocols(FlextApiProtocols):
