@@ -388,6 +388,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class AuthMethod(StrEnum):
+        """Auth method enumeration."""
+
         BASIC = "basic"
         JWT = "jwt"
         OAUTH2 = "oauth2"
@@ -395,6 +397,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class AuthStatus(StrEnum):
+        """Auth status enumeration."""
+
         AUTHENTICATED = "authenticated"
         UNAUTHENTICATED = "unauthenticated"
         EXPIRED = "expired"
@@ -402,6 +406,8 @@ class FlextAuthConstants(FlextApiConstants):
 
     @unique
     class UserStatus(StrEnum):
+        """User status enumeration."""
+
         ACTIVE = "active"
         INACTIVE = "inactive"
         LOCKED = "locked"
