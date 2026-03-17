@@ -17,7 +17,7 @@ from typing import Protocol, override, runtime_checkable
 
 import jwt
 from flext_api import FlextApiProtocols
-from flext_core import r, u
+from flext_core import r
 
 from flext_auth import m, t, u
 
