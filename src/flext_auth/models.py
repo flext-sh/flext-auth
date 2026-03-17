@@ -19,7 +19,8 @@ from flext_api import FlextApiModels
 from flext_core import r
 from pydantic import ConfigDict, Field
 
-from flext_auth import c, t
+from flext_auth.constants import c
+from flext_auth.typings import t
 
 
 class FlextAuthModels(FlextApiModels):

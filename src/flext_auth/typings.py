@@ -15,7 +15,7 @@ from flext_api import FlextApiTypes
 from pydantic import BeforeValidator, Field, SecretStr
 
 from flext_auth.constants import c
-from flext_auth.models import m
+from flext_auth.models import FlextAuthModels as m
 
 
 class FlextAuthTypes(FlextApiTypes):
