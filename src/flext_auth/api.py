@@ -21,12 +21,12 @@ from flext_auth import (
     FlextAuthRegistry,
     FlextAuthSessionService,
     FlextAuthSettings,
-    FlextAuthTokenService,
     c,
     m,
     t,
 )
 from flext_auth.protocols import FlextAuthBaseProvider
+from flext_auth.token_service import FlextAuthTokenService
 
 
 class FlextAuth:

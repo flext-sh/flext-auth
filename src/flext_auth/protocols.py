@@ -354,7 +354,7 @@ class FlextAuthBaseProvider(Protocol):
     def generate_token(
         self,
         payload: Mapping[str, object],
-        token_kind: str = "access",
+        token_kind: str = "access",  # noqa: S107  # Token type classifier (access/refresh), not a credential
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate a signed JWT token from the provided payload."""
@@ -399,7 +399,7 @@ class FlextAuthBaseProvider(Protocol):
         else:
             user_roles = []
         now = datetime.now(UTC)
-        claims: dict[str, object] = {}
+        claims: dict[str, t.Scalar | list[str]] = {}
         reserved_claims = {
             "sub",
             "identity_id",
@@ -456,16 +456,13 @@ class FlextAuthBaseProvider(Protocol):
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
-        token_kind: str = "access",
+        token_kind: str = "access",  # noqa: S107  # Token type classifier (access/refresh), not a credential
         expiry_minutes: int | None = None,
     ) -> r[str]:
-        """Generate authentication token for a user.
-
-        Create a new token for an authenticated user (post-authentication token generation).
-        This is distinct from authenticate() which validates credentials.
+        """Generate token for a user identity or claims mapping.
 
         Args:
-            user: User/identity dictionary with user data
+            user: User identity model or claims dict
             token_kind: Token type (access, refresh, id, bearer)
             expiry_minutes: Token expiration time in minutes (optional)
 
