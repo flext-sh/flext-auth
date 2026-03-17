@@ -11,13 +11,13 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from flext_core import FlextModels, r
+from flext_core import r
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 
-from flext_auth.constants import FlextAuthConstants as c
+from flext_auth import c, m
 
 
-class FlextAuthSettings(FlextModels.Value):
+class FlextAuthSettings(m.Value):
     """Validated settings used by auth providers and token services."""
 
     _global_instance: ClassVar[FlextAuthSettings | None] = None

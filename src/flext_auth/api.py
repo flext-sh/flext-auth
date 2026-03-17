@@ -13,7 +13,7 @@ import threading
 from collections.abc import Mapping
 from typing import ClassVar, Self
 
-from flext_core import FlextContainer, FlextLogger, p, r
+from flext_core import FlextContainer, FlextLogger, r
 
 from flext_auth import (
     FlextAuthIdentityService,
@@ -21,12 +21,12 @@ from flext_auth import (
     FlextAuthRegistry,
     FlextAuthSessionService,
     FlextAuthSettings,
+    FlextAuthTokenService,
     c,
     m,
+    p,
     t,
 )
-from flext_auth.protocols import FlextAuthBaseProvider
-from flext_auth.token_service import FlextAuthTokenService
 
 
 class FlextAuth:
@@ -257,7 +257,7 @@ class FlextAuth:
             "FlextAuth is a focused service - use specific methods like authenticate() instead"
         )
 
-    def get_provider(self, name: str) -> r[FlextAuthBaseProvider]:
+    def get_provider(self, name: str) -> r[p.Auth.FlextAuthBaseProvider]:
         """Railway-oriented provider retrieval."""
         return self._registry.get(name)
 
@@ -281,7 +281,9 @@ class FlextAuth:
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def register_provider(self, name: str, provider: FlextAuthBaseProvider) -> r[bool]:
+    def register_provider(
+        self, name: str, provider: p.Auth.FlextAuthBaseProvider
+    ) -> r[bool]:
         """Railway-oriented provider registration."""
         return self._registry.register_provider(name, provider)
 

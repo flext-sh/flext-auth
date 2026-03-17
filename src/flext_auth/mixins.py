@@ -11,7 +11,7 @@ import re
 
 from flext_core import r, x
 
-from flext_auth import FlextAuthConstants
+from flext_auth import c
 
 MAX_USERNAME_LENGTH = 255
 
@@ -35,11 +35,11 @@ class FlextAuthMixins(x):
             """
             if not password:
                 return r[str].fail("Password cannot be empty")
-            if len(password) < FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH:
+            if len(password) < c.Auth.CREDENTIAL_MIN_LENGTH:
                 return r[str].fail(
-                    f"Password must be at least {FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH} characters"
+                    f"Password must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters"
                 )
-            if len(password) > FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH:
+            if len(password) > c.Auth.CREDENTIAL_MAX_LENGTH:
                 return r[str].fail(f"Password must be no more than {128} characters")
             has_upper = any(c.isupper() for c in password)
             has_lower = any(c.islower() for c in password)

@@ -12,7 +12,7 @@ from typing import Annotated, ClassVar, TypeIs
 from flext_core import FlextRegistry, r
 from pydantic import BaseModel, ConfigDict, Field
 
-from flext_auth import FlextAuthBaseProvider, m, t
+from flext_auth import m, p, t
 
 
 class _ProviderWrapper(BaseModel):
@@ -20,7 +20,7 @@ class _ProviderWrapper(BaseModel):
 
     category: Annotated[str, Field(description="Provider category")]
     provider: Annotated[
-        FlextAuthBaseProvider | BaseModel, Field(description="Provider instance")
+        p.Auth.FlextAuthBaseProvider | BaseModel, Field(description="Provider instance")
     ]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -40,8 +40,8 @@ class _MetadataWrapper(BaseModel):
 
 
 def _is_auth_provider(
-    value: FlextAuthBaseProvider | BaseModel,
-) -> TypeIs[FlextAuthBaseProvider]:
+    value: p.Auth.FlextAuthBaseProvider | BaseModel,
+) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 
@@ -77,25 +77,25 @@ class FlextAuthRegistry(FlextRegistry):
         ]
         return r[list[str]].ok(matching)
 
-    def get(self, name: str) -> r[FlextAuthBaseProvider]:
+    def get(self, name: str) -> r[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name."""
         result = self.get_plugin(self.PROVIDERS, name)
         if result.is_failure:
-            return r[FlextAuthBaseProvider].fail(
+            return r[p.Auth.FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{name}' not registered"
             )
         wrapped = result.unwrap()
         if not isinstance(wrapped, BaseModel):
-            return r[FlextAuthBaseProvider].fail(
+            return r[p.Auth.FlextAuthBaseProvider].fail(
                 f"Provider '{name}' is not a valid provider model"
             )
         inner = getattr(wrapped, "provider", None)
         if isinstance(inner, BaseModel) and _is_auth_provider(inner):
-            return r[FlextAuthBaseProvider].ok(inner)
+            return r[p.Auth.FlextAuthBaseProvider].ok(inner)
         if _is_auth_provider(wrapped):
-            return r[FlextAuthBaseProvider].ok(wrapped)
-        return r[FlextAuthBaseProvider].fail(
-            f"Provider '{name}' is not a FlextAuthBaseProvider"
+            return r[p.Auth.FlextAuthBaseProvider].ok(wrapped)
+        return r[p.Auth.FlextAuthBaseProvider].fail(
+            f"Provider '{name}' is not a p.Auth.FlextAuthBaseProvider"
         )
 
     def get_capabilities(self, name: str) -> r[set[str]]:
@@ -180,7 +180,7 @@ class FlextAuthRegistry(FlextRegistry):
     def register_provider(
         self,
         name: str,
-        provider: FlextAuthBaseProvider,
+        provider: p.Auth.FlextAuthBaseProvider,
         metadata: m.Auth.Providers.Metadata | None = None,
         configuration: Mapping[str, t.Scalar] | None = None,
     ) -> r[bool]:
@@ -234,7 +234,7 @@ class FlextAuthRegistry(FlextRegistry):
     def _build_metadata(
         self,
         name: str,
-        service: FlextAuthBaseProvider,
+        service: p.Auth.FlextAuthBaseProvider,
         provided: m.Auth.Providers.Metadata | None,
     ) -> m.Auth.Providers.Metadata:
         """Build metadata from provider and provided data."""

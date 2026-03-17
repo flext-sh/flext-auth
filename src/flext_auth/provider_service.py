@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import override
 
-from flext_core import FlextService as s, r
+from flext_core import r, s
 
 from flext_auth import (
     FlextAuthApiKeyProvider,
@@ -29,7 +29,6 @@ from flext_auth import (
     p,
     t,
 )
-from flext_auth.protocols import FlextAuthBaseProvider
 
 
 class FlextAuthProviderService(s[bool]):
@@ -100,7 +99,7 @@ class FlextAuthProviderService(s[bool]):
             return r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
         return r[FlextAuthJwtProvider].ok(provider)
 
-    def get_provider(self, name: str) -> r[FlextAuthBaseProvider]:
+    def get_provider(self, name: str) -> r[p.Auth.FlextAuthBaseProvider]:
         """Get registered provider."""
         return self._providers.get(name)
 
@@ -108,7 +107,9 @@ class FlextAuthProviderService(s[bool]):
         """List registered provider names."""
         return self._providers.list_providers()
 
-    def register_provider(self, name: str, provider: FlextAuthBaseProvider) -> r[bool]:
+    def register_provider(
+        self, name: str, provider: p.Auth.FlextAuthBaseProvider
+    ) -> r[bool]:
         """Register custom provider.
 
         Returns:
@@ -128,7 +129,11 @@ class FlextAuthProviderService(s[bool]):
             return
         provider_config = self._auth_config.model_dump()
         providers: list[
-            tuple[t.Auth.Providers.Key, type[FlextAuthBaseProvider], Callable[[], bool]]
+            tuple[
+                t.Auth.Providers.Key,
+                type[p.Auth.FlextAuthBaseProvider],
+                Callable[[], bool],
+            ]
         ] = [
             ("basic", FlextAuthBasicProvider, lambda: True),
             (

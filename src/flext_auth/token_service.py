@@ -12,9 +12,10 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextLogger, FlextService as s, p, r
+from flext_core import FlextLogger, p, r, s
 
 from flext_auth import (
+    FlextAuthJwtProvider,
     FlextAuthManagers,
     FlextAuthProviderService,
     FlextAuthSettings,
@@ -22,7 +23,6 @@ from flext_auth import (
     c,
     m,
 )
-from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
 class FlextAuthTokenService(s[bool]):

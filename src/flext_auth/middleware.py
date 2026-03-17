@@ -1,6 +1,6 @@
 """FLEXT Auth Middleware - Authentication middleware adapters.
 
-This module provides middleware that adapts FlextAuthBaseProvider implementations
+This module provides middleware that adapts p.Auth.FlextAuthBaseProvider implementations
 to work with HTTP client middleware (flext-api) and web application middleware
 (flext-web). This eliminates duplication by allowing all authentication logic
 to be centralized in flext-auth providers.
@@ -33,14 +33,13 @@ from typing import Protocol, TypeIs, override, runtime_checkable
 
 from flext_core import FlextLogger, r, s
 
-from flext_auth import m
-from flext_auth.protocols import FlextAuthBaseProvider
+from flext_auth import m, p
 
 
 class FlextAuthMiddleware(s[bool]):
     """Authentication middleware adapters following FLEXT standards.
 
-    This class provides middleware that adapts FlextAuthBaseProvider implementations
+    This class provides middleware that adapts p.Auth.FlextAuthBaseProvider implementations
     to work with HTTP client middleware (flext-api) and web application middleware
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
@@ -87,7 +86,7 @@ class FlextAuthMiddleware(s[bool]):
         )
 
     class FlextWebAuthMiddleware(_MiddlewareControlMixin):
-        """Adapts FlextAuthBaseProvider to HTTP client middleware.
+        """Adapts p.Auth.FlextAuthBaseProvider to HTTP client middleware.
 
         This middleware integrates flext-auth authentication providers with
         HTTP clients (flext-api). It handles token management, header injection,
@@ -103,7 +102,7 @@ class FlextAuthMiddleware(s[bool]):
         """
 
         def __init__(
-            self, provider: FlextAuthBaseProvider, provider_name: str = "web"
+            self, provider: p.Auth.FlextAuthBaseProvider, provider_name: str = "web"
         ) -> None:
             """Initialize HTTP client authentication middleware.
 

@@ -16,10 +16,9 @@ from typing import override
 from flext_core import r
 
 from flext_auth import m, p
-from flext_auth.protocols import FlextAuthBaseProvider
 
 
-class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
+class FlextAuthApiKeyProvider(p.Auth.FlextAuthBaseProvider):
     """API key authentication provider.
 
     Provides API key-based authentication with token validation.

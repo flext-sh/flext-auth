@@ -14,10 +14,10 @@ from typing import Annotated
 import bcrypt
 import jwt
 from flext_api import FlextApiUtilities
-from flext_core import FlextUtilities, r
+from flext_core import r
 from pydantic import BeforeValidator, SecretStr, ValidationError
 
-from flext_auth import FlextAuthConstants, c, t
+from flext_auth import c, t
 
 
 class FlextAuthUtilities(FlextApiUtilities):
@@ -36,7 +36,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.is_member(c.Auth.PermissionTypes, value)
+        return FlextApiUtilities.is_member(c.Auth.PermissionTypes, value)
 
     @classmethod
     def is_valid_provider_type(cls, value: str) -> bool:
@@ -44,7 +44,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.is_member(c.Auth.ProviderTypes, value)
+        return FlextApiUtilities.is_member(c.Auth.ProviderTypes, value)
 
     @classmethod
     def is_valid_role_type(cls, value: str) -> bool:
@@ -52,7 +52,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.is_member(c.Auth.RoleTypes, value)
+        return FlextApiUtilities.is_member(c.Auth.RoleTypes, value)
 
     @classmethod
     def is_valid_token_type(cls, value: str) -> bool:
@@ -60,7 +60,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.is_member(c.Auth.TokenTypes, value)
+        return FlextApiUtilities.is_member(c.Auth.TokenTypes, value)
 
     class Auth:
         """Auth-specific utility namespace.
@@ -75,21 +75,21 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         """
 
-    class Collection(FlextUtilities):
+    class Collection(FlextApiUtilities):
         """Collection utilities extending u via inheritance.
 
         Exposes all flext-core Collection methods through inheritance hierarchy.
         Access via u.Auth.Collection.* pattern.
         """
 
-    class Args(FlextUtilities):
+    class Args(FlextApiUtilities):
         """Args utilities extending u via inheritance.
 
         Exposes all flext-core Args methods through inheritance hierarchy.
         Access via u.Auth.Args.* pattern.
         """
 
-    class Model(FlextUtilities):
+    class Model(FlextApiUtilities):
         """Model utilities extending u via inheritance.
 
         Exposes all flext-core Model methods through inheritance hierarchy.
@@ -100,29 +100,33 @@ class FlextAuthUtilities(FlextApiUtilities):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_provider_type() -> type[FlextAuthConstants.Auth.ProviderTypes]:
+            def coerced_provider_type() -> type[c.Auth.ProviderTypes]:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.ProviderTypes,
                     BeforeValidator(
-                        FlextUtilities.coerce_validator(c.Auth.ProviderTypes)
+                        FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes)
                     ),
                 ]
 
             @staticmethod
-            def coerced_role_type() -> type[FlextAuthConstants.Auth.RoleTypes]:
+            def coerced_role_type() -> type[c.Auth.RoleTypes]:
                 """Return Annotated[RoleTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.RoleTypes,
-                    BeforeValidator(FlextUtilities.coerce_validator(c.Auth.RoleTypes)),
+                    BeforeValidator(
+                        FlextApiUtilities.coerce_validator(c.Auth.RoleTypes)
+                    ),
                 ]
 
             @staticmethod
-            def coerced_token_type() -> type[FlextAuthConstants.Auth.TokenTypes]:
+            def coerced_token_type() -> type[c.Auth.TokenTypes]:
                 """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.TokenTypes,
-                    BeforeValidator(FlextUtilities.coerce_validator(c.Auth.TokenTypes)),
+                    BeforeValidator(
+                        FlextApiUtilities.coerce_validator(c.Auth.TokenTypes)
+                    ),
                 ]
 
         class Validation:
@@ -271,7 +275,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 algorithms=algorithms_list,
                 options={"verify_signature": verify},
             )
-            if not FlextUtilities.is_dict_like(payload):
+            if not FlextApiUtilities.is_dict_like(payload):
                 return r[t.Auth.Tokens.ClaimMap].fail(
                     "Decoded token payload is not a dictionary"
                 )
@@ -320,7 +324,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 return token
             return str(token)
 
-        return FlextUtilities.try_(
+        return FlextApiUtilities.try_(
             _encode,
             catch=(
                 ValueError,
