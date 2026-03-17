@@ -100,7 +100,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_provider_type() -> type[c.Auth.ProviderTypes]:
+            def coerced_provider_type() -> t.ContainerValue:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.ProviderTypes,
@@ -110,7 +110,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 ]
 
             @staticmethod
-            def coerced_role_type() -> type[c.Auth.RoleTypes]:
+            def coerced_role_type() -> t.ContainerValue:
                 """Return Annotated[RoleTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.RoleTypes,
@@ -120,7 +120,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 ]
 
             @staticmethod
-            def coerced_token_type() -> type[c.Auth.TokenTypes]:
+            def coerced_token_type() -> t.ContainerValue:
                 """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.TokenTypes,
