@@ -9,10 +9,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
-from pydantic import BeforeValidator, Field, SecretStr
+from pydantic import BaseModel, BeforeValidator, Field, SecretStr
 
 from flext_auth import c
 
@@ -34,6 +35,10 @@ class FlextAuthTypes(FlextApiTypes):
         type CoercedRoleTypes = Annotated[
             c.Auth.RoleTypes, BeforeValidator(lambda x: x)
         ]
+
+        class ProviderConfig(BaseModel):
+            name: str
+            type: str
 
         class UserManagement:
             """User management type definitions."""
@@ -91,6 +96,15 @@ class FlextAuthTypes(FlextApiTypes):
                 Field(min_length=1, description="Declared capabilities"),
             ]
 
+            class Metadata(BaseModel):
+                name: str
+                version: str = "1.0.0"
+                capabilities: tuple[str, ...] = ()
+
+            class Registration(BaseModel):
+                name: str
+                provider_type: str
+
         class Credentials:
             """Credential payload type definitions."""
 
@@ -119,6 +133,13 @@ class FlextAuthTypes(FlextApiTypes):
                 ),
             ]
 
+            class Basic(BaseModel):
+                username: str
+                password: str
+
+            class MultiFactor(Basic):
+                otp: str
+
         class Tokens:
             """Token-related type definitions."""
 
@@ -137,6 +158,10 @@ class FlextAuthTypes(FlextApiTypes):
 
             AuthenticationPayload = FlextApiTypes.Api.JsonObject
 
+            class Authentication(BaseModel):
+                success: bool
+                user: Mapping[str, FlextApiTypes.ApiJsonValue]
+
         class Managers:
             """Manager-specific supporting types."""
 
@@ -145,6 +170,7 @@ class FlextAuthTypes(FlextApiTypes):
             LogEntry = FlextApiTypes.Api.JsonObject
             AuditEntry = FlextApiTypes.Api.JsonObject
             AttemptData = FlextApiTypes.Api.JsonObject
+            type AttemptWindow = tuple[int, int]
             pass
 
         class Domain:
@@ -197,6 +223,43 @@ class FlextAuthTypes(FlextApiTypes):
             """Auth project namespace extending API project namespace."""
 
             type ProjectType = c.ProjectType
+
+            class AuthProjectConfig(BaseModel):
+                name: str = "flext-auth"
+                enabled: bool = True
+
+        class OAuth2TokenResponse(BaseModel):
+            access_token: str
+            token_type: str = "Bearer"
+            expires_in: int = 3600
+
+        class KerberosTicketData(BaseModel):
+            ticket: str
+            principal: str
+            realm: str
+
+        class HttpResponseData(BaseModel):
+            status_code: int
+            headers: dict[str, str]
+            body: str
+
+    UserManagement = Auth.UserManagement
+    SessionManagement = Auth.SessionManagement
+    TokenManagement = Auth.TokenManagement
+    Authorization = Auth.Authorization
+    Security = Auth.Security
+    Project = Auth.Project
+    Providers = Auth.Providers
+    Credentials = Auth.Credentials
+    Tokens = Auth.Tokens
+    Sessions = Auth.Sessions
+    Responses = Auth.Responses
+    Managers = Auth.Managers
+    Domain = Auth.Domain
+    ProviderConfig = Auth.ProviderConfig
+    OAuth2TokenResponse = Auth.OAuth2TokenResponse
+    KerberosTicketData = Auth.KerberosTicketData
+    HttpResponseData = Auth.HttpResponseData
 
 
 t = FlextAuthTypes

@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated, ClassVar, TypeIs
+from typing import Annotated, ClassVar, TypeGuard
 
 from flext_core import FlextRegistry, r
 from pydantic import BaseModel, ConfigDict, Field
@@ -19,9 +19,7 @@ class _ProviderWrapper(BaseModel):
     """Wrapper for auth provider instances."""
 
     category: Annotated[str, Field(description="Provider category")]
-    provider: Annotated[
-        p.Auth.FlextAuthBaseProvider | BaseModel, Field(description="Provider instance")
-    ]
+    provider: Annotated[object, Field(description="Provider instance")]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
@@ -40,8 +38,8 @@ class _MetadataWrapper(BaseModel):
 
 
 def _is_auth_provider(
-    value: p.Auth.FlextAuthBaseProvider | BaseModel,
-) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
+    value: object,
+) -> TypeGuard[p.Auth.FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 
@@ -85,12 +83,8 @@ class FlextAuthRegistry(FlextRegistry):
                 result.error or f"Provider '{name}' not registered"
             )
         wrapped = result.unwrap()
-        if not isinstance(wrapped, BaseModel):
-            return r[p.Auth.FlextAuthBaseProvider].fail(
-                f"Provider '{name}' is not a valid provider model"
-            )
         inner = getattr(wrapped, "provider", None)
-        if isinstance(inner, BaseModel) and _is_auth_provider(inner):
+        if _is_auth_provider(inner):
             return r[p.Auth.FlextAuthBaseProvider].ok(inner)
         if _is_auth_provider(wrapped):
             return r[p.Auth.FlextAuthBaseProvider].ok(wrapped)
@@ -142,13 +136,17 @@ class FlextAuthRegistry(FlextRegistry):
         metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
         if metadata_result.is_failure:
             return r[m.Auth.Providers.Metadata].ok(
-                m.Auth.Providers.Metadata(name=name, capabilities=())
+                m.Auth.Providers.Metadata(
+                    name=name, version="1.0.0", capabilities=(), extras={}
+                )
             )
         wrapper = metadata_result.value
         metadata = getattr(wrapper, "data", None)
         if metadata is None:
             return r[m.Auth.Providers.Metadata].ok(
-                m.Auth.Providers.Metadata(name=name, capabilities=())
+                m.Auth.Providers.Metadata(
+                    name=name, version="1.0.0", capabilities=(), extras={}
+                )
             )
         return r[m.Auth.Providers.Metadata].ok(metadata)
 
@@ -242,7 +240,12 @@ class FlextAuthRegistry(FlextRegistry):
             caps = tuple(str(c) for c in service.supports())
         except (AttributeError, TypeError):
             caps = ()
-        base = m.Auth.Providers.Metadata(name=name, capabilities=caps)
+        base = m.Auth.Providers.Metadata(
+            name=name,
+            version="1.0.0",
+            capabilities=caps,
+            extras={},
+        )
         if provided:
             return provided
         get_metadata_fn = getattr(service, "get_metadata", None)

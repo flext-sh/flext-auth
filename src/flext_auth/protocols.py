@@ -474,6 +474,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 self,
                 user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
                 token_kind: str = "access",  # noqa: S107  # Token type classifier (access/refresh), not a credential
+                token_type: str | None = None,
                 expiry_minutes: int | None = None,
             ) -> r[str]:
                 """Generate token for a user identity or claims mapping.
@@ -492,12 +493,15 @@ class FlextAuthProtocols(FlextApiProtocols):
                     return r[str].fail(
                         settings_result.error or "Token settings are invalid"
                     )
+                effective_token_kind = (
+                    token_type if token_type is not None else token_kind
+                )
                 payload_result = self._normalize_identity_payload(user)
                 if payload_result.is_failure:
                     return r[str].fail(payload_result.error or "Invalid user payload")
                 return self.generate_token(
                     payload=payload_result.value,
-                    token_kind=token_kind,
+                    token_kind=effective_token_kind,
                     expiry_minutes=expiry_minutes,
                 )
 
@@ -792,4 +796,5 @@ class FlextAuthProtocols(FlextApiProtocols):
 
 
 p = FlextAuthProtocols
-__all__ = ["FlextAuthProtocols", "p"]
+FlextAuthBaseProvider = FlextAuthProtocols.Auth.FlextAuthBaseProvider
+__all__ = ["FlextAuthBaseProvider", "FlextAuthProtocols", "p"]
