@@ -7,20 +7,21 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated, ClassVar, TypeGuard
+from typing import Annotated, ClassVar, TypeIs
 
-from flext_core import FlextRegistry, r, t
+from flext_core import FlextRegistry, r
 from pydantic import BaseModel, ConfigDict, Field
 
-from flext_auth import FlextAuthModels as am
-from flext_auth.protocols import FlextAuthBaseProvider
+from flext_auth import FlextAuthBaseProvider, m, t
 
 
 class _ProviderWrapper(BaseModel):
     """Wrapper for auth provider instances."""
 
     category: Annotated[str, Field(description="Provider category")]
-    provider: Annotated[BaseModel, Field(description="Provider instance")]
+    provider: Annotated[
+        FlextAuthBaseProvider | BaseModel, Field(description="Provider instance")
+    ]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
@@ -35,10 +36,12 @@ class _MetadataWrapper(BaseModel):
     """Protocol-conformant wrapper for metadata."""
 
     category: Annotated[str, Field(description="Metadata category")]
-    data: Annotated[am.Auth.Providers.Metadata, Field(description="Metadata")]
+    data: Annotated[m.Auth.Providers.Metadata, Field(description="Metadata")]
 
 
-def _is_auth_provider(value: BaseModel) -> TypeGuard[FlextAuthBaseProvider]:
+def _is_auth_provider(
+    value: FlextAuthBaseProvider | BaseModel,
+) -> TypeIs[FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 
@@ -130,24 +133,24 @@ class FlextAuthRegistry(FlextRegistry):
             return r[Mapping[str, t.Scalar]].fail("Invalid config format")
         return r[Mapping[str, t.Scalar]].ok(config)
 
-    def get_metadata(self, name: str) -> r[am.Auth.Providers.Metadata]:
+    def get_metadata(self, name: str) -> r[m.Auth.Providers.Metadata]:
         """Get provider metadata."""
         if not self.has_provider(name):
-            return r[am.Auth.Providers.Metadata].fail(
+            return r[m.Auth.Providers.Metadata].fail(
                 f"Provider '{name}' not registered"
             )
         metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
         if metadata_result.is_failure:
-            return r[am.Auth.Providers.Metadata].ok(
-                am.Auth.Providers.Metadata(name=name, capabilities=())
+            return r[m.Auth.Providers.Metadata].ok(
+                m.Auth.Providers.Metadata(name=name, capabilities=())
             )
         wrapper = metadata_result.value
         metadata = getattr(wrapper, "data", None)
         if metadata is None:
-            return r[am.Auth.Providers.Metadata].ok(
-                am.Auth.Providers.Metadata(name=name, capabilities=())
+            return r[m.Auth.Providers.Metadata].ok(
+                m.Auth.Providers.Metadata(name=name, capabilities=())
             )
-        return r[am.Auth.Providers.Metadata].ok(metadata)
+        return r[m.Auth.Providers.Metadata].ok(metadata)
 
     def has_capability(self, name: str, capability: str) -> r[bool]:
         """Check if provider has capability."""
@@ -178,7 +181,7 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-        metadata: am.Auth.Providers.Metadata | None = None,
+        metadata: m.Auth.Providers.Metadata | None = None,
         configuration: Mapping[str, t.Scalar] | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
@@ -232,21 +235,21 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         name: str,
         service: FlextAuthBaseProvider,
-        provided: am.Auth.Providers.Metadata | None,
-    ) -> am.Auth.Providers.Metadata:
+        provided: m.Auth.Providers.Metadata | None,
+    ) -> m.Auth.Providers.Metadata:
         """Build metadata from provider and provided data."""
         try:
             caps = tuple(str(c) for c in service.supports())
         except (AttributeError, TypeError):
             caps = ()
-        base = am.Auth.Providers.Metadata(name=name, capabilities=caps)
+        base = m.Auth.Providers.Metadata(name=name, capabilities=caps)
         if provided:
             return provided
         get_metadata_fn = getattr(service, "get_metadata", None)
         if callable(get_metadata_fn):
             try:
                 raw = get_metadata_fn()
-                return am.Auth.Providers.Metadata.model_validate(raw)
+                return m.Auth.Providers.Metadata.model_validate(raw)
             except (AttributeError, TypeError, ValueError):
                 return base
         return base
