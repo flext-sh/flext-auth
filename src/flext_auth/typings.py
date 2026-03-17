@@ -15,13 +15,10 @@ from flext_api import FlextApiTypes
 from pydantic import BeforeValidator, Field, SecretStr
 
 from flext_auth.constants import c
-from flext_auth.models import FlextAuthModels as m
 
 
 class FlextAuthTypes(FlextApiTypes):
     """Authentication-specific type definitions extending t with composition."""
-
-    ProviderConfig = m.Auth.ProviderConfig
 
     class Auth:
         """Authentication-related type definitions."""
@@ -37,11 +34,6 @@ class FlextAuthTypes(FlextApiTypes):
         type CoercedRoleTypes = Annotated[
             c.Auth.RoleTypes, BeforeValidator(lambda x: x)
         ]
-
-        # Model references from m.Auth
-        OAuth2TokenResponse = m.Auth.OAuth2TokenResponse
-        KerberosTicketData = m.Auth.KerberosTicketData
-        HttpResponseData = m.Auth.HttpResponseData
 
         class UserManagement:
             """User management type definitions."""
@@ -73,18 +65,8 @@ class FlextAuthTypes(FlextApiTypes):
             type SecurityEvent = c.SecurityEvent
             type ThreatLevel = c.ThreatLevel
 
-        class Project:
-            """Project type namespace."""
-
-            type ProjectType = c.ProjectType
-            AuthProjectConfig = m.Auth.ProviderConfig
-
         class Providers:
             """Provider-oriented type definitions."""
-
-            # Model reference from m.Auth.Providers
-            Metadata = m.Auth.Providers.Metadata
-            Registration = m.Auth.ProviderConfig
 
             type Key = Annotated[
                 str,
@@ -111,9 +93,6 @@ class FlextAuthTypes(FlextApiTypes):
 
         class Credentials:
             """Credential payload type definitions."""
-
-            Basic = m.Auth.Credential
-            MultiFactor = m.Auth.CredentialValidation
 
             type Username = Annotated[
                 str,
@@ -156,7 +135,6 @@ class FlextAuthTypes(FlextApiTypes):
         class Responses:
             """Response payload abstractions."""
 
-            Authentication = m.Auth.AuthResponse
             AuthenticationPayload = FlextApiTypes.Api.JsonObject
 
         class Managers:
@@ -167,7 +145,7 @@ class FlextAuthTypes(FlextApiTypes):
             LogEntry = FlextApiTypes.Api.JsonObject
             AuditEntry = FlextApiTypes.Api.JsonObject
             AttemptData = FlextApiTypes.Api.JsonObject
-            AttemptWindow = m.Auth.ValidationResult
+            pass
 
         class Domain:
             """Domain-level literals and shortcuts."""
@@ -215,28 +193,10 @@ class FlextAuthTypes(FlextApiTypes):
 
             UNIT = UnitType()
 
-    UserManagement = Auth.UserManagement
-    SessionManagement = Auth.SessionManagement
-    TokenManagement = Auth.TokenManagement
-    Authorization = Auth.Authorization
-    Security = Auth.Security
+        class Project(FlextApiTypes.Project):
+            """Auth project namespace extending API project namespace."""
 
-    class Project(FlextApiTypes.Project):
-        """Auth project namespace extending API project namespace."""
-
-        type ProjectType = c.ProjectType
-        AuthProjectConfig = m.Auth.ProviderConfig
-
-    OAuth2TokenResponse = Auth.OAuth2TokenResponse
-    KerberosTicketData = Auth.KerberosTicketData
-    HttpResponseData = Auth.HttpResponseData
-    Providers = Auth.Providers
-    Credentials = Auth.Credentials
-    Tokens = Auth.Tokens
-    Sessions = Auth.Sessions
-    Responses = Auth.Responses
-    Managers = Auth.Managers
-    Domain = Auth.Domain
+            type ProjectType = c.ProjectType
 
 
 t = FlextAuthTypes

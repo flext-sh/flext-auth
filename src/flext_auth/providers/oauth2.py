@@ -82,7 +82,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
         self._pkce_verifiers: dict[str, str] = {}
-        self._http_client: object | None = None
+        self._http_client: http.client.HTTPSConnection | None = None
 
     @staticmethod
     def _to_scalar_config(config: Mapping[str, t.Scalar]) -> dict[str, t.Primitives]:
@@ -685,7 +685,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[str].fail("OAuth2 introspection endpoint is not configured")
 
     def _map_token_payload_to_identity(
-        self, payload: Mapping[str, object]
+        self, payload: Mapping[str, t.ContainerValue]
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
         if identity_result.is_failure:

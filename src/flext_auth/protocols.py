@@ -52,7 +52,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         structural typing - no model imports required.
         """
 
-        type AuthValue = object
+        type AuthValue = t.ContainerValue
 
         @runtime_checkable
         class Identity(FlextProtocols.Service[bool], Protocol):
@@ -205,9 +205,9 @@ class FlextAuthProtocols(FlextApiProtocols):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, object]
+            user: Mapping[str, t.ContainerValue]
             "User/identity data."
-            session: Mapping[str, object]
+            session: Mapping[str, t.ContainerValue]
             "Session data."
             jwt_token: str
             "JWT token string."
@@ -287,7 +287,7 @@ class FlextAuthBaseProvider(Protocol):
 
     @staticmethod
     def _extract_expiration_datetime(
-        payload: Mapping[str, object],
+        payload: Mapping[str, t.ContainerValue],
     ) -> r[datetime]:
         exp_value = payload.get("exp")
         match exp_value:
@@ -303,7 +303,7 @@ class FlextAuthBaseProvider(Protocol):
         ).map_error(lambda exc: f"Token exp claim conversion failed: {exc}")
 
     @staticmethod
-    def _extract_identity_id(payload: Mapping[str, object]) -> r[str]:
+    def _extract_identity_id(payload: Mapping[str, t.ContainerValue]) -> r[str]:
         for key in ("identity_id", "unique_id", "id", "user_id", "sub", "name"):
             value = payload.get(key)
             if isinstance(value, str) and value:
@@ -326,7 +326,7 @@ class FlextAuthBaseProvider(Protocol):
                     normalized_items.append(normalized_item)
             return normalized_items
         if isinstance(value, Mapping):
-            normalized_mapping: dict[str, object] = {}
+            normalized_mapping: dict[str, t.ContainerValue] = {}
             for key, item in value.items():
                 normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
                 if normalized_item is not None:
@@ -353,7 +353,7 @@ class FlextAuthBaseProvider(Protocol):
 
     def generate_token(
         self,
-        payload: Mapping[str, object],
+        payload: Mapping[str, t.ContainerValue],
         token_kind: str = "access",  # noqa: S107  # Token type classifier (access/refresh), not a credential
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -600,7 +600,7 @@ class FlextAuthBaseProvider(Protocol):
         """
         ...
 
-    def _decode_token_claims(self, token: str) -> r[Mapping[str, object]]:
+    def _decode_token_claims(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
         if not token.strip():
             return r[Mapping[str, t.ContainerValue]].fail(
                 "Token must be a non-empty string"
@@ -642,7 +642,7 @@ class FlextAuthBaseProvider(Protocol):
 
     def _normalize_identity_payload(
         self, user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue]
-    ) -> r[Mapping[str, object]]:
+    ) -> r[Mapping[str, t.ContainerValue]]:
         if isinstance(user, Mapping):
             return r[Mapping[str, t.ContainerValue]].ok(user)
         return r[Mapping[str, t.ContainerValue]].ok(

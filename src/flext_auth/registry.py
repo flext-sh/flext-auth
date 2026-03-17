@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated, ClassVar, TypeIs
+from typing import Annotated, ClassVar, TypeGuard
 
 from flext_core import FlextRegistry, r, t
 from pydantic import BaseModel, ConfigDict, Field
@@ -20,7 +20,7 @@ class _ProviderWrapper(BaseModel):
     """Wrapper for auth provider instances."""
 
     category: Annotated[str, Field(description="Provider category")]
-    provider: Annotated[object, Field(description="Provider instance")]
+    provider: Annotated[BaseModel, Field(description="Provider instance")]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
@@ -38,7 +38,7 @@ class _MetadataWrapper(BaseModel):
     data: Annotated[am.Auth.Providers.Metadata, Field(description="Metadata")]
 
 
-def _is_auth_provider(value: object) -> TypeIs[FlextAuthBaseProvider]:
+def _is_auth_provider(value: BaseModel) -> TypeGuard[FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 
@@ -81,24 +81,30 @@ class FlextAuthRegistry(FlextRegistry):
             return r[FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{name}' not registered"
             )
-        wrapped_provider = result.unwrap()
-        inner = getattr(wrapped_provider, "provider", None)
-        candidate: object = wrapped_provider
-        if isinstance(inner, BaseModel) or _is_auth_provider(inner):
-            candidate = inner
-        if not _is_auth_provider(candidate):
+        wrapped = result.unwrap()
+        if not isinstance(wrapped, BaseModel):
             return r[FlextAuthBaseProvider].fail(
-                f"Provider '{name}' is not a FlextAuthBaseProvider"
+                f"Provider '{name}' is not a valid provider model"
             )
-        return r[FlextAuthBaseProvider].ok(candidate)
+        inner = getattr(wrapped, "provider", None)
+        if isinstance(inner, BaseModel) and _is_auth_provider(inner):
+            return r[FlextAuthBaseProvider].ok(inner)
+        if _is_auth_provider(wrapped):
+            return r[FlextAuthBaseProvider].ok(wrapped)
+        return r[FlextAuthBaseProvider].fail(
+            f"Provider '{name}' is not a FlextAuthBaseProvider"
+        )
 
     def get_capabilities(self, name: str) -> r[set[str]]:
         """Get provider capabilities."""
         provider_result = self.get(name)
         if provider_result.is_failure:
             return r[set[str]].fail(str(provider_result.error))
+        provider = provider_result.unwrap()
+        if not isinstance(provider, BaseModel) or not _is_auth_provider(provider):
+            return r[set[str]].ok(set())
         try:
-            caps = provider_result.value.supports()
+            caps = provider.supports()
             return r[set[str]].ok({str(c) for c in caps})
         except (
             ValueError,
@@ -145,7 +151,13 @@ class FlextAuthRegistry(FlextRegistry):
 
     def has_capability(self, name: str, capability: str) -> r[bool]:
         """Check if provider has capability."""
-        return self.get_capabilities(name).map(lambda caps: capability in caps)
+        caps_result = self.get_capabilities(name)
+        if caps_result.is_failure:
+            return r[bool].fail(caps_result.error or f"Provider '{name}' not found")
+        caps = caps_result.unwrap()
+        if isinstance(caps, set):
+            return r[bool].ok(capability in caps)
+        return r[bool].ok(False)
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
@@ -155,10 +167,12 @@ class FlextAuthRegistry(FlextRegistry):
     def list_providers(self) -> list[str]:
         """List registered provider names."""
         result = self.list_plugins(self.PROVIDERS)
-        return result.fold(
-            on_failure=lambda _: [],
-            on_success=lambda v: v or [],
-        )
+        if result.is_failure:
+            return []
+        plugins = result.unwrap()
+        if isinstance(plugins, list):
+            return [str(name) for name in plugins]
+        return []
 
     def register_provider(
         self,
