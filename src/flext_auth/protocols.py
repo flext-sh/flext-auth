@@ -19,7 +19,7 @@ import jwt
 from flext_api import FlextApiProtocols
 from flext_core import r, u
 
-from flext_auth import m, t
+from flext_auth import m, t, u
 
 
 class FlextAuthProtocols(FlextApiProtocols):
@@ -318,7 +318,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             ) -> t.ContainerValue | None:
                 if value is None:
                     return None
-                if isinstance(value, (str, int, float, bool)):
+                if u.is_primitive(value):
                     return value
                 if isinstance(value, datetime):
                     return value.isoformat()
@@ -429,7 +429,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 for key, value in payload.items():
                     if key in reserved_claims:
                         continue
-                    if not isinstance(value, (str, int, float, bool)):
+                    if not u.is_primitive(value):
                         continue
                     normalized_value = self._normalize_claim_value(value)
                     if normalized_value is not None:
