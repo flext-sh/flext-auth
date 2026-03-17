@@ -37,6 +37,8 @@ class FlextAuthTypes(FlextApiTypes):
         ]
 
         class ProviderConfig(BaseModel):
+            """Provider configuration payload."""
+
             name: str
             type: str
 
@@ -97,11 +99,15 @@ class FlextAuthTypes(FlextApiTypes):
             ]
 
             class Metadata(BaseModel):
+                """Provider metadata payload."""
+
                 name: str
                 version: str = "1.0.0"
                 capabilities: tuple[str, ...] = ()
 
             class Registration(BaseModel):
+                """Provider registration payload."""
+
                 name: str
                 provider_type: str
 
@@ -134,10 +140,14 @@ class FlextAuthTypes(FlextApiTypes):
             ]
 
             class Basic(BaseModel):
+                """Basic credential payload."""
+
                 username: str
                 password: str
 
             class MultiFactor(Basic):
+                """Multi-factor credential payload."""
+
                 otp: str
 
         class Tokens:
@@ -159,6 +169,8 @@ class FlextAuthTypes(FlextApiTypes):
             AuthenticationPayload = FlextApiTypes.Api.JsonObject
 
             class Authentication(BaseModel):
+                """Authentication response payload."""
+
                 success: bool
                 user: Mapping[str, FlextApiTypes.ApiJsonValue]
 
@@ -225,20 +237,28 @@ class FlextAuthTypes(FlextApiTypes):
             type ProjectType = c.ProjectType
 
             class AuthProjectConfig(BaseModel):
+                """Auth project configuration payload."""
+
                 name: str = "flext-auth"
                 enabled: bool = True
 
         class OAuth2TokenResponse(BaseModel):
+            """OAuth2 token response payload."""
+
             access_token: str
-            token_type: str = "Bearer"
+            token_type: str = c.Auth.TokenTypes.BEARER.value
             expires_in: int = 3600
 
         class KerberosTicketData(BaseModel):
+            """Kerberos ticket payload."""
+
             ticket: str
             principal: str
             realm: str
 
         class HttpResponseData(BaseModel):
+            """HTTP response payload."""
+
             status_code: int
             headers: dict[str, str]
             body: str
