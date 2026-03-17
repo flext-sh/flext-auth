@@ -1,0 +1,29 @@
+src/flext_auth/typings.py
+  d35bb5e63cc779bf 17
+src/flext_auth/protocols.py
+  d35bb5e63cc779bf 357,402,459,462,465
+src/flext_auth/token_service.py
+  d35bb5e63cc779bf 105
+src/flext_auth/api.py
+  d35bb5e63cc779bf 29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "0930f48d5c187cbd74bca6e41a2f2bb3f0496364",
+  "prompts": {
+    "d35bb5e63cc779bf": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_308778b78ffeJvszdVgr4agyHf",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 123,
+      "total_deletions": 126,
+      "accepted_lines": 80,
+      "overriden_lines": 0
+    }
+  }
+}
