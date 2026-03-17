@@ -6,6 +6,7 @@ Tests the authentication types module following FLEXT standards.
 from __future__ import annotations
 
 from flext_api import FlextApiTypes
+
 from flext_auth import FlextAuthTypes as t_auth
 
 
