@@ -11,9 +11,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import bcrypt
-from flext_core import r, u
+from flext_core import r
 
-from flext_auth.providers.jwt import FlextAuthJwtProvider
+from flext_auth import u
+from flext_auth.providers import FlextAuthJwtProvider
 
 
 class FlextAuthPasswordHasher:

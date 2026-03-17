@@ -15,10 +15,9 @@ from typing import override
 from flext_core import r
 
 from flext_auth import m, p
-from flext_auth.protocols import FlextAuthBaseProvider
 
 
-class FlextAuthBasicProvider(FlextAuthBaseProvider):
+class FlextAuthBasicProvider(p.Auth.FlextAuthBaseProvider):
     """HTTP Basic authentication provider.
 
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).

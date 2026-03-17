@@ -22,8 +22,8 @@ from urllib.parse import urlencode, urlparse
 from flext_core import e, r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_auth import FlextAuthProtocols, c, m, t, u
-from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth import c, m, p, t, u
+from flext_auth.providers import FlextAuthRfcProvider
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
     dict[str, t.Scalar]
@@ -395,7 +395,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def authenticate(
         self, credentials: m.Auth.CredentialValidation | Mapping[str, t.Scalar]
-    ) -> r[FlextAuthProtocols.Auth.Token]:
+    ) -> r[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: dict[str, t.Scalar]
         if isinstance(credentials, Mapping):
@@ -409,7 +409,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             credential_payload
         )
         if flow_result.is_failure:
-            return r[FlextAuthProtocols.Auth.Token].fail(
+            return r[p.Auth.Token].fail(
                 flow_result.error or "OAuth2 authentication failed"
             )
         flow_data = flow_result.value
@@ -423,7 +423,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
-        return r[FlextAuthProtocols.Auth.Token].ok(token_model)
+        return r[p.Auth.Token].ok(token_model)
 
     @override
     def generate_token_for_user(
@@ -460,9 +460,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return "RFC 6749"
 
     @override
-    def refresh(
-        self, token: str | FlextAuthProtocols.Auth.Token
-    ) -> r[FlextAuthProtocols.Auth.Token]:
+    def refresh(self, token: str | p.Auth.Token) -> r[p.Auth.Token]:
         """Refresh OAuth2 token using composition."""
         token_text = self._extract_token_string(token)
         refresh_token_value = getattr(token, "refresh_token", "")
@@ -487,12 +485,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             else:
                 identity_id = "oauth2_user"
         if not refresh_source:
-            return r[FlextAuthProtocols.Auth.Token].fail("No refresh token available")
+            return r[p.Auth.Token].fail("No refresh token available")
         token_result = self._token_manager.refresh_access_token(refresh_source)
         if token_result.is_failure:
-            return r[FlextAuthProtocols.Auth.Token].fail(
-                token_result.error or "Token refresh failed"
-            )
+            return r[p.Auth.Token].fail(token_result.error or "Token refresh failed")
         token_data = token_result.value
         expires_in_seconds = (
             token_data.expires_in if token_data.expires_in > 0 else 3600
@@ -504,10 +500,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             expires_at=datetime.now(UTC) + timedelta(seconds=expires_in_seconds),
             refresh_token=token_data.refresh_token,
         )
-        return r[FlextAuthProtocols.Auth.Token].ok(refreshed_model)
+        return r[p.Auth.Token].ok(refreshed_model)
 
     @override
-    def revoke(self, _token: str | FlextAuthProtocols.Auth.Token) -> r[bool]:
+    def revoke(self, _token: str | p.Auth.Token) -> r[bool]:
         """Revoke OAuth2 token."""
         _ = _token
         return r[bool].ok(value=True)
@@ -534,7 +530,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return capabilities
 
     @override
-    def validate(self, token: str | FlextAuthProtocols.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> r[bool]:
         """Validate OAuth2 token using composition."""
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(

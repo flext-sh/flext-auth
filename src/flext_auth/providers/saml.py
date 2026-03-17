@@ -15,10 +15,9 @@ from typing import override
 from flext_core import r
 
 from flext_auth import m, p
-from flext_auth.protocols import FlextAuthBaseProvider
 
 
-class FlextAuthSamlProvider(FlextAuthBaseProvider):
+class FlextAuthSamlProvider(p.Auth.FlextAuthBaseProvider):
     """SAML 2.0 authentication provider.
 
     Provides SAML 2.0 authentication support following the FlextAuthBaseProvider protocol.
@@ -61,7 +60,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         """Get provider metadata.
 
         Returns:
-            Mapping[str, object]: Provider metadata (name, version, capabilities, etc.)
+            dict[str, str | list[str]]: Provider metadata (name, version, capabilities, etc.)
 
         Business Rule: Returns metadata for provider discovery and configuration.
 

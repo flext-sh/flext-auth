@@ -14,10 +14,9 @@ from typing import override
 from flext_core import r
 
 from flext_auth import m, p
-from flext_auth.protocols import FlextAuthBaseProvider
 
 
-class FlextAuthJwtProvider(FlextAuthBaseProvider):
+class FlextAuthJwtProvider(p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
     def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:

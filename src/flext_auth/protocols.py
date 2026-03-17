@@ -311,10 +311,11 @@ class FlextAuthProtocols(FlextApiProtocols):
                         return r[str].ok(value)
                 return r[str].fail("User payload must include identity identifier")
 
-            @staticmethod
+            @classmethod
             def _normalize_claim_value(
-                value: t.Scalar | None,
-            ) -> t.NormalizedValue | None:
+                cls,
+                value: t.ContainerValue | None,
+            ) -> t.ContainerValue | None:
                 if value is None:
                     return None
                 if isinstance(value, (str, int, float, bool)):
@@ -322,24 +323,18 @@ class FlextAuthProtocols(FlextApiProtocols):
                 if isinstance(value, datetime):
                     return value.isoformat()
                 if isinstance(value, (list, tuple)):
-                    normalized_items: list[t.Scalar | None] = []
+                    normalized_items: list[t.ContainerValue] = []
                     for item in value:
-                        normalized_item = FlextAuthProtocols.Auth.FlextAuthBaseProvider._normalize_claim_value(
-                            item
-                        )
+                        normalized_item = cls._normalize_claim_value(item)
                         if normalized_item is not None:
                             normalized_items.append(normalized_item)
                     return normalized_items
-                if isinstance(value, Mapping):
-                    normalized_mapping: dict[str, t.ContainerValue] = {}
-                    for key, item in value.items():
-                        normalized_item = FlextAuthProtocols.Auth.FlextAuthBaseProvider._normalize_claim_value(
-                            item
-                        )
-                        if normalized_item is not None:
-                            normalized_mapping[key] = normalized_item
-                    return normalized_mapping
-                return value
+                normalized_mapping: dict[str, t.ContainerValue] = {}
+                for key, item in value.items():
+                    normalized_item = cls._normalize_claim_value(item)
+                    if normalized_item is not None:
+                        normalized_mapping[key] = normalized_item
+                return normalized_mapping
 
             def authenticate(
                 self, credentials: m.Auth.CredentialValidation
@@ -418,7 +413,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 else:
                     user_roles = []
                 now = datetime.now(UTC)
-                claims: dict[str, t.Scalar | list[str]] = {}
+                claims: dict[str, t.ContainerValue] = {}
                 reserved_claims = {
                     "sub",
                     "identity_id",
@@ -439,18 +434,19 @@ class FlextAuthProtocols(FlextApiProtocols):
                     normalized_value = self._normalize_claim_value(value)
                     if normalized_value is not None:
                         claims[key] = normalized_value
-                claims.update({
-                    "sub": identity_id,
-                    "identity_id": identity_id,
-                    "name": name,
-                    "email": contact,
-                    "roles": user_roles,
-                    "token_type": token_kind or "access",
-                    "iat": int(now.timestamp()),
-                    "exp": int((now + timedelta(minutes=effective_expiry)).timestamp()),
-                    "iss": issuer_name,
-                    "aud": audience_name,
-                })
+                claims["sub"] = identity_id
+                claims["identity_id"] = identity_id
+                claims["name"] = name
+                claims["email"] = contact
+                roles_claim: list[t.ContainerValue] = list(user_roles)
+                claims["roles"] = roles_claim
+                claims["token_type"] = token_kind or "access"
+                claims["iat"] = int(now.timestamp())
+                claims["exp"] = int(
+                    (now + timedelta(minutes=effective_expiry)).timestamp()
+                )
+                claims["iss"] = issuer_name
+                claims["aud"] = audience_name
 
                 def _encode_token() -> str:
                     encoded_token = jwt.encode(
@@ -572,6 +568,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                         token=generation_result.value,
                         token_type=refresh_type,
                         expires_at=expires_result.value,
+                        session_id="",
                         is_revoked=False,
                         refresh_token=refresh_token,
                     )

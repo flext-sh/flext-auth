@@ -11,11 +11,10 @@ from typing import override
 from flext_core import r
 
 from flext_auth import m, p
-from flext_auth.protocols import FlextAuthBaseProvider
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthProviderMixin
 
 
-class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthLdapProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin):
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.
