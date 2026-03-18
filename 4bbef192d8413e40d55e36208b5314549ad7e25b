@@ -1,0 +1,23 @@
+tests/unit/test_token_real_flows.py
+  0f46f83de0143d24 18-19,80-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "4bbef192d8413e40d55e36208b5314549ad7e25b",
+  "prompts": {
+    "0f46f83de0143d24": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_2fe4698a9ffezG8YgHzmRqaPsV",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 6,
+      "total_deletions": 0,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    }
+  }
+}
