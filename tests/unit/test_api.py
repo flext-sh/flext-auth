@@ -18,6 +18,7 @@ from threading import Thread
 import jwt
 import pytest
 from flext_core import r
+from flext_tests import tm
 
 from flext_auth import (
     FlextAuth,
@@ -100,11 +101,9 @@ class TestFlextAuthProcessorRegistration:
         result = auth.register_user("user1", "user1@example.com", "weak")
         tm.that(not result.is_success, eq=True)
         tm.that(result.error is not None, eq=True)
+        error_text = (result.error or "").lower()
         tm.that(
-            (
-                "at least 8 characters" in result.error.lower()
-                or "credential" in result.error.lower()
-            ),
+            ("at least 8 characters" in error_text or "credential" in error_text),
             eq=True,
         )
 
@@ -199,7 +198,7 @@ class TestFlextAuthSettingsurationOverrides:
 
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
-        custom_config = FlextAuthSettings()
+        custom_config = FlextAuthSettings.get_or_create_global().value
         auth = FlextAuth(config=custom_config)
         tm.that(auth.config == custom_config, eq=True)
 
@@ -289,7 +288,7 @@ class TestFlextAuthErrorHandling:
         result = auth.get_user_by_username("nonexistent")
         tm.that(not result.is_success, eq=True)
         tm.that(result.error is not None, eq=True)
-        tm.that("not found" in result.error.lower(), eq=True)
+        tm.that("not found" in (result.error or "").lower(), eq=True)
 
 
 class TestFlextAuthLogging:
@@ -332,7 +331,7 @@ class TestFlextAuthModelSettingsuration:
 
     def test_model_config_validate_assignment(self) -> None:
         """Test validate_assignment configuration."""
-        config = FlextAuthSettings()
+        config = FlextAuthSettings.get_or_create_global().value
         tm.that(config.model_config.get("validate_assignment", False) is True, eq=True)
 
 
@@ -351,9 +350,14 @@ class TestFlextAuth:
         custom_rounds = 10
         custom_expiry = 60
         custom_config = FlextAuthSettings(
-            auth_secret=custom_secret,
+            secret_key=custom_secret,
+            algorithm="HS256",
+            issuer="flext-auth",
+            audience="flext-users",
             hash_rounds=custom_rounds,
             expiry_minutes=custom_expiry,
+            session_expiry_minutes=1440,
+            max_sessions_per_user=5,
         )
         auth_custom: FlextAuth = FlextAuth(config=custom_config)
         tm.that(
@@ -603,7 +607,7 @@ class TestFlextAuthErrorHandlingSecond:
         auth_result = auth.authenticate_user("nonexistent", "password")
         tm.that(not auth_result.is_success, eq=True)
         tm.that(auth_result.error is not None, eq=True)
-        tm.that(len(auth_result.error) > 0, eq=True)
+        tm.that(len(auth_result.error or "") > 0, eq=True)
 
     def test_invalid_session_logout(self) -> None:
         """Test logout with invalid session ID."""
@@ -631,7 +635,7 @@ class TestFlextAuthQuickStartFunction:
         nonexistent_result = auth.get_user_by_username("nonexistent_user")
         tm.that(not nonexistent_result.is_success, eq=True)
         tm.that(nonexistent_result.error is not None, eq=True)
-        tm.that("not found" in nonexistent_result.error.lower(), eq=True)
+        tm.that("not found" in (nonexistent_result.error or "").lower(), eq=True)
 
     def test_flext_auth_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
@@ -725,9 +729,13 @@ class TestFlextAuthPasswordMethods:
             unique_id="test-id",
             name="testuser",
             contact="test@example.com",
+            credential_hash="",
             full_name="Test User",
             is_active=True,
             roles=[],
+            permissions=[],
+            token="",
+            session_id="",
             failed_attempts=0,
             locked_until=datetime.min.replace(tzinfo=UTC),
             last_access=datetime.min.replace(tzinfo=UTC),
@@ -745,9 +753,13 @@ class TestFlextAuthPasswordMethods:
             unique_id="test-id",
             name="testuser",
             contact="test@example.com",
+            credential_hash="",
             full_name="Test User",
             is_active=True,
             roles=[],
+            permissions=[],
+            token="",
+            session_id="",
             failed_attempts=0,
             locked_until=datetime.min.replace(tzinfo=UTC),
             last_access=datetime.min.replace(tzinfo=UTC),
@@ -960,11 +972,11 @@ class TestFlextAuthErrorHandlingPaths:
         get_result = auth.get_user(invalid_user_id)
         tm.that(not get_result.is_success, eq=True)
         tm.that(get_result.error is not None, eq=True)
-        tm.that("not found" in get_result.error.lower(), eq=True)
+        tm.that("not found" in (get_result.error or "").lower(), eq=True)
         username_result = auth.get_user_by_username("nonexistent_username")
         tm.that(not username_result.is_success, eq=True)
         tm.that(username_result.error is not None, eq=True)
-        tm.that("not found" in username_result.error.lower(), eq=True)
+        tm.that("not found" in (username_result.error or "").lower(), eq=True)
         logout_result = auth.logout_user(invalid_user_id)
         tm.that(not logout_result.is_success, eq=True)
 
@@ -1206,7 +1218,7 @@ class TestAuthModule:
         tm.that(isinstance(result, r), eq=True)
         tm.that(not result.is_success, eq=True)
         tm.that(result.error is not None, eq=True)
-        tm.that("not found" in result.error.lower(), eq=True)
+        tm.that("not found" in (result.error or "").lower(), eq=True)
 
     def test_flext_auth_with_flext_tests(self) -> None:
         """Test auth functionality with flext_tests infrastructure."""
@@ -1233,7 +1245,7 @@ class TestAuthModule:
     def test_flext_auth_docstring(self) -> None:
         """Test that FlextAuth has proper docstring."""
         tm.that(FlextAuth.__doc__ is not None, eq=True)
-        tm.that(len(FlextAuth.__doc__.strip()) > 0, eq=True)
+        tm.that(len((FlextAuth.__doc__ or "").strip()) > 0, eq=True)
 
     def test_flext_auth_method_signatures(self) -> None:
         """Test that auth methods have proper signatures."""
@@ -1250,19 +1262,13 @@ class TestAuthModule:
             "cleanup_expired_sessions",
         ]
         for method_name in expected_methods:
-            (
-                tm.that(hasattr(auth, method_name), eq=True),
-                f"Method {method_name} should exist",
-            )
+            tm.that(hasattr(auth, method_name), eq=True)
             method = (
                 auth.__getattribute__(method_name)
                 if hasattr(auth, method_name)
                 else None
             )
-            (
-                tm.that(callable(method), eq=True),
-                f"Method {method_name} should be callable",
-            )
+            tm.that(callable(method), eq=True)
 
     def test_flext_auth_with_real_data(self) -> None:
         """Test auth functionality with realistic data scenarios."""
@@ -1403,6 +1409,8 @@ class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
             token="refreshed-token",
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
+            session_id="",
+            is_revoked=False,
             refresh_token="refresh-next",
         )
         return r[p.Auth.Token].ok(refreshed_token)
@@ -1460,6 +1468,8 @@ class TestProviderTokenFlows:
             token="expired-token",
             token_type="Bearer",
             expires_at=datetime.now(UTC) - timedelta(minutes=1),
+            session_id="",
+            is_revoked=False,
             refresh_token="refresh-source-token",
         )
         request = HttpRequest()
@@ -1547,7 +1557,13 @@ def _build_identity_for_flow_tests(
         unique_id=identity_id,
         name=name,
         contact=contact,
+        credential_hash="",
+        full_name=name,
+        is_active=True,
         roles=roles,
+        permissions=[],
+        token="",
+        session_id="",
         failed_attempts=0,
         locked_until=datetime.min.replace(tzinfo=UTC),
         last_access=datetime.min.replace(tzinfo=UTC),

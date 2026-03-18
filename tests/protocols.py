@@ -1,6 +1,6 @@
 """Test protocol definitions for flext-auth.
 
-Provides TestsFlextAuthProtocols, combining FlextTestsProtocols with
+Provides TestsFlextAuthProtocols, combining p with
 FlextAuthProtocols for test-specific protocol definitions.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -14,12 +14,12 @@ from flext_tests import p
 from flext_auth import FlextAuthProtocols
 
 
-class TestsFlextAuthProtocols(FlextTestsProtocols, FlextAuthProtocols):
-    """Test protocols combining FlextTestsProtocols and FlextAuthProtocols.
+class TestsFlextAuthProtocols(p, FlextAuthProtocols):
+    """Test protocols combining p and FlextAuthProtocols.
 
     Provides access to:
-    - p.Tests.Docker.* (from FlextTestsProtocols)
-    - p.Tests.Factory.* (from FlextTestsProtocols)
+    - p.Tests.Docker.* (from p)
+    - p.Tests.Factory.* (from p)
     - p.Auth.* (from FlextAuthProtocols)
     """
 

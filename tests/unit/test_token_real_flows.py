@@ -13,75 +13,77 @@ from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 
 
-class _HttpRequest:
-    def __init__(self) -> None:
-        self.headers: dict[str, str] = {}
-
-
-class _BaseProviderForTokenTests(FlextAuthBaseProvider):
-    @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
-        _ = credentials
-        return r[p.Auth.Token].fail("Not used in token tests")
-
-    @override
-    def validate(self, token: str) -> r[bool]:
-        return self._decode_token_claims(token).map(lambda _claims: True)
-
-
-class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
-    def __init__(self) -> None:
-        super().__init__(
-            config={
-                "secret_key": "middleware-refresh-secret-for-tests-12345",
-                "algorithm": "HS256",
-                "issuer": "flext-auth-tests",
-                "audience": "flext-auth-tests",
-                "expiry_minutes": 10,
-            }
-        )
-        self.refresh_called = False
-
-    @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
-        _ = credentials
-        return r[p.Auth.Token].fail("Not used in token tests")
-
-    @override
-    def validate(self, token: str) -> r[bool]:
-        _ = token
-        return r[bool].fail("Refresh source token is invalid")
-
-    @override
-    def refresh(self, token: str) -> r[p.Auth.Token]:
-        _ = token
-        self.refresh_called = True
-        refreshed = m.Auth.AuthToken(
-            identity_id="middleware-user",
-            token="refreshed-access-token",
-            token_type="Bearer",
-            expires_at=datetime.now(UTC) + timedelta(minutes=30),
-            session_id="",
-            is_revoked=False,
-            refresh_token="next-refresh-token",
-        )
-        return r[p.Auth.Token].ok(refreshed)
-
-
-class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
-    @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
-        _ = credentials
-        return r[p.Auth.Token].fail("Not used in token tests")
-
-    @override
-    def validate(self, token: str) -> r[bool]:
-        return self.validate_token(token).map(lambda _identity: True)
-
-
 class TestTokenRealFlows:
+    class HttpRequest:
+        def __init__(self) -> None:
+            self.headers: dict[str, str] = {}
+
+    class BaseProvider(FlextAuthBaseProvider):
+        @override
+        def authenticate(
+            self, credentials: m.Auth.CredentialValidation
+        ) -> r[p.Auth.Token]:
+            _ = credentials
+            return r[p.Auth.Token].fail("Not used in token tests")
+
+        @override
+        def validate(self, token: str) -> r[bool]:
+            return self._decode_token_claims(token).map(lambda _claims: True)
+
+    class MiddlewareRefreshProvider(FlextAuthBaseProvider):
+        def __init__(self) -> None:
+            super().__init__(
+                config={
+                    "secret_key": "middleware-refresh-secret-for-tests-12345",
+                    "algorithm": "HS256",
+                    "issuer": "flext-auth-tests",
+                    "audience": "flext-auth-tests",
+                    "expiry_minutes": 10,
+                }
+            )
+            self.refresh_called = False
+
+        @override
+        def authenticate(
+            self, credentials: m.Auth.CredentialValidation
+        ) -> r[p.Auth.Token]:
+            _ = credentials
+            return r[p.Auth.Token].fail("Not used in token tests")
+
+        @override
+        def validate(self, token: str) -> r[bool]:
+            _ = token
+            return r[bool].fail("Refresh source token is invalid")
+
+        @override
+        def refresh(self, token: str) -> r[p.Auth.Token]:
+            _ = token
+            self.refresh_called = True
+            refreshed = m.Auth.AuthToken(
+                identity_id="middleware-user",
+                token="refreshed-access-token",
+                token_type="Bearer",
+                expires_at=datetime.now(UTC) + timedelta(minutes=30),
+                session_id="",
+                is_revoked=False,
+                refresh_token="next-refresh-token",
+            )
+            return r[p.Auth.Token].ok(refreshed)
+
+    class KerberosProvider(FlextAuthKerberosProvider):
+        @override
+        def authenticate(
+            self, credentials: m.Auth.CredentialValidation
+        ) -> r[p.Auth.Token]:
+            _ = credentials
+            return r[p.Auth.Token].fail("Not used in token tests")
+
+        @override
+        def validate(self, token: str) -> r[bool]:
+            return self.validate_token(token).map(lambda _identity: True)
+
     def test_base_provider_generate_token_with_real_jwt_claims(self) -> None:
-        provider = _BaseProviderForTokenTests(
+        provider = self.BaseProvider(
             config={
                 "secret_key": "base-provider-secret-for-token-tests-12345",
                 "algorithm": "HS256",
@@ -110,7 +112,7 @@ class TestTokenRealFlows:
         tm.ok(claims_result)
 
     def test_base_provider_refresh_valid_token_emits_new_token(self) -> None:
-        provider = _BaseProviderForTokenTests(
+        provider = self.BaseProvider(
             config={
                 "secret_key": "base-provider-refresh-secret-for-tests-12345",
                 "algorithm": "HS256",
@@ -134,7 +136,7 @@ class TestTokenRealFlows:
         tm.ok(refresh_result)
 
     def test_middleware_refresh_rejects_invalid_refresh_source_token(self) -> None:
-        provider = _MiddlewareRefreshProviderForTokenTests()
+        provider = self.MiddlewareRefreshProvider()
         middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(provider)
         middleware._current_token = m.Auth.AuthToken(
             identity_id="middleware-user",
@@ -145,7 +147,7 @@ class TestTokenRealFlows:
             is_revoked=False,
             refresh_token="refresh-source-token",
         )
-        request = _HttpRequest()
+        request = self.HttpRequest()
         result = middleware.process_request(request)
         tm.fail(result, contains="invalid")
         tm.that(provider.refresh_called, eq=False)
@@ -153,7 +155,7 @@ class TestTokenRealFlows:
     def test_kerberos_validate_token_returns_honest_error_without_validator(
         self,
     ) -> None:
-        provider = _KerberosProviderForTokenTests(
+        provider = self.KerberosProvider(
             config={
                 "realm": "EXAMPLE.COM",
                 "kdc": "kdc.example.com",
@@ -167,7 +169,8 @@ class TestTokenRealFlows:
         tm.that("validator" in error or "gssapi" in error, eq=True)
 
     def test_oauth2_validate_token_uses_authorization_server_introspection(
-        self, monkeypatch: pytest.MonkeyPatch
+        self,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         provider = FlextAuthOAuth2Provider({
             "client_id": "oauth-test-client",
@@ -197,7 +200,8 @@ class TestTokenRealFlows:
         tm.ok(result)
 
     def test_oauth2_validate_token_fails_when_introspection_reports_inactive(
-        self, monkeypatch: pytest.MonkeyPatch
+        self,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         provider = FlextAuthOAuth2Provider({
             "client_id": "oauth-test-client",

@@ -1,10 +1,10 @@
 """Constants for flext-auth tests.
 
-Provides TestsFlextAuthConstants, extending FlextTestsConstants with flext-auth-specific
+Provides TestsFlextAuthConstants, extending c with flext-auth-specific
 constants using COMPOSITION INHERITANCE.
 
 Inheritance hierarchy:
-- FlextTestsConstants (flext_tests) - Provides .Tests.* namespace
+- c (flext_tests) - Provides .Tests.* namespace
 - FlextAuthConstants (production) - Provides .Auth.* namespace
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -15,16 +15,16 @@ from __future__ import annotations
 
 from typing import Final, Literal
 
-from flext_tests import FlextTestsConstants
+from flext_tests import c
 
 from flext_auth import FlextAuthConstants
 
 
-class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
+class TestsFlextAuthConstants(c, FlextAuthConstants):
     """Constants for flext-auth tests using COMPOSITION INHERITANCE.
 
     MANDATORY: Inherits from BOTH:
-    1. FlextTestsConstants - for test infrastructure (.Tests.*)
+    1. c - for test infrastructure (.Tests.*)
     2. FlextAuthConstants - for domain constants (.Auth.*)
 
     Access patterns:
@@ -35,9 +35,9 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     - c.TestData.* (project-specific test data)
 
     Rules:
-    - NEVER duplicate constants from FlextTestsConstants or FlextAuthConstants
+    - NEVER duplicate constants from c or FlextAuthConstants
     - Only flext-auth-specific constants allowed (not generic for other projects)
-    - All generic constants come from FlextTestsConstants
+    - All generic constants come from c
     - All production constants come from FlextAuthConstants
     """
 

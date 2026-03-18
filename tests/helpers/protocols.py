@@ -10,10 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_tests import FlextTestsProtocols
+
 from flext_auth import FlextAuthProtocols
 
 
-class TestsProtocols(FlextAuthProtocols):
+class TestsProtocols(FlextTestsProtocols, FlextAuthProtocols):
     """Test-specific protocols extending FlextAuthProtocols.
 
     Provides test-specific protocol definitions that extend production

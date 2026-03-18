@@ -1,6 +1,6 @@
 """Test models for flext-auth.
 
-Provides test-specific models extending FlextTestsModels and FlextAuthModels
+Provides test-specific models extending m and FlextAuthModels
 with proper hierarchy composition.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -14,18 +14,18 @@ from flext_tests import m
 from flext_auth import FlextAuthModels
 
 
-class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
-    """Test models - composition of FlextTestsModels + FlextAuthModels.
+class TestsFlextAuthModels(m, FlextAuthModels):
+    """Test models - composition of m + FlextAuthModels.
 
     Hierarchy:
-    - FlextTestsModels: Generic test utilities from flext-tests
+    - m: Generic test utilities from flext-tests
     - FlextAuthModels: Domain models from flext-auth
     - TestsFlextAuthModels: Composition + namespace .Tests
 
     Access patterns:
     - m.Tests.* - Project-specific test fixtures
     - m.AuthToken - Production domain models (inherited)
-    - FlextTestsModels.Tests.* - Generic test utilities
+    - m.Tests.* - Generic test utilities
     """
 
 

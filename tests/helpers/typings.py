@@ -10,10 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_tests import FlextTestsTypes
+
 from flext_auth import FlextAuthTypes
 
 
-class TestsTypings(FlextAuthTypes):
+class TestsTypings(FlextTestsTypes, FlextAuthTypes):
     """Test-specific type definitions extending FlextAuthTypes.
 
     Provides test-specific type aliases that extend production types

@@ -10,10 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_tests import FlextTestsUtilities
+
 from flext_auth import FlextAuthUtilities
 
 
-class TestsUtilities(FlextAuthUtilities):
+class TestsUtilities(FlextTestsUtilities, FlextAuthUtilities):
     """Test-specific utilities extending FlextAuthUtilities.
 
     Provides test-specific utility methods that extend production utilities
