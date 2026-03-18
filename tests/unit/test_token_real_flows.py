@@ -15,10 +15,14 @@ from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 
 class TestTokenRealFlows:
     class HttpRequest:
+        """Mock HTTP request for middleware testing."""
+
         def __init__(self) -> None:
             self.headers: dict[str, str] = {}
 
     class BaseProvider(FlextAuthBaseProvider):
+        """Base token provider for flow tests."""
+
         @override
         def authenticate(
             self, credentials: m.Auth.CredentialValidation
@@ -31,6 +35,8 @@ class TestTokenRealFlows:
             return self._decode_token_claims(token).map(lambda _claims: True)
 
     class MiddlewareRefreshProvider(FlextAuthBaseProvider):
+        """Refresh-capable provider for middleware tests."""
+
         def __init__(self) -> None:
             super().__init__(
                 config={
@@ -71,6 +77,8 @@ class TestTokenRealFlows:
             return r[p.Auth.Token].ok(refreshed)
 
     class KerberosProvider(FlextAuthKerberosProvider):
+        """Kerberos provider for token flow tests."""
+
         @override
         def authenticate(
             self, credentials: m.Auth.CredentialValidation
