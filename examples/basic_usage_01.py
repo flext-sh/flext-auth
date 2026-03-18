@@ -34,7 +34,7 @@ def example_basic_authentication() -> None:
         "Authentication configuration loaded",
         expiry_minutes=config.expiry_minutes,
         hash_rounds=config.hash_rounds,
-        max_sessions_per_identity=config.max_sessions_per_identity,
+        max_sessions_per_user=config.max_sessions_per_user,
     )
 
 
