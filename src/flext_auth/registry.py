@@ -38,7 +38,7 @@ class _MetadataWrapper(BaseModel):
 
 
 def _is_auth_provider(
-    value: object,
+    value: t.RuntimeAtomic,
 ) -> TypeGuard[p.Auth.FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
