@@ -105,7 +105,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 return Annotated[
                     c.Auth.ProviderTypes,
                     BeforeValidator(
-                        FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes)
+                        FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes),
                     ),
                 ]
 
@@ -115,7 +115,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 return Annotated[
                     c.Auth.RoleTypes,
                     BeforeValidator(
-                        FlextApiUtilities.coerce_validator(c.Auth.RoleTypes)
+                        FlextApiUtilities.coerce_validator(c.Auth.RoleTypes),
                     ),
                 ]
 
@@ -125,7 +125,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 return Annotated[
                     c.Auth.TokenTypes,
                     BeforeValidator(
-                        FlextApiUtilities.coerce_validator(c.Auth.TokenTypes)
+                        FlextApiUtilities.coerce_validator(c.Auth.TokenTypes),
                     ),
                 ]
 
@@ -140,7 +140,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 email = email.strip()
                 if len(email) > c.Auth.MAX_EMAIL_LENGTH:
                     return r[str].fail(
-                        f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)"
+                        f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)",
                     )
                 if "@" not in email or "." not in email.split("@")[1]:
                     return r[str].fail("Invalid email format")
@@ -153,11 +153,11 @@ class FlextAuthUtilities(FlextApiUtilities):
                     return r[str].fail("Password cannot be empty")
                 if len(password) < c.Auth.Credentials.Password.MIN_LENGTH:
                     return r[str].fail(
-                        f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)"
+                        f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)",
                     )
                 if len(password) > c.Auth.Credentials.Password.MAX_LENGTH:
                     return r[str].fail(
-                        f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)"
+                        f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)",
                     )
                 return r[str].ok(password)
 
@@ -169,11 +169,11 @@ class FlextAuthUtilities(FlextApiUtilities):
                 username = username.strip()
                 if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
                     return r[str].fail(
-                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)"
+                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
                     )
                 if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
                     return r[str].fail(
-                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)"
+                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
                     )
                 return r[str].ok(username)
 
@@ -214,7 +214,8 @@ class FlextAuthUtilities(FlextApiUtilities):
 
             @staticmethod
             def build_auth_error_response(
-                error: str, error_code: str = "AUTH_ERROR"
+                error: str,
+                error_code: str = "AUTH_ERROR",
             ) -> Mapping[str, t.Scalar]:
                 """Build an authentication error response."""
                 return {
@@ -277,7 +278,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             )
             if not FlextApiUtilities.is_dict_like(payload):
                 return r[t.Auth.Tokens.ClaimMap].fail(
-                    "Decoded token payload is not a dictionary"
+                    "Decoded token payload is not a dictionary",
                 )
             typed_payload: t.Auth.Tokens.ClaimMap = {
                 str(key): value for key, value in payload.items()
@@ -287,7 +288,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             return r[t.Auth.Tokens.ClaimMap].fail(f"Invalid token: {e}")
         except ValidationError as e:
             return r[t.Auth.Tokens.ClaimMap].fail(
-                f"Decoded token payload validation failed: {e}"
+                f"Decoded token payload validation failed: {e}",
             )
         except (
             ValueError,

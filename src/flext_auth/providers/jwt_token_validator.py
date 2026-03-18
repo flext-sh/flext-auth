@@ -44,7 +44,7 @@ class FlextAuthJwtTokenValidator:
             config = self._provider.config
             if not config:
                 return r[Mapping[str, t.ContainerValue]].fail(
-                    "JWT configuration not provided"
+                    "JWT configuration not provided",
                 )
             secret_key_value = config.get("secret_key")
             match secret_key_value:
@@ -52,7 +52,7 @@ class FlextAuthJwtTokenValidator:
                     secret_key = secret
                 case _:
                     return r[Mapping[str, t.ContainerValue]].fail(
-                        "JWT secret key not configured"
+                        "JWT secret key not configured",
                     )
             algorithm_value = config.get("algorithm")
             match algorithm_value:
@@ -60,7 +60,7 @@ class FlextAuthJwtTokenValidator:
                     algorithm = algorithm_str
                 case _:
                     return r[Mapping[str, t.ContainerValue]].fail(
-                        "JWT algorithm not configured"
+                        "JWT algorithm not configured",
                     )
             audience_value = config.get("audience")
             if audience_value is not None:
@@ -69,7 +69,7 @@ class FlextAuthJwtTokenValidator:
                         audience = audience_str
                     case _:
                         return r[Mapping[str, t.ContainerValue]].fail(
-                            "JWT audience must be a string if provided"
+                            "JWT audience must be a string if provided",
                         )
             else:
                 audience = None
@@ -84,7 +84,10 @@ class FlextAuthJwtTokenValidator:
                 )
             else:
                 payload = jwt.decode(
-                    token, secret_key, algorithms=[algorithm], options=decode_options
+                    token,
+                    secret_key,
+                    algorithms=[algorithm],
+                    options=decode_options,
                 )
             return r[Mapping[str, t.ContainerValue]].ok(payload)
         except jwt.ExpiredSignatureError:
@@ -101,7 +104,7 @@ class FlextAuthJwtTokenValidator:
             ImportError,
         ) as e:
             return r[Mapping[str, t.ContainerValue]].fail(
-                f"Token validation failed: {e}"
+                f"Token validation failed: {e}",
             )
 
 

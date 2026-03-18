@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from flext_tests import t
+from flext_tests.typings import FlextTestsTypes
 
 from flext_auth import FlextAuthTypes
 
 
-class TestsFlextAuthTypes(t, FlextAuthTypes):
-    pass
+class FlextAuthTestTypes(FlextTestsTypes, FlextAuthTypes):
+    class Tests:
+        pass
 
 
-t = TestsFlextAuthTypes
-__all__ = ["TestsFlextAuthTypes", "t"]
+t = FlextAuthTestTypes
+
+__all__ = ["FlextAuthTestTypes", "t"]

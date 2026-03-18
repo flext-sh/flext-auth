@@ -55,7 +55,7 @@ class FlextAuthProviderMixin:
         """
         if capability not in self.supports():
             return r[bool].fail(
-                f"Provider does not support '{capability}' capability. Supported capabilities: {', '.join(sorted(self.supports()))}"
+                f"Provider does not support '{capability}' capability. Supported capabilities: {', '.join(sorted(self.supports()))}",
             )
         return r[bool].ok(value=True)
 
@@ -96,7 +96,9 @@ class FlextAuthProviderMixin:
         }
 
     def _validate_credentials_dict(
-        self, credentials: Mapping[str, t.ContainerValue], required_fields: list[str]
+        self,
+        credentials: Mapping[str, t.ContainerValue],
+        required_fields: list[str],
     ) -> r[bool]:
         """Validate that credentials contain required fields.
 
@@ -109,7 +111,8 @@ class FlextAuthProviderMixin:
 
         """
         missing_fields = u.filter(
-            required_fields, lambda field: field not in credentials
+            required_fields,
+            lambda field: field not in credentials,
         )
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"

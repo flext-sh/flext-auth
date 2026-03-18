@@ -98,7 +98,7 @@ class FlextAuthRfcProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin)
 
         """
         return r[p.Auth.Token].fail(
-            "RFC provider authenticate() must be implemented by subclass"
+            "RFC provider authenticate() must be implemented by subclass",
         )
 
     @override

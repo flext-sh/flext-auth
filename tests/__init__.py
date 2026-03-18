@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from . import fixtures as fixtures, helpers as helpers, unit as unit
     from .conftest import mock_get_global
-    from .constants import TestsFlextAuthConstants, c
+    from .constants import FlextAuthTestConstants, c
     from .fixtures.certificates import (
         CertificateFixture,
         generate_client_cert,
@@ -23,9 +23,9 @@ if TYPE_CHECKING:
     from .helpers.protocols import TestsProtocols
     from .helpers.typings import TestsTypings
     from .helpers.utilities import TestsUtilities
-    from .models import TestsFlextAuthModels, m, tm
-    from .protocols import TestsFlextAuthProtocols, p
-    from .typings import TestsFlextAuthTypes, t
+    from .models import FlextAuthTestModels, m
+    from .protocols import FlextAuthTestProtocols, p
+    from .typings import FlextAuthTestTypes, t
     from .unit.test_api import (
         HttpRequest,
         TestAuthModule,
@@ -62,10 +62,15 @@ if TYPE_CHECKING:
     from .unit.test_constants import TestFlextAuthConstants
     from .unit.test_token_real_flows import TestTokenRealFlows
     from .unit.test_typings import TestFlextAuthTypes
-    from .utilities import TestsFlextAuthUtilities, u
+    from .utilities import FlextAuthTestUtilities, u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
+    "FlextAuthTestConstants": ("tests.constants", "FlextAuthTestConstants"),
+    "FlextAuthTestModels": ("tests.models", "FlextAuthTestModels"),
+    "FlextAuthTestProtocols": ("tests.protocols", "FlextAuthTestProtocols"),
+    "FlextAuthTestTypes": ("tests.typings", "FlextAuthTestTypes"),
+    "FlextAuthTestUtilities": ("tests.utilities", "FlextAuthTestUtilities"),
     "HttpRequest": ("tests.unit.test_api", "HttpRequest"),
     "TestAuthModule": ("tests.unit.test_api", "TestAuthModule"),
     "TestFlextAuth": ("tests.unit.test_api", "TestFlextAuth"),
@@ -161,11 +166,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestJwtTokenGenerator": ("tests.unit.test_config", "TestJwtTokenGenerator"),
     "TestProviderTokenFlows": ("tests.unit.test_api", "TestProviderTokenFlows"),
     "TestTokenRealFlows": ("tests.unit.test_token_real_flows", "TestTokenRealFlows"),
-    "TestsFlextAuthConstants": ("tests.constants", "TestsFlextAuthConstants"),
-    "TestsFlextAuthModels": ("tests.models", "TestsFlextAuthModels"),
-    "TestsFlextAuthProtocols": ("tests.protocols", "TestsFlextAuthProtocols"),
-    "TestsFlextAuthTypes": ("tests.typings", "TestsFlextAuthTypes"),
-    "TestsFlextAuthUtilities": ("tests.utilities", "TestsFlextAuthUtilities"),
     "TestsProtocols": ("tests.helpers.protocols", "TestsProtocols"),
     "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
     "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
@@ -181,13 +181,17 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "mock_get_global": ("tests.conftest", "mock_get_global"),
     "p": ("tests.protocols", "p"),
     "t": ("tests.typings", "t"),
-    "tm": ("tests.models", "tm"),
     "u": ("tests.utilities", "u"),
     "unit": ("tests.unit", ""),
 }
 
 __all__ = [
     "CertificateFixture",
+    "FlextAuthTestConstants",
+    "FlextAuthTestModels",
+    "FlextAuthTestProtocols",
+    "FlextAuthTestTypes",
+    "FlextAuthTestUtilities",
     "HttpRequest",
     "TestAuthModule",
     "TestFlextAuth",
@@ -223,11 +227,6 @@ __all__ = [
     "TestJwtTokenGenerator",
     "TestProviderTokenFlows",
     "TestTokenRealFlows",
-    "TestsFlextAuthConstants",
-    "TestsFlextAuthModels",
-    "TestsFlextAuthProtocols",
-    "TestsFlextAuthTypes",
-    "TestsFlextAuthUtilities",
     "TestsProtocols",
     "TestsTypings",
     "TestsUtilities",
@@ -240,7 +239,6 @@ __all__ = [
     "mock_get_global",
     "p",
     "t",
-    "tm",
     "u",
     "unit",
 ]

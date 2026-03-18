@@ -22,7 +22,7 @@ from pydantic import TypeAdapter, ValidationError
 from flext_auth import m, t
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
-    dict[str, t.Scalar]
+    dict[str, t.Scalar],
 )
 
 
@@ -71,7 +71,10 @@ class FlextWebTransportAdapter:
         return "http"
 
     def get_userinfo(
-        self, url: str, access_token: str, headers: Mapping[str, str]
+        self,
+        url: str,
+        access_token: str,
+        headers: Mapping[str, str],
     ) -> r[t.Api.ResponseDict]:
         """GET request to OIDC UserInfo endpoint.
 
@@ -101,8 +104,11 @@ class FlextWebTransportAdapter:
         self.logger.debug("Requesting UserInfo from %s", url)
         return self._execute_request(
             m.Api.HttpRequest(
-                method="GET", url=url, headers=request_headers, timeout=self._timeout
-            )
+                method="GET",
+                url=url,
+                headers=request_headers,
+                timeout=self._timeout,
+            ),
         ).flat_map(self._validate_userinfo_response)
 
     def post_token_request(
@@ -154,7 +160,7 @@ class FlextWebTransportAdapter:
                 headers=request_headers,
                 body=request_body,
                 timeout=self._timeout,
-            )
+            ),
         )
         return response.flat_map(self._parse_token_response)
 
@@ -230,7 +236,7 @@ class FlextWebTransportAdapter:
                 decoded = body_text
             case _:
                 return r[t.Api.ResponseDict].fail(
-                    f"Unsupported response body type: {type(body)}"
+                    f"Unsupported response body type: {type(body)}",
                 )
         try:
             parsed = _DICT_STR_SCALAR_ADAPTER.validate_json(decoded)
@@ -239,7 +245,8 @@ class FlextWebTransportAdapter:
             return r[t.Api.ResponseDict].fail("Unable to parse response body as JSON")
 
     def _parse_token_response(
-        self, response_data: t.Api.ResponseDict
+        self,
+        response_data: t.Api.ResponseDict,
     ) -> r[t.Api.ResponseDict]:
         """Parse OAuth2 token endpoint response.
 
@@ -273,11 +280,11 @@ class FlextWebTransportAdapter:
             return r[t.Api.ResponseDict].fail(error_msg)
         if "access_token" not in response_data:
             return r[t.Api.ResponseDict].fail(
-                "Token response missing required 'access_token' field"
+                "Token response missing required 'access_token' field",
             )
         if "token_type" not in response_data:
             return r[t.Api.ResponseDict].fail(
-                "Token response missing required 'token_type' field"
+                "Token response missing required 'token_type' field",
             )
         self.logger.info(
             "Token response validated successfully",
@@ -288,7 +295,9 @@ class FlextWebTransportAdapter:
         return r[t.Api.ResponseDict].ok(response_data)
 
     def _resolve_body(
-        self, method: str, data: t.Api.RequestBody | None
+        self,
+        method: str,
+        data: t.Api.RequestBody | None,
     ) -> t.Api.RequestBody | None:
         if data is None:
             return None
@@ -297,7 +306,10 @@ class FlextWebTransportAdapter:
         return data
 
     def _resolve_query(
-        self, method: str, data: t.Api.RequestBody | None, query: t.Api.WebParams | None
+        self,
+        method: str,
+        data: t.Api.RequestBody | None,
+        query: t.Api.WebParams | None,
     ) -> t.Api.WebParams | None:
         if isinstance(data, Mapping) and method.upper() == "GET":
             data_mapping: t.JsonObject = {
@@ -332,14 +344,16 @@ class FlextWebTransportAdapter:
                 return str(value)
 
     def _validate_userinfo_response(
-        self, payload: t.Api.ResponseDict
+        self,
+        payload: t.Api.ResponseDict,
     ) -> r[t.Api.ResponseDict]:
         if "sub" not in payload:
             return r[t.Api.ResponseDict].fail(
-                "UserInfo response missing required 'sub' claim"
+                "UserInfo response missing required 'sub' claim",
             )
         self.logger.info(
-            "UserInfo retrieved successfully", subject=str(payload.get("sub", ""))
+            "UserInfo retrieved successfully",
+            subject=str(payload.get("sub", "")),
         )
         return r[t.Api.ResponseDict].ok(payload)
 

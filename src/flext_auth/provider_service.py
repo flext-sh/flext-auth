@@ -58,19 +58,22 @@ class FlextAuthProviderService(s[bool]):
         return normalized
 
     def authenticate_user(
-        self, username: str, password: str, provider: str = "basic"
+        self,
+        username: str,
+        password: str,
+        provider: str = "basic",
     ) -> r[p.Auth.Token]:
         """Railway-oriented user authentication with provider selection."""
         credentials = m.Auth.CredentialValidation(username=username, password=password)
         return self._providers.get(provider).flat_map(
-            lambda auth_provider: auth_provider.authenticate(credentials)
+            lambda auth_provider: auth_provider.authenticate(credentials),
         )
 
     @override
     def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(
-            "Use specific provider methods: get_provider, authenticate_user, etc."
+            "Use specific provider methods: get_provider, authenticate_user, etc.",
         )
 
     def generate_token_for_user(
@@ -85,8 +88,11 @@ class FlextAuthProviderService(s[bool]):
         effective_token_type = token_type if token_type is not None else token_kind
         return self._providers.get(provider).flat_map(
             lambda p: p.generate_token_for_user(
-                user.model_dump(), token_kind, effective_token_type, expiry_minutes
-            )
+                user.model_dump(),
+                token_kind,
+                effective_token_type,
+                expiry_minutes,
+            ),
         )
 
     def get_jwt_provider(self) -> r[FlextAuthJwtProvider]:
@@ -94,7 +100,7 @@ class FlextAuthProviderService(s[bool]):
         provider_result = self._providers.get("jwt")
         if provider_result.is_failure:
             return r[FlextAuthJwtProvider].fail(
-                provider_result.error or "JWT provider is not registered"
+                provider_result.error or "JWT provider is not registered",
             )
         provider = provider_result.value
         if not isinstance(provider, FlextAuthJwtProvider):
@@ -110,7 +116,9 @@ class FlextAuthProviderService(s[bool]):
         return self._providers.list_providers()
 
     def register_provider(
-        self, name: str, provider: p.Auth.FlextAuthBaseProvider
+        self,
+        name: str,
+        provider: p.Auth.FlextAuthBaseProvider,
     ) -> r[bool]:
         """Register custom provider.
 
@@ -147,7 +155,7 @@ class FlextAuthProviderService(s[bool]):
                 "ldap",
                 FlextAuthLdapProvider,
                 lambda: bool(
-                    provider_config.get("server") and provider_config.get("base_dn")
+                    provider_config.get("server") and provider_config.get("base_dn"),
                 ),
             ),
             (
@@ -155,7 +163,7 @@ class FlextAuthProviderService(s[bool]):
                 FlextAuthOAuth2Provider,
                 lambda: bool(
                     provider_config.get("client_id")
-                    and provider_config.get("token_endpoint")
+                    and provider_config.get("token_endpoint"),
                 ),
             ),
             (
@@ -167,7 +175,7 @@ class FlextAuthProviderService(s[bool]):
                 "saml",
                 FlextAuthSamlProvider,
                 lambda: bool(
-                    provider_config.get("entity_id") and provider_config.get("sso_url")
+                    provider_config.get("entity_id") and provider_config.get("sso_url"),
                 ),
             ),
             ("certificate", FlextAuthCertificateProvider, lambda: True),
@@ -177,11 +185,13 @@ class FlextAuthProviderService(s[bool]):
             if condition():
                 try:
                     provider_init_config = self._build_provider_init_config(
-                        provider_config
+                        provider_config,
                     )
                     provider = provider_class(provider_init_config)
                     self._providers.register_provider(
-                        name, provider, configuration=provider_config
+                        name,
+                        provider,
+                        configuration=provider_config,
                     )
                 except (
                     ValueError,
@@ -194,7 +204,9 @@ class FlextAuthProviderService(s[bool]):
                 ) as e:
                     error_msg: str = str(e) if e else "Unknown error"
                     self.logger.warning(
-                        "Failed to register %s provider: %s", name, error_msg
+                        "Failed to register %s provider: %s",
+                        name,
+                        error_msg,
                     )
 
 

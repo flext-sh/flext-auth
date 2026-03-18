@@ -51,7 +51,7 @@ class FlextAuthQuickstart(s[bool]):
             result = create_single_user(i)
             if result.is_failure:
                 return r[list[str]].fail(
-                    f"Failed to create demo user {i}: {result.error}"
+                    f"Failed to create demo user {i}: {result.error}",
                 )
             user_ids.append(result.value)
         return r[list[str]].ok(user_ids)
@@ -64,7 +64,7 @@ class FlextAuthQuickstart(s[bool]):
         Use specific quickstart methods instead.
         """
         return r[bool].fail(
-            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
+            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()",
         )
 
     def flext_auth_quick_start(self, *, create_admin_user: bool = True) -> r[list[str]]:
@@ -80,10 +80,10 @@ class FlextAuthQuickstart(s[bool]):
                 ["ADMIN"],
             ).fold(
                 on_failure=lambda e: r[list[str]].fail(
-                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {e}"
+                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {e}",
                 ),
                 on_success=lambda _: r[list[str]].ok(
-                    user_ids + ["REDACTED_LDAP_BIND_PASSWORD"]
+                    user_ids + ["REDACTED_LDAP_BIND_PASSWORD"],
                 ),
             )
 

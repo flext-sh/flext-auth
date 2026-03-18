@@ -27,7 +27,7 @@ from flext_auth import m, t, u
 from flext_auth.providers import FlextAuthRfcProvider
 
 _DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.JsonObject]] = TypeAdapter(
-    dict[str, t.ContainerValue]
+    dict[str, t.ContainerValue],
 )
 _LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
 
@@ -93,7 +93,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         missing_fields = u.filter(required_fields, lambda field: field not in config)
         if missing_fields:
             return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}"
+                f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
             )
         validations: list[tuple[str, tuple[type, ...], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
@@ -156,11 +156,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             self.provider = provider
 
         def validate_ticket(
-            self, _ticket_data: m.Auth.KerberosTicketData
+            self,
+            _ticket_data: m.Auth.KerberosTicketData,
         ) -> r[m.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             result = m.Auth.KerberosTicketData(
-                ticket="validated_ticket", principal="kerberos_user"
+                ticket="validated_ticket",
+                principal="kerberos_user",
             )
             return r[m.Auth.KerberosTicketData].ok(result)
 
@@ -190,7 +192,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             self.provider = provider
 
         def authenticate_ticket(
-            self, ticket_data: m.Auth.KerberosTicketData
+            self,
+            ticket_data: m.Auth.KerberosTicketData,
         ) -> r[m.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
@@ -214,7 +217,9 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     def get_metadata(self) -> m.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
         return m.Auth.Providers.Metadata(
-            name="kerberos", version="5", capabilities=tuple(self.supports())
+            name="kerberos",
+            version="5",
+            capabilities=tuple(self.supports()),
         )
 
     @override
@@ -226,7 +231,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         """Validate Kerberos token and return user."""
         if not token.strip():
             return r[m.Auth.AuthIdentity].fail(
-                "Kerberos token must be a non-empty string"
+                "Kerberos token must be a non-empty string",
             )
         validator = self._ticket_validator_callable()
         if validator is not None:
@@ -242,18 +247,18 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 ImportError,
             ) as exc:
                 return r[m.Auth.AuthIdentity].fail(
-                    f"Kerberos ticket validator execution failed: {exc}"
+                    f"Kerberos ticket validator execution failed: {exc}",
                 )
             if isinstance(validator_result, m.Auth.AuthIdentity):
                 return r[m.Auth.AuthIdentity].ok(validator_result)
             if isinstance(validator_result, Mapping):
                 try:
                     parsed_claims = _DICT_STR_CONTAINER_ADAPTER.validate_python(
-                        validator_result
+                        validator_result,
                     )
                 except ValidationError as exc:
                     return r[m.Auth.AuthIdentity].fail(
-                        f"Kerberos ticket validator mapping payload is invalid: {exc}"
+                        f"Kerberos ticket validator mapping payload is invalid: {exc}",
                     )
                 return self._map_identity_payload(parsed_claims)
             if isinstance(validator_result, m.Auth.KerberosTicketData):
@@ -267,23 +272,24 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 }
                 return self._map_identity_payload(identity_map)
             return r[m.Auth.AuthIdentity].fail(
-                "Kerberos ticket validator returned unsupported payload"
+                "Kerberos ticket validator returned unsupported payload",
             )
         claims_result = self._decode_token_claims(token)
         return claims_result.fold(
             on_failure=lambda _: r[m.Auth.AuthIdentity].fail(
-                "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)"
+                "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
             ),
             on_success=lambda v: self._map_identity_payload(v),
         )
 
     def _map_identity_payload(
-        self, claims: Mapping[str, t.ContainerValue]
+        self,
+        claims: Mapping[str, t.ContainerValue],
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(claims)
         if identity_result.is_failure:
             return r[m.Auth.AuthIdentity].fail(
-                identity_result.error or "Kerberos token subject is missing"
+                identity_result.error or "Kerberos token subject is missing",
             )
         identity_id = identity_result.value
         name_value = claims.get("name")
@@ -319,7 +325,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             )
         except (ValueError, TypeError) as exc:
             return r[m.Auth.AuthIdentity].fail(
-                f"Kerberos identity mapping failed: {exc}"
+                f"Kerberos identity mapping failed: {exc}",
             )
         return r[m.Auth.AuthIdentity].ok(identity)
 

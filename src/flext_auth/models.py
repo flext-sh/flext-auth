@@ -167,7 +167,8 @@ class FlextAuthModels(FlextApiModels):
             expires_at: Annotated[datetime, Field(..., description="Expiration time")]
             session_id: Annotated[str, Field(default="", description="Session ID")]
             is_revoked: Annotated[
-                bool, Field(default=False, description="Revoked status")
+                bool,
+                Field(default=False, description="Revoked status"),
             ]
             refresh_token: Annotated[
                 str,
@@ -269,7 +270,8 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             failed_attempts: Annotated[
-                int, Field(default=0, ge=0, description="Failed attempts")
+                int,
+                Field(default=0, ge=0, description="Failed attempts"),
             ]
             locked_until: Annotated[
                 datetime,
@@ -288,7 +290,8 @@ class FlextAuthModels(FlextApiModels):
 
             # Additional attributes expected by tests
             token: Annotated[
-                str, Field(default="", description="Associated token", exclude=True)
+                str,
+                Field(default="", description="Associated token", exclude=True),
             ]
             session_id: Annotated[str, Field(default="", description="Session ID")]
 
@@ -351,7 +354,8 @@ class FlextAuthModels(FlextApiModels):
 
             identity_id: Annotated[str, Field(..., description="Identity ID")]
             session_token: Annotated[
-                str, Field(..., description="Session token", exclude=True)
+                str,
+                Field(..., description="Session token", exclude=True),
             ]
             expires_at: Annotated[datetime, Field(..., description="Expiration time")]
             is_active: Annotated[bool, Field(default=True, description="Active status")]
@@ -526,7 +530,8 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             is_active: Annotated[
-                bool, Field(default=True, description="Key active status")
+                bool,
+                Field(default=True, description="Key active status"),
             ]
             expires_at: Annotated[
                 datetime,
@@ -565,7 +570,8 @@ class FlextAuthModels(FlextApiModels):
 
             credential_type: Annotated[str, Field(..., description="Credential type")]
             value: Annotated[
-                str, Field(..., description="Credential value", exclude=True)
+                str,
+                Field(..., description="Credential value", exclude=True),
             ]
             metadata: Annotated[
                 t.JsonObject,
@@ -609,10 +615,12 @@ class FlextAuthModels(FlextApiModels):
 
             access_token: Annotated[str, Field(..., description="Access token")]
             token_type: Annotated[
-                str, Field(default="Bearer", description="Token type")
+                str,
+                Field(default="Bearer", description="Token type"),
             ]
             expires_in: Annotated[
-                int, Field(default=3600, ge=0, description="Expiry seconds")
+                int,
+                Field(default=3600, ge=0, description="Expiry seconds"),
             ]
             scope: Annotated[str, Field(default="", description="Granted scope")]
             refresh_token: Annotated[
@@ -633,7 +641,8 @@ class FlextAuthModels(FlextApiModels):
 
             ticket: Annotated[str, Field(..., description="Kerberos ticket")]
             principal: Annotated[
-                str, Field(default="", description="Kerberos principal")
+                str,
+                Field(default="", description="Kerberos principal"),
             ]
             realm: Annotated[str, Field(default="", description="Kerberos realm")]
 
@@ -666,7 +675,8 @@ class FlextAuthModels(FlextApiModels):
 
                 name: Annotated[str, Field(..., description="Provider name")]
                 version: Annotated[
-                    str, Field(default="1.0.0", description="Provider version")
+                    str,
+                    Field(default="1.0.0", description="Provider version"),
                 ]
                 capabilities: Annotated[
                     tuple[str, ...],

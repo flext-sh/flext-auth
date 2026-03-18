@@ -26,7 +26,7 @@ from flext_auth import c, m, p, t, u
 from flext_auth.providers import FlextAuthRfcProvider
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
-    dict[str, t.Scalar]
+    dict[str, t.Scalar],
 )
 _LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
 _HTTP_BAD_REQUEST: Final[int] = 400
@@ -173,7 +173,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_token_endpoint_auth_method(self) -> str:
         """Initialize token endpoint auth method configuration."""
         token_endpoint_auth_method_value = self._config.get(
-            "token_endpoint_auth_method"
+            "token_endpoint_auth_method",
         )
         match token_endpoint_auth_method_value:
             case None | "":
@@ -191,12 +191,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Railway-oriented configuration validation."""
         required_fields = ["client_id", "token_endpoint"]
         missing_fields = u.filter(
-            required_fields, lambda field: field not in self._config
+            required_fields,
+            lambda field: field not in self._config,
         )
         if missing_fields:
             fields_str = ", ".join(missing_fields)
             return r[bool].fail(
-                f"Missing required OAuth2 configuration fields: {fields_str}"
+                f"Missing required OAuth2 configuration fields: {fields_str}",
             )
         validations: list[tuple[str, tuple[type, ...], str]] = [
             ("client_id", (str,), "OAuth2 client_id must be a string"),
@@ -300,7 +301,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[str].ok(f"{auth_endpoint}?{urlencode(params)}")
 
         def handle_authorization_code_flow(
-            self, _credentials: Mapping[str, t.Scalar]
+            self,
+            _credentials: Mapping[str, t.Scalar],
         ) -> r[Mapping[str, t.Scalar]]:
             """Handle OAuth2 authorization code flow."""
             return r[Mapping[str, t.Scalar]].ok({
@@ -332,7 +334,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             match scope_value:
                 case None:
                     return r[m.Auth.OAuth2TokenResponse].fail(
-                        "OAuth2 scope is required"
+                        "OAuth2 scope is required",
                     )
                 case str() as scope_str:
                     scope = scope_str
@@ -358,7 +360,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[m.Auth.OAuth2TokenResponse].ok(token_response)
 
         def refresh_access_token(
-            self, refresh_token: str
+            self,
+            refresh_token: str,
         ) -> r[m.Auth.OAuth2TokenResponse]:
             """Refresh access token using refresh token."""
             _ = refresh_token
@@ -394,7 +397,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     @override
     def authenticate(
-        self, credentials: m.Auth.CredentialValidation | Mapping[str, t.Scalar]
+        self,
+        credentials: m.Auth.CredentialValidation | Mapping[str, t.Scalar],
     ) -> r[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: dict[str, t.Scalar]
@@ -406,11 +410,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 "password": credentials.password,
             }
         flow_result = self._flow_manager.handle_authorization_code_flow(
-            credential_payload
+            credential_payload,
         )
         if flow_result.is_failure:
             return r[p.Auth.Token].fail(
-                flow_result.error or "OAuth2 authentication failed"
+                flow_result.error or "OAuth2 authentication failed",
             )
         flow_data = flow_result.value
         user_id = flow_data.get(c.Context.KEY_USER_ID, "oauth2_user")
@@ -482,7 +486,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         else:
             refresh_source = token_text
             identity_id_result = self._decode_token_claims(token_text).flat_map(
-                self._extract_identity_id
+                self._extract_identity_id,
             )
             if identity_id_result.is_success:
                 identity_id = identity_id_result.value
@@ -550,7 +554,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             if introspection_result.is_failure:
                 return r[m.Auth.AuthIdentity].fail(
                     introspection_result.error
-                    or "OAuth2 introspection token validation failed"
+                    or "OAuth2 introspection token validation failed",
                 )
             active_value = introspection_result.value.get(c.Cqrs.CommonStatus.ACTIVE)
             is_active = bool(active_value) if isinstance(active_value, bool) else False
@@ -560,7 +564,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         claims_result = self._decode_token_claims(token)
         if claims_result.is_failure:
             return r[m.Auth.AuthIdentity].fail(
-                claims_result.error or "OAuth2 token validation failed"
+                claims_result.error or "OAuth2 token validation failed",
             )
         return self._map_token_payload_to_identity(claims_result.value)
 
@@ -581,7 +585,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             case "client_secret_post":
                 if not client_id or not client_secret:
                     return r[str].fail(
-                        "OAuth2 client_id and client_secret are required for client_secret_post"
+                        "OAuth2 client_id and client_secret are required for client_secret_post",
                     )
                 form_payload["client_id"] = client_id
                 form_payload["client_secret"] = client_secret
@@ -592,7 +596,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 pass
             case _:
                 return r[str].fail(
-                    f"Unsupported token endpoint auth method: {auth_method}"
+                    f"Unsupported token endpoint auth method: {auth_method}",
                 )
         return r[str].ok(urlencode(form_payload))
 
@@ -611,7 +615,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
         if not client_id or not client_secret:
             return r[dict[str, str]].fail(
-                "OAuth2 client_id and client_secret are required for client_secret_basic"
+                "OAuth2 client_id and client_secret are required for client_secret_basic",
             )
         auth_input = f"{client_id}:{client_secret}".encode()
         encoded_auth = b64encode(auth_input).decode("ascii")
@@ -622,22 +626,22 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         endpoint_result = self._introspection_endpoint()
         if endpoint_result.is_failure:
             return r[Mapping[str, t.Scalar]].fail(
-                endpoint_result.error or "OAuth2 introspection endpoint is required"
+                endpoint_result.error or "OAuth2 introspection endpoint is required",
             )
         headers_result = self._build_introspection_headers()
         if headers_result.is_failure:
             return r[Mapping[str, t.Scalar]].fail(
-                headers_result.error or "OAuth2 introspection headers are invalid"
+                headers_result.error or "OAuth2 introspection headers are invalid",
             )
         body_result = self._build_introspection_form_data(token)
         if body_result.is_failure:
             return r[Mapping[str, t.Scalar]].fail(
-                body_result.error or "OAuth2 introspection payload is invalid"
+                body_result.error or "OAuth2 introspection payload is invalid",
             )
         parsed = urlparse(endpoint_result.value)
         if parsed.scheme != "https":
             return r[Mapping[str, t.Scalar]].fail(
-                f"Unsupported URL scheme: {parsed.scheme}"
+                f"Unsupported URL scheme: {parsed.scheme}",
             )
         request_path = parsed.path or "/"
         if parsed.query:
@@ -655,7 +659,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             response_payload = response.read().decode("utf-8")
         except (http.client.HTTPException, OSError, ValueError, TypeError) as exc:
             return r[Mapping[str, t.Scalar]].fail(
-                f"OAuth2 introspection request failed: {exc}"
+                f"OAuth2 introspection request failed: {exc}",
             )
         finally:
             connection.close()
@@ -673,7 +677,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         except (ValueError, ValidationError) as exc:
             return r[Mapping[str, t.Scalar]].fail(
-                f"OAuth2 introspection payload is not valid JSON: {exc}"
+                f"OAuth2 introspection payload is not valid JSON: {exc}",
             )
         return r[Mapping[str, t.Scalar]].ok(parsed_mapping)
 
@@ -685,7 +689,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[str].fail("OAuth2 introspection endpoint is not configured")
 
     def _map_token_payload_to_identity(
-        self, payload: Mapping[str, t.ContainerValue]
+        self,
+        payload: Mapping[str, t.ContainerValue],
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
         if identity_result.is_failure:
@@ -694,7 +699,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 identity_id = username_value
             else:
                 return r[m.Auth.AuthIdentity].fail(
-                    identity_result.error or "OAuth2 token subject is missing"
+                    identity_result.error or "OAuth2 token subject is missing",
                 )
         else:
             identity_id = identity_result.value

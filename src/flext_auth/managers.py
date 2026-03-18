@@ -62,7 +62,7 @@ class FlextAuthManagers:
         FlextAuthManagers is a namespace class - use specific manager classes instead.
         """
         return r.fail(
-            "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
+            "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager",
         )
 
     class FlextAuthUserManager:
@@ -88,7 +88,10 @@ class FlextAuthManagers:
         def add_user_permission(self, user_id: str, permission: str) -> r[bool]:
             """Add permission to user."""
             return self._modify_user_list_field(
-                user_id, "permissions", permission, add=True
+                user_id,
+                "permissions",
+                permission,
+                add=True,
             )
 
         def add_user_role(self, user_id: str, role: str) -> r[bool]:
@@ -154,7 +157,7 @@ class FlextAuthManagers:
                             case str() as locked_until_str:
                                 try:
                                     locked_until = datetime.fromisoformat(
-                                        locked_until_str
+                                        locked_until_str,
                                     )
                                 except ValueError:
                                     locked_until = datetime.min.replace(tzinfo=UTC)
@@ -168,7 +171,7 @@ class FlextAuthManagers:
                             case str() as last_access_str:
                                 try:
                                     last_access = datetime.fromisoformat(
-                                        last_access_str
+                                        last_access_str,
                                     )
                                 except ValueError:
                                     last_access = datetime.min.replace(tzinfo=UTC)
@@ -228,13 +231,13 @@ class FlextAuthManagers:
         def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
             """Get user by ID."""
             return self._find_user_by_id(user_id).map(
-                lambda ud: self._create_identity_from_storage(ud[1])
+                lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
         def get_user_by_id(self, user_id: str) -> r[m.Auth.AuthIdentity]:
             """Get a user by their ID."""
             return self._find_user_by_id(user_id).map(
-                lambda ud: self._create_identity_from_storage(ud[1])
+                lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
         def get_user_by_username(self, username: str) -> r[m.Auth.AuthIdentity]:
@@ -248,7 +251,10 @@ class FlextAuthManagers:
         def remove_user_permission(self, user_id: str, permission: str) -> r[bool]:
             """Remove permission from user."""
             return self._modify_user_list_field(
-                user_id, "permissions", permission, add=False
+                user_id,
+                "permissions",
+                permission,
+                add=False,
             )
 
         def remove_user_role(self, user_id: str, role: str) -> r[bool]:
@@ -266,7 +272,7 @@ class FlextAuthManagers:
                     ud[1].update(updates),
                     ud[1].update({"updated_at": datetime.now(UTC)}),
                     self._create_identity_from_storage(ud[1]),
-                )[2]
+                )[2],
             )
 
         def _apply_list_modification(
@@ -301,7 +307,8 @@ class FlextAuthManagers:
             return True
 
         def _create_identity_from_storage(
-            self, storage_data: Mapping[str, t.ContainerValue]
+            self,
+            storage_data: Mapping[str, t.ContainerValue],
         ) -> m.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
@@ -314,7 +321,9 @@ class FlextAuthManagers:
                 msg = "Storage data 'contact' must be a non-empty string"
                 raise ValueError(msg)
             credential_hash = self._validate_required_field(
-                storage_data, "credential_hash", str
+                storage_data,
+                "credential_hash",
+                str,
             )
             is_active = self._validate_required_field(storage_data, "is_active", bool)
             roles_raw = storage_data.get("roles", [])
@@ -380,7 +389,8 @@ class FlextAuthManagers:
             return m.Auth.AuthIdentity.model_validate(filtered_identity_data)
 
         def _extract_identity_id(
-            self, storage_data: Mapping[str, t.ContainerValue]
+            self,
+            storage_data: Mapping[str, t.ContainerValue],
         ) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
@@ -394,7 +404,8 @@ class FlextAuthManagers:
             raise ValueError(msg)
 
         def _find_user_by_id(
-            self, user_id: str
+            self,
+            user_id: str,
         ) -> r[tuple[str, t.Auth.Managers.UserData]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
@@ -413,7 +424,12 @@ class FlextAuthManagers:
             return r[tuple[str, dict[str, t.ContainerValue]]].fail("User not found")
 
         def _modify_user_list_field(
-            self, user_id: str, field: str, value: str, *, add: bool = True
+            self,
+            user_id: str,
+            field: str,
+            value: str,
+            *,
+            add: bool = True,
         ) -> r[bool]:
             """Add or remove value from user list field (roles/permissions).
 
@@ -421,8 +437,11 @@ class FlextAuthManagers:
             """
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._apply_list_modification_and_return_true(
-                    ud[1], field, value, add=add
-                )
+                    ud[1],
+                    field,
+                    value,
+                    add=add,
+                ),
             )
 
         def _validate_required_field[T](
@@ -551,7 +570,7 @@ class FlextAuthManagers:
                             expires_at=session_data["expires_at"]
                             if isinstance(session_data["expires_at"], datetime)
                             else datetime.fromisoformat(
-                                str(session_data["expires_at"])
+                                str(session_data["expires_at"]),
                             ),
                             is_active=bool(session_data.get("is_active", True)),
                             ip_address=str(session_data.get("ip_address", "")),
@@ -576,7 +595,8 @@ class FlextAuthManagers:
             )
 
         def _is_session_active(
-            self, session_data: Mapping[str, t.ContainerValue]
+            self,
+            session_data: Mapping[str, t.ContainerValue],
         ) -> bool:
             """Check if session is active and not expired.
 
@@ -703,7 +723,10 @@ class FlextAuthManagers:
         ) -> None:
             """Log successful authentication."""
             self.log_event(
-                self._EVENT_AUTH_SUCCESS, username=username, provider=provider, **extra
+                self._EVENT_AUTH_SUCCESS,
+                username=username,
+                provider=provider,
+                **extra,
             )
 
         def log_authorization_check(
@@ -722,7 +745,11 @@ class FlextAuthManagers:
                 else self._EVENT_AUTHORIZATION_DENIED
             )
             self.log_event(
-                event_type, username=username, resource=resource, action=action, **extra
+                event_type,
+                username=username,
+                resource=resource,
+                action=action,
+                **extra,
             )
 
         def log_event(
@@ -753,15 +780,21 @@ class FlextAuthManagers:
             )
 
         def log_password_change_success(
-            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log successful password change."""
             self.log_event(
-                self._EVENT_PASSWORD_CHANGE_SUCCESS, username=username, **extra
+                self._EVENT_PASSWORD_CHANGE_SUCCESS,
+                username=username,
+                **extra,
             )
 
         def log_password_reset(
-            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log password reset."""
             self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
@@ -813,7 +846,9 @@ class FlextAuthManagers:
             self.log_event(event_type, username=username, **extra)
 
         def log_user_logout(
-            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log user logout."""
             self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)

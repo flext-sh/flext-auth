@@ -1,19 +1,15 @@
-"""Module skeleton for TestsFlextAuthUtilities.
-
-Test utilities for flextauth.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
-from flext_tests import u
+from flext_tests.utilities import FlextTestsUtilities
+
+from flext_auth import FlextAuthUtilities
 
 
-class TestsFlextAuthUtilities(u):
-    """Test utilities for flextauth."""
+class FlextAuthTestUtilities(FlextTestsUtilities, FlextAuthUtilities):
+    class Tests:
+        pass
 
 
-u = TestsFlextAuthUtilities
-__all__ = ["TestsFlextAuthUtilities", "u"]
+u = FlextAuthTestUtilities
+
+__all__ = ["FlextAuthTestUtilities", "u"]

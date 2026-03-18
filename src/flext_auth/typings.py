@@ -27,13 +27,16 @@ class FlextAuthTypes(FlextApiTypes):
         type AuthMethod = c.AuthMethod
         type AuthStatus = c.AuthStatus
         type CoercedTokenTypes = Annotated[
-            c.Auth.TokenTypes, BeforeValidator(lambda x: x)
+            c.Auth.TokenTypes,
+            BeforeValidator(lambda x: x),
         ]
         type CoercedProviderTypes = Annotated[
-            c.Auth.ProviderTypes, BeforeValidator(lambda x: x)
+            c.Auth.ProviderTypes,
+            BeforeValidator(lambda x: x),
         ]
         type CoercedRoleTypes = Annotated[
-            c.Auth.RoleTypes, BeforeValidator(lambda x: x)
+            c.Auth.RoleTypes,
+            BeforeValidator(lambda x: x),
         ]
 
         class ProviderConfig(BaseModel):
@@ -183,7 +186,6 @@ class FlextAuthTypes(FlextApiTypes):
             AuditEntry = FlextApiTypes.Api.JsonObject
             AttemptData = FlextApiTypes.Api.JsonObject
             type AttemptWindow = tuple[int, int]
-            pass
 
         class Domain:
             """Domain-level literals and shortcuts."""

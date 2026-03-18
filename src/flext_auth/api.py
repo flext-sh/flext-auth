@@ -51,7 +51,9 @@ class FlextAuth:
     _session_service: FlextAuthSessionService
 
     def __init__(
-        self, config: FlextAuthSettings | None = None, service_name: str | None = None
+        self,
+        config: FlextAuthSettings | None = None,
+        service_name: str | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
         super().__init__()
@@ -73,7 +75,8 @@ class FlextAuth:
             if provider_result.is_success:
                 self._registry.register_provider(provider_name, provider_result.value)
         self._identity_service = FlextAuthIdentityService(
-            config=self._config, dispatcher=self._dispatcher
+            config=self._config,
+            dispatcher=self._dispatcher,
         )
         self._token_service = FlextAuthTokenService(
             config=self._config,
@@ -81,7 +84,8 @@ class FlextAuth:
             dispatcher=self._dispatcher,
         )
         self._session_service = FlextAuthSessionService(
-            config=self._config, dispatcher=self._dispatcher
+            config=self._config,
+            dispatcher=self._dispatcher,
         )
 
     @property
@@ -151,7 +155,9 @@ class FlextAuth:
         return instance
 
     def authenticate(
-        self, credentials: Mapping[str, str], _provider: str | None = None
+        self,
+        credentials: Mapping[str, str],
+        _provider: str | None = None,
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented authentication with chaining."""
         username_value = credentials.get("username")
@@ -160,7 +166,7 @@ class FlextAuth:
                 username_value = username
             case _:
                 return r[m.Auth.AuthIdentity].fail(
-                    "Invalid credentials: username is required and must be a non-empty string"
+                    "Invalid credentials: username is required and must be a non-empty string",
                 )
         password_value = credentials.get("password")
         match password_value:
@@ -168,10 +174,11 @@ class FlextAuth:
                 password_value = password
             case _:
                 return r[m.Auth.AuthIdentity].fail(
-                    "Invalid credentials: password is required and must be a non-empty string"
+                    "Invalid credentials: password is required and must be a non-empty string",
                 )
         return self._identity_service.authenticate_identity(
-            username_value, password_value
+            username_value,
+            password_value,
         )
 
     def authenticate_user(
@@ -210,7 +217,7 @@ class FlextAuth:
 
                 def _log_session_error(err: str) -> None:
                     self.logger.warning(
-                        f"Failed to create session for user {identity.name}: {err}"
+                        f"Failed to create session for user {identity.name}: {err}",
                     )
 
                 session_result.tap_error(_log_session_error)
@@ -244,7 +251,8 @@ class FlextAuth:
                 return r[str].fail("Identity ID must be a non-empty string")
         _ = extra_claims
         return self._token_service.generate_jwt_token(
-            user_id=identity_id, expires_in_minutes=self._config.expiry_minutes
+            user_id=identity_id,
+            expires_in_minutes=self._config.expiry_minutes,
         )
 
     def delete_user(self, user_id: str) -> r[bool]:
@@ -254,7 +262,7 @@ class FlextAuth:
     def execute(self) -> r[bool]:
         """Flexible execute implementation with railway orchestration."""
         return r.fail(
-            "FlextAuth is a focused service - use specific methods like authenticate() instead"
+            "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
 
     def get_provider(self, name: str) -> r[p.Auth.FlextAuthBaseProvider]:
@@ -282,7 +290,9 @@ class FlextAuth:
         return self._session_service.session_manager.end_session_by_id(session_id)
 
     def register_provider(
-        self, name: str, provider: p.Auth.FlextAuthBaseProvider
+        self,
+        name: str,
+        provider: p.Auth.FlextAuthBaseProvider,
     ) -> r[bool]:
         """Railway-oriented provider registration."""
         return self._registry.register_provider(name, provider)
@@ -325,11 +335,16 @@ class FlextAuth:
         )
 
     def register_user_simple(
-        self, username: str, email: str, password: str
+        self,
+        username: str,
+        email: str,
+        password: str,
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented user registration via identity service."""
         return self._identity_service.create_identity(
-            name=username, contact=email, credential=password
+            name=username,
+            contact=email,
+            credential=password,
         )
 
     def revoke_session(self, session_id: str) -> r[bool]:
@@ -337,7 +352,9 @@ class FlextAuth:
         return self._session_service.session_manager.end_session_by_id(session_id)
 
     def update_user(
-        self, user_id: str, **updates: str | int | bool | list[str] | None
+        self,
+        user_id: str,
+        **updates: str | int | bool | list[str] | None,
     ) -> r[m.Auth.AuthIdentity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
