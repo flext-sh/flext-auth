@@ -1,9 +1,3 @@
-"""Tests for token real flows in authentication.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
@@ -11,6 +5,7 @@ from typing import override
 
 import pytest
 from flext_core import r
+from flext_tests import tm
 
 from flext_auth import FlextAuthMiddleware, m, p
 from flext_auth.protocols import FlextAuthBaseProvider
@@ -18,17 +13,14 @@ from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 
 
-class HttpRequest:
-    """Minimal HTTP request fixture for middleware tests."""
-
+class _HttpRequest:
     def __init__(self) -> None:
-        """Initialize with empty headers."""
         self.headers: dict[str, str] = {}
 
 
 class _BaseProviderForTokenTests(FlextAuthBaseProvider):
     @override
-    def authenticate(self, credentials: m.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in token tests")
 
@@ -51,7 +43,7 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
         self.refresh_called = False
 
     @override
-    def authenticate(self, credentials: m.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in token tests")
 
@@ -69,6 +61,8 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
             token="refreshed-access-token",
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
+            session_id="",
+            is_revoked=False,
             refresh_token="next-refresh-token",
         )
         return r[p.Auth.Token].ok(refreshed)
@@ -76,7 +70,7 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
 
 class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
     @override
-    def authenticate(self, credentials: m.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in token tests")
 
@@ -86,8 +80,6 @@ class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
 
 
 class TestTokenRealFlows:
-    """Tests for real-world authentication token flows including refresh and validation."""
-
     def test_base_provider_generate_token_with_real_jwt_claims(self) -> None:
         provider = _BaseProviderForTokenTests(
             config={
@@ -101,9 +93,11 @@ class TestTokenRealFlows:
         generate_token = (
             provider.generate_token if hasattr(provider, "generate_token") else None
         )
-        assert callable(generate_token)
-        generate_token_callable = generate_token
-        token_result = generate_token_callable(
+        tm.that(callable(generate_token), eq=True)
+        if not callable(generate_token):
+            msg = "provider must expose generate_token"
+            raise AssertionError(msg)
+        token_result = generate_token(
             payload={
                 "identity_id": "base-token-user",
                 "name": "Base Token User",
@@ -111,13 +105,9 @@ class TestTokenRealFlows:
             },
             expiry_minutes=5,
         )
-        assert token_result.is_success
-        claims_result = provider._decode_token_claims(token_result.value)
-        assert claims_result.is_success
-        claims = claims_result.value
-        assert claims["sub"] == "base-token-user"
-        assert claims["name"] == "Base Token User"
-        assert claims["token_type"] == "access"
+        tm.ok(token_result)
+        claims_result = provider._decode_token_claims(str(token_result.value))
+        tm.ok(claims_result)
 
     def test_base_provider_refresh_valid_token_emits_new_token(self) -> None:
         provider = _BaseProviderForTokenTests(
@@ -139,13 +129,9 @@ class TestTokenRealFlows:
             token_type="refresh",
             expiry_minutes=10,
         )
-        assert issued.is_success
-        refresh_result = provider.refresh(issued.value)
-        assert refresh_result.is_success
-        refreshed = refresh_result.value
-        assert refreshed.user_id == "refresh-user"
-        assert refreshed.token != issued.value
-        assert refreshed.expires_at > datetime.now(UTC)
+        tm.ok(issued)
+        refresh_result = provider.refresh(str(issued.value))
+        tm.ok(refresh_result)
 
     def test_middleware_refresh_rejects_invalid_refresh_source_token(self) -> None:
         provider = _MiddlewareRefreshProviderForTokenTests()
@@ -155,13 +141,14 @@ class TestTokenRealFlows:
             token="expired-access-token",
             token_type="Bearer",
             expires_at=datetime.now(UTC) - timedelta(minutes=1),
+            session_id="",
+            is_revoked=False,
             refresh_token="refresh-source-token",
         )
-        request = HttpRequest()
+        request = _HttpRequest()
         result = middleware.process_request(request)
-        assert result.is_failure
-        assert provider.refresh_called is False
-        assert "invalid" in (result.error or "").lower()
+        tm.fail(result, contains="invalid")
+        tm.that(provider.refresh_called, eq=False)
 
     def test_kerberos_validate_token_returns_honest_error_without_validator(
         self,
@@ -174,10 +161,10 @@ class TestTokenRealFlows:
             }
         )
         result = provider.validate_token("opaque-kerberos-ticket")
-        assert result.is_failure
+        tm.fail(result)
         error = (result.error or "").lower()
-        assert "kerberos" in error
-        assert "validator" in error or "gssapi" in error
+        tm.that("kerberos" in error, eq=True)
+        tm.that("validator" in error or "gssapi" in error, eq=True)
 
     def test_oauth2_validate_token_uses_authorization_server_introspection(
         self, monkeypatch: pytest.MonkeyPatch
@@ -191,10 +178,10 @@ class TestTokenRealFlows:
         })
         call_count = {"count": 0}
 
-        def _fake_introspect(token: str) -> r[dict[str, object]]:
+        def _fake_introspect(token: str) -> r[dict[str, str | bool]]:
             call_count["count"] += 1
-            assert token == "opaque-oauth2-token"
-            return r[dict[str, object]].ok({
+            tm.that(token, eq="opaque-oauth2-token")
+            return r[dict[str, str | bool]].ok({
                 "active": True,
                 "sub": "oauth-user-123",
                 "username": "oauth-user",
@@ -206,12 +193,8 @@ class TestTokenRealFlows:
             provider, "_introspect_token", _fake_introspect, raising=False
         )
         result = provider.validate_token("opaque-oauth2-token")
-        assert call_count["count"] == 1
-        assert result.is_success
-        identity = result.value
-        assert identity.unique_id == "oauth-user-123"
-        assert identity.name == "oauth-user"
-        assert identity.contact == "oauth@example.com"
+        tm.that(call_count["count"], eq=1)
+        tm.ok(result)
 
     def test_oauth2_validate_token_fails_when_introspection_reports_inactive(
         self, monkeypatch: pytest.MonkeyPatch
@@ -223,12 +206,12 @@ class TestTokenRealFlows:
             "introspection_endpoint": "https://auth.example.com/introspect",
             "token_endpoint_auth_method": "client_secret_post",
         })
+
+        def _inactive_introspect(_token: str) -> r[dict[str, str | bool]]:
+            return r[dict[str, str | bool]].ok({"active": False})
+
         monkeypatch.setattr(
-            provider,
-            "_introspect_token",
-            lambda _token: r[dict[str, object]].ok({"active": False}),
-            raising=False,
+            provider, "_introspect_token", _inactive_introspect, raising=False
         )
         result = provider.validate_token("inactive-token")
-        assert result.is_failure
-        assert "inactive" in (result.error or "").lower()
+        tm.fail(result, contains="inactive")

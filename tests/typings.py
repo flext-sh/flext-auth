@@ -1,18 +1,12 @@
-"""Module skeleton for TestsFlextAuthTypes.
-
-Test type aliases for flextauth.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
 from flext_tests import FlextTestsTypes
 
+from flext_auth import FlextAuthTypes
 
-class TestsFlextAuthTypes(FlextTestsTypes):
-    """Test type aliases for flextauth."""
+
+class TestsFlextAuthTypes(FlextTestsTypes, FlextAuthTypes):
+    pass
 
 
 t = TestsFlextAuthTypes

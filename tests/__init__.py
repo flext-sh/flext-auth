@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from .protocols import TestsFlextAuthProtocols, p
     from .typings import TestsFlextAuthTypes, t
     from .unit.test_api import (
+        HttpRequest,
         TestAuthModule,
         TestFlextAuth,
         TestFlextAuthAdditionalCoverage,
@@ -59,13 +60,13 @@ if TYPE_CHECKING:
     )
     from .unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
     from .unit.test_constants import TestFlextAuthConstants
-    from .unit.test_token_real_flows import HttpRequest, TestTokenRealFlows
+    from .unit.test_token_real_flows import TestTokenRealFlows
     from .unit.test_typings import TestFlextAuthTypes
     from .utilities import TestsFlextAuthUtilities, u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
-    "HttpRequest": ("tests.unit.test_token_real_flows", "HttpRequest"),
+    "HttpRequest": ("tests.unit.test_api", "HttpRequest"),
     "TestAuthModule": ("tests.unit.test_api", "TestAuthModule"),
     "TestFlextAuth": ("tests.unit.test_api", "TestFlextAuth"),
     "TestFlextAuthAdditionalCoverage": (

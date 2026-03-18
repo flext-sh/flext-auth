@@ -8,8 +8,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_tests import tm
+
 from flext_auth import FlextAuthJwtProvider, FlextAuthSettings
 from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
+
+
+def _require_settings() -> FlextAuthSettings:
+    result = FlextAuthSettings.get_or_create_global()
+    tm.ok(result)
+    return result.value
 
 
 class TestFlextAuthSettingsBasic:
@@ -17,28 +25,30 @@ class TestFlextAuthSettingsBasic:
 
     def test_config_creation(self) -> None:
         """Test basic config creation."""
-        config = FlextAuthSettings()
-        assert isinstance(config, FlextAuthSettings)
-        assert config.expiry_minutes > 0
-        assert config.algorithm is not None
+        config = _require_settings()
+        tm.that(config, is_=FlextAuthSettings)
+        tm.that(config.expiry_minutes, gt=0)
+        tm.that(config.algorithm, is_=str)
 
     def test_config_with_custom_values(self) -> None:
         """Test config with custom values."""
-        config = FlextAuthSettings(expiry_minutes=60, hash_rounds=12)
-        assert config.expiry_minutes == 60
-        assert config.hash_rounds == 12
+        base_config = _require_settings()
+        config = base_config.model_copy(
+            update={"expiry_minutes": 60, "hash_rounds": 12}
+        )
+        tm.that(config.expiry_minutes, eq=60)
+        tm.that(config.hash_rounds, eq=12)
 
     def test_config_validation(self) -> None:
         """Test config validation."""
-        config = FlextAuthSettings(expiry_minutes=30)
-        assert config.expiry_minutes == 30
+        base_config = _require_settings()
+        config = base_config.model_copy(update={"expiry_minutes": 30})
+        tm.that(config.expiry_minutes, eq=30)
 
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
-        result = FlextAuthSettings.get_or_create_global()
-        assert result.is_success
-        config = result.value
-        assert isinstance(config, FlextAuthSettings)
+        config = _require_settings()
+        tm.that(config, is_=FlextAuthSettings)
 
 
 class TestJwtTokenGenerator:
@@ -49,8 +59,7 @@ class TestJwtTokenGenerator:
         provider = FlextAuthJwtProvider(config=None)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-123")
-        assert result.is_failure
-        assert "not configured" in (result.error or "").lower()
+        tm.fail(result, contains="not configured")
 
     def test_generate_token_success(self) -> None:
         """Test successful token generation."""
@@ -63,8 +72,8 @@ class TestJwtTokenGenerator:
         provider = FlextAuthJwtProvider(config=config)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-456")
-        assert result.is_success
-        token = result.value
-        assert isinstance(token, str)
-        assert len(token) > 0
-        assert token.count(".") == 2
+        tm.ok(result)
+        tm.that(result.value, is_=str)
+        token_text = str(result.value)
+        tm.that(len(token_text), gt=0)
+        tm.that(token_text.count("."), eq=2)

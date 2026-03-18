@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
     from .test_api import (
+        HttpRequest,
         TestAuthModule,
         TestFlextAuth,
         TestFlextAuthAdditionalCoverage,
@@ -44,12 +45,12 @@ if TYPE_CHECKING:
         TestProviderTokenFlows,
     )
     from .test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
-    from .test_constants import TestFlextAuthConstants, c
-    from .test_token_real_flows import HttpRequest, TestTokenRealFlows
+    from .test_constants import TestFlextAuthConstants, TestFlextAuthConstants as c
+    from .test_token_real_flows import TestTokenRealFlows
     from .test_typings import TestFlextAuthTypes, TestFlextAuthTypes as t
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "HttpRequest": ("tests.unit.test_token_real_flows", "HttpRequest"),
+    "HttpRequest": ("tests.unit.test_api", "HttpRequest"),
     "TestAuthModule": ("tests.unit.test_api", "TestAuthModule"),
     "TestFlextAuth": ("tests.unit.test_api", "TestFlextAuth"),
     "TestFlextAuthAdditionalCoverage": (
@@ -144,7 +145,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestJwtTokenGenerator": ("tests.unit.test_config", "TestJwtTokenGenerator"),
     "TestProviderTokenFlows": ("tests.unit.test_api", "TestProviderTokenFlows"),
     "TestTokenRealFlows": ("tests.unit.test_token_real_flows", "TestTokenRealFlows"),
-    "c": ("tests.unit.test_constants", "c"),
+    "c": ("tests.unit.test_constants", "TestFlextAuthConstants"),
     "t": ("tests.unit.test_typings", "TestFlextAuthTypes"),
 }
 
