@@ -106,7 +106,7 @@ class FlextAuthSettings(m.Value):
         existing_instance = cls._global_instance
         if existing_instance is not None:
             return r[FlextAuthSettings].ok(existing_instance)
-        created_instance = cls()
+        created_instance = cls.model_validate({})
         setattr(cls, "_global_instance", created_instance)
         return r[FlextAuthSettings].ok(created_instance)
 

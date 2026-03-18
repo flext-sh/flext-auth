@@ -8,7 +8,11 @@ from flext_auth import FlextAuthConstants
 
 
 class FlextAuthTestConstants(FlextTestsConstants, FlextAuthConstants):
+    """Test constants for flext-auth."""
+
     class Tests:
+        """Test-specific constants."""
+
         TEST_USERNAME: Final[str] = "testuser"
         TEST_PASSWORD: Final[str] = "TestPassword123!"
         TEST_EMAIL: Final[str] = "testuser@example.com"

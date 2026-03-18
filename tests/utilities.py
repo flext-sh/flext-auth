@@ -6,8 +6,10 @@ from flext_auth import FlextAuthUtilities
 
 
 class FlextAuthTestUtilities(FlextTestsUtilities, FlextAuthUtilities):
+    """Test utilities for flext-auth."""
+
     class Tests:
-        pass
+        """Test-specific utilities."""
 
 
 u = FlextAuthTestUtilities

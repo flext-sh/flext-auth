@@ -6,8 +6,10 @@ from flext_auth import FlextAuthProtocols
 
 
 class FlextAuthTestProtocols(FlextTestsProtocols, FlextAuthProtocols):
+    """Test protocols for flext-auth."""
+
     class Tests:
-        pass
+        """Test-specific protocols."""
 
 
 p = FlextAuthTestProtocols

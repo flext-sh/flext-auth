@@ -6,8 +6,10 @@ from flext_auth import FlextAuthTypes
 
 
 class FlextAuthTestTypes(FlextTestsTypes, FlextAuthTypes):
+    """Test types for flext-auth."""
+
     class Tests:
-        pass
+        """Test-specific types."""
 
 
 t = FlextAuthTestTypes
