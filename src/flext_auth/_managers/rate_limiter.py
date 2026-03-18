@@ -1,0 +1,71 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from datetime import UTC, datetime, timedelta
+
+from flext_core import FlextContext, FlextLogger, FlextRegistry, r
+
+from flext_auth import FlextAuthSettings, p, t
+
+
+class FlextAuthRateLimiterManagers:
+    class FlextAuthRateLimiter:
+        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
+            super().__init__()
+            self._config = config
+            self._dispatcher = dispatcher
+            self.logger = FlextLogger(__name__)
+            self._context = FlextContext()
+            self._registry = FlextRegistry(dispatcher=dispatcher)
+            self._attempts: dict[str, t.Auth.Managers.AttemptData] = {}
+            self._max_attempts = 5
+            self._window_minutes = 15
+
+        def check_rate_limit(self, username: str) -> r[bool]:
+            now = datetime.now(UTC)
+            if username not in self._attempts:
+                return r[bool].ok(value=True)
+            recent_attempts = self._cleanup_window(username, now)
+            if username not in self._attempts:
+                self._attempts[username] = {}
+            self._attempts[username]["attempts"] = recent_attempts
+            if len(recent_attempts) >= self._max_attempts:
+                return r[bool].fail("Too many failed attempts. Please try again later.")
+            return r[bool].ok(value=True)
+
+        def get_total_failed_attempts(self) -> int:
+            return sum(len(attempts) for attempts in self._attempts.values())
+
+        def record_failed_attempt(self, username: str) -> None:
+            now = datetime.now(UTC)
+            if username not in self._attempts:
+                self._attempts[username] = {"attempts": []}
+            attempts_raw = self._attempts[username].get("attempts")
+            attempts_list: list[t.ContainerValue]
+            if isinstance(attempts_raw, list):
+                attempts_list = []
+                for attempt in attempts_raw:
+                    if isinstance(attempt, datetime):
+                        attempts_list.append(attempt)
+            else:
+                attempts_list = []
+                self._attempts[username]["attempts"] = attempts_list
+            attempts_list.append(now)
+            recent_attempts = self._cleanup_window(username, now)
+            self._attempts[username]["attempts"] = recent_attempts
+
+        def _cleanup_window(
+            self, username: str, now: datetime
+        ) -> list[t.ContainerValue]:
+            window_start = now - timedelta(minutes=self._window_minutes)
+            attempt_data = self._attempts.get(username)
+            if not isinstance(attempt_data, Mapping):
+                return []
+            attempts_value = attempt_data.get("attempts")
+            if not isinstance(attempts_value, list):
+                return []
+            recent_attempts: list[t.ContainerValue] = []
+            for attempt in attempts_value:
+                if isinstance(attempt, datetime) and attempt > window_start:
+                    recent_attempts.append(attempt)
+            return recent_attempts

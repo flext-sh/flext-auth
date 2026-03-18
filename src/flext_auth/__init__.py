@@ -12,7 +12,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-    from flext_auth import providers, transports
+    from flext_auth import _managers, providers, transports
     from flext_auth.__version__ import (
         __all__,
         __author__,
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
         __version__,
         __version_info__,
     )
+    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
     from flext_auth.api import FlextAuth
     from flext_auth.constants import FlextAuthConstants, c
     from flext_auth.managers import FlextAuthManagers, ServiceManagers
@@ -107,6 +108,10 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "FlextAuthProviderService",
     ),
     "FlextAuthQuickstart": ("flext_auth.quickstart", "FlextAuthQuickstart"),
+    "FlextAuthRateLimiterManagers": (
+        "flext_auth._managers.rate_limiter",
+        "FlextAuthRateLimiterManagers",
+    ),
     "FlextAuthRegistry": ("flext_auth.registry", "FlextAuthRegistry"),
     "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
     "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
@@ -132,6 +137,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "__url__": ("flext_auth.__version__", "__url__"),
     "__version__": ("flext_auth.__version__", "__version__"),
     "__version_info__": ("flext_auth.__version__", "__version_info__"),
+    "_managers": ("flext_auth._managers", ""),
     "c": ("flext_auth.constants", "c"),
     "m": ("flext_auth.models", "m"),
     "p": ("flext_auth.protocols", "p"),
@@ -167,6 +173,7 @@ __all__ = [
     "FlextAuthProviderMixin",
     "FlextAuthProviderService",
     "FlextAuthQuickstart",
+    "FlextAuthRateLimiterManagers",
     "FlextAuthRegistry",
     "FlextAuthRfcProvider",
     "FlextAuthSamlProvider",
@@ -186,6 +193,7 @@ __all__ = [
     "__url__",
     "__version__",
     "__version_info__",
+    "_managers",
     "c",
     "m",
     "p",

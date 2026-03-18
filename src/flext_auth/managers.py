@@ -14,9 +14,10 @@ from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from flext_core import FlextContainer, FlextContext, FlextLogger, FlextRegistry, r
+from flext_core import FlextContainer, FlextContext, FlextLogger, r
 
 from flext_auth import FlextAuthSettings, c, m, p, t, u
+from flext_auth._managers import FlextAuthRateLimiterManagers
 
 
 class ServiceManagers:
@@ -49,7 +50,7 @@ class ServiceManagers:
         self.rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
 
 
-class FlextAuthManagers:
+class FlextAuthManagers(FlextAuthRateLimiterManagers):
     """Namespace class for all authentication managers following FLEXT patterns.
 
     This namespace class contains all manager implementations as nested classes,
@@ -867,80 +868,3 @@ class FlextAuthManagers:
             }
             self._logs.append(log_entry)
             self.logger.info("Audit event: %s", event_type)
-
-    class FlextAuthRateLimiter:
-        """Rate limiting business logic.
-
-        Prevents brute force attacks by limiting authentication attempts.
-        Uses newer FlextSettings features for complete integration.
-        """
-
-        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
-            """Initialize rate limiter with configuration."""
-            super().__init__()
-            self._config = config
-            self._dispatcher = dispatcher
-            self.logger = FlextLogger(__name__)
-            self._context = FlextContext()
-            self._registry = FlextRegistry(dispatcher=dispatcher)
-            self._attempts: dict[str, t.Auth.Managers.AttemptData] = {}
-            self._max_attempts = 5
-            self._window_minutes = 15
-
-        def check_rate_limit(self, username: str) -> r[bool]:
-            """Check if user is within rate limits.
-
-            Returns:
-                r[bool]: True if within limits, False if exceeded, error on failure
-
-            """
-            now = datetime.now(UTC)
-            if username not in self._attempts:
-                return r[bool].ok(value=True)
-            recent_attempts = self._cleanup_window(username, now)
-            if username not in self._attempts:
-                self._attempts[username] = {}
-            self._attempts[username]["attempts"] = recent_attempts
-            if len(recent_attempts) >= self._max_attempts:
-                return r[bool].fail("Too many failed attempts. Please try again later.")
-            return r[bool].ok(value=True)
-
-        def get_total_failed_attempts(self) -> int:
-            """Get total count of failed attempts across all users."""
-            return sum(len(attempts) for attempts in self._attempts.values())
-
-        def record_failed_attempt(self, username: str) -> None:
-            """Record a failed authentication attempt."""
-            now = datetime.now(UTC)
-            if username not in self._attempts:
-                self._attempts[username] = {"attempts": []}
-            attempts_raw = self._attempts[username].get("attempts")
-            attempts_list: list[datetime]
-            if u.is_list(attempts_raw):
-                attempts_list = [
-                    attempt for attempt in attempts_raw if isinstance(attempt, datetime)
-                ]
-            else:
-                attempts_list = []
-                self._attempts[username]["attempts"] = attempts_list
-            attempts_list.append(now)
-            recent_attempts = self._cleanup_window(username, now)
-            self._attempts[username]["attempts"] = recent_attempts
-
-        def _cleanup_window(self, username: str, now: datetime) -> list[datetime]:
-            """Clean up attempts outside the time window.
-
-            Generic pattern used in 2 methods - eliminates duplication.
-            """
-            window_start = now - timedelta(minutes=self._window_minutes)
-            attempt_data = self._attempts.get(username)
-            if not isinstance(attempt_data, Mapping):
-                return []
-            attempts_value = attempt_data.get("attempts")
-            if not u.is_list(attempts_value):
-                return []
-            return [
-                attempt
-                for attempt in attempts_value
-                if isinstance(attempt, datetime) and attempt > window_start
-            ]
