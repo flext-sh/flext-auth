@@ -14,6 +14,7 @@ import threading
 import time
 from datetime import UTC, datetime, timedelta
 from threading import Thread
+from typing import override
 
 import jwt
 import pytest
@@ -1380,10 +1381,12 @@ class TestAuthModule:
 
 
 class _BaseTokenProviderForFlowTests(FlextAuthBaseProvider):
+    @override
     def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
+    @override
     def validate(self, token: str) -> r[bool]:
         _ = token
         return r[bool].ok(True)
@@ -1394,14 +1397,17 @@ class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
         super().__init__(config={})
         self.last_refresh_input: str | None = None
 
+    @override
     def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
+    @override
     def validate(self, token: str) -> r[bool]:
         _ = token
         return r[bool].ok(True)
 
+    @override
     def refresh(self, token: str) -> r[p.Auth.Token]:
         self.last_refresh_input = token
         refreshed_token = m.Auth.AuthToken(
@@ -1417,10 +1423,12 @@ class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
 
 
 class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
+    @override
     def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
+    @override
     def validate(self, token: str) -> r[bool]:
         return self.validate_token(token).map(lambda _identity: True)
 

@@ -98,7 +98,7 @@ class FlextAuthSettings(m.Value):
 
     @classmethod
     def _reset_instance(cls) -> None:
-        cls._global_instance = None
+        setattr(cls, "_global_instance", None)
 
     @classmethod
     def get_or_create_global(cls) -> r[FlextAuthSettings]:
@@ -107,7 +107,7 @@ class FlextAuthSettings(m.Value):
         if existing_instance is not None:
             return r[FlextAuthSettings].ok(existing_instance)
         created_instance = cls()
-        cls._global_instance = created_instance
+        setattr(cls, "_global_instance", created_instance)
         return r[FlextAuthSettings].ok(created_instance)
 
 
