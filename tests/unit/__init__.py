@@ -45,9 +45,9 @@ if TYPE_CHECKING:
         TestProviderTokenFlows,
     )
     from .test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
-    from .test_constants import TestFlextAuthConstants, TestFlextAuthConstants as c
+    from .test_constants import TestFlextAuthConstants
     from .test_token_real_flows import TestTokenRealFlows
-    from .test_typings import TestFlextAuthTypes, TestFlextAuthTypes as t
+    from .test_typings import TestFlextAuthTypes
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "HttpRequest": ("tests.unit.test_api", "HttpRequest"),
@@ -145,8 +145,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestJwtTokenGenerator": ("tests.unit.test_config", "TestJwtTokenGenerator"),
     "TestProviderTokenFlows": ("tests.unit.test_api", "TestProviderTokenFlows"),
     "TestTokenRealFlows": ("tests.unit.test_token_real_flows", "TestTokenRealFlows"),
-    "c": ("tests.unit.test_constants", "TestFlextAuthConstants"),
-    "t": ("tests.unit.test_typings", "TestFlextAuthTypes"),
 }
 
 __all__ = [
@@ -185,8 +183,6 @@ __all__ = [
     "TestJwtTokenGenerator",
     "TestProviderTokenFlows",
     "TestTokenRealFlows",
-    "c",
-    "t",
 ]
 
 

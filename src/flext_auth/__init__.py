@@ -10,6 +10,11 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
+    from flext_api.decorators import d
+    from flext_api.exceptions import e
+    from flext_api.handlers import h
+    from flext_api.result import r
+    from flext_api.service import s
     from flext_core.typings import FlextTypes
 
     from flext_auth import _managers, providers, transports
@@ -33,10 +38,7 @@ if TYPE_CHECKING:
     from flext_auth.mixins import FlextAuthMixins, FlextAuthMixins as x
     from flext_auth.models import FlextAuthModels, m
     from flext_auth.protocols import FlextAuthBaseProvider, FlextAuthProtocols, p
-    from flext_auth.provider_service import (
-        FlextAuthProviderService,
-        FlextAuthProviderService as s,
-    )
+    from flext_auth.provider_service import FlextAuthProviderService
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
@@ -144,10 +146,14 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "__version_info__": ("flext_auth.__version__", "__version_info__"),
     "_managers": ("flext_auth._managers", ""),
     "c": ("flext_auth.constants", "c"),
+    "d": ("flext_api.decorators", "d"),
+    "e": ("flext_api.exceptions", "e"),
+    "h": ("flext_api.handlers", "h"),
     "m": ("flext_auth.models", "m"),
     "p": ("flext_auth.protocols", "p"),
     "providers": ("flext_auth.providers", ""),
-    "s": ("flext_auth.provider_service", "FlextAuthProviderService"),
+    "r": ("flext_api.result", "r"),
+    "s": ("flext_api.service", "s"),
     "t": ("flext_auth.typings", "t"),
     "transports": ("flext_auth.transports", ""),
     "u": ("flext_auth.utilities", "u"),
@@ -201,9 +207,13 @@ __all__ = [
     "__version_info__",
     "_managers",
     "c",
+    "d",
+    "e",
+    "h",
     "m",
     "p",
     "providers",
+    "r",
     "s",
     "t",
     "transports",

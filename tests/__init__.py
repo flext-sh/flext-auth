@@ -11,6 +11,12 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
+    from flext_tests.decorators import d
+    from flext_tests.exceptions import e
+    from flext_tests.handlers import h
+    from flext_tests.mixins import x
+    from flext_tests.result import r
+    from flext_tests.service import s
 
     from . import fixtures as fixtures, helpers as helpers, unit as unit
     from .conftest import mock_get_global
@@ -170,19 +176,25 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
     "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
     "c": ("tests.constants", "c"),
+    "d": ("flext_tests.decorators", "d"),
+    "e": ("flext_tests.exceptions", "e"),
     "fixtures": ("tests.fixtures", ""),
     "generate_client_cert": ("tests.fixtures.certificates", "generate_client_cert"),
     "generate_self_signed_cert": (
         "tests.fixtures.certificates",
         "generate_self_signed_cert",
     ),
+    "h": ("flext_tests.handlers", "h"),
     "helpers": ("tests.helpers", ""),
     "m": ("tests.models", "m"),
     "mock_get_global": ("tests.conftest", "mock_get_global"),
     "p": ("tests.protocols", "p"),
+    "r": ("flext_tests.result", "r"),
+    "s": ("flext_tests.service", "s"),
     "t": ("tests.typings", "t"),
     "u": ("tests.utilities", "u"),
     "unit": ("tests.unit", ""),
+    "x": ("flext_tests.mixins", "x"),
 }
 
 __all__ = [
@@ -231,16 +243,22 @@ __all__ = [
     "TestsTypings",
     "TestsUtilities",
     "c",
+    "d",
+    "e",
     "fixtures",
     "generate_client_cert",
     "generate_self_signed_cert",
+    "h",
     "helpers",
     "m",
     "mock_get_global",
     "p",
+    "r",
+    "s",
     "t",
     "u",
     "unit",
+    "x",
 ]
 
 
