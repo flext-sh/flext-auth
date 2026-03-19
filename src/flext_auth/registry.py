@@ -83,8 +83,12 @@ class FlextAuthRegistry(FlextRegistry):
                 result.error or f"Provider '{name}' not registered",
             )
         wrapped = result.unwrap()
+        if wrapped is None:
+            return r[p.Auth.FlextAuthBaseProvider].fail(
+                f"Provider '{name}' is not registered",
+            )
         inner = getattr(wrapped, "provider", None)
-        if _is_auth_provider(inner):
+        if inner is not None and _is_auth_provider(inner):
             return r[p.Auth.FlextAuthBaseProvider].ok(inner)
         if _is_auth_provider(wrapped):
             return r[p.Auth.FlextAuthBaseProvider].ok(wrapped)
