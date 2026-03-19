@@ -176,9 +176,9 @@ class FlextAuthConstants(FlextApiConstants):
             member.value for member in [PermissionTypes.WRITE, PermissionTypes.DELETE]
         )
         "Write permission types for validation."
-        DEFAULT_TIMEOUT: Final[float] = 30.0
+        DEFAULT_TIMEOUT: Final[float] = float(FlextApiConstants.Network.DEFAULT_TIMEOUT)
         "Default request timeout in seconds."
-        DEFAULT_MAX_RETRIES: Final[int] = 3
+        DEFAULT_MAX_RETRIES: Final[int] = FlextApiConstants.DEFAULT_MAX_RETRY_ATTEMPTS
         "Default maximum retry attempts."
         DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440
         "Default JWT token expiry in minutes."
