@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import override
 
-from flext_core import r, s
+from flext_core import r
 
 from flext_auth import (
     FlextAuthApiKeyProvider,
@@ -27,6 +27,7 @@ from flext_auth import (
     c,
     m,
     p,
+    s,
     t,
 )
 

@@ -31,9 +31,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Protocol, TypeIs, override, runtime_checkable
 
-from flext_core import FlextLogger, r, s
+from flext_core import FlextLogger, r
 
-from flext_auth import m, p
+from flext_auth import m, p, s
 
 
 class FlextAuthMiddleware(s[bool]):

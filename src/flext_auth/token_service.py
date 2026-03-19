@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextLogger, p, r, s
+from flext_core import FlextLogger, r
 
 from flext_auth import (
     FlextAuthJwtProvider,
@@ -22,6 +22,8 @@ from flext_auth import (
     ServiceManagers,
     c,
     m,
+    p,
+    s,
 )
 
 
