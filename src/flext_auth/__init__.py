@@ -24,6 +24,7 @@ if TYPE_CHECKING:
         __version__,
         __version_info__,
     )
+    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
     from flext_auth.api import FlextAuth
     from flext_auth.constants import FlextAuthConstants, c
@@ -115,6 +116,10 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthRegistry": ("flext_auth.registry", "FlextAuthRegistry"),
     "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
     "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
+    "FlextAuthSessionManagers": (
+        "flext_auth._managers.auth_managers_session",
+        "FlextAuthSessionManagers",
+    ),
     "FlextAuthSessionService": (
         "flext_auth.session_service",
         "FlextAuthSessionService",
@@ -177,6 +182,7 @@ __all__ = [
     "FlextAuthRegistry",
     "FlextAuthRfcProvider",
     "FlextAuthSamlProvider",
+    "FlextAuthSessionManagers",
     "FlextAuthSessionService",
     "FlextAuthSettings",
     "FlextAuthTokenService",

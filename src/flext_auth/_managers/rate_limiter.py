@@ -64,8 +64,9 @@ class FlextAuthRateLimiterManagers:
             attempts_value = attempt_data.get("attempts")
             if not isinstance(attempts_value, list):
                 return []
-            recent_attempts: list[t.ContainerValue] = []
-            for attempt in attempts_value:
-                if isinstance(attempt, datetime) and attempt > window_start:
-                    recent_attempts.append(attempt)
+            recent_attempts: list[t.ContainerValue] = [
+                attempt
+                for attempt in attempts_value
+                if isinstance(attempt, datetime) and attempt > window_start
+            ]
             return recent_attempts

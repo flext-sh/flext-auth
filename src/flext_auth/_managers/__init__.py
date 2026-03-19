@@ -12,17 +12,23 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-    from .rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
+    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthRateLimiterManagers": (
         "flext_auth._managers.rate_limiter",
         "FlextAuthRateLimiterManagers",
     ),
+    "FlextAuthSessionManagers": (
+        "flext_auth._managers.auth_managers_session",
+        "FlextAuthSessionManagers",
+    ),
 }
 
 __all__ = [
     "FlextAuthRateLimiterManagers",
+    "FlextAuthSessionManagers",
 ]
 
 
