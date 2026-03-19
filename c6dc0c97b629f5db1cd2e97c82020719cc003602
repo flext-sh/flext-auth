@@ -1,0 +1,38 @@
+src/flext_auth/managers.py
+  473ecd7bf9f636b8 21
+src/flext_auth/registry.py
+  0d765820e48d17d1 86-89,91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "c6dc0c97b629f5db1cd2e97c82020719cc003602",
+  "prompts": {
+    "0d765820e48d17d1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_2f934dfa1ffezLYkC3QVM6yoZs",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 1,
+      "accepted_lines": 5,
+      "overriden_lines": 0
+    },
+    "473ecd7bf9f636b8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_2f9359946ffefJnNtBqklXkCm6",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 18,
+      "total_deletions": 26,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    }
+  }
+}
