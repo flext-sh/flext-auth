@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_api import d, e, h, r, s
+    from flext_api import d, e, h, r
     from flext_core.typings import FlextTypes
 
     from flext_auth import _managers, providers, transports
@@ -28,13 +28,20 @@ if TYPE_CHECKING:
     from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
     from flext_auth.api import FlextAuth
-    from flext_auth.constants import FlextAuthConstants, c
+    from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
     from flext_auth.managers import FlextAuthManagers, ServiceManagers
     from flext_auth.middleware import FlextAuthMiddleware
     from flext_auth.mixins import FlextAuthMixins, FlextAuthMixins as x
-    from flext_auth.models import FlextAuthModels, m
-    from flext_auth.protocols import FlextAuthBaseProvider, FlextAuthProtocols, p
-    from flext_auth.provider_service import FlextAuthProviderService
+    from flext_auth.models import FlextAuthModels, FlextAuthModels as m
+    from flext_auth.protocols import (
+        FlextAuthBaseProvider,
+        FlextAuthProtocols,
+        FlextAuthProtocols as p,
+    )
+    from flext_auth.provider_service import (
+        FlextAuthProviderService,
+        FlextAuthProviderService as s,
+    )
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
@@ -55,9 +62,9 @@ if TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings
     from flext_auth.token_service import FlextAuthTokenService
     from flext_auth.transports.http import FlextWebTransportAdapter
-    from flext_auth.typings import FlextAuthTypes, t
+    from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
     from flext_auth.user_service import FlextAuthIdentityService
-    from flext_auth.utilities import FlextAuthUtilities, u
+    from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuth": ("flext_auth.api", "FlextAuth"),
@@ -141,18 +148,18 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "__version__": ("flext_auth.__version__", "__version__"),
     "__version_info__": ("flext_auth.__version__", "__version_info__"),
     "_managers": ("flext_auth._managers", ""),
-    "c": ("flext_auth.constants", "c"),
+    "c": ("flext_auth.constants", "FlextAuthConstants"),
     "d": ("flext_api", "d"),
     "e": ("flext_api", "e"),
     "h": ("flext_api", "h"),
-    "m": ("flext_auth.models", "m"),
-    "p": ("flext_auth.protocols", "p"),
+    "m": ("flext_auth.models", "FlextAuthModels"),
+    "p": ("flext_auth.protocols", "FlextAuthProtocols"),
     "providers": ("flext_auth.providers", ""),
     "r": ("flext_api", "r"),
-    "s": ("flext_api", "s"),
-    "t": ("flext_auth.typings", "t"),
+    "s": ("flext_auth.provider_service", "FlextAuthProviderService"),
+    "t": ("flext_auth.typings", "FlextAuthTypes"),
     "transports": ("flext_auth.transports", ""),
-    "u": ("flext_auth.utilities", "u"),
+    "u": ("flext_auth.utilities", "FlextAuthUtilities"),
     "x": ("flext_auth.mixins", "FlextAuthMixins"),
 }
 

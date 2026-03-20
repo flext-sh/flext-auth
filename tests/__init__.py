@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from . import fixtures as fixtures, helpers as helpers, unit as unit
     from .conftest import mock_get_global
-    from .constants import FlextAuthTestConstants, c
+    from .constants import FlextAuthTestConstants, FlextAuthTestConstants as c
     from .fixtures.certificates import (
         CertificateFixture,
         generate_client_cert,
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
     from .helpers.protocols import TestsProtocols
     from .helpers.typings import TestsTypings
     from .helpers.utilities import TestsUtilities
-    from .models import FlextAuthTestModels, m
-    from .protocols import FlextAuthTestProtocols, p
-    from .typings import FlextAuthTestTypes, t
+    from .models import FlextAuthTestModels, FlextAuthTestModels as m
+    from .protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
+    from .typings import FlextAuthTestTypes, FlextAuthTestTypes as t
     from .unit.test_api import (
         HttpRequest,
         TestAuthModule,
@@ -63,7 +63,7 @@ if TYPE_CHECKING:
     from .unit.test_constants import TestFlextAuthConstants
     from .unit.test_token_real_flows import TestTokenRealFlows
     from .unit.test_typings import TestFlextAuthTypes
-    from .utilities import FlextAuthTestUtilities, u
+    from .utilities import FlextAuthTestUtilities, FlextAuthTestUtilities as u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
@@ -170,7 +170,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestsProtocols": ("tests.helpers.protocols", "TestsProtocols"),
     "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
     "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
-    "c": ("tests.constants", "c"),
+    "c": ("tests.constants", "FlextAuthTestConstants"),
     "d": ("flext_tests", "d"),
     "e": ("flext_tests", "e"),
     "fixtures": ("tests.fixtures", ""),
@@ -181,13 +181,13 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     ),
     "h": ("flext_tests", "h"),
     "helpers": ("tests.helpers", ""),
-    "m": ("tests.models", "m"),
+    "m": ("tests.models", "FlextAuthTestModels"),
     "mock_get_global": ("tests.conftest", "mock_get_global"),
-    "p": ("tests.protocols", "p"),
+    "p": ("tests.protocols", "FlextAuthTestProtocols"),
     "r": ("flext_tests", "r"),
     "s": ("flext_tests", "s"),
-    "t": ("tests.typings", "t"),
-    "u": ("tests.utilities", "u"),
+    "t": ("tests.typings", "FlextAuthTestTypes"),
+    "u": ("tests.utilities", "FlextAuthTestUtilities"),
     "unit": ("tests.unit", ""),
     "x": ("flext_tests", "x"),
 }
