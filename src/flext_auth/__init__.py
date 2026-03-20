@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_api import d, e, h, r
+    from flext_api import d, e, h, r, s
     from flext_core.typings import FlextTypes
 
     from flext_auth import _managers, providers, transports
@@ -38,10 +38,7 @@ if TYPE_CHECKING:
         FlextAuthProtocols,
         FlextAuthProtocols as p,
     )
-    from flext_auth.provider_service import (
-        FlextAuthProviderService,
-        FlextAuthProviderService as s,
-    )
+    from flext_auth.provider_service import FlextAuthProviderService
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
@@ -156,7 +153,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "p": ("flext_auth.protocols", "FlextAuthProtocols"),
     "providers": ("flext_auth.providers", ""),
     "r": ("flext_api", "r"),
-    "s": ("flext_auth.provider_service", "FlextAuthProviderService"),
+    "s": ("flext_api", "s"),
     "t": ("flext_auth.typings", "FlextAuthTypes"),
     "transports": ("flext_auth.transports", ""),
     "u": ("flext_auth.utilities", "FlextAuthUtilities"),
