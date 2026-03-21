@@ -16,10 +16,6 @@ from pydantic import BeforeValidator, Field, SecretStr
 
 from flext_auth.constants import FlextAuthConstants as c
 
-# Import models for type aliases
-if False:  # TYPE_CHECKING pattern for forward refs
-    pass
-
 
 class FlextAuthTypes(FlextApiTypes):
     """Authentication-specific type definitions extending t with composition."""
@@ -218,10 +214,6 @@ class FlextAuthTypes(FlextApiTypes):
     Responses = Auth.Responses
     Managers = Auth.Managers
     Domain = Auth.Domain
-    ProviderConfig = Auth.ProviderConfig
-    OAuth2TokenResponse = Auth.OAuth2TokenResponse
-    KerberosTicketData = Auth.KerberosTicketData
-    HttpResponseData = Auth.HttpResponseData
 
 
 t = FlextAuthTypes
