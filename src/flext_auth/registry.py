@@ -19,7 +19,9 @@ class _ProviderWrapper(BaseModel):
     """Wrapper for auth provider instances."""
 
     category: Annotated[str, Field(description="Provider category")]
-    provider: Annotated[object, Field(description="Provider instance")]
+    provider: Annotated[
+        p.Auth.FlextAuthBaseProvider, Field(description="Provider instance")
+    ]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
