@@ -25,8 +25,10 @@ if TYPE_CHECKING:
         __version__,
         __version_info__,
     )
-    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
-    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth._managers import (
+        FlextAuthRateLimiterManagers,
+        FlextAuthSessionManagers,
+    )
     from flext_auth.api import FlextAuth
     from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
     from flext_auth.managers import FlextAuthManagers, ServiceManagers
@@ -39,89 +41,76 @@ if TYPE_CHECKING:
         FlextAuthProtocols as p,
     )
     from flext_auth.provider_service import FlextAuthProviderService
-    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
-    from flext_auth.providers.basic import FlextAuthBasicProvider
-    from flext_auth.providers.certificate import FlextAuthCertificateProvider
-    from flext_auth.providers.jwt import FlextAuthJwtProvider
-    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
-    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
-    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
-    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
-    from flext_auth.providers.ldap import FlextAuthLdapProvider
-    from flext_auth.providers.mixin import FlextAuthProviderMixin
-    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-    from flext_auth.providers.oidc import FlextAuthOidcProvider
-    from flext_auth.providers.rfc import FlextAuthRfcProvider
-    from flext_auth.providers.saml import FlextAuthSamlProvider
+    from flext_auth.providers import (
+        FlextAuthApiKeyProvider,
+        FlextAuthBasicProvider,
+        FlextAuthCertificateProvider,
+        FlextAuthJwtProvider,
+        FlextAuthJwtTokenGenerator,
+        FlextAuthJwtTokenValidator,
+        FlextAuthKerberosProvider,
+        FlextAuthLdapProvider,
+        FlextAuthOAuth2Provider,
+        FlextAuthOidcProvider,
+        FlextAuthPasswordHasher,
+        FlextAuthProviderMixin,
+        FlextAuthRfcProvider,
+        FlextAuthSamlProvider,
+    )
     from flext_auth.quickstart import FlextAuthQuickstart
     from flext_auth.registry import FlextAuthRegistry
     from flext_auth.session_service import FlextAuthSessionService
     from flext_auth.settings import FlextAuthSettings
     from flext_auth.token_service import FlextAuthTokenService
-    from flext_auth.transports.http import FlextWebTransportAdapter
+    from flext_auth.transports import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
     from flext_auth.user_service import FlextAuthIdentityService
     from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuth": ("flext_auth.api", "FlextAuth"),
-    "FlextAuthApiKeyProvider": (
-        "flext_auth.providers.apikey",
-        "FlextAuthApiKeyProvider",
-    ),
+    "FlextAuthApiKeyProvider": ("flext_auth.providers", "FlextAuthApiKeyProvider"),
     "FlextAuthBaseProvider": ("flext_auth.protocols", "FlextAuthBaseProvider"),
-    "FlextAuthBasicProvider": ("flext_auth.providers.basic", "FlextAuthBasicProvider"),
+    "FlextAuthBasicProvider": ("flext_auth.providers", "FlextAuthBasicProvider"),
     "FlextAuthCertificateProvider": (
-        "flext_auth.providers.certificate",
+        "flext_auth.providers",
         "FlextAuthCertificateProvider",
     ),
     "FlextAuthConstants": ("flext_auth.constants", "FlextAuthConstants"),
     "FlextAuthIdentityService": ("flext_auth.user_service", "FlextAuthIdentityService"),
-    "FlextAuthJwtProvider": ("flext_auth.providers.jwt", "FlextAuthJwtProvider"),
+    "FlextAuthJwtProvider": ("flext_auth.providers", "FlextAuthJwtProvider"),
     "FlextAuthJwtTokenGenerator": (
-        "flext_auth.providers.jwt_token_generator",
+        "flext_auth.providers",
         "FlextAuthJwtTokenGenerator",
     ),
     "FlextAuthJwtTokenValidator": (
-        "flext_auth.providers.jwt_token_validator",
+        "flext_auth.providers",
         "FlextAuthJwtTokenValidator",
     ),
-    "FlextAuthKerberosProvider": (
-        "flext_auth.providers.kerberos",
-        "FlextAuthKerberosProvider",
-    ),
-    "FlextAuthLdapProvider": ("flext_auth.providers.ldap", "FlextAuthLdapProvider"),
+    "FlextAuthKerberosProvider": ("flext_auth.providers", "FlextAuthKerberosProvider"),
+    "FlextAuthLdapProvider": ("flext_auth.providers", "FlextAuthLdapProvider"),
     "FlextAuthManagers": ("flext_auth.managers", "FlextAuthManagers"),
     "FlextAuthMiddleware": ("flext_auth.middleware", "FlextAuthMiddleware"),
     "FlextAuthMixins": ("flext_auth.mixins", "FlextAuthMixins"),
     "FlextAuthModels": ("flext_auth.models", "FlextAuthModels"),
-    "FlextAuthOAuth2Provider": (
-        "flext_auth.providers.oauth2",
-        "FlextAuthOAuth2Provider",
-    ),
-    "FlextAuthOidcProvider": ("flext_auth.providers.oidc", "FlextAuthOidcProvider"),
-    "FlextAuthPasswordHasher": (
-        "flext_auth.providers.jwt_password_hasher",
-        "FlextAuthPasswordHasher",
-    ),
+    "FlextAuthOAuth2Provider": ("flext_auth.providers", "FlextAuthOAuth2Provider"),
+    "FlextAuthOidcProvider": ("flext_auth.providers", "FlextAuthOidcProvider"),
+    "FlextAuthPasswordHasher": ("flext_auth.providers", "FlextAuthPasswordHasher"),
     "FlextAuthProtocols": ("flext_auth.protocols", "FlextAuthProtocols"),
-    "FlextAuthProviderMixin": ("flext_auth.providers.mixin", "FlextAuthProviderMixin"),
+    "FlextAuthProviderMixin": ("flext_auth.providers", "FlextAuthProviderMixin"),
     "FlextAuthProviderService": (
         "flext_auth.provider_service",
         "FlextAuthProviderService",
     ),
     "FlextAuthQuickstart": ("flext_auth.quickstart", "FlextAuthQuickstart"),
     "FlextAuthRateLimiterManagers": (
-        "flext_auth._managers.rate_limiter",
+        "flext_auth._managers",
         "FlextAuthRateLimiterManagers",
     ),
     "FlextAuthRegistry": ("flext_auth.registry", "FlextAuthRegistry"),
-    "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
-    "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
-    "FlextAuthSessionManagers": (
-        "flext_auth._managers.auth_managers_session",
-        "FlextAuthSessionManagers",
-    ),
+    "FlextAuthRfcProvider": ("flext_auth.providers", "FlextAuthRfcProvider"),
+    "FlextAuthSamlProvider": ("flext_auth.providers", "FlextAuthSamlProvider"),
+    "FlextAuthSessionManagers": ("flext_auth._managers", "FlextAuthSessionManagers"),
     "FlextAuthSessionService": (
         "flext_auth.session_service",
         "FlextAuthSessionService",
@@ -130,10 +119,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthTokenService": ("flext_auth.token_service", "FlextAuthTokenService"),
     "FlextAuthTypes": ("flext_auth.typings", "FlextAuthTypes"),
     "FlextAuthUtilities": ("flext_auth.utilities", "FlextAuthUtilities"),
-    "FlextWebTransportAdapter": (
-        "flext_auth.transports.http",
-        "FlextWebTransportAdapter",
-    ),
+    "FlextWebTransportAdapter": ("flext_auth.transports", "FlextWebTransportAdapter"),
     "ServiceManagers": ("flext_auth.managers", "ServiceManagers"),
     "__all__": ("flext_auth.__version__", "__all__"),
     "__author__": ("flext_auth.__version__", "__author__"),
