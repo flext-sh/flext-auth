@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated, ClassVar, TypeGuard
+from typing import Annotated, ClassVar, TypeGuard, override
 
 from flext_core import FlextRegistry, r
 from pydantic import BaseModel, ConfigDict, Field
@@ -77,17 +77,18 @@ class FlextAuthRegistry(FlextRegistry):
         ]
         return r[list[str]].ok(matching)
 
-    def get(self, name: str) -> r[p.Auth.FlextAuthBaseProvider]:
+    @override
+    def get(self, data: str) -> r[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name."""
-        result = self.get_plugin(self.PROVIDERS, name)
+        result = self.get_plugin(self.PROVIDERS, data)
         if result.is_failure:
             return r[p.Auth.FlextAuthBaseProvider].fail(
-                result.error or f"Provider '{name}' not registered",
+                result.error or f"Provider '{data}' not registered",
             )
         wrapped = result.unwrap()
         if wrapped is None:
             return r[p.Auth.FlextAuthBaseProvider].fail(
-                f"Provider '{name}' is not registered",
+                f"Provider '{data}' is not registered",
             )
         inner = getattr(wrapped, "provider", None)
         if inner is not None and _is_auth_provider(inner):
@@ -95,7 +96,7 @@ class FlextAuthRegistry(FlextRegistry):
         if _is_auth_provider(wrapped):
             return r[p.Auth.FlextAuthBaseProvider].ok(wrapped)
         return r[p.Auth.FlextAuthBaseProvider].fail(
-            f"Provider '{name}' is not a p.Auth.FlextAuthBaseProvider",
+            f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider",
         )
 
     def get_capabilities(self, name: str) -> r[set[str]]:

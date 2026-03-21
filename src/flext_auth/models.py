@@ -661,6 +661,90 @@ class FlextAuthModels(FlextApiModels):
             ]
 
         # =========================================================================
+        # PROVIDER CONFIGURATION MODELS
+        # =========================================================================
+
+        class ProviderConfig(FlextApiModels.Value):
+            """Provider configuration payload (immutable value object)."""
+
+            name: Annotated[str, Field(..., description="Provider name")]
+            type: Annotated[str, Field(..., description="Provider type")]
+
+        # =========================================================================
+        # CREDENTIAL MODELS - Basic and MultiFactor
+        # =========================================================================
+
+        class BasicCredential(FlextApiModels.Value):
+            """Basic credential payload (immutable value object)."""
+
+            username: Annotated[str, Field(..., description="Username")]
+            password: Annotated[str, Field(..., description="Password", exclude=True)]
+
+        class MultiFactorCredential(BasicCredential):
+            """Multi-factor credential payload (immutable value object, extends BasicCredential)."""
+
+            otp: Annotated[str, Field(..., description="One-time password")]
+
+        # =========================================================================
+        # AUTHENTICATION RESPONSE MODELS
+        # =========================================================================
+
+        class AuthenticationResponse(FlextApiModels.Value):
+            """Authentication response payload (immutable value object)."""
+
+            success: Annotated[bool, Field(..., description="Authentication success")]
+            user: Annotated[
+                t.JsonObject,
+                Field(
+                    default_factory=dict,
+                    description="User data",
+                ),
+            ]
+
+        # =========================================================================
+        # PROJECT CONFIGURATION MODELS
+        # =========================================================================
+
+        class AuthProjectConfig(FlextApiModels.Value):
+            """Auth project configuration payload (immutable value object)."""
+
+            name: Annotated[
+                str,
+                Field(default="flext-auth", description="Project name"),
+            ]
+            enabled: Annotated[bool, Field(default=True, description="Project enabled")]
+
+        # =========================================================================
+        # OAUTH2 MODELS
+        # =========================================================================
+
+        class OAuth2TokenResponse(FlextApiModels.Value):
+            """OAuth2 token response payload (immutable value object)."""
+
+            access_token: Annotated[str, Field(..., description="Access token")]
+            token_type: Annotated[
+                str,
+                Field(
+                    default=c.Auth.TokenTypes.BEARER.value,
+                    description="Token type",
+                ),
+            ]
+            expires_in: Annotated[
+                int, Field(default=3600, description="Expiration in seconds")
+            ]
+
+        # =========================================================================
+        # KERBEROS MODELS
+        # =========================================================================
+
+        class KerberosTicketData(FlextApiModels.Value):
+            """Kerberos ticket payload (immutable value object)."""
+
+            ticket: Annotated[str, Field(..., description="Kerberos ticket")]
+            principal: Annotated[str, Field(..., description="Kerberos principal")]
+            realm: Annotated[str, Field(..., description="Kerberos realm")]
+
+        # =========================================================================
         # PROVIDERS NAMESPACE - Provider metadata and related models
         # =========================================================================
 
@@ -688,6 +772,15 @@ class FlextAuthModels(FlextApiModels):
                         default_factory=dict,
                         description="Extra metadata",
                     ),
+                ]
+
+            class Registration(FlextApiModels.Value):
+                """Provider registration payload (immutable value object)."""
+
+                name: Annotated[str, Field(..., description="Provider name")]
+                provider_type: Annotated[
+                    str,
+                    Field(..., description="Provider type"),
                 ]
 
 

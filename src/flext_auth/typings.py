@@ -9,13 +9,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
-from pydantic import BaseModel, BeforeValidator, Field, SecretStr
+from pydantic import BeforeValidator, Field, SecretStr
 
 from flext_auth.constants import FlextAuthConstants as c
+
+# Import models for type aliases
+if False:  # TYPE_CHECKING pattern for forward refs
+    pass
 
 
 class FlextAuthTypes(FlextApiTypes):
@@ -38,12 +41,6 @@ class FlextAuthTypes(FlextApiTypes):
             c.Auth.RoleTypes,
             BeforeValidator(lambda x: x),
         ]
-
-        class ProviderConfig(BaseModel):
-            """Provider configuration payload."""
-
-            name: str
-            type: str
 
         class UserManagement:
             """User management type definitions."""
@@ -101,19 +98,6 @@ class FlextAuthTypes(FlextApiTypes):
                 Field(min_length=1, description="Declared capabilities"),
             ]
 
-            class Metadata(BaseModel):
-                """Provider metadata payload."""
-
-                name: str
-                version: str = "1.0.0"
-                capabilities: tuple[str, ...] = ()
-
-            class Registration(BaseModel):
-                """Provider registration payload."""
-
-                name: str
-                provider_type: str
-
         class Credentials:
             """Credential payload type definitions."""
 
@@ -142,17 +126,6 @@ class FlextAuthTypes(FlextApiTypes):
                 ),
             ]
 
-            class Basic(BaseModel):
-                """Basic credential payload."""
-
-                username: str
-                password: str
-
-            class MultiFactor(Basic):
-                """Multi-factor credential payload."""
-
-                otp: str
-
         class Tokens:
             """Token-related type definitions."""
 
@@ -170,12 +143,6 @@ class FlextAuthTypes(FlextApiTypes):
             """Response payload abstractions."""
 
             AuthenticationPayload = FlextApiTypes.Api.JsonObject
-
-            class Authentication(BaseModel):
-                """Authentication response payload."""
-
-                success: bool
-                user: Mapping[str, FlextApiTypes.ApiJsonValue]
 
         class Managers:
             """Manager-specific supporting types."""
@@ -237,33 +204,6 @@ class FlextAuthTypes(FlextApiTypes):
             """Auth project namespace."""
 
             type ProjectType = c.ProjectType
-
-            class AuthProjectConfig(BaseModel):
-                """Auth project configuration payload."""
-
-                name: str = "flext-auth"
-                enabled: bool = True
-
-        class OAuth2TokenResponse(BaseModel):
-            """OAuth2 token response payload."""
-
-            access_token: str
-            token_type: str = c.Auth.TokenTypes.BEARER.value
-            expires_in: int = 3600
-
-        class KerberosTicketData(BaseModel):
-            """Kerberos ticket payload."""
-
-            ticket: str
-            principal: str
-            realm: str
-
-        class HttpResponseData(BaseModel):
-            """HTTP response payload."""
-
-            status_code: int
-            headers: dict[str, str]
-            body: str
 
     UserManagement = Auth.UserManagement
     SessionManagement = Auth.SessionManagement

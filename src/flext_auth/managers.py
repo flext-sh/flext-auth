@@ -17,10 +17,9 @@ from uuid import uuid4
 from flext_core import FlextContext, FlextLogger, r
 
 from flext_auth import FlextAuthSettings, c, m, p, t, u
-from flext_auth._managers import FlextAuthRateLimiterManagers
-from flext_auth._managers.auth_managers_session import (
-    FlextAuthSessionManagers,
-)
+
+from ._managers import FlextAuthRateLimiterManagers
+from ._managers.auth_managers_session import FlextAuthSessionManagers
 
 
 class ServiceManagers:
