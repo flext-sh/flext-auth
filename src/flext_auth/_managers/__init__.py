@@ -12,6 +12,8 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
+
+if TYPE_CHECKING:
     from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 
@@ -32,7 +34,7 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: dict[str, object] = {}
+_LAZY_CACHE: dict[str, FlextTypes.ModuleExport] = {}
 
 
 def __getattr__(name: str) -> FlextTypes.ModuleExport:
