@@ -361,7 +361,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             def generate_token(
                 self,
                 payload: Mapping[str, t.ContainerValue],
-                token_kind: str = "access",  # noqa: S107  # Token type classifier (access/refresh), not a credential
+                token_kind: str = "access",
                 expiry_minutes: int | None = None,
             ) -> r[str]:
                 """Generate a signed JWT token from the provided payload."""
@@ -478,7 +478,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             def generate_token_for_user(
                 self,
                 user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
-                token_kind: str = "access",  # noqa: S107  # Token type classifier (access/refresh), not a credential
+                token_kind: str = "access",
                 token_type: str | None = None,
                 expiry_minutes: int | None = None,
             ) -> r[str]:
