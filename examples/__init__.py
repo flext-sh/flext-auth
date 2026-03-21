@@ -15,10 +15,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_core.typings import FlextTypes
-
-
-if TYPE_CHECKING:
     from examples.advanced_features_02 import (
         example_advanced_configuration,
         example_jwt_operations,
@@ -62,6 +58,7 @@ if TYPE_CHECKING:
     )
     from examples.simple_usage_08 import main
     from examples.utils import basic_example_runner
+    from flext_core.typings import FlextTypes
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthDemo": ("examples.basic_refactored_usage_06", "FlextAuthDemo"),
