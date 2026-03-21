@@ -505,7 +505,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             for log in self._logs:
                 if user_id is not None:
                     username_value = log.get("username")
-                    log_user_id_value = log.get(c.Context.KEY_USER_ID)
+                    log_user_id_value = log.get(c.KEY_USER_ID)
                     match username_value:
                         case str() as username if username == user_id:
                             username_matches = True
