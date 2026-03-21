@@ -15,7 +15,7 @@ from typing import Annotated, Literal, override
 from flext_api import FlextApiTypes
 from pydantic import BaseModel, BeforeValidator, Field, SecretStr
 
-from flext_auth import c
+from flext_auth.constants import FlextAuthConstants as c
 
 
 class FlextAuthTypes(FlextApiTypes):
@@ -233,8 +233,8 @@ class FlextAuthTypes(FlextApiTypes):
 
             UNIT = UnitType()
 
-        class Project(FlextApiTypes.Project):
-            """Auth project namespace extending API project namespace."""
+        class Project:
+            """Auth project namespace."""
 
             type ProjectType = c.ProjectType
 
