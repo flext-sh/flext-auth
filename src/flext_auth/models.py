@@ -130,10 +130,9 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             expiry_minutes: Annotated[
-                int,
+                t.PositiveInt,
                 Field(
                     default=c.Auth.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES,
-                    ge=1,
                     description="Token expiry",
                 ),
             ]
@@ -201,10 +200,9 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             contact: Annotated[
-                str,
+                t.NonEmptyStr,
                 Field(
                     ...,
-                    min_length=1,
                     pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
                     description="Contact info (email)",
                 ),
@@ -270,8 +268,8 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             failed_attempts: Annotated[
-                int,
-                Field(default=0, ge=0, description="Failed attempts"),
+                t.NonNegativeInt,
+                Field(default=0, description="Failed attempts"),
             ]
             locked_until: Annotated[
                 datetime,
@@ -382,10 +380,9 @@ class FlextAuthModels(FlextApiModels):
             """Generic role entity."""
 
             name: Annotated[
-                str,
+                t.NonEmptyStr,
                 Field(
                     ...,
-                    min_length=1,
                     max_length=c.Auth.ModelValidation.MAX_ROLE_NAME_LENGTH,
                     description="Role name",
                 ),
@@ -410,10 +407,9 @@ class FlextAuthModels(FlextApiModels):
             """Generic permission entity."""
 
             name: Annotated[
-                str,
+                t.NonEmptyStr,
                 Field(
                     ...,
-                    min_length=1,
                     max_length=c.Auth.ModelValidation.MAX_PERMISSION_NAME_LENGTH,
                     description="Permission",
                 ),
@@ -619,8 +615,8 @@ class FlextAuthModels(FlextApiModels):
                 Field(default="Bearer", description="Token type"),
             ]
             expires_in: Annotated[
-                int,
-                Field(default=3600, ge=0, description="Expiry seconds"),
+                t.NonNegativeInt,
+                Field(default=3600, description="Expiry seconds"),
             ]
             scope: Annotated[str, Field(default="", description="Granted scope")]
             refresh_token: Annotated[
