@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class CertificateFixture(BaseModel):
     """Certificate fixture data."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
     cert_pem: str = Field(description="PEM-encoded certificate")
     key_pem: str = Field(description="PEM-encoded private key")

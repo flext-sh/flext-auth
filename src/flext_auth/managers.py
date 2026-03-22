@@ -141,9 +141,11 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                 elif k == "is_active":
                     is_active = bool(v)
                 elif k == "roles":
-                    roles = [str(item) for item in v] if u.is_list(v) else []
+                    roles = [str(item) for item in v] if isinstance(v, list) else []
                 elif k == "permissions":
-                    permissions = [str(item) for item in v] if u.is_list(v) else []
+                    permissions = (
+                        [str(item) for item in v] if isinstance(v, list) else []
+                    )
                 elif k == "failed_attempts":
                     match v:
                         case int() as int_value:

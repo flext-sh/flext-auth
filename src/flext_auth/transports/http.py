@@ -187,7 +187,7 @@ class FlextWebTransportAdapter:
         r containing response data or error
 
         """
-        request_headers = dict(headers) if headers is not None else {}
+        request_headers: dict[str, str] = dict(headers) if headers is not None else {}
         request_timeout = timeout if timeout is not None else self._timeout
         resolved_body = self._resolve_body(method, data)
         resolved_query = self._resolve_query(method, data, query)
@@ -328,7 +328,7 @@ class FlextWebTransportAdapter:
 
     @staticmethod
     def _to_scalar(value: t.NormalizedValue) -> t.Scalar:
-        """Normalize object to t.Scalar for response dict values."""
+        """Normalize t.NormalizedValue to t.Scalar for response dict values."""
         match value:
             case str() as text:
                 return text

@@ -16,7 +16,7 @@ from flext_auth import m, p, t
 
 
 def _is_auth_provider(
-    value: t.RuntimeAtomic,
+    value: t.RuntimeAtomic | p.Auth.FlextAuthBaseProvider,
 ) -> TypeGuard[p.Auth.FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)

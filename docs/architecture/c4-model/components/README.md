@@ -187,7 +187,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 - **Responsibilities**:
   - Pydantic data models
   - Type validation and serialization
-  - Domain object definitions
+  - Domain t.NormalizedValue definitions
   - API request/response schemas
 
 ## Component Relationships

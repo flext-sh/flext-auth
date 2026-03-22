@@ -304,7 +304,7 @@ All operations return `r[T]` for type-safe error handling.
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.is_success:
     user = result.unwrap()
-    # Use user object
+    # Use user t.NormalizedValue
 else:
     print(f"Error: {result.error}")
 ```

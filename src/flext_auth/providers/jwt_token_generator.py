@@ -89,7 +89,7 @@ class FlextAuthJwtTokenGenerator:
                 extra_claims,
             )
             token_result = jwt.encode(
-                payload,
+                dict(payload),
                 secret_result.value,
                 algorithm=algorithm_result.value,
             )

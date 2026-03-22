@@ -21,68 +21,63 @@ class FlextAuthSettings(m.Value):
     """Validated settings used by auth providers and token services."""
 
     _global_instance: ClassVar[FlextAuthSettings | None] = None
-    model_config = ConfigDict(validate_assignment=True, populate_by_name=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        validate_assignment=True, populate_by_name=True
+    )
 
     secret_key: Annotated[
         str,
         Field(
-            default="change-me-in-production-minimum-32-characters",
             alias="auth_secret",
             min_length=c.Auth.SECRET_MIN_LENGTH,
             description="Signing secret",
         ),
-    ]
+    ] = "change-me-in-production-minimum-32-characters"  # noqa: S105
     algorithm: Annotated[
         str,
         Field(
-            default=c.Auth.DEFAULT_JWT_ALGORITHM,
             description="JWT signing algorithm",
         ),
-    ]
+    ] = c.Auth.DEFAULT_JWT_ALGORITHM
     issuer: Annotated[
         str,
-        Field(default=c.Auth.DEFAULT_ISSUER, description="Token issuer"),
-    ]
+        Field(description="Token issuer"),
+    ] = c.Auth.DEFAULT_ISSUER
     audience: Annotated[
         str,
         Field(
-            default=c.Auth.DEFAULT_AUDIENCE,
             description="Token audience",
         ),
-    ]
+    ] = c.Auth.DEFAULT_AUDIENCE
     expiry_minutes: Annotated[
         int,
         Field(
-            default=c.Auth.DEFAULT_JWT_EXPIRY_MINUTES,
             ge=1,
             description="Access token expiry in minutes",
         ),
-    ]
+    ] = c.Auth.DEFAULT_JWT_EXPIRY_MINUTES
     session_expiry_minutes: Annotated[
         int,
         Field(
-            default=c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES,
             ge=1,
             description="Session expiry in minutes",
         ),
-    ]
+    ] = c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES
     max_sessions_per_user: Annotated[
         int,
         Field(
-            default=c.Auth.DEFAULT_MAX_SESSIONS_PER_USER,
             ge=1,
             description="Max parallel sessions per user",
         ),
-    ]
+    ] = c.Auth.DEFAULT_MAX_SESSIONS_PER_USER
     hash_rounds: Annotated[
         int,
         Field(
-            default=c.Auth.DEFAULT_HASH_ROUNDS,
             ge=c.Auth.HASH_ROUNDS_MIN,
             le=c.Auth.HASH_ROUNDS_MAX,
             description="Password hash rounds",
         ),
-    ]
+    ] = c.Auth.DEFAULT_HASH_ROUNDS
 
     @property
     def auth_secret(self) -> SecretStr:

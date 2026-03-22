@@ -166,7 +166,7 @@
 
 ## Notes
 
-[object additional notes, implementation details, or future considerations]
+[t.NormalizedValue additional notes, implementation details, or future considerations]
 
 ______________________________________________________________________
 

@@ -142,7 +142,7 @@ def authenticate_user(username: str, password: str) -> r[t.Dict]:
 
 
 # ❌ Incorrect - Don't use exceptions for business logic
-def authenticate_user(username: str, password: str) -> dict[str, object]:
+def authenticate_user(username: str, password: str) -> dict[str, t.NormalizedValue]:
     if not username:
         raise ValueError("Username required")
 

@@ -60,10 +60,10 @@ class FlextAuthProviderMixin:
         return r[bool].ok(value=True)
 
     def _extract_token_string(self, token: str | p.Auth.Token) -> str:
-        """Extract token string from token or Token object.
+        """Extract token string from token or Token t.NormalizedValue.
 
         Args:
-        token: Token as string or Token object
+        token: Token as string or Token t.NormalizedValue
 
         Returns:
         str: Token string

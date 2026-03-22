@@ -99,7 +99,7 @@ All ADRs follow a consistent template:
 
 ## Notes
 
-[object additional notes or implementation details]
+[t.NormalizedValue additional notes or implementation details]
 ```
 
 ## Current ADRs
