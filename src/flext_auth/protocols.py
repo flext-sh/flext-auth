@@ -259,6 +259,12 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """
                 ...
 
+        @runtime_checkable
+        class RequestWithHeaders(Protocol):
+            """Protocol for request-like objects with a headers attribute."""
+
+            headers: dict[str, str]
+
         class FlextAuthBaseProvider(Protocol):
             """Base protocol for all authentication providers.
 

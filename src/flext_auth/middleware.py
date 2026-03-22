@@ -29,7 +29,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Protocol, TypeIs, override, runtime_checkable
+from typing import TypeIs, override
 
 from flext_core import FlextLogger, r
 
@@ -44,14 +44,10 @@ class FlextAuthMiddleware(s[bool]):
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
-    @runtime_checkable
-    class RequestWithHeaders(Protocol):
-        """Protocol for request-like objects with a headers attribute."""
-
-        headers: dict[str, str]
-
     @staticmethod
-    def _request_has_headers(req: RequestWithHeaders) -> TypeIs[RequestWithHeaders]:
+    def _request_has_headers(
+        req: p.Auth.RequestWithHeaders,
+    ) -> TypeIs[p.Auth.RequestWithHeaders]:
         """TypeGuard: request has a headers attribute."""
         return hasattr(req, "headers")
 
@@ -120,8 +116,8 @@ class FlextAuthMiddleware(s[bool]):
 
         def process_request(
             self,
-            request: FlextAuthMiddleware.RequestWithHeaders,
-        ) -> r[FlextAuthMiddleware.RequestWithHeaders]:
+            request: p.Auth.RequestWithHeaders,
+        ) -> r[p.Auth.RequestWithHeaders]:
             """Process HTTP request by adding authentication headers.
 
             Args:
@@ -132,16 +128,16 @@ class FlextAuthMiddleware(s[bool]):
 
             """
             if not self._enabled:
-                return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
+                return r[p.Auth.RequestWithHeaders].ok(request)
             if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
-                    return r[FlextAuthMiddleware.RequestWithHeaders].fail(
+                    return r[p.Auth.RequestWithHeaders].fail(
                         token_result.error or "Authentication failed",
                     )
                 self._current_token = token_result.value
             if self._current_token is None:
-                return r[FlextAuthMiddleware.RequestWithHeaders].fail(
+                return r[p.Auth.RequestWithHeaders].fail(
                     "Authentication token is not available",
                 )
             try:
@@ -156,7 +152,7 @@ class FlextAuthMiddleware(s[bool]):
                     request.headers = mutable_headers
             except (AttributeError, TypeError):
                 pass
-            return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
+            return r[p.Auth.RequestWithHeaders].ok(request)
 
         def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""
