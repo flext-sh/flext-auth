@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Final, Literal
 
-from flext_tests.constants import FlextTestsConstants
+from flext_tests import FlextTestsConstants
 
 from flext_auth import FlextAuthConstants
 

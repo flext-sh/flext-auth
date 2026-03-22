@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flext_tests.protocols import FlextTestsProtocols
+from flext_tests import FlextTestsProtocols
 
 from flext_auth import FlextAuthProtocols
 

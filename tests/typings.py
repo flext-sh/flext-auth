@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flext_tests.typings import FlextTestsTypes
+from flext_tests import FlextTestsTypes
 
 from flext_auth import FlextAuthTypes
 
