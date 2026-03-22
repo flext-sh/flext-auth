@@ -11,7 +11,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, s
-    from flext_core.typings import FlextTypes
+    from flext_core import FlextTypes
 
     from flext_auth import _managers, providers, transports
     from flext_auth.__version__ import (

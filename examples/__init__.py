@@ -58,7 +58,7 @@ if TYPE_CHECKING:
     )
     from examples.simple_usage_08 import main
     from examples.utils import basic_example_runner
-    from flext_core.typings import FlextTypes
+    from flext_core import FlextTypes
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthDemo": ("examples.basic_refactored_usage_06", "FlextAuthDemo"),
