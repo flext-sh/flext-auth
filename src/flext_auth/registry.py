@@ -7,36 +7,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Annotated, ClassVar, TypeGuard, override
+from typing import ClassVar, TypeGuard, override
 
 from flext_core import FlextRegistry, r
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel
 
 from flext_auth import m, p, t
-
-
-class _ProviderWrapper(BaseModel):
-    """Wrapper for auth provider instances."""
-
-    category: Annotated[str, Field(description="Provider category")]
-    provider: Annotated[
-        p.Auth.FlextAuthBaseProvider, Field(description="Provider instance")
-    ]
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-
-class _ConfigWrapper(BaseModel):
-    """Protocol-conformant wrapper for config data."""
-
-    category: Annotated[str, Field(description="Config category")]
-    data: Annotated[dict[str, t.Scalar], Field(description="Config data")]
-
-
-class _MetadataWrapper(BaseModel):
-    """Protocol-conformant wrapper for metadata."""
-
-    category: Annotated[str, Field(description="Metadata category")]
-    data: Annotated[m.Auth.Providers.Metadata, Field(description="Metadata")]
 
 
 def _is_auth_provider(
@@ -196,12 +172,14 @@ class FlextAuthRegistry(FlextRegistry):
         configuration: Mapping[str, t.Scalar] | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
-        provider_wrapper = _ProviderWrapper(category=self.PROVIDERS, provider=provider)
+        provider_wrapper = m.Auth.ProviderWrapper(
+            category=self.PROVIDERS, provider=provider
+        )
         provider_result = self.register_plugin(self.PROVIDERS, name, provider_wrapper)
         if provider_result.is_failure:
             return provider_result
         if configuration:
-            config_wrapper = _ConfigWrapper(
+            config_wrapper = m.Auth.ConfigWrapper(
                 category=f"{self.PROVIDERS}_config",
                 data=dict(configuration),
             )
@@ -214,7 +192,7 @@ class FlextAuthRegistry(FlextRegistry):
                 self.unregister_plugin(self.PROVIDERS, name)
                 return config_result
         if metadata:
-            metadata_wrapper = _MetadataWrapper(
+            metadata_wrapper = m.Auth.MetadataWrapper(
                 category=f"{self.PROVIDERS}_metadata",
                 data=metadata,
             )
@@ -243,7 +221,7 @@ class FlextAuthRegistry(FlextRegistry):
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
         self.unregister_plugin(f"{self.PROVIDERS}_config", name)
-        config_wrapper = _ConfigWrapper(
+        config_wrapper = m.Auth.ConfigWrapper(
             category=f"{self.PROVIDERS}_config",
             data=dict(config),
         )

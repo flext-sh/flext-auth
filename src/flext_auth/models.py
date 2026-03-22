@@ -664,6 +664,30 @@ class FlextAuthModels(FlextApiModels):
         # PROVIDERS NAMESPACE - Provider metadata and related models
         # =========================================================================
 
+        # =========================================================================
+        # REGISTRY WRAPPER MODELS - Internal registry wrappers
+        # =========================================================================
+
+        class ProviderWrapper(FlextApiModels.Value):
+            """Wrapper for auth provider instances."""
+
+            model_config = ConfigDict(arbitrary_types_allowed=True)
+
+            category: Annotated[str, Field(description="Provider category")]
+            provider: Annotated[object, Field(description="Provider instance")]
+
+        class ConfigWrapper(FlextApiModels.Value):
+            """Protocol-conformant wrapper for config data."""
+
+            category: Annotated[str, Field(description="Config category")]
+            data: Annotated[dict[str, t.Scalar], Field(description="Config data")]
+
+        class MetadataWrapper(FlextApiModels.Value):
+            """Protocol-conformant wrapper for metadata."""
+
+            category: Annotated[str, Field(description="Metadata category")]
+            data: Annotated[object, Field(description="Metadata")]
+
         class Providers:
             """Provider-related models namespace."""
 
