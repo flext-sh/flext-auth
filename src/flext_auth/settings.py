@@ -32,7 +32,7 @@ class FlextAuthSettings(m.Value):
             min_length=c.Auth.SECRET_MIN_LENGTH,
             description="Signing secret",
         ),
-    ] = "change-me-in-production-minimum-32-characters"  # noqa: S105
+    ] = "change-me-in-production-minimum-32-characters"
     algorithm: Annotated[
         str,
         Field(

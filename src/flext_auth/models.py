@@ -156,7 +156,7 @@ class FlextAuthModels(FlextApiModels):
                 Field(
                     description="Token type",
                 ),
-            ] = "bearer"  # noqa: S105
+            ] = "bearer"
             session_id: Annotated[str, Field(description="Session ID")] = ""
             is_revoked: Annotated[
                 bool,
@@ -609,7 +609,7 @@ class FlextAuthModels(FlextApiModels):
             token_type: Annotated[
                 str,
                 Field(description="Token type"),
-            ] = "Bearer"  # noqa: S105
+            ] = "Bearer"
             expires_in: Annotated[
                 t.NonNegativeInt,
                 Field(description="Expiry seconds"),
