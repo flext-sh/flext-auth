@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
@@ -232,7 +232,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 expires_at: datetime | None = None,
             ) -> Mapping[str, t.Scalar]:
                 """Build a successful authentication response."""
-                response: Mapping[str, t.Scalar] = {
+                response: MutableMapping[str, t.Scalar] = {
                     "success": True,
                     "message": "Authentication successful",
                     "timestamp": datetime.now(UTC).isoformat(),

@@ -9,9 +9,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableMapping
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
+from flext_core import FlextTypes
 from pydantic import BeforeValidator, Field, SecretStr
 
 from flext_auth import c
@@ -126,28 +128,28 @@ class FlextAuthTypes(FlextApiTypes):
             """Token-related type definitions."""
 
             type TokenType = c.Auth.TokenTypes
-            type ClaimMap = FlextApiTypes.Api.JsonObject
-            Claims = FlextApiTypes.Api.JsonObject
-            Introspection = FlextApiTypes.Api.JsonObject
+            type ClaimMap = MutableMapping[str, FlextTypes.ContainerValue]
+            type Claims = MutableMapping[str, FlextTypes.ContainerValue]
+            type Introspection = MutableMapping[str, FlextTypes.ContainerValue]
 
         class Sessions:
             """Session-related type definitions."""
 
-            Activity = FlextApiTypes.Api.JsonObject
+            type Activity = MutableMapping[str, FlextTypes.ContainerValue]
 
         class Responses:
             """Response payload abstractions."""
 
-            AuthenticationPayload = FlextApiTypes.Api.JsonObject
+            type AuthenticationPayload = MutableMapping[str, FlextTypes.ContainerValue]
 
         class Managers:
             """Manager-specific supporting types."""
 
-            UserData = FlextApiTypes.Api.JsonObject
-            SessionData = FlextApiTypes.Api.JsonObject
-            LogEntry = FlextApiTypes.Api.JsonObject
-            AuditEntry = FlextApiTypes.Api.JsonObject
-            AttemptData = FlextApiTypes.Api.JsonObject
+            type UserData = MutableMapping[str, FlextTypes.ContainerValue]
+            type SessionData = MutableMapping[str, FlextTypes.ContainerValue]
+            type LogEntry = MutableMapping[str, FlextTypes.ContainerValue]
+            type AuditEntry = MutableMapping[str, FlextTypes.ContainerValue]
+            type AttemptData = MutableMapping[str, FlextTypes.ContainerValue]
             type AttemptWindow = tuple[int, int]
 
         class Domain:

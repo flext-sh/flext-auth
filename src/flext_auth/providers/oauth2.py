@@ -14,7 +14,7 @@ import hashlib
 import http.client
 import secrets
 from base64 import b64encode, urlsafe_b64encode
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Final, override
 from urllib.parse import urlencode, urlparse
@@ -380,7 +380,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def __init__(self) -> None:
             """Initialize PKCE manager."""
-            self._verifiers: Mapping[str, str] = {}
+            self._verifiers: MutableMapping[str, str] = {}
 
         def clear_verifier(self, state: str) -> None:
             """Clear stored PKCE code verifier."""
@@ -570,7 +570,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _build_introspection_form_data(self, token: str) -> r[str]:
         if not token.strip():
             return r[str].fail("OAuth2 token must be a non-empty string")
-        form_payload: Mapping[str, str] = {
+        form_payload: MutableMapping[str, str] = {
             "token": token,
             "token_type_hint": "access_token",
         }

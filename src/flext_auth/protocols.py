@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Protocol, override, runtime_checkable
 
@@ -331,13 +331,13 @@ class FlextAuthProtocols(FlextApiProtocols):
                 if isinstance(value, datetime):
                     return value.isoformat()
                 if isinstance(value, (list, tuple)):
-                    normalized_items: Sequence[t.ContainerValue] = []
+                    normalized_items: MutableSequence[t.ContainerValue] = []
                     for item in value:
                         normalized_item = cls._normalize_claim_value(item)
                         if normalized_item is not None:
                             normalized_items.append(normalized_item)
                     return normalized_items
-                normalized_mapping: Mapping[str, t.ContainerValue] = {}
+                normalized_mapping: MutableMapping[str, t.ContainerValue] = {}
                 for key, item in value.items():
                     normalized_item = cls._normalize_claim_value(item)
                     if normalized_item is not None:
@@ -422,7 +422,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 else:
                     user_roles = []
                 now = datetime.now(UTC)
-                claims: Mapping[str, t.ContainerValue] = {}
+                claims: MutableMapping[str, t.ContainerValue] = {}
                 reserved_claims = {
                     "sub",
                     "identity_id",

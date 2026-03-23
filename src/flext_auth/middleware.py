@@ -28,7 +28,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 from typing import TypeIs, override
 
 from flext_core import FlextLogger, r
@@ -143,7 +143,7 @@ class FlextAuthMiddleware(s[bool]):
             try:
                 headers_val = request.headers
                 if isinstance(headers_val, Mapping):
-                    mutable_headers: Mapping[str, str] = {
+                    mutable_headers: MutableMapping[str, str] = {
                         str(key): str(value) for key, value in headers_val.items()
                     }
                     mutable_headers["Authorization"] = (

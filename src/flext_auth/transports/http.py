@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import base64
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping, Sequence
 from typing import Final
 from urllib.parse import urlencode
 
@@ -140,7 +140,7 @@ class FlextWebTransportAdapter:
             ... )
 
         """
-        request_headers: Mapping[str, str] = dict(headers) if headers else {}
+        request_headers: MutableMapping[str, str] = dict(headers) if headers else {}
         if "Content-Type" not in request_headers:
             request_headers["Content-Type"] = "application/x-www-form-urlencoded"
         if auth:
@@ -322,7 +322,7 @@ class FlextWebTransportAdapter:
                 **query_dict,
                 **{str(key): value for key, value in data_mapping.items()},
             }
-            normalized: t.Api.WebParams = {}
+            normalized: MutableMapping[str, Sequence[str] | str] = {}
             for key, value in merged_query.items():
                 normalized[str(key)] = str(value)
             return normalized

@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import MutableSequence, Sequence
 from typing import override
 
 from flext_core import r
@@ -40,7 +40,7 @@ class FlextAuthQuickstart(s[bool]):
 
     def create_demo_users(self, count: int = 5) -> r[Sequence[str]]:
         """Create demo users for testing."""
-        user_ids: Sequence[str] = []
+        user_ids: MutableSequence[str] = []
 
         def create_single_user(i: int) -> r[str]:
             username = f"demo_user_{i}"
@@ -86,7 +86,7 @@ class FlextAuthQuickstart(s[bool]):
                     f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {e}",
                 ),
                 on_success=lambda _: r[Sequence[str]].ok(
-                    user_ids + ["REDACTED_LDAP_BIND_PASSWORD"],
+                    [*user_ids, "REDACTED_LDAP_BIND_PASSWORD"],
                 ),
             )
 

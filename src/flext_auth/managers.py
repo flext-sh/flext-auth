@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -78,7 +78,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         _config: FlextAuthSettings
         logger: p.Logger
         _context: p.Context
-        _users: Mapping[str, t.Auth.Managers.UserData]
+        _users: MutableMapping[str, t.Auth.Managers.UserData]
 
         def __init__(self, config: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
@@ -290,14 +290,13 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         ) -> None:
             """Apply list modification atomically."""
             field_list_value = user_data.get(field)
-            if not u.is_list(field_list_value):
+            if not isinstance(field_list_value, list):
                 msg = f"Field '{field}' must be a list for modification"
                 raise TypeError(msg)
-            field_list = field_list_value
-            if add and value not in field_list:
-                field_list.append(value)
-            elif not add and value in field_list:
-                field_list.remove(value)
+            if add and value not in field_list_value:
+                field_list_value.append(value)
+            elif not add and value in field_list_value:
+                field_list_value.remove(value)
 
         def _apply_list_modification_and_return_true(
             self,
@@ -422,11 +421,11 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, Mapping[str, t.ContainerValue]]].ok((
+                    return r[tuple[str, MutableMapping[str, t.ContainerValue]]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, Mapping[str, t.ContainerValue]]].fail("User not found")
+            return r[tuple[str, MutableMapping[str, t.ContainerValue]]].fail("User not found")
 
         def _modify_user_list_field(
             self,
@@ -491,7 +490,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._logs: Sequence[t.Auth.Managers.LogEntry] = []
+            self._logs: MutableSequence[t.Auth.Managers.LogEntry] = []
 
         def get_logs(
             self,
@@ -502,7 +501,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             limit: int = 100,
         ) -> r[Sequence[Mapping[str, t.ContainerValue]]]:
             """Get audit logs with optional filtering."""
-            filtered_logs: Sequence[Mapping[str, t.ContainerValue]] = []
+            filtered_logs: MutableSequence[Mapping[str, t.ContainerValue]] = []
             for log in self._logs:
                 if user_id is not None:
                     username_value = log.get("username")
