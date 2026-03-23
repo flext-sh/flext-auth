@@ -11,8 +11,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core import FlextTypes
-
-    from .test_api import (
+    from tests.unit.test_api import (
         HttpRequest,
         TestAuthModule,
         TestFlextAuth,
@@ -44,10 +43,10 @@ if TYPE_CHECKING:
         TestFlextAuthUserMethods,
         TestProviderTokenFlows,
     )
-    from .test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
-    from .test_constants import TestFlextAuthConstants
-    from .test_token_real_flows import TestTokenRealFlows
-    from .test_typings import TestFlextAuthTypes
+    from tests.unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
+    from tests.unit.test_constants import TestFlextAuthConstants
+    from tests.unit.test_token_real_flows import TestTokenRealFlows
+    from tests.unit.test_typings import TestFlextAuthTypes
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "HttpRequest": ("tests.unit.test_api", "HttpRequest"),

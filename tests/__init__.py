@@ -12,22 +12,21 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
-
-    from . import fixtures as fixtures, helpers as helpers, unit as unit
-    from .conftest import mock_get_global
-    from .constants import FlextAuthTestConstants, FlextAuthTestConstants as c
-    from .fixtures.certificates import (
+    from tests import fixtures, helpers, unit
+    from tests.conftest import mock_get_global
+    from tests.constants import FlextAuthTestConstants, FlextAuthTestConstants as c
+    from tests.fixtures.certificates import (
         CertificateFixture,
         generate_client_cert,
         generate_self_signed_cert,
     )
-    from .helpers.protocols import TestsProtocols
-    from .helpers.typings import TestsTypings
-    from .helpers.utilities import TestsUtilities
-    from .models import FlextAuthTestModels, FlextAuthTestModels as m
-    from .protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
-    from .typings import FlextAuthTestTypes, FlextAuthTestTypes as t
-    from .unit.test_api import (
+    from tests.helpers.protocols import TestsProtocols
+    from tests.helpers.typings import TestsTypings
+    from tests.helpers.utilities import TestsUtilities
+    from tests.models import FlextAuthTestModels, FlextAuthTestModels as m
+    from tests.protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
+    from tests.typings import FlextAuthTestTypes, FlextAuthTestTypes as t
+    from tests.unit.test_api import (
         HttpRequest,
         TestAuthModule,
         TestFlextAuth,
@@ -59,11 +58,11 @@ if TYPE_CHECKING:
         TestFlextAuthUserMethods,
         TestProviderTokenFlows,
     )
-    from .unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
-    from .unit.test_constants import TestFlextAuthConstants
-    from .unit.test_token_real_flows import TestTokenRealFlows
-    from .unit.test_typings import TestFlextAuthTypes
-    from .utilities import FlextAuthTestUtilities, FlextAuthTestUtilities as u
+    from tests.unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
+    from tests.unit.test_constants import TestFlextAuthConstants
+    from tests.unit.test_token_real_flows import TestTokenRealFlows
+    from tests.unit.test_typings import TestFlextAuthTypes
+    from tests.utilities import FlextAuthTestUtilities, FlextAuthTestUtilities as u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),

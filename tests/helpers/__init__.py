@@ -23,10 +23,9 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core import FlextTypes
-
-    from .protocols import TestsProtocols, p
-    from .typings import TestsTypings, t
-    from .utilities import TestsUtilities, u
+    from tests.helpers.protocols import TestsProtocols, p
+    from tests.helpers.typings import TestsTypings, t
+    from tests.helpers.utilities import TestsUtilities, u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestsProtocols": ("tests.helpers.protocols", "TestsProtocols"),
