@@ -1,7 +1,6 @@
 # Security Architecture
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Security Principles](#security-principles)
   - [Core Security Principles](#core-security-principles)
@@ -48,7 +47,6 @@
   - [Advanced Security Features](#advanced-security-features)
   - [Security Automation](#security-automation)
 - [Security Architecture Summary](#security-architecture-summary)
-
 <!-- TOC END -->
 
 ## Overview

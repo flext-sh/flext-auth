@@ -1,7 +1,6 @@
 # C4 Context: System Context Diagram
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [System Context](#system-context)
   - [Key Elements](#key-elements)
@@ -21,7 +20,6 @@
   - [Environmental Assumptions](#environmental-assumptions)
 - [Related Documentation](#related-documentation)
 - [Diagram](#diagram)
-
 <!-- TOC END -->
 
 ## Overview

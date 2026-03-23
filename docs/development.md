@@ -1,7 +1,6 @@
 # Development
 
 <!-- TOC START -->
-
 - [Development Setup](#development-setup)
   - [Prerequisites](#prerequisites)
   - [Setup Environment](#setup-environment)
@@ -33,7 +32,6 @@
 - [Debugging](#debugging)
   - [Common Issues](#common-issues)
   - [Debug Mode](#debug-mode)
-
 <!-- TOC END -->
 
 **Version**: 0.9.0 Multi-Provider Implementation | **Updated**: October 10, 2025

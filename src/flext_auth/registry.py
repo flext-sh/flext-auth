@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import ClassVar, TypeGuard, override
+from typing import ClassVar, TypeIs, override
 
 from flext_core import FlextRegistry, r
 from pydantic import BaseModel
@@ -17,7 +17,7 @@ from flext_auth import m, p, t
 
 def _is_auth_provider(
     value: t.RuntimeAtomic | p.Auth.FlextAuthBaseProvider,
-) -> TypeGuard[p.Auth.FlextAuthBaseProvider]:
+) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
     required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
     return all(callable(getattr(value, attr, None)) for attr in required)
 

@@ -1,7 +1,6 @@
 # Architecture Documentation Workflow
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Workflow Phases](#workflow-phases)
   - [1. Architecture Analysis & Discovery](#1-architecture-analysis-discovery)
@@ -31,7 +30,6 @@
 - [Resources](#resources)
   - [Documentation](#documentation)
   - [Tools](#tools)
-
 <!-- TOC END -->
 
 ## Overview

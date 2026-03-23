@@ -1,7 +1,6 @@
 # Integration
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [FLEXT-Core Integration](#flext-core-integration)
   - [Authentication-Specific Integration](#authentication-specific-integration)
@@ -25,7 +24,6 @@
 - [Future Integration Plans](#future-integration-plans)
   - [Modern Authentication Protocols](#modern-authentication-protocols)
   - [Enterprise SSO](#enterprise-sso)
-
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025

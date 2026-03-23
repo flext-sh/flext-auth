@@ -1,7 +1,6 @@
 # Authentication Implementation Guide
 
 <!-- TOC START -->
-
 - [Authentication Service Implementation](#authentication-service-implementation)
   - [FlextAuth Main Service](#flextauth-main-service)
   - [Authentication Models](#authentication-models)
@@ -24,7 +23,6 @@
   - [Priority 1: Foundation Stabilization](#priority-1-foundation-stabilization)
   - [Priority 2: Modern Authentication (2025 Standards)](#priority-2-modern-authentication-2025-standards)
   - [Priority 3: Advanced Security](#priority-3-advanced-security)
-
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025

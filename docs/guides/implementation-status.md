@@ -1,7 +1,6 @@
 # Implementation Status - flext-auth v0.9.0
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [📊 Current Implementation Metrics](#current-implementation-metrics)
 - [🏗️ Architecture Implementation Status](#architecture-implementation-status)
@@ -39,7 +38,6 @@
 - [📝 Recommendations](#recommendations)
   - [For Current Phase](#for-current-phase)
   - [For Next Phases](#for-next-phases)
-
 <!-- TOC END -->
 
 ## Overview

@@ -1,7 +1,6 @@
 # FLEXT Auth Architecture Documentation
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [📚 Documentation Structure](#documentation-structure)
 - [🏗️ Architectural Frameworks Used](#architectural-frameworks-used)
@@ -36,7 +35,6 @@
 - [📚 Additional Resources](#additional-resources)
 - [🤝 Contributing](#contributing)
   - [Standards](#standards)
-
 <!-- TOC END -->
 
 ## Overview

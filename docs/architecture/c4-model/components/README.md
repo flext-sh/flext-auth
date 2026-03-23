@@ -1,7 +1,6 @@
 # C4 Components: Component Architecture Diagram
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Component Architecture](#component-architecture)
   - [Core Components](#core-components)
@@ -27,7 +26,6 @@
   - [End-to-End Testing](#end-to-end-testing)
 - [Related Documentation](#related-documentation)
 - [Diagram](#diagram)
-
 <!-- TOC END -->
 
 ## Overview

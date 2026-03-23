@@ -1,7 +1,6 @@
 # FLEXT-AUTH ARCHITECTURE v2.0.0
 
 <!-- TOC START -->
-
 - [Generic Authentication API Framework](#generic-authentication-api-framework)
 - [📋 TABLE OF CONTENTS](#table-of-contents)
 - [🎯 EXECUTIVE SUMMARY](#executive-summary)
@@ -24,7 +23,7 @@
   - [gRPC Transport (`transports/grpc.py`)](#grpc-transport-transportsgrpcpy)
   - [WebSocket Transport (`transports/websocket.py`)](#websocket-transport-transportswebsocketpy)
 - [📡 PROTOCOL HANDLERS](#protocol-handlers)
-  - [Handler Base (`protocol_handlers/base.py`)](#protocol-handler-base-protocolhandlersbasepy)
+  - [Protocol Handler Base (`protocol_handlers/base.py`)](#protocol-handler-base-protocolhandlersbasepy)
   - [REST Protocol Handler (`protocol_handlers/rest.py`)](#rest-protocol-handler-protocolhandlersrestpy)
   - [SOAP Protocol Handler (`protocol_handlers/soap.py`)](#soap-protocol-handler-protocolhandlerssoappy)
 - [🎫 TOKEN MANAGEMENT](#token-management)
@@ -56,7 +55,6 @@
   - [Technology Stack Summary](#technology-stack-summary)
   - [Backward Compatibility Timeline](#backward-compatibility-timeline)
 - [Related Documentation](#related-documentation)
-
 <!-- TOC END -->
 
 ## Generic Authentication API Framework

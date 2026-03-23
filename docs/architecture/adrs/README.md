@@ -1,7 +1,6 @@
 # Architecture Decision Records (ADRs)
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [ADR Process](#adr-process)
   - [When to Create an ADR](#when-to-create-an-adr)
@@ -47,7 +46,6 @@
   - [Success Metrics](#success-metrics)
   - [Continuous Improvement](#continuous-improvement)
 - [Quick Reference](#quick-reference)
-
 <!-- TOC END -->
 
 ## Overview

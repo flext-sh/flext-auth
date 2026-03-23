@@ -1,7 +1,6 @@
 # Configuration
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [FlextAuthSettings](#flextauthsettings)
   - [Default Configuration](#default-configuration)
@@ -25,7 +24,6 @@
 - [Configuration Environments](#configuration-environments)
   - [Available Environments](#available-environments)
   - [Environment Detection](#environment-detection)
-
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025

@@ -1,7 +1,6 @@
 # Troubleshooting
 
 <!-- TOC START -->
-
 - [Authentication Issues](#authentication-issues)
   - [User Registration Failures](#user-registration-failures)
   - [Authentication Failures](#authentication-failures)
@@ -25,7 +24,6 @@
   - [Debug Mode](#debug-mode)
   - [Error Information](#error-information)
   - [Community Support](#community-support)
-
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025

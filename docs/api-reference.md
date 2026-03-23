@@ -1,7 +1,6 @@
 # API Reference
 
 <!-- TOC START -->
-
 - [Core API](#core-api)
   - [flext_auth_quick_start()](#flextauthquickstart)
 - [FlextAuth Service](#flextauth-service)
@@ -24,13 +23,12 @@
   - [Chaining Pattern](#chaining-pattern)
 - [Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
   - [Container Integration](#container-integration)
-  - [r Usage](#flextresult-usage)
+  - [r Usage](#r-usage)
 - [Security Considerations](#security-considerations)
   - [Password Security](#password-security)
   - [JWT Security](#jwt-security)
   - [Session Management](#session-management)
 - [Related Documentation](#related-documentation)
-
 <!-- TOC END -->
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
