@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -23,7 +23,7 @@ class FlextAuthSessionManagers:
             self._dispatcher: t.RegisterableService = (
                 FlextContainer.get_global().get("command_bus").unwrap()
             )
-            self._sessions: dict[str, t.Auth.Managers.SessionData] = {}
+            self._sessions: Mapping[str, t.Auth.Managers.SessionData] = {}
 
         def cleanup_expired_sessions(self) -> r[int]:
             cleaned_count = 0
@@ -99,8 +99,8 @@ class FlextAuthSessionManagers:
                 return r[bool].ok(value=True)
             return r[bool].fail("Session not found")
 
-        def get_active_sessions(self, user_id: str) -> r[list[m.Auth.Session]]:
-            sessions: list[m.Auth.Session] = []
+        def get_active_sessions(self, user_id: str) -> r[Sequence[m.Auth.Session]]:
+            sessions: Sequence[m.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 match identity_id_value:
@@ -128,7 +128,7 @@ class FlextAuthSessionManagers:
                         sessions.append(session)
                     case _:
                         pass
-            return r[list[m.Auth.Session]].ok(sessions)
+            return r[Sequence[m.Auth.Session]].ok(sessions)
 
         def get_total_active_sessions(self) -> int:
             return sum(

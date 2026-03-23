@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections import UserDict
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Annotated, ClassVar, Literal, Self
 
@@ -215,7 +215,7 @@ class FlextAuthModels(FlextApiModels):
             ]
             full_name: Annotated[str, Field(description="Full name")] = ""
             roles: Annotated[
-                list[str],
+                Sequence[str],
                 Field(
                     default_factory=lambda: ["user"],
                     description="Roles",
@@ -250,14 +250,14 @@ class FlextAuthModels(FlextApiModels):
             full_name: Annotated[str, Field(description="Full name")] = ""
             is_active: Annotated[bool, Field(description="Active status")] = True
             roles: Annotated[
-                list[str],
+                Sequence[str],
                 Field(
                     default_factory=lambda: ["user"],
                     description="Roles",
                 ),
             ]
             permissions: Annotated[
-                list[str],
+                Sequence[str],
                 Field(
                     default_factory=list,
                     description="Permissions",
@@ -392,7 +392,7 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             permissions: Annotated[
-                list[str],
+                Sequence[str],
                 Field(
                     default_factory=list,
                     description="Permissions",
@@ -495,7 +495,7 @@ class FlextAuthModels(FlextApiModels):
                 if "version" not in self:
                     self["version"] = "1.0.0"
                 if "capabilities" not in self:
-                    self["capabilities"] = list[str]()
+                    self["capabilities"] = Sequence[str]()
 
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value t.NormalizedValue)."""
@@ -515,7 +515,7 @@ class FlextAuthModels(FlextApiModels):
             key_hash: Annotated[str, Field(..., description="Hashed API key")]
             name: Annotated[str, Field(..., description="Key name")]
             permissions: Annotated[
-                list[str],
+                Sequence[str],
                 Field(
                     default_factory=list,
                     description="Key permissions",
@@ -647,7 +647,7 @@ class FlextAuthModels(FlextApiModels):
             status_code: Annotated[int, Field(..., description="HTTP status code")]
             body: Annotated[str, Field(default="", description="Response body")]
             headers: Annotated[
-                dict[str, str],
+                Mapping[str, str],
                 Field(
                     default_factory=dict,
                     description="Response headers",
@@ -678,7 +678,7 @@ class FlextAuthModels(FlextApiModels):
             """Protocol-conformant wrapper for config data."""
 
             category: Annotated[str, Field(description="Config category")]
-            data: Annotated[dict[str, t.Scalar], Field(description="Config data")]
+            data: Annotated[Mapping[str, t.Scalar], Field(description="Config data")]
 
         class MetadataWrapper(FlextApiModels.Value):
             """Protocol-conformant wrapper for metadata."""
@@ -727,9 +727,6 @@ class FlextAuthModels(FlextApiModels):
     OAuth2TokenResponse: type[Auth.OAuth2TokenResponse] = Auth.OAuth2TokenResponse
     KerberosTicketData: type[Auth.KerberosTicketData] = Auth.KerberosTicketData
 
-
-# Forward references resolved via from __future__ import annotations at module top
-# This architectural approach avoids runtime model_rebuild() calls
 
 # Short aliases
 m = FlextAuthModels

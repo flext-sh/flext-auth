@@ -16,7 +16,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Final, override
 
@@ -26,9 +26,9 @@ from pydantic import TypeAdapter, ValidationError
 from flext_auth import FlextAuthRfcProvider, m, t, u
 
 _DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.JsonObject]] = TypeAdapter(
-    dict[str, t.ContainerValue],
+    Mapping[str, t.ContainerValue],
 )
-_LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
+_LIST_STR_ADAPTER: Final[TypeAdapter[Sequence[str]]] = TypeAdapter(Sequence[str])
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -67,16 +67,16 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         self.ticket_validator = self._KerberosTicketValidator(self)
         self._service_handler = self._KerberosServiceHandler(self)
         self._auth_manager = self._KerberosAuthManager(self)
-        self._active_tickets: dict[str, m.Auth.KerberosTicketData] = {}
+        self._active_tickets: Mapping[str, m.Auth.KerberosTicketData] = {}
 
     @staticmethod
     def _to_scalar_config(
         config: Mapping[str, t.Scalar] | None,
-    ) -> dict[str, t.Primitives] | None:
+    ) -> Mapping[str, t.Primitives] | None:
         """Project provider config into RFC base scalar contract."""
         if config is None:
             return None
-        scalar_config: dict[str, t.Primitives] = {
+        scalar_config: Mapping[str, t.Primitives] = {
             key: value
             for key, value in config.items()
             if isinstance(value, (bool, int, str))
@@ -94,7 +94,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
             )
-        validations: list[tuple[str, tuple[type, ...], str]] = [
+        validations: Sequence[tuple[str, tuple[type, ...], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
             ("kdc", (str,), "Kerberos kdc must be a string"),
             (
@@ -304,7 +304,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = f"{identity_id}@kerberos.local"
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
-            parsed_roles: list[str]
+            parsed_roles: Sequence[str]
             try:
                 parsed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:

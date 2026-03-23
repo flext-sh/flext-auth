@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import override
 
@@ -113,11 +114,11 @@ class FlextAuthIdentityService(s[bool]):
         name: str,
         contact: str,
         credential: str,
-        roles: list[str] | None = None,
+        roles: Sequence[str] | None = None,
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
-            user_roles: list[str] = []
+            user_roles: Sequence[str] = []
         else:
             user_roles = roles
         normalized_contact = contact.lower()
@@ -129,7 +130,7 @@ class FlextAuthIdentityService(s[bool]):
                 roles=user_roles,
             )
         except ValidationError as e:
-            error_messages: list[str] = []
+            error_messages: Sequence[str] = []
             for error in e.errors():
                 field = (
                     error.get("loc", ("unknown",))[0] if error.get("loc") else "unknown"

@@ -143,7 +143,7 @@ class FlextAuthMiddleware(s[bool]):
             try:
                 headers_val = request.headers
                 if isinstance(headers_val, Mapping):
-                    mutable_headers: dict[str, str] = {
+                    mutable_headers: Mapping[str, str] = {
                         str(key): str(value) for key, value in headers_val.items()
                     }
                     mutable_headers["Authorization"] = (

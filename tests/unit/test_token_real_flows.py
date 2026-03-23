@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import override
 
@@ -22,7 +23,7 @@ class TestTokenRealFlows:
         """Mock HTTP request for middleware testing."""
 
         def __init__(self) -> None:
-            self.headers: dict[str, str] = {}
+            self.headers: Mapping[str, str] = {}
 
     class BaseProvider(FlextAuthBaseProvider):
         """Base token provider for flow tests."""
@@ -193,10 +194,10 @@ class TestTokenRealFlows:
         })
         call_count = {"count": 0}
 
-        def _fake_introspect(token: str) -> r[dict[str, str | bool]]:
+        def _fake_introspect(token: str) -> r[Mapping[str, str | bool]]:
             call_count["count"] += 1
             tm.that(token, eq="opaque-oauth2-token")
-            return r[dict[str, str | bool]].ok({
+            return r[Mapping[str, str | bool]].ok({
                 "active": True,
                 "sub": "oauth-user-123",
                 "username": "oauth-user",
@@ -223,8 +224,8 @@ class TestTokenRealFlows:
             "token_endpoint_auth_method": "client_secret_post",
         })
 
-        def _inactive_introspect(_token: str) -> r[dict[str, str | bool]]:
-            return r[dict[str, str | bool]].ok({"active": False})
+        def _inactive_introspect(_token: str) -> r[Mapping[str, str | bool]]:
+            return r[Mapping[str, str | bool]].ok({"active": False})
 
         monkeypatch.setattr(
             provider, "_introspect_token", _inactive_introspect, raising=False

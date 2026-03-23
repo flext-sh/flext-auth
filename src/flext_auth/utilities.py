@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
@@ -232,7 +232,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 expires_at: datetime | None = None,
             ) -> Mapping[str, t.Scalar]:
                 """Build a successful authentication response."""
-                response: dict[str, t.Scalar] = {
+                response: Mapping[str, t.Scalar] = {
                     "success": True,
                     "message": "Authentication successful",
                     "timestamp": datetime.now(UTC).isoformat(),
@@ -265,7 +265,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         """
         try:
-            algorithms_list: list[str]
+            algorithms_list: Sequence[str]
             if algorithms is None:
                 algorithms_list = [c.Auth.DEFAULT_JWT_ALGORITHM]
             else:

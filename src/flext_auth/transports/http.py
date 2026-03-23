@@ -21,8 +21,8 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import m, t
 
-_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
-    dict[str, t.Scalar],
+_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[Mapping[str, t.Scalar]]] = TypeAdapter(
+    Mapping[str, t.Scalar],
 )
 
 
@@ -140,7 +140,7 @@ class FlextWebTransportAdapter:
             ... )
 
         """
-        request_headers: dict[str, str] = dict(headers) if headers else {}
+        request_headers: Mapping[str, str] = dict(headers) if headers else {}
         if "Content-Type" not in request_headers:
             request_headers["Content-Type"] = "application/x-www-form-urlencoded"
         if auth:
@@ -187,7 +187,9 @@ class FlextWebTransportAdapter:
         r containing response data or error
 
         """
-        request_headers: dict[str, str] = dict(headers) if headers is not None else {}
+        request_headers: Mapping[str, str] = (
+            dict(headers) if headers is not None else {}
+        )
         request_timeout = timeout if timeout is not None else self._timeout
         resolved_body = self._resolve_body(method, data)
         resolved_query = self._resolve_query(method, data, query)

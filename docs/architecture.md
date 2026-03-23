@@ -260,7 +260,7 @@ class FlextAuthRegistry:
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-        config: dict[str, t.NormalizedValue] | None = None
+        config: Mapping[str, t.NormalizedValue] | None = None
     ) -> r[bool]
 
     def unregister(self, name: str) -> r[bool]
@@ -269,7 +269,7 @@ class FlextAuthRegistry:
 
     def list_providers(self) -> t.StringList
 
-    def discover_providers(self) -> dict[str, type[FlextAuthBaseProvider]]
+    def discover_providers(self) -> Mapping[str, type[FlextAuthBaseProvider]]
 
     def get_capabilities(self, name: str) -> r[set[str]]
 
@@ -308,7 +308,7 @@ class FlextAuthBaseProvider(Protocol):
         """Return set of supported capabilities."""
         ...
 
-    def get_metadata(self) -> dict[str, t.NormalizedValue]:
+    def get_metadata(self) -> Mapping[str, t.NormalizedValue]:
         """Return provider metadata."""
         ...
 ```
@@ -397,6 +397,8 @@ ______________________________________________________________________
 
 ```python
 from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
 from flext_core import FlextBus
 
 from flext_core import FlextSettings
@@ -489,7 +491,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         """Return provider capabilities."""
         return {"token", "validate", "refresh"}
 
-    def get_metadata(self) -> dict[str, t.NormalizedValue]:
+    def get_metadata(self) -> Mapping[str, t.NormalizedValue]:
         """Return provider metadata."""
         return {
             "name": "example",
@@ -513,7 +515,7 @@ class BaseTransportAdapter(Protocol):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict[str, t.NormalizedValue] | None = None,
+        metadata: Mapping[str, t.NormalizedValue] | None = None,
     ) -> r[t.Dict]:
         """Send authentication request over transport."""
         ...
@@ -522,12 +524,12 @@ class BaseTransportAdapter(Protocol):
         self,
         endpoint: str,
         token: str,
-        metadata: dict[str, t.NormalizedValue] | None = None,
+        metadata: Mapping[str, t.NormalizedValue] | None = None,
     ) -> r[t.Dict]:
         """Send token validation request over transport."""
         ...
 
-    def get_transport_metadata(self) -> dict[str, t.NormalizedValue]:
+    def get_transport_metadata(self) -> Mapping[str, t.NormalizedValue]:
         """Return transport metadata."""
         ...
 ```
@@ -563,7 +565,7 @@ from flext_core import u
 class FlextWebTransportAdapter(BaseTransportAdapter):
     """HTTP transport adapter using flext-api."""
 
-    def __init__(self, config: dict[str, t.NormalizedValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.NormalizedValue] | None = None) -> None:
         self._api = FlextApi(config=config)  # MANDATORY: Use flext-api
         self.logger = FlextLogger(__name__)
 
@@ -571,7 +573,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict[str, t.NormalizedValue] | None = None,
+        metadata: Mapping[str, t.NormalizedValue] | None = None,
     ) -> r[t.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(url=endpoint, json=credentials, headers=metadata)
@@ -613,7 +615,7 @@ from flext_core import u
 class GrpcTransportAdapter(BaseTransportAdapter):
     """gRPC transport adapter using flext-grpc."""
 
-    def __init__(self, config: dict[str, t.NormalizedValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.NormalizedValue] | None = None) -> None:
         self._grpc = FlextGrpc(config=config)  # MANDATORY: Use flext-grpc
         self.logger = FlextLogger(__name__)
 
@@ -621,7 +623,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict[str, t.NormalizedValue] | None = None,
+        metadata: Mapping[str, t.NormalizedValue] | None = None,
     ) -> r[t.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
@@ -643,7 +645,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 class WebSocketTransportAdapter(BaseTransportAdapter):
     """WebSocket transport adapter for real-time authentication."""
 
-    def __init__(self, config: dict[str, t.NormalizedValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.NormalizedValue] | None = None) -> None:
         self._config = config
         self.logger = FlextLogger(__name__)
 
@@ -651,7 +653,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict[str, t.NormalizedValue] | None = None,
+        metadata: Mapping[str, t.NormalizedValue] | None = None,
     ) -> r[t.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
@@ -669,7 +671,7 @@ class BaseProtocolHandler(Protocol):
     """Base protocol for protocol-specific handlers."""
 
     def format_auth_request(
-        self, credentials: dict, metadata: dict[str, t.NormalizedValue] | None = None
+        self, credentials: dict, metadata: Mapping[str, t.NormalizedValue] | None = None
     ) -> r[bytes | str]:
         """Format authentication request for protocol."""
         ...
@@ -686,7 +688,7 @@ class RestProtocolHandler(BaseProtocolHandler):
     """REST/JSON protocol handler (default)."""
 
     def format_auth_request(
-        self, credentials: dict, metadata: dict[str, t.NormalizedValue] | None = None
+        self, credentials: dict, metadata: Mapping[str, t.NormalizedValue] | None = None
     ) -> r[str]:
         """Format as JSON REST request."""
         import json
@@ -715,7 +717,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
     """SOAP/XML protocol handler (stub)."""
 
     def format_auth_request(
-        self, credentials: dict, metadata: dict[str, t.NormalizedValue] | None = None
+        self, credentials: dict, metadata: Mapping[str, t.NormalizedValue] | None = None
     ) -> r[str]:
         """Format as SOAP XML request."""
         # Implementation for SOAP envelope creation
@@ -777,7 +779,7 @@ class TokenManager:
         credentials: dict,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-        retry_on: list[type[Exception]] | None = None,
+        retry_on: Sequence[type[Exception]] | None = None,
     ) -> r[AuthToken]:
         """Get token with automatic retry on failure."""
         return self._retry.execute(
@@ -811,7 +813,7 @@ class RetryPolicy:
         func: Callable,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-        retry_on: list[type[Exception]] | None = None,
+        retry_on: Sequence[type[Exception]] | None = None,
         **kwargs,
     ) -> r[T]:
         """Execute function with retry logic."""
@@ -841,7 +843,7 @@ class TokenCache:
     def __init__(
         self,
         backend: str = "memory",  # "memory", "redis", "memcached"
-        config: dict[str, t.NormalizedValue] | None = None,
+        config: Mapping[str, t.NormalizedValue] | None = None,
     ) -> None:
         self._backend = self._create_backend(backend, config)
         self.logger = FlextLogger(__name__)
@@ -890,7 +892,7 @@ class CredentialManager:
         self,
         identifier: str,
         credential: dict,
-        metadata: dict[str, t.NormalizedValue] | None = None,
+        metadata: Mapping[str, t.NormalizedValue] | None = None,
     ) -> r[bool]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)

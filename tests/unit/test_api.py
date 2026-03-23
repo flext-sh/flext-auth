@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from threading import Thread
 from typing import override
@@ -40,7 +41,7 @@ class HttpRequest:
 
     def __init__(self) -> None:
         """Initialize with empty headers."""
-        self.headers: dict[str, str] = {}
+        self.headers: Mapping[str, str] = {}
 
 
 class TestFlextAuthServiceInitialization:
@@ -1016,7 +1017,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> dict[str, t.NormalizedValue]:
+        def create_test_user_data() -> Mapping[str, t.NormalizedValue]:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1026,7 +1027,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> dict[str, t.NormalizedValue]:
+        def create_test_auth_data() -> Mapping[str, t.NormalizedValue]:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1035,7 +1036,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> dict[str, t.NormalizedValue]:
+        def create_test_session_data() -> Mapping[str, t.NormalizedValue]:
             """Create test session data."""
             return {
                 "user_id": "user_123",
@@ -1365,14 +1366,14 @@ class TestAuthModule:
         def authenticate_user(index: int) -> None:
             _ = auth.authenticate_user(f"user_{index}", "Password123!")
 
-        threads: list[Thread] = []
+        threads: Sequence[Thread] = []
         for i in range(5):
             thread = threading.Thread(target=register_user, args=(i,))
             threads.append(thread)
             thread.start()
         for thread in threads:
             thread.join()
-        auth_threads: list[Thread] = []
+        auth_threads: Sequence[Thread] = []
         for i in range(5):
             thread = threading.Thread(target=authenticate_user, args=(i,))
             auth_threads.append(thread)
@@ -1560,7 +1561,7 @@ class TestProviderTokenFlows:
 
 
 def _build_identity_for_flow_tests(
-    *, identity_id: str, name: str, contact: str, roles: list[str]
+    *, identity_id: str, name: str, contact: str, roles: Sequence[str]
 ) -> m.Auth.AuthIdentity:
     return m.Auth.AuthIdentity(
         unique_id=identity_id,

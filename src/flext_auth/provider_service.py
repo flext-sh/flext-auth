@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import override
 
 from flext_core import r, s
@@ -48,9 +48,9 @@ class FlextAuthProviderService(s[bool]):
     @staticmethod
     def _build_provider_init_config(
         provider_config: Mapping[str, t.Scalar],
-    ) -> dict[str, t.Primitives]:
+    ) -> Mapping[str, t.Primitives]:
         """Normalize provider config to base-provider scalar contract."""
-        normalized: dict[str, t.Primitives] = {
+        normalized: Mapping[str, t.Primitives] = {
             key: value
             for key, value in provider_config.items()
             if isinstance(value, (bool, int, str))
@@ -111,7 +111,7 @@ class FlextAuthProviderService(s[bool]):
         """Get registered provider."""
         return self._providers.get(name)
 
-    def list_providers(self) -> list[str]:
+    def list_providers(self) -> Sequence[str]:
         """List registered provider names."""
         return self._providers.list_providers()
 
@@ -138,7 +138,7 @@ class FlextAuthProviderService(s[bool]):
             self.logger.error("Configuration is required for provider registration")
             return
         provider_config = self._auth_config.model_dump()
-        providers: list[
+        providers: Sequence[
             tuple[
                 t.Auth.Providers.Key,
                 type[p.Auth.FlextAuthBaseProvider],

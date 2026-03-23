@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import ClassVar, TypeGuard, override
 
 from flext_core import FlextRegistry, r
@@ -44,14 +44,14 @@ class FlextAuthRegistry(FlextRegistry):
         for name in self.list_providers():
             self.unregister(name)
 
-    def find_by_capability(self, capability: str) -> r[list[str]]:
+    def find_by_capability(self, capability: str) -> r[Sequence[str]]:
         """Find providers with specific capability."""
         matching = [
             name
             for name in self.list_providers()
             if self.has_capability(name, capability).value
         ]
-        return r[list[str]].ok(matching)
+        return r[Sequence[str]].ok(matching)
 
     @override
     def get(self, data: str) -> r[p.Auth.FlextAuthBaseProvider]:
@@ -154,7 +154,7 @@ class FlextAuthRegistry(FlextRegistry):
         result = self.get_plugin(self.PROVIDERS, name)
         return result.is_success
 
-    def list_providers(self) -> list[str]:
+    def list_providers(self) -> Sequence[str]:
         """List registered provider names."""
         result = self.list_plugins(self.PROVIDERS)
         if result.is_failure:

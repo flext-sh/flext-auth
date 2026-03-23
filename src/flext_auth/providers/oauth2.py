@@ -14,7 +14,7 @@ import hashlib
 import http.client
 import secrets
 from base64 import b64encode, urlsafe_b64encode
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Final, override
 from urllib.parse import urlencode, urlparse
@@ -24,10 +24,10 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthRfcProvider, c, m, p, t, u
 
-_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
-    dict[str, t.Scalar],
+_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[Mapping[str, t.Scalar]]] = TypeAdapter(
+    Mapping[str, t.Scalar],
 )
-_LIST_STR_ADAPTER: Final[TypeAdapter[list[str]]] = TypeAdapter(list[str])
+_LIST_STR_ADAPTER: Final[TypeAdapter[Sequence[str]]] = TypeAdapter(Sequence[str])
 _HTTP_BAD_REQUEST: Final[int] = 400
 
 
@@ -45,7 +45,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         Uses composition for better separation of concerns.
         """
         if isinstance(config, Mapping):
-            normalized_config: dict[str, t.Scalar] = dict(config)
+            normalized_config: Mapping[str, t.Scalar] = dict(config)
         else:
             normalized_config = dict(config.model_dump(exclude_none=True))
         super().__init__(self._to_scalar_config(normalized_config))
@@ -80,13 +80,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._flow = self._init_flow()
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
-        self._pkce_verifiers: dict[str, str] = {}
+        self._pkce_verifiers: Mapping[str, str] = {}
         self._http_client: http.client.HTTPSConnection | None = None
 
     @staticmethod
-    def _to_scalar_config(config: Mapping[str, t.Scalar]) -> dict[str, t.Primitives]:
+    def _to_scalar_config(config: Mapping[str, t.Scalar]) -> Mapping[str, t.Primitives]:
         """Project OAuth2 config to RFC base scalar contract."""
-        scalar_config: dict[str, t.Primitives] = {
+        scalar_config: Mapping[str, t.Primitives] = {
             key: value
             for key, value in config.items()
             if isinstance(value, (bool, int, str))
@@ -198,7 +198,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required OAuth2 configuration fields: {fields_str}",
             )
-        validations: list[tuple[str, tuple[type, ...], str]] = [
+        validations: Sequence[tuple[str, tuple[type, ...], str]] = [
             ("client_id", (str,), "OAuth2 client_id must be a string"),
             (
                 "client_secret",
@@ -380,7 +380,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def __init__(self) -> None:
             """Initialize PKCE manager."""
-            self._verifiers: dict[str, str] = {}
+            self._verifiers: Mapping[str, str] = {}
 
         def clear_verifier(self, state: str) -> None:
             """Clear stored PKCE code verifier."""
@@ -400,7 +400,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         credentials: m.Auth.CredentialValidation | Mapping[str, t.Scalar],
     ) -> r[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
-        credential_payload: dict[str, t.Scalar]
+        credential_payload: Mapping[str, t.Scalar]
         if isinstance(credentials, Mapping):
             credential_payload = dict(credentials)
         else:
@@ -570,7 +570,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _build_introspection_form_data(self, token: str) -> r[str]:
         if not token.strip():
             return r[str].fail("OAuth2 token must be a non-empty string")
-        form_payload: dict[str, str] = {
+        form_payload: Mapping[str, str] = {
             "token": token,
             "token_type_hint": "access_token",
         }
@@ -599,27 +599,27 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
         return r[str].ok(urlencode(form_payload))
 
-    def _build_introspection_headers(self) -> r[dict[str, str]]:
+    def _build_introspection_headers(self) -> r[Mapping[str, str]]:
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/x-www-form-urlencoded",
         }
         auth_method = self._token_endpoint_auth_method
         if auth_method != "client_secret_basic":
-            return r[dict[str, str]].ok(headers)
+            return r[Mapping[str, str]].ok(headers)
         client_id = self.get_client_id()
         client_secret_value = self._config.get("client_secret")
         client_secret = (
             client_secret_value if isinstance(client_secret_value, str) else ""
         )
         if not client_id or not client_secret:
-            return r[dict[str, str]].fail(
+            return r[Mapping[str, str]].fail(
                 "OAuth2 client_id and client_secret are required for client_secret_basic",
             )
         auth_input = f"{client_id}:{client_secret}".encode()
         encoded_auth = b64encode(auth_input).decode("ascii")
         headers["Authorization"] = f"Basic {encoded_auth}"
-        return r[dict[str, str]].ok(headers)
+        return r[Mapping[str, str]].ok(headers)
 
     def _introspect_token(self, token: str) -> r[Mapping[str, t.Scalar]]:
         endpoint_result = self._introspection_endpoint()
@@ -671,7 +671,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
             return r[Mapping[str, t.Scalar]].fail(error_message)
         try:
-            parsed_mapping: dict[str, t.Scalar] = (
+            parsed_mapping: Mapping[str, t.Scalar] = (
                 _DICT_STR_SCALAR_ADAPTER.validate_json(response_payload)
             )
         except (ValueError, ValidationError) as exc:
@@ -726,7 +726,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         roles_value = payload.get("roles")
         if isinstance(roles_value, list):
-            typed_roles: list[str]
+            typed_roles: Sequence[str]
             try:
                 typed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:

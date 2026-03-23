@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Protocol, override, runtime_checkable
 
@@ -70,7 +70,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             "Contact information (e.g., email)."
             is_active: bool
             "Active status."
-            roles: list[str]
+            roles: Sequence[str]
             "Identity roles."
             failed_attempts: int
             "Failed login attempts count."
@@ -251,7 +251,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 email: str,
                 password: str,
                 full_name: str | None = None,
-                roles: list[str] | None = None,
+                roles: Sequence[str] | None = None,
             ) -> FlextApiProtocols.Result[FlextAuthProtocols.Auth.Identity]:
                 """Register new user.
 
@@ -263,7 +263,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         class RequestWithHeaders(Protocol):
             """Protocol for request-like objects with a headers attribute."""
 
-            headers: dict[str, str]
+            headers: Mapping[str, str]
 
         class FlextAuthBaseProvider(Protocol):
             """Base protocol for all authentication providers.
@@ -331,13 +331,13 @@ class FlextAuthProtocols(FlextApiProtocols):
                 if isinstance(value, datetime):
                     return value.isoformat()
                 if isinstance(value, (list, tuple)):
-                    normalized_items: list[t.ContainerValue] = []
+                    normalized_items: Sequence[t.ContainerValue] = []
                     for item in value:
                         normalized_item = cls._normalize_claim_value(item)
                         if normalized_item is not None:
                             normalized_items.append(normalized_item)
                     return normalized_items
-                normalized_mapping: dict[str, t.ContainerValue] = {}
+                normalized_mapping: Mapping[str, t.ContainerValue] = {}
                 for key, item in value.items():
                     normalized_item = cls._normalize_claim_value(item)
                     if normalized_item is not None:
@@ -414,7 +414,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                         else f"{identity_id}@local"
                     )
                 roles_value = payload.get("roles")
-                user_roles: list[str]
+                user_roles: Sequence[str]
                 if isinstance(roles_value, list):
                     user_roles = [
                         role for role in roles_value if isinstance(role, str) and role
@@ -422,7 +422,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 else:
                     user_roles = []
                 now = datetime.now(UTC)
-                claims: dict[str, t.ContainerValue] = {}
+                claims: Mapping[str, t.ContainerValue] = {}
                 reserved_claims = {
                     "sub",
                     "identity_id",
@@ -447,7 +447,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 claims["identity_id"] = identity_id
                 claims["name"] = name
                 claims["email"] = contact
-                roles_claim: list[t.ContainerValue] = list(user_roles)
+                roles_claim: Sequence[t.ContainerValue] = list(user_roles)
                 claims["roles"] = roles_claim
                 claims["token_type"] = token_kind or "access"
                 claims["iat"] = int(now.timestamp())
@@ -769,9 +769,9 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...         self,
                 ...         url: str,
                 ...         method: str = "POST",
-                ...         data: dict[str, t.Scalar] | None = None,
-                ...         headers: dict[str, str] | None = None,
-                ...     ) -> r[dict[str, t.Scalar]]:
+                ...         data: Mapping[str, t.Scalar] | None = None,
+                ...         headers: Mapping[str, str] | None = None,
+                ...     ) -> r[Mapping[str, t.Scalar]]:
                 ...         # HTTP-specific implementation
                 ...         pass
 

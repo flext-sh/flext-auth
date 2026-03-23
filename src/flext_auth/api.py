@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import ClassVar, Self
 
 from flext_core import FlextContainer, FlextLogger, r
@@ -277,11 +277,11 @@ class FlextAuth:
         """Get identity by username - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user_by_username(username)
 
-    def get_user_sessions(self, user_id: str) -> r[list[m.Auth.Session]]:
+    def get_user_sessions(self, user_id: str) -> r[Sequence[m.Auth.Session]]:
         """Get user sessions."""
         return self._session_service.session_manager.get_active_sessions(user_id)
 
-    def list_providers(self) -> list[str]:
+    def list_providers(self) -> Sequence[str]:
         """Provider listing."""
         return self._registry.list_providers()
 
@@ -302,9 +302,9 @@ class FlextAuth:
         username: str,
         email: str,
         password: str,
-        roles: list[str] | None = None,
+        roles: Sequence[str] | None = None,
         role: str | None = None,
-        **kwargs: str | int | bool | list[str] | None,
+        **kwargs: str | int | bool | Sequence[str] | None,
     ) -> r[m.Auth.AuthIdentity]:
         """Register a new user.
 
@@ -354,7 +354,7 @@ class FlextAuth:
     def update_user(
         self,
         user_id: str,
-        **updates: str | int | bool | list[str] | None,
+        **updates: str | int | bool | Sequence[str] | None,
     ) -> r[m.Auth.AuthIdentity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)

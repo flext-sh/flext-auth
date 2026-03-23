@@ -239,7 +239,7 @@ def login(username: str, password: str):
 
 @app.get("/protected")
 @flext_auth_required(auth_service=auth)
-def protected_endpoint(current_user: dict[str, t.NormalizedValue] = Depends()):
+def protected_endpoint(current_user: Mapping[str, t.NormalizedValue] = Depends()):
     return {"user": current_user}
 ```
 

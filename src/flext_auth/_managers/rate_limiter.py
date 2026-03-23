@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -21,7 +21,7 @@ class FlextAuthRateLimiterManagers:
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._registry = FlextRegistry(dispatcher=dispatcher)
-            self._attempts: dict[str, t.Auth.Managers.AttemptData] = {}
+            self._attempts: Mapping[str, t.Auth.Managers.AttemptData] = {}
             self._max_attempts = 5
             self._window_minutes = 15
 
@@ -45,7 +45,7 @@ class FlextAuthRateLimiterManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
-            attempts_list: list[t.ContainerValue]
+            attempts_list: Sequence[t.ContainerValue]
             if isinstance(attempts_raw, list):
                 attempts_list = []
                 for attempt in attempts_raw:
@@ -60,7 +60,7 @@ class FlextAuthRateLimiterManagers:
 
         def _cleanup_window(
             self, username: str, now: datetime
-        ) -> list[t.ContainerValue]:
+        ) -> Sequence[t.ContainerValue]:
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)
             if not isinstance(attempt_data, Mapping):
@@ -68,7 +68,7 @@ class FlextAuthRateLimiterManagers:
             attempts_value = attempt_data.get("attempts")
             if not isinstance(attempts_value, list):
                 return []
-            recent_attempts: list[t.ContainerValue] = [
+            recent_attempts: Sequence[t.ContainerValue] = [
                 attempt
                 for attempt in attempts_value
                 if isinstance(attempt, datetime) and attempt > window_start

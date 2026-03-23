@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -78,7 +78,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         _config: FlextAuthSettings
         logger: p.Logger
         _context: p.Context
-        _users: dict[str, t.Auth.Managers.UserData]
+        _users: Mapping[str, t.Auth.Managers.UserData]
 
         def __init__(self, config: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
@@ -106,7 +106,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str,
             email: str,
             password_hash: str,
-            **extra_fields: str | int | bool | list[str] | datetime | None,
+            **extra_fields: str | int | bool | Sequence[str] | datetime | None,
         ) -> r[m.Auth.AuthIdentity]:
             """Create a new user."""
             if username in self._users:
@@ -128,8 +128,8 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             credential_hash: str = str(password_hash)
             full_name: str = ""
             is_active: bool = True
-            roles: list[str] = []
-            permissions: list[str] = []
+            roles: Sequence[str] = []
+            permissions: Sequence[str] = []
             failed_attempts: int = 0
             locked_until: datetime = datetime.min.replace(tzinfo=UTC)
             last_access: datetime = datetime.min.replace(tzinfo=UTC)
@@ -269,7 +269,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def update_user(
             self,
             user_id: str,
-            **updates: str | int | bool | list[str] | datetime | None,
+            **updates: str | int | bool | Sequence[str] | datetime | None,
         ) -> r[m.Auth.AuthIdentity]:
             """Update user data."""
             return self._find_user_by_id(user_id).map(
@@ -333,8 +333,8 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             is_active = self._validate_required_field(storage_data, "is_active", bool)
             roles_raw = storage_data.get("roles", [])
             permissions_raw = storage_data.get("permissions", [])
-            roles: list[str] = []
-            permissions: list[str] = []
+            roles: Sequence[str] = []
+            permissions: Sequence[str] = []
             if u.is_list(roles_raw):
                 roles = [role for role in roles_raw if isinstance(role, str)]
             if u.is_list(permissions_raw):
@@ -422,11 +422,11 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, dict[str, t.ContainerValue]]].ok((
+                    return r[tuple[str, Mapping[str, t.ContainerValue]]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, dict[str, t.ContainerValue]]].fail("User not found")
+            return r[tuple[str, Mapping[str, t.ContainerValue]]].fail("User not found")
 
         def _modify_user_list_field(
             self,
@@ -491,7 +491,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._logs: list[t.Auth.Managers.LogEntry] = []
+            self._logs: Sequence[t.Auth.Managers.LogEntry] = []
 
         def get_logs(
             self,
@@ -500,9 +500,9 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> r[list[Mapping[str, t.ContainerValue]]]:
+        ) -> r[Sequence[Mapping[str, t.ContainerValue]]]:
             """Get audit logs with optional filtering."""
-            filtered_logs: list[Mapping[str, t.ContainerValue]] = []
+            filtered_logs: Sequence[Mapping[str, t.ContainerValue]] = []
             for log in self._logs:
                 if user_id is not None:
                     username_value = log.get("username")
@@ -541,7 +541,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                     ):
                         continue
                 filtered_logs.append(log)
-            return r[list[t.ContainerValue]].ok(filtered_logs[-limit:])
+            return r[Sequence[t.ContainerValue]].ok(filtered_logs[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""
@@ -552,7 +552,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str,
             provider: str,
             reason: str,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log failed authentication."""
             self.log_event(
@@ -567,7 +567,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             self,
             username: str,
             provider: str,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log successful authentication."""
             self.log_event(
@@ -584,7 +584,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             action: str,
             *,
             allowed: bool,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log authorization check."""
             event_type = (
@@ -603,7 +603,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_event(
             self,
             event_type: str,
-            **data: str | int | bool | list[str] | datetime | None,
+            **data: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Generic event logging - single method replaces 11 specific methods.
 
@@ -617,7 +617,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             self,
             username: str,
             reason: str,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log failed password change."""
             self.log_event(
@@ -630,7 +630,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_password_change_success(
             self,
             username: str,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log successful password change."""
             self.log_event(
@@ -642,7 +642,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_password_reset(
             self,
             username: str,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log password reset."""
             self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
@@ -653,7 +653,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             token_type: str | None = None,
             *,
             success: bool = True,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log token creation attempt."""
             event_type = (
@@ -668,7 +668,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str | None = None,
             *,
             success: bool = True,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log token refresh attempt."""
             event_type = (
@@ -683,7 +683,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str | None = None,
             *,
             success: bool = True,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log token validation attempt."""
             event_type = (
@@ -696,7 +696,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_user_logout(
             self,
             username: str,
-            **extra: str | int | bool | list[str] | datetime | None,
+            **extra: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log user logout."""
             self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
@@ -704,7 +704,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def _log_event(
             self,
             event_type: str,
-            **data: str | int | bool | list[str] | datetime | None,
+            **data: str | int | bool | Sequence[str] | datetime | None,
         ) -> None:
             """Log an audit event."""
             log_entry: t.Auth.Managers.LogEntry = {

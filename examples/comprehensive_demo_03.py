@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 import secrets
 import string
+from collections.abc import Sequence
 
 from flext_auth import (
     FlextAuth,
@@ -99,7 +100,7 @@ def demo_user_management() -> None:
         ("regular_user", "regular@example.com", "RegularPass123!", ["user"]),
         ("guest_user", "guest@example.com", "GuestPass123!", ["guest"]),
     ]
-    registered_users: list[FlextAuthModels.Auth.AuthIdentity] = []
+    registered_users: Sequence[FlextAuthModels.Auth.AuthIdentity] = []
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
         if result.is_success:
