@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -23,7 +23,7 @@ class FlextAuthSessionManagers:
             self._dispatcher: t.RegisterableService = (
                 FlextContainer.get_global().get("command_bus").unwrap()
             )
-            self._sessions: Mapping[str, t.Auth.Managers.SessionData] = {}
+            self._sessions: MutableMapping[str, t.Auth.Managers.SessionData] = {}
 
         def cleanup_expired_sessions(self) -> r[int]:
             cleaned_count = 0
@@ -100,7 +100,7 @@ class FlextAuthSessionManagers:
             return r[bool].fail("Session not found")
 
         def get_active_sessions(self, user_id: str) -> r[Sequence[m.Auth.Session]]:
-            sessions: Sequence[m.Auth.Session] = []
+            sessions: MutableSequence[m.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 match identity_id_value:

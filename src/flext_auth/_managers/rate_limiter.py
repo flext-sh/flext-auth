@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -21,7 +21,7 @@ class FlextAuthRateLimiterManagers:
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._registry = FlextRegistry(dispatcher=dispatcher)
-            self._attempts: Mapping[str, t.Auth.Managers.AttemptData] = {}
+            self._attempts: MutableMapping[str, t.Auth.Managers.AttemptData] = {}
             self._max_attempts = 5
             self._window_minutes = 15
 
@@ -45,7 +45,7 @@ class FlextAuthRateLimiterManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
-            attempts_list: Sequence[t.ContainerValue]
+            attempts_list: MutableSequence[t.ContainerValue]
             if isinstance(attempts_raw, list):
                 attempts_list = []
                 for attempt in attempts_raw:
@@ -53,7 +53,7 @@ class FlextAuthRateLimiterManagers:
                         attempts_list.append(attempt)
             else:
                 attempts_list = []
-                self._attempts[username]["attempts"] = attempts_list
+                self._attempts[username]["attempts"] = attempts_list  # type: ignore[reportIndexIssue]
             attempts_list.append(now)
             recent_attempts = self._cleanup_window(username, now)
             self._attempts[username]["attempts"] = recent_attempts
