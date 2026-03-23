@@ -7,9 +7,13 @@ import pytest
 from flext_core import r
 from flext_tests import tm
 
-from flext_auth import FlextAuthMiddleware, m, p
-from flext_auth.protocols import FlextAuthBaseProvider
-from flext_auth.providers.kerberos import FlextAuthKerberosProvider
+from flext_auth import (
+    FlextAuthBaseProvider,
+    FlextAuthKerberosProvider,
+    FlextAuthMiddleware,
+    m,
+    p,
+)
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 
 

@@ -17,8 +17,7 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import m, p, t
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth import FlextAuthProviderMixin, m, p, t
 
 
 class FlextAuthRfcProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin):

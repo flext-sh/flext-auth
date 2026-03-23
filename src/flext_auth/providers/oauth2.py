@@ -22,8 +22,7 @@ from urllib.parse import urlencode, urlparse
 from flext_core import e, r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_auth import c, m, p, t, u
-from flext_auth.providers import FlextAuthRfcProvider
+from flext_auth import FlextAuthRfcProvider, c, m, p, t, u
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[dict[str, t.Scalar]]] = TypeAdapter(
     dict[str, t.Scalar],

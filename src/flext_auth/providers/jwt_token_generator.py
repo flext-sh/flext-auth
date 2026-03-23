@@ -16,8 +16,7 @@ from datetime import UTC, datetime, timedelta
 import jwt
 from flext_core import r
 
-from flext_auth import t
-from flext_auth.providers import FlextAuthJwtProvider
+from flext_auth import FlextAuthJwtProvider, t
 
 
 class FlextAuthJwtTokenGenerator:

@@ -15,8 +15,7 @@ from collections.abc import Mapping
 import jwt
 from flext_core import r
 
-from flext_auth import t
-from flext_auth.providers import FlextAuthJwtProvider
+from flext_auth import FlextAuthJwtProvider, t
 
 
 class FlextAuthJwtTokenValidator:

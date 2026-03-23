@@ -10,8 +10,7 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import m, p
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth import FlextAuthProviderMixin, m, p
 
 
 class FlextAuthLdapProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin):

@@ -23,8 +23,7 @@ from typing import Final, override
 from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
-from flext_auth import m, t, u
-from flext_auth.providers import FlextAuthRfcProvider
+from flext_auth import FlextAuthRfcProvider, m, t, u
 
 _DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.JsonObject]] = TypeAdapter(
     dict[str, t.ContainerValue],

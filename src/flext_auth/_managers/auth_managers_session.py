@@ -7,8 +7,7 @@ from uuid import uuid4
 
 from flext_core import FlextContainer, FlextContext, FlextLogger, r
 
-from flext_auth import t
-from flext_auth.models import m
+from flext_auth import m, t
 
 if TYPE_CHECKING:
     from flext_auth import FlextAuthSettings

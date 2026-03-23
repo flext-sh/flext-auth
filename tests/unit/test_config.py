@@ -10,8 +10,11 @@ from __future__ import annotations
 
 from flext_tests import tm
 
-from flext_auth import FlextAuthJwtProvider, FlextAuthSettings
-from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
+from flext_auth import (
+    FlextAuthJwtProvider,
+    FlextAuthJwtTokenGenerator,
+    FlextAuthSettings,
+)
 
 
 def _require_settings() -> FlextAuthSettings:

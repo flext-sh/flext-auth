@@ -24,14 +24,14 @@ from tests import t
 
 from flext_auth import (
     FlextAuth,
+    FlextAuthBaseProvider,
+    FlextAuthKerberosProvider,
     FlextAuthMiddleware,
     FlextAuthSettings,
     c,
     m,
     p,
 )
-from flext_auth.protocols import FlextAuthBaseProvider
-from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 
 

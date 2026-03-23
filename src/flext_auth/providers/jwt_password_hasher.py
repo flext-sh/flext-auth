@@ -13,8 +13,7 @@ from __future__ import annotations
 import bcrypt
 from flext_core import r
 
-from flext_auth import u
-from flext_auth.providers import FlextAuthJwtProvider
+from flext_auth import FlextAuthJwtProvider, u
 
 
 class FlextAuthPasswordHasher:

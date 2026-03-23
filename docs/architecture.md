@@ -439,7 +439,7 @@ from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth import FlextAuthBaseProvider
 from flext_auth import FlextAuthModels
 
 
