@@ -461,6 +461,7 @@ split-on-trailing-comma = true
   "D107",
   "F822",
   "N999",
+  "PLC2701",  # __init__.py re-exports from private submodules within own package
   "RUF067",
 ]
 "**/_utilities/parser.py" = [
