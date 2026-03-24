@@ -140,7 +140,7 @@ def authenticate_user(username: str, password: str) -> r[t.Dict]:
 
 
 # ❌ Incorrect - Don't use exceptions for business logic
-def authenticate_user(username: str, password: str) -> Mapping[str, t.NormalizedValue]:
+def authenticate_user(username: str, password: str) -> t.ContainerMapping:
     if not username:
         raise ValueError("Username required")
 

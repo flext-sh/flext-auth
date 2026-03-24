@@ -85,7 +85,7 @@ class TestFlextAuthProcessorRegistration:
         )
         tm.that(result_valid.is_success, eq=True)
         result_short = auth.register_user("ab", "test2@example.com", "ValidPass123!")
-        tm.that(result_short.is_success, eq=False)
+        tm.that(not result_short.is_success, eq=True)
         tm.that(result_short.error, none=False)
 
     def test_email_normalization_processor(self) -> None:
@@ -102,7 +102,7 @@ class TestFlextAuthProcessorRegistration:
         """Test password strength validation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.register_user("user1", "user1@example.com", "weak")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(result.error, none=False)
         error_text = (result.error or "").lower()
         tm.that(
@@ -231,9 +231,9 @@ class TestFlextAuthSessionManagement:
         sessions_result = auth.get_user_sessions(user.unique_id)
         tm.that(sessions_result.is_success, eq=True)
         sessions = sessions_result.value
-        tm.that(sessions, eq=False)
+        tm.that(not sessions, eq=True)
         revoke_result = auth.revoke_session("nonexistent_session_id")
-        tm.that(revoke_result.is_success, eq=False)
+        tm.that(not revoke_result.is_success, eq=True)
 
 
 class TestFlextAuthTokenOperations:
@@ -247,7 +247,7 @@ class TestFlextAuthTokenOperations:
         tm.that(user_result.is_success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_validate_token_with_bearer_prefix(self) -> None:
@@ -259,9 +259,9 @@ class TestFlextAuthTokenOperations:
         tm.that(register_result.is_success, eq=True)
         identity = register_result.value
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         validate_result = auth.validate_token("any.fake.token")
-        tm.that(validate_result.is_success, eq=False)
+        tm.that(not validate_result.is_success, eq=True)
 
 
 class TestFlextAuthErrorHandling:
@@ -272,7 +272,7 @@ class TestFlextAuthErrorHandling:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("dupuser", "dup@example.com", "DupPass123!")
         result = auth.register_user("dupuser", "dup2@example.com", "DupPass123!")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(
             result.error is not None and "already exists" in result.error.lower(),
             eq=True,
@@ -283,13 +283,13 @@ class TestFlextAuthErrorHandling:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("authuser", "auth@example.com", "AuthPass123!")
         result = auth.authenticate_user("authuser", "WrongPassword123!")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
 
     def test_get_nonexistent_user(self) -> None:
         """Test retrieving non-existent user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.get_user_by_username("nonexistent")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(result.error, none=False)
         tm.that((result.error or "").lower(), has="not found")
 
@@ -424,8 +424,8 @@ class TestFlextAuth:
         username = "testuser"
         auth.register_user(username, "test@example.com", "CorrectPassword123!")
         failed_auth = auth.authenticate_user(username, "WrongPassword123!")
-        tm.that(failed_auth.is_success, eq=False)
-        tm.that(failed_auth.is_success, eq=False)
+        tm.that(not failed_auth.is_success, eq=True)
+        tm.that(not failed_auth.is_success, eq=True)
         tm.that((failed_auth.error or ""), has="Invalid credentials")
 
     def test_token_validation_valid_token(self) -> None:
@@ -441,14 +441,14 @@ class TestFlextAuth:
         authenticated_identity = auth_result.value
         tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_token_validation_invalid_token(self) -> None:
         """Test validation of invalid token — fails with 'not implemented'."""
         auth: FlextAuth = FlextAuth()
         invalid_result = auth.validate_token("invalid.token.here")
-        tm.that(invalid_result.is_success, eq=False)
+        tm.that(not invalid_result.is_success, eq=True)
         tm.that(invalid_result.error, none=False)
 
     def test_token_validation_bearer_prefix(self) -> None:
@@ -462,7 +462,7 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user(username, password)
         tm.that(auth_result.is_success, eq=True)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_session_management(self) -> None:
@@ -556,9 +556,9 @@ class TestFlextAuthSecurity:
         auth.register_user(username, "lock@example.com", password)
         for _ in range(c.Auth.MAX_ATTEMPTS_DEFAULT):
             failed_auth = auth.authenticate_user(username, "wrong_password")
-            tm.that(failed_auth.is_success, eq=False)
+            tm.that(not failed_auth.is_success, eq=True)
         locked_auth = auth.authenticate_user(username, password)
-        tm.that(locked_auth.is_success, eq=False)
+        tm.that(not locked_auth.is_success, eq=True)
         tm.that(
             (
                 "locked" in (locked_auth.error or "").lower()
@@ -571,7 +571,7 @@ class TestFlextAuthSecurity:
         """Test password strength requirements."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("weakuser", "weak@example.com", "weak")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(result.error, none=False)
 
 
@@ -582,31 +582,31 @@ class TestFlextAuthErrorHandlingSecond:
         """Test registration with empty username."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("", "empty@example.com", "Password123!")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
 
     def test_empty_email_registration(self) -> None:
         """Test registration with empty email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "", "Password123!")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
 
     def test_empty_password_registration(self) -> None:
         """Test registration with empty password."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "test@example.com", "")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
 
     def test_invalid_email_registration(self) -> None:
         """Test registration with invalid email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "invalid-email", "Password123!")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
 
     def test_nonexistent_user_authentication(self) -> None:
         """Test authentication of non-existent user."""
         auth: FlextAuth = FlextAuth()
         auth_result = auth.authenticate_user("nonexistent", "password")
-        tm.that(auth_result.is_success, eq=False)
+        tm.that(not auth_result.is_success, eq=True)
         tm.that(auth_result.error, none=False)
         tm.that(auth_result.error or "", eq=True)
 
@@ -614,8 +614,8 @@ class TestFlextAuthErrorHandlingSecond:
         """Test logout with invalid session ID."""
         auth: FlextAuth = FlextAuth()
         logout_result = auth.logout_user("invalid_session_id")
-        tm.that(logout_result.is_success, eq=False)
-        tm.that(logout_result.is_success, eq=False)
+        tm.that(not logout_result.is_success, eq=True)
+        tm.that(not logout_result.is_success, eq=True)
         tm.that((logout_result.error or ""), has="Session not found")
 
 
@@ -634,7 +634,7 @@ class TestFlextAuthQuickStartFunction:
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
         nonexistent_result = auth.get_user_by_username("nonexistent_user")
-        tm.that(nonexistent_result.is_success, eq=False)
+        tm.that(not nonexistent_result.is_success, eq=True)
         tm.that(nonexistent_result.error, none=False)
         tm.that((nonexistent_result.error or "").lower(), has="not found")
 
@@ -690,7 +690,7 @@ class TestFlextAuthErrorPaths:
             email="invalid-email-format",
             password="ValidPassword123!",
         )
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         error_msg = result.error or ""
         tm.that(
             (
@@ -707,18 +707,18 @@ class TestFlextAuthErrorPaths:
         result = auth.authenticate_user(
             username="nonexistent_user", password="any_password"
         )
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(result.error, is_=str)
 
     def test_validate_token_invalid_cases(self) -> None:
         """Test token validation with invalid tokens."""
         auth = FlextAuth()
         result = auth.validate_token("invalid.malformed.token")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         result = auth.validate_token("")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         result = auth.validate_token("invalid.token.format")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
 
 
 class TestFlextAuthPasswordMethods:
@@ -789,7 +789,7 @@ class TestFlextAuthTokenMethods:
         tm.that(user_result.is_success, eq=True)
         user = user_result.value
         result = auth.create_token(identity_id=user.unique_id)
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(result.error, none=False)
 
     def test_generate_token_alternative_method(self) -> None:
@@ -803,7 +803,7 @@ class TestFlextAuthTokenMethods:
         auth_result = auth.authenticate_user("testuser", "TestPassword123!")
         tm.that(auth_result.is_success, eq=True)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_validate_token_success_path(self) -> None:
@@ -819,9 +819,9 @@ class TestFlextAuthTokenMethods:
         authenticated_identity = auth_result.value
         tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         val_result = auth.validate_token("any.fake.token")
-        tm.that(val_result.is_success, eq=False)
+        tm.that(not val_result.is_success, eq=True)
 
 
 class TestFlextAuthUserMethods:
@@ -865,7 +865,7 @@ class TestFlextAuthUserMethods:
         tm.that(user_result.is_success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         get_result = auth.get_user(user.unique_id)
         tm.that(get_result.is_success, eq=True)
 
@@ -952,7 +952,7 @@ class TestFlextAuthErrorHandlingPaths:
             failed_result = auth.authenticate_user(
                 username="lockable_user", password="wrong_password"
             )
-            tm.that(failed_result.is_success, eq=False)
+            tm.that(not failed_result.is_success, eq=True)
 
     def test_token_expiry_edge_cases(self) -> None:
         """Test that token creation fails — JWT provider not implemented."""
@@ -963,7 +963,7 @@ class TestFlextAuthErrorHandlingPaths:
         tm.that(user_result.is_success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_invalid_user_operations(self) -> None:
@@ -971,15 +971,15 @@ class TestFlextAuthErrorHandlingPaths:
         auth = FlextAuth()
         invalid_user_id = "nonexistent_user_id"
         get_result = auth.get_user(invalid_user_id)
-        tm.that(get_result.is_success, eq=False)
+        tm.that(not get_result.is_success, eq=True)
         tm.that(get_result.error, none=False)
         tm.that((get_result.error or "").lower(), has="not found")
         username_result = auth.get_user_by_username("nonexistent_username")
-        tm.that(username_result.is_success, eq=False)
+        tm.that(not username_result.is_success, eq=True)
         tm.that(username_result.error, none=False)
         tm.that((username_result.error or "").lower(), has="not found")
         logout_result = auth.logout_user(invalid_user_id)
-        tm.that(logout_result.is_success, eq=False)
+        tm.that(not logout_result.is_success, eq=True)
 
 
 class TestFlextAuthAdditionalCoverage:
@@ -1004,7 +1004,7 @@ class TestFlextAuthAdditionalCoverage:
         """Test validate_token with invalid token — fails with 'not implemented'."""
         auth = FlextAuth()
         result = auth.validate_token("invalid_token")
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(result.error, none=False)
 
 
@@ -1015,7 +1015,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> Mapping[str, t.NormalizedValue]:
+        def create_test_user_data() -> t.ContainerMapping:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1025,7 +1025,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> Mapping[str, t.NormalizedValue]:
+        def create_test_auth_data() -> t.ContainerMapping:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1034,7 +1034,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> Mapping[str, t.NormalizedValue]:
+        def create_test_session_data() -> t.ContainerMapping:
             """Create test session data."""
             return {
                 "user_id": "user_123",
@@ -1113,7 +1113,7 @@ class TestAuthModule:
         identity = auth_result.value
         tm.that(identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_flext_auth_get_user_sessions(self) -> None:
@@ -1153,7 +1153,7 @@ class TestAuthModule:
         identity = auth_result.value
         tm.that(identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         result = auth.get_user(identity.unique_id)
         tm.that(result, is_=r)
         tm.that(result.is_success, eq=True)
@@ -1203,7 +1203,7 @@ class TestAuthModule:
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_flext_auth_error_handling(self) -> None:
@@ -1211,13 +1211,13 @@ class TestAuthModule:
         auth = FlextAuth()
         result = auth.register_user(username="", email="invalid_email", password="")
         tm.that(result, is_=r)
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         result = auth.authenticate_user("invalid_user", "invalid_password")
         tm.that(result, is_=r)
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         result = auth.get_user_by_username("non_existent_user")
         tm.that(result, is_=r)
-        tm.that(result.is_success, eq=False)
+        tm.that(not result.is_success, eq=True)
         tm.that(result.error, none=False)
         tm.that((result.error or "").lower(), has="not found")
 
@@ -1331,7 +1331,7 @@ class TestAuthModule:
         tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=authenticated_identity.unique_id)
         tm.that(token_result, is_=r)
-        tm.that(token_result.is_success, eq=False)
+        tm.that(not token_result.is_success, eq=True)
         tm.that(token_result.error, none=False)
 
     def test_flext_auth_performance_patterns(self) -> None:

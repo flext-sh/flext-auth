@@ -163,7 +163,7 @@ class TestTokenRealFlows:
         request = self.HttpRequest()
         result = middleware.process_request(request)
         tm.fail(result, contains="invalid")
-        tm.that(provider.refresh_called, eq=False)
+        tm.that(not provider.refresh_called, eq=True)
 
     def test_kerberos_validate_token_returns_honest_error_without_validator(
         self,
