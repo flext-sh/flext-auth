@@ -15,7 +15,7 @@ class TestFlextAuthTypes:
     """Test FlextAuthTypes class and its nested type classes."""
 
     def test_inherits_from_flext_types(self) -> None:
-        tm.that(FlextApiTypes in t.__mro__, eq=True)
+        tm.that(t.__mro__, has=FlextApiTypes)
 
     def test_authentication_types_exist(self) -> None:
         tm.that(hasattr(t, "Auth"), eq=True)

@@ -12,7 +12,7 @@ class TestFlextAuthConstants:
     """Test FlextAuthConstants class and its nested constant classes."""
 
     def test_inherits_from_flext_constants(self) -> None:
-        tm.that(FlextConstants in c.__mro__, eq=True)
+        tm.that(c.__mro__, has=FlextConstants)
 
     def test_jwt_constants(self) -> None:
         jwt = c.Auth.Jwt
@@ -96,30 +96,30 @@ class TestFlextAuthConstants:
 
     def test_valid_token_types_frozenset(self) -> None:
         valid = c.Auth.VALID_TOKEN_TYPES
-        tm.that("access" in valid, eq=True)
-        tm.that("refresh" in valid, eq=True)
-        tm.that("api" in valid, eq=True)
-        tm.that("bearer" in valid, eq=True)
+        tm.that(valid, has="access")
+        tm.that(valid, has="refresh")
+        tm.that(valid, has="api")
+        tm.that(valid, has="bearer")
 
     def test_valid_provider_types_frozenset(self) -> None:
         valid = c.Auth.VALID_PROVIDER_TYPES
-        tm.that("basic" in valid, eq=True)
-        tm.that("jwt" in valid, eq=True)
-        tm.that("oauth2" in valid, eq=True)
+        tm.that(valid, has="basic")
+        tm.that(valid, has="jwt")
+        tm.that(valid, has="oauth2")
 
     def test_valid_role_types_frozenset(self) -> None:
         valid = c.Auth.VALID_ROLE_TYPES
-        tm.that("user" in valid, eq=True)
-        tm.that("REDACTED_LDAP_BIND_PASSWORD" in valid, eq=True)
-        tm.that("moderator" in valid, eq=True)
-        tm.that("guest" in valid, eq=True)
+        tm.that(valid, has="user")
+        tm.that(valid, has="REDACTED_LDAP_BIND_PASSWORD")
+        tm.that(valid, has="moderator")
+        tm.that(valid, has="guest")
 
     def test_valid_permission_types_frozenset(self) -> None:
         valid = c.Auth.VALID_PERMISSION_TYPES
-        tm.that("read" in valid, eq=True)
-        tm.that("write" in valid, eq=True)
-        tm.that("delete" in valid, eq=True)
-        tm.that("REDACTED_LDAP_BIND_PASSWORD" in valid, eq=True)
+        tm.that(valid, has="read")
+        tm.that(valid, has="write")
+        tm.that(valid, has="delete")
+        tm.that(valid, has="REDACTED_LDAP_BIND_PASSWORD")
 
     def test_configuration_defaults(self) -> None:
         auth = c.Auth
@@ -149,16 +149,16 @@ class TestFlextAuthConstants:
     def test_oauth2_constants(self) -> None:
         oauth2 = c.Auth.OAuth2
         tm.that(oauth2.SCOPE_DEFAULT, eq="openid profile email")
-        tm.that("authorization_code" in oauth2.FLOWS, eq=True)
-        tm.that("client_credentials" in oauth2.FLOWS, eq=True)
+        tm.that(oauth2.FLOWS, has="authorization_code")
+        tm.that(oauth2.FLOWS, has="client_credentials")
         tm.that(oauth2.FLOW_DEFAULT, eq="authorization_code")
         tm.that(oauth2.USE_PKCE_DEFAULT, eq=True)
 
     def test_validation_limits_mapping(self) -> None:
         limits = c.Auth.VALIDATION_LIMITS
-        tm.that("MAX_USERNAME_LENGTH" in limits, eq=True)
-        tm.that("MIN_PASSWORD_LENGTH" in limits, eq=True)
-        tm.that("DEFAULT_TIMEOUT" in limits, eq=True)
+        tm.that(limits, has="MAX_USERNAME_LENGTH")
+        tm.that(limits, has="MIN_PASSWORD_LENGTH")
+        tm.that(limits, has="DEFAULT_TIMEOUT")
 
     def test_response_templates(self) -> None:
         success = c.Auth.SUCCESS_AUTH_RESPONSE

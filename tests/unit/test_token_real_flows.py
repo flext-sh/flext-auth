@@ -178,7 +178,7 @@ class TestTokenRealFlows:
         result = provider.validate_token("opaque-kerberos-ticket")
         tm.fail(result)
         error = (result.error or "").lower()
-        tm.that("kerberos" in error, eq=True)
+        tm.that(error, has="kerberos")
         tm.that("validator" in error or "gssapi" in error, eq=True)
 
     def test_oauth2_validate_token_uses_authorization_server_introspection(
