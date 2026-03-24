@@ -482,8 +482,13 @@ class FlextAuthModels(FlextApiModels):
             model_config = ConfigDict(extra="allow")
 
             name: Annotated[str, Field(default="default", description="Provider name")]
-            version: Annotated[str, Field(default="1.0.0", description="Provider version")]
-            capabilities: Annotated[list[str], Field(default_factory=list, description="Provider capabilities")]
+            version: Annotated[
+                str, Field(default="1.0.0", description="Provider version")
+            ]
+            capabilities: Annotated[
+                list[str],
+                Field(default_factory=list, description="Provider capabilities"),
+            ]
 
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value t.NormalizedValue)."""
