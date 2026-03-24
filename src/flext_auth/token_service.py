@@ -19,7 +19,7 @@ from flext_auth import (
     FlextAuthManagers,
     FlextAuthProviderService,
     FlextAuthSettings,
-    ServiceManagers,
+    FlextAuthServiceManagers,
     c,
     m,
     p,
@@ -43,7 +43,7 @@ class FlextAuthTokenService(s[bool]):
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
-        self._managers = ServiceManagers(config, dispatcher)
+        self._managers = FlextAuthServiceManagers(config, dispatcher)
         self._provider_service = provider_service
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 

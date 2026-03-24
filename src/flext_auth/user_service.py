@@ -20,7 +20,7 @@ from flext_auth import (
     FlextAuthManagers,
     FlextAuthSettings,
     FlextAuthTypes as t,
-    ServiceManagers,
+    FlextAuthServiceManagers,
     c,
     m,
     p,
@@ -38,7 +38,7 @@ class FlextAuthIdentityService(s[bool]):
     def __init__(self, *, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
-        self._managers = ServiceManagers(config, dispatcher)
+        self._managers = FlextAuthServiceManagers(config, dispatcher)
 
     @property
     def identity_manager(self) -> FlextAuthManagers.FlextAuthUserManager:

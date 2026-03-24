@@ -11,7 +11,7 @@ from typing import override
 
 from flext_core import FlextLogger, r
 
-from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers, p, s
+from flext_auth import FlextAuthManagers, FlextAuthServiceManagers, FlextAuthSettings, p, s
 
 
 class FlextAuthSessionService(s[bool]):
@@ -20,7 +20,7 @@ class FlextAuthSessionService(s[bool]):
     def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
-        self._managers = ServiceManagers(config, dispatcher)
+        self._managers = FlextAuthServiceManagers(config, dispatcher)
 
     @property
     def session_manager(self) -> FlextAuthManagers.FlextAuthSessionManager:

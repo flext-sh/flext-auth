@@ -22,7 +22,7 @@ from ._managers import FlextAuthRateLimiterManagers
 from ._managers.auth_managers_session import FlextAuthSessionManagers
 
 
-class ServiceManagers:
+class FlextAuthServiceManagers:
     """Manager composition helper for auth services.
 
     Provides centralized manager initialization and access without
@@ -31,7 +31,7 @@ class ServiceManagers:
     reportUnsafeMultipleInheritance errors.
 
     Usage:
-        self._managers = ServiceManagers(config, dispatcher)
+        self._managers = FlextAuthServiceManagers(config, dispatcher)
         user = self._managers.user_manager.get_user(id)
     """
 
