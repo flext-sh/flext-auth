@@ -20,7 +20,7 @@ from flext_auth import c, m, t
 class FlextAuthSettings(m.Value):
     """Validated settings used by auth providers and token services."""
 
-    _global_instance: ClassVar[FlextAuthSettings | None] = None
+    _global_instance: ClassVar[list[FlextAuthSettings | None]] = [None]
     model_config: ClassVar[ConfigDict] = ConfigDict(
         validate_assignment=True,
         populate_by_name=True,
@@ -91,16 +91,16 @@ class FlextAuthSettings(m.Value):
 
     @classmethod
     def _reset_instance(cls) -> None:
-        cls._global_instance = None
+        cls._global_instance[0] = None
 
     @classmethod
     def get_or_create_global(cls) -> r[FlextAuthSettings]:
         """Return the singleton settings instance, creating it on first access."""
-        existing_instance = cls._global_instance
+        existing_instance = cls._global_instance[0]
         if existing_instance is not None:
             return r[FlextAuthSettings].ok(existing_instance)
         created_instance = cls.model_validate({})
-        cls._global_instance = created_instance
+        cls._global_instance[0] = created_instance
         return r[FlextAuthSettings].ok(created_instance)
 
 
