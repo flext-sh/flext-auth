@@ -8,7 +8,7 @@ from flext_auth import FlextAuthModels
 class FlextAuthTestModels(FlextTestsModels, FlextAuthModels):
     """Test models for flext-auth."""
 
-    class Tests:
+    class Tests(FlextTestsModels.Tests):
         """Test-specific models."""
 
 

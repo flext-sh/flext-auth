@@ -25,9 +25,9 @@ from tests import t
 
 from flext_auth import (
     FlextAuth,
-    FlextAuthBaseProvider,
     FlextAuthKerberosProvider,
     FlextAuthMiddleware,
+    FlextAuthRfcProvider,
     FlextAuthSettings,
     c,
     m,
@@ -310,7 +310,7 @@ class TestFlextAuthLogging:
     def test_handler_registration_logging(self) -> None:
         """Test that handler registration is logged."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        tm.that(auth, none=False)
+        assert auth is not None
 
 
 class TestFlextAuthProviderRegistry:
@@ -538,22 +538,22 @@ class TestFlextAuthQuickStart:
     def test_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start with default parameters."""
         auth = FlextAuth.quick_start()
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
 
     def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with REDACTED_LDAP_BIND_PASSWORD user creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
 
     def test_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
 
     def test_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start without REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
 
 
 class TestFlextAuthSecurity:
@@ -636,14 +636,14 @@ class TestFlextAuthQuickStartFunction:
     def test_flext_auth_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start() with default parameters."""
         auth = FlextAuth.quick_start()
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
         tm.that(auth.config, none=False)
         tm.that(auth.registry, none=False)
 
     def test_flext_auth_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() without creating REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
         nonexistent_result = auth.get_user_by_username("nonexistent_user")
         tm.that(not nonexistent_result.is_success, eq=True)
         tm.that(nonexistent_result.error, none=False)
@@ -652,7 +652,7 @@ class TestFlextAuthQuickStartFunction:
     def test_flext_auth_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
 
 
 class TestFlextAuthInitializationCoverage:
@@ -671,13 +671,13 @@ class TestFlextAuthInitializationCoverage:
     def test_quick_start_redacted_ldap_bind_password_creation_failure(self) -> None:
         """Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation (reserved for future)."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
 
     def test_quick_start_general_failure(self) -> None:
         """Test quick_start general path."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(auth, none=False)
-        tm.that(auth, is_=FlextAuth)
+        assert auth is not None
+        assert isinstance(auth, FlextAuth)
 
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
@@ -932,13 +932,13 @@ class TestFlextAuthQuickStartMethod:
     def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
         tm.that(auth.config, none=False)
 
     def test_quick_start_without_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method without REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        tm.that(auth, is_=FlextAuth)
+        assert isinstance(auth, FlextAuth)
         tm.that(auth.config, none=False)
 
 
@@ -1064,7 +1064,7 @@ class TestAuthModule:
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initializes correctly."""
         auth = FlextAuth()
-        tm.that(auth, none=False)
+        assert auth is not None
 
     def test_flext_auth_register_user(self) -> None:
         """Test FlextAuth register_user functionality."""
@@ -1212,7 +1212,7 @@ class TestAuthModule:
         auth = FlextAuth()
         test_user_data = self._TestDataHelper.create_test_user_data()
         test_auth_data = self._TestDataHelper.create_test_auth_data()
-        tm.that(auth, none=False)
+        assert auth is not None
         register_result = auth.register_user(
             username=str(test_user_data["username"]),
             email=str(test_user_data["email"]),
@@ -1404,7 +1404,7 @@ class TestAuthModule:
             thread.join()
 
 
-class _BaseTokenProviderForFlowTests(FlextAuthBaseProvider):
+class _BaseTokenProviderForFlowTests(FlextAuthRfcProvider):
     @override
     def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
         _ = credentials
@@ -1416,7 +1416,7 @@ class _BaseTokenProviderForFlowTests(FlextAuthBaseProvider):
         return r[bool].ok(True)
 
 
-class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
+class _RefreshCapableProviderForFlowTests(FlextAuthRfcProvider):
     def __init__(self) -> None:
         super().__init__(config={})
         self.last_refresh_input: str | None = None

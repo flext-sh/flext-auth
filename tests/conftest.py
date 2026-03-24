@@ -19,11 +19,11 @@ class _MockGlobal:
 
     def get_global(self) -> None:
         """Return None as mock global instance."""
-        return None
+        return
 
 
 @pytest.fixture(autouse=True)
-def _reset_singletons() -> Iterator[None]:
+def reset_singletons() -> Iterator[None]:
     """Reset FlextAuth and FlextAuthSettings singletons between tests.
 
     This prevents singleton corruption from leaking between tests.

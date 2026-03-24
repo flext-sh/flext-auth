@@ -8,7 +8,7 @@ from flext_auth import FlextAuthProtocols
 class FlextAuthTestProtocols(FlextTestsProtocols, FlextAuthProtocols):
     """Test protocols for flext-auth."""
 
-    class Tests:
+    class Tests(FlextTestsProtocols.Tests):
         """Test-specific protocols."""
 
 

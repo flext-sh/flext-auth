@@ -8,7 +8,7 @@ from flext_auth import FlextAuthUtilities
 class FlextAuthTestUtilities(FlextTestsUtilities, FlextAuthUtilities):
     """Test utilities for flext-auth."""
 
-    class Tests:
+    class Tests(FlextTestsUtilities.Tests):
         """Test-specific utilities."""
 
 

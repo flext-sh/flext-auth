@@ -9,9 +9,9 @@ from flext_core import r
 from flext_tests import tm
 
 from flext_auth import (
-    FlextAuthBaseProvider,
     FlextAuthKerberosProvider,
     FlextAuthMiddleware,
+    FlextAuthRfcProvider,
     m,
     p,
     t,
@@ -26,7 +26,7 @@ class TestTokenRealFlows:
         def __init__(self) -> None:
             self.headers: t.StrMapping = {}
 
-    class BaseProvider(FlextAuthBaseProvider):
+    class BaseProvider(FlextAuthRfcProvider):
         """Base token provider for flow tests."""
 
         @override
@@ -41,7 +41,7 @@ class TestTokenRealFlows:
         def validate(self, token: str) -> r[bool]:
             return self._decode_token_claims(token).map(lambda _claims: True)
 
-    class MiddlewareRefreshProvider(FlextAuthBaseProvider):
+    class MiddlewareRefreshProvider(FlextAuthRfcProvider):
         """Refresh-capable provider for middleware tests."""
 
         def __init__(self) -> None:
@@ -150,7 +150,7 @@ class TestTokenRealFlows:
         )
         tm.ok(issued)
         refresh_result = provider.refresh(str(issued.value))
-        tm.ok(refresh_result)
+        assert refresh_result.is_success
 
     def test_middleware_refresh_rejects_invalid_refresh_source_token(self) -> None:
         provider = self.MiddlewareRefreshProvider()
