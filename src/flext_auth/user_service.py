@@ -18,9 +18,9 @@ from pydantic import ValidationError
 
 from flext_auth import (
     FlextAuthManagers,
+    FlextAuthServiceManagers,
     FlextAuthSettings,
     FlextAuthTypes as t,
-    FlextAuthServiceManagers,
     c,
     m,
     p,

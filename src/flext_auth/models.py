@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections import UserDict
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Annotated, ClassVar, Literal, Self
+from typing import TYPE_CHECKING, Annotated, ClassVar, Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
@@ -20,6 +20,9 @@ from flext_core import r
 from pydantic import ConfigDict, Field
 
 from flext_auth import c, t
+
+if TYPE_CHECKING:
+    from flext_auth import p
 
 
 class FlextAuthModels(FlextApiModels):
@@ -674,7 +677,7 @@ class FlextAuthModels(FlextApiModels):
 
             category: Annotated[str, Field(description="Provider category")]
             provider: Annotated[
-                t.NormalizedValue, Field(description="Provider instance")
+                p.Auth.FlextAuthBaseProvider, Field(description="Provider instance")
             ]
 
         class ConfigWrapper(FlextApiModels.Value):
@@ -687,7 +690,7 @@ class FlextAuthModels(FlextApiModels):
             """Protocol-conformant wrapper for metadata."""
 
             category: Annotated[str, Field(description="Metadata category")]
-            data: Annotated[t.NormalizedValue, Field(description="Metadata")]
+            data: Annotated[FlextApiModels.Value, Field(description="Metadata")]
 
         class Providers:
             """Provider-related models namespace."""

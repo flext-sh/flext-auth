@@ -261,7 +261,7 @@ class FlextAuth:
 
     def execute(self) -> r[bool]:
         """Flexible execute implementation with railway orchestration."""
-        return r.fail(
+        return r[bool].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
 

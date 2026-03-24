@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, TypeIs, override
+from typing import ClassVar, TypeIs
 
 from flext_core import FlextRegistry, r
 from pydantic import BaseModel
@@ -52,7 +52,6 @@ class FlextAuthRegistry(FlextRegistry):
         ]
         return r[t.StrSequence].ok(matching)
 
-    @override
     def get(self, data: str) -> r[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name."""
         result = self.get_plugin(self.PROVIDERS, data)

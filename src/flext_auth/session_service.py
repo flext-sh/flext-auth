@@ -11,7 +11,13 @@ from typing import override
 
 from flext_core import FlextLogger, r
 
-from flext_auth import FlextAuthManagers, FlextAuthServiceManagers, FlextAuthSettings, p, s
+from flext_auth import (
+    FlextAuthManagers,
+    FlextAuthServiceManagers,
+    FlextAuthSettings,
+    p,
+    s,
+)
 
 
 class FlextAuthSessionService(s[bool]):

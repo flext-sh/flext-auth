@@ -16,10 +16,16 @@ from uuid import uuid4
 
 from flext_core import FlextContext, FlextLogger, r
 
-from flext_auth import FlextAuthSettings, c, m, p, t, u
-
-from ._managers import FlextAuthRateLimiterManagers
-from ._managers.auth_managers_session import FlextAuthSessionManagers
+from flext_auth import (
+    FlextAuthRateLimiterManagers,
+    FlextAuthSessionManagers,
+    FlextAuthSettings,
+    c,
+    m,
+    p,
+    t,
+    u,
+)
 
 
 class FlextAuthServiceManagers:
@@ -272,9 +278,12 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             **updates: t.Scalar | t.StrSequence | datetime | None,
         ) -> r[m.Auth.AuthIdentity]:
             """Update user data."""
+            filtered_updates: t.MutableContainerMapping = {
+                k: v for k, v in updates.items() if v is not None
+            }
             return self._find_user_by_id(user_id).map(
                 lambda ud: (
-                    ud[1].update(updates),
+                    ud[1].update(filtered_updates),
                     ud[1].update({"updated_at": datetime.now(UTC)}),
                     self._create_identity_from_storage(ud[1]),
                 )[2],
@@ -385,7 +394,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                                 identity_data[field] = datetime.min.replace(tzinfo=UTC)
                             else:
                                 identity_data[field] = field_value
-                        else:
+                        elif field_value is not None:
                             identity_data[field] = field_value
             filtered_identity_data = {
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
@@ -708,11 +717,14 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             **data: t.Scalar | t.StrSequence | datetime | None,
         ) -> None:
             """Log an audit event."""
+            filtered_data: t.MutableContainerMapping = {
+                k: v for k, v in data.items() if v is not None
+            }
             log_entry: t.Auth.Managers.LogEntry = {
                 "id": str(uuid4()),
                 "event_type": event_type,
                 "timestamp": datetime.now(UTC),
-                **data,
+                **filtered_data,
             }
             self._logs.append(log_entry)
             self.logger.info("Audit event: %s", event_type)
