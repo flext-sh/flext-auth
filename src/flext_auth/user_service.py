@@ -9,7 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableSequence, Sequence
+from flext_auth import FlextAuthTypes as t
+
+from collections.abc import MutableSequence
 from datetime import UTC, datetime, timedelta
 from typing import override
 
@@ -114,11 +116,11 @@ class FlextAuthIdentityService(s[bool]):
         name: str,
         contact: str,
         credential: str,
-        roles: Sequence[str] | None = None,
+        roles: t.StrSequence | None = None,
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
-            user_roles: Sequence[str] = []
+            user_roles: t.StrSequence = []
         else:
             user_roles = roles
         normalized_contact = contact.lower()

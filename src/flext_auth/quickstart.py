@@ -7,7 +7,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableSequence, Sequence
+from flext_auth import FlextAuthTypes as t
+
+from collections.abc import MutableSequence
 from typing import override
 
 from flext_core import r
@@ -38,7 +40,7 @@ class FlextAuthQuickstart(s[bool]):
         """Authenticate a user and return identity."""
         return self._auth.authenticate_user(username, password)
 
-    def create_demo_users(self, count: int = 5) -> r[Sequence[str]]:
+    def create_demo_users(self, count: int = 5) -> r[t.StrSequence]:
         """Create demo users for testing."""
         user_ids: MutableSequence[str] = []
 
@@ -51,11 +53,11 @@ class FlextAuthQuickstart(s[bool]):
         for i in range(count):
             result = create_single_user(i)
             if result.is_failure:
-                return r[Sequence[str]].fail(
+                return r[t.StrSequence].fail(
                     f"Failed to create demo user {i}: {result.error}",
                 )
             user_ids.append(result.value)
-        return r[Sequence[str]].ok(user_ids)
+        return r[t.StrSequence].ok(user_ids)
 
     @override
     def execute(self) -> r[bool]:
@@ -70,22 +72,22 @@ class FlextAuthQuickstart(s[bool]):
 
     def flext_auth_quick_start(
         self, *, create_admin_user: bool = True
-    ) -> r[Sequence[str]]:
+    ) -> r[t.StrSequence]:
         """Quick start the auth service with demo users."""
 
-        def create_admin_demo_user(user_ids: Sequence[str]) -> r[Sequence[str]]:
+        def create_admin_demo_user(user_ids: t.StrSequence) -> r[t.StrSequence]:
             if not create_admin_user:
-                return r[Sequence[str]].ok(user_ids)
+                return r[t.StrSequence].ok(user_ids)
             return self.register_user(
                 "REDACTED_LDAP_BIND_PASSWORD",
                 "REDACTED_LDAP_BIND_PASSWORD@example.com",
                 "AdminPass123!",
                 ["ADMIN"],
             ).fold(
-                on_failure=lambda e: r[Sequence[str]].fail(
+                on_failure=lambda e: r[t.StrSequence].fail(
                     f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {e}",
                 ),
-                on_success=lambda _: r[Sequence[str]].ok(
+                on_success=lambda _: r[t.StrSequence].ok(
                     [*user_ids, "REDACTED_LDAP_BIND_PASSWORD"],
                 ),
             )
@@ -101,7 +103,7 @@ class FlextAuthQuickstart(s[bool]):
         username: str,
         email: str,
         password: str,
-        roles: Sequence[str] | None = None,
+        roles: t.StrSequence | None = None,
         full_name: str | None = None,
     ) -> r[m.Auth.AuthIdentity]:
         """Register a new user with default settings."""
