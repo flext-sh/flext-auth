@@ -13,7 +13,6 @@ from collections.abc import MutableMapping
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
-from flext_core import FlextTypes
 from pydantic import BeforeValidator, Field, SecretStr
 
 from flext_auth import c
@@ -128,28 +127,30 @@ class FlextAuthTypes(FlextApiTypes):
             """Token-related type definitions."""
 
             type TokenType = c.Auth.TokenTypes
-            type ClaimMap = MutableMapping[str, FlextTypes.ContainerValue]
-            type Claims = MutableMapping[str, FlextTypes.ContainerValue]
-            type Introspection = MutableMapping[str, FlextTypes.ContainerValue]
+            type ClaimMap = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type Claims = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type Introspection = MutableMapping[str, FlextApiTypes.ContainerValue]
 
         class Sessions:
             """Session-related type definitions."""
 
-            type Activity = MutableMapping[str, FlextTypes.ContainerValue]
+            type Activity = MutableMapping[str, FlextApiTypes.ContainerValue]
 
         class Responses:
             """Response payload abstractions."""
 
-            type AuthenticationPayload = MutableMapping[str, FlextTypes.ContainerValue]
+            type AuthenticationPayload = MutableMapping[
+                str, FlextApiTypes.ContainerValue
+            ]
 
         class Managers:
             """Manager-specific supporting types."""
 
-            type UserData = MutableMapping[str, FlextTypes.ContainerValue]
-            type SessionData = MutableMapping[str, FlextTypes.ContainerValue]
-            type LogEntry = MutableMapping[str, FlextTypes.ContainerValue]
-            type AuditEntry = MutableMapping[str, FlextTypes.ContainerValue]
-            type AttemptData = MutableMapping[str, FlextTypes.ContainerValue]
+            type UserData = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type SessionData = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type LogEntry = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type AuditEntry = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type AttemptData = MutableMapping[str, FlextApiTypes.ContainerValue]
             type AttemptWindow = tuple[int, int]
 
         class Domain:

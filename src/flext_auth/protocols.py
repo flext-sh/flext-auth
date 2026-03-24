@@ -811,5 +811,4 @@ class FlextAuthProtocols(FlextApiProtocols):
 
 
 p = FlextAuthProtocols
-FlextAuthBaseProvider = FlextAuthProtocols.Auth.FlextAuthBaseProvider
-__all__ = ["FlextAuthBaseProvider", "FlextAuthProtocols", "p"]
+__all__ = ["FlextAuthProtocols", "p"]

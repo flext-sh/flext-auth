@@ -34,11 +34,7 @@ if TYPE_CHECKING:
     from flext_auth.middleware import FlextAuthMiddleware
     from flext_auth.mixins import FlextAuthMixins, FlextAuthMixins as x
     from flext_auth.models import FlextAuthModels, FlextAuthModels as m
-    from flext_auth.protocols import (
-        FlextAuthBaseProvider,
-        FlextAuthProtocols,
-        FlextAuthProtocols as p,
-    )
+    from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
     from flext_auth.provider_service import FlextAuthProviderService
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
@@ -70,7 +66,6 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
         "flext_auth.providers.apikey",
         "FlextAuthApiKeyProvider",
     ),
-    "FlextAuthBaseProvider": ("flext_auth.protocols", "FlextAuthBaseProvider"),
     "FlextAuthBasicProvider": ("flext_auth.providers.basic", "FlextAuthBasicProvider"),
     "FlextAuthCertificateProvider": (
         "flext_auth.providers.certificate",
@@ -164,7 +159,6 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
 __all__ = [
     "FlextAuth",
     "FlextAuthApiKeyProvider",
-    "FlextAuthBaseProvider",
     "FlextAuthBasicProvider",
     "FlextAuthCertificateProvider",
     "FlextAuthConstants",
