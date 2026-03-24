@@ -7,7 +7,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import Annotated, ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -17,10 +17,10 @@ class CertificateFixture(BaseModel):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
-    cert_pem: str = Field(description="PEM-encoded certificate")
-    key_pem: str = Field(description="PEM-encoded private key")
-    fingerprint: str = Field(description="Certificate fingerprint hash")
-    subject_cn: str = Field(description="Certificate subject common name")
+    cert_pem: Annotated[str, Field(description="PEM-encoded certificate")]
+    key_pem: Annotated[str, Field(description="PEM-encoded private key")]
+    fingerprint: Annotated[str, Field(description="Certificate fingerprint hash")]
+    subject_cn: Annotated[str, Field(description="Certificate subject common name")]
 
 
 def generate_self_signed_cert(
