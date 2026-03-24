@@ -92,7 +92,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             self._config = config
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._users = {}
+            self._users: MutableMapping[str, t.Auth.Managers.UserData] = {}
 
         def add_user_permission(self, user_id: str, permission: str) -> r[bool]:
             """Add permission to user."""

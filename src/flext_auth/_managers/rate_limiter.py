@@ -27,8 +27,8 @@ class FlextAuthRateLimiterManagers:
                 return r[bool].ok(value=True)
             recent_attempts = self._cleanup_window(username, now)
             if username not in self._attempts:
-                self._attempts[username] = {}
-            self._attempts[username]["attempts"] = recent_attempts
+                self._attempts[username] = {"attempts": recent_attempts}
+
             if len(recent_attempts) >= self._max_attempts:
                 return r[bool].fail("Too many failed attempts. Please try again later.")
             return r[bool].ok(value=True)
@@ -43,10 +43,9 @@ class FlextAuthRateLimiterManagers:
             attempts_raw = self._attempts[username].get("attempts")
             attempts_list: MutableSequence[t.ContainerValue]
             if isinstance(attempts_raw, list):
-                attempts_list = []
-                for attempt in attempts_raw:
-                    if isinstance(attempt, datetime):
-                        attempts_list.append(attempt)
+                attempts_list = [
+                    attempt for attempt in attempts_raw if isinstance(attempt, datetime)
+                ]
             else:
                 attempts_list = []
                 self._attempts[username]["attempts"] = attempts_list

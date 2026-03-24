@@ -37,42 +37,42 @@ if TYPE_CHECKING:
     from flext_auth.providers.rfc import FlextAuthRfcProvider
     from flext_auth.providers.saml import FlextAuthSamlProvider
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "FlextAuthApiKeyProvider": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "FlextAuthApiKeyProvider": [
         "flext_auth.providers.apikey",
         "FlextAuthApiKeyProvider",
-    ),
-    "FlextAuthBasicProvider": ("flext_auth.providers.basic", "FlextAuthBasicProvider"),
-    "FlextAuthCertificateProvider": (
+    ],
+    "FlextAuthBasicProvider": ["flext_auth.providers.basic", "FlextAuthBasicProvider"],
+    "FlextAuthCertificateProvider": [
         "flext_auth.providers.certificate",
         "FlextAuthCertificateProvider",
-    ),
-    "FlextAuthJwtProvider": ("flext_auth.providers.jwt", "FlextAuthJwtProvider"),
-    "FlextAuthJwtTokenGenerator": (
+    ],
+    "FlextAuthJwtProvider": ["flext_auth.providers.jwt", "FlextAuthJwtProvider"],
+    "FlextAuthJwtTokenGenerator": [
         "flext_auth.providers.jwt_token_generator",
         "FlextAuthJwtTokenGenerator",
-    ),
-    "FlextAuthJwtTokenValidator": (
+    ],
+    "FlextAuthJwtTokenValidator": [
         "flext_auth.providers.jwt_token_validator",
         "FlextAuthJwtTokenValidator",
-    ),
-    "FlextAuthKerberosProvider": (
+    ],
+    "FlextAuthKerberosProvider": [
         "flext_auth.providers.kerberos",
         "FlextAuthKerberosProvider",
-    ),
-    "FlextAuthLdapProvider": ("flext_auth.providers.ldap", "FlextAuthLdapProvider"),
-    "FlextAuthOAuth2Provider": (
+    ],
+    "FlextAuthLdapProvider": ["flext_auth.providers.ldap", "FlextAuthLdapProvider"],
+    "FlextAuthOAuth2Provider": [
         "flext_auth.providers.oauth2",
         "FlextAuthOAuth2Provider",
-    ),
-    "FlextAuthOidcProvider": ("flext_auth.providers.oidc", "FlextAuthOidcProvider"),
-    "FlextAuthPasswordHasher": (
+    ],
+    "FlextAuthOidcProvider": ["flext_auth.providers.oidc", "FlextAuthOidcProvider"],
+    "FlextAuthPasswordHasher": [
         "flext_auth.providers.jwt_password_hasher",
         "FlextAuthPasswordHasher",
-    ),
-    "FlextAuthProviderMixin": ("flext_auth.providers.mixin", "FlextAuthProviderMixin"),
-    "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
-    "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
+    ],
+    "FlextAuthProviderMixin": ["flext_auth.providers.mixin", "FlextAuthProviderMixin"],
+    "FlextAuthRfcProvider": ["flext_auth.providers.rfc", "FlextAuthRfcProvider"],
+    "FlextAuthSamlProvider": ["flext_auth.providers.saml", "FlextAuthSamlProvider"],
 }
 
 __all__ = [

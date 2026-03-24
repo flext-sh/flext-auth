@@ -308,7 +308,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             try:
                 parsed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:
-                parsed_roles = []
+                parsed_roles: t.StrSequence = []
             roles = [role for role in parsed_roles if role]
         else:
             roles = ["user"]

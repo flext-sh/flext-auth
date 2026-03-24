@@ -21,13 +21,13 @@ if TYPE_CHECKING:
         generate_self_signed_cert,
     )
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
-    "generate_client_cert": ("tests.fixtures.certificates", "generate_client_cert"),
-    "generate_self_signed_cert": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "CertificateFixture": ["tests.fixtures.certificates", "CertificateFixture"],
+    "generate_client_cert": ["tests.fixtures.certificates", "generate_client_cert"],
+    "generate_self_signed_cert": [
         "tests.fixtures.certificates",
         "generate_self_signed_cert",
-    ),
+    ],
 }
 
 __all__ = [

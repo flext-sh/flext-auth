@@ -49,102 +49,102 @@ if TYPE_CHECKING:
     from tests.unit.test_token_real_flows import TestTokenRealFlows
     from tests.unit.test_typings import TestFlextAuthTypes
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "HttpRequest": ("tests.unit.test_api", "HttpRequest"),
-    "TestAuthModule": ("tests.unit.test_api", "TestAuthModule"),
-    "TestFlextAuth": ("tests.unit.test_api", "TestFlextAuth"),
-    "TestFlextAuthAdditionalCoverage": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "HttpRequest": ["tests.unit.test_api", "HttpRequest"],
+    "TestAuthModule": ["tests.unit.test_api", "TestAuthModule"],
+    "TestFlextAuth": ["tests.unit.test_api", "TestFlextAuth"],
+    "TestFlextAuthAdditionalCoverage": [
         "tests.unit.test_api",
         "TestFlextAuthAdditionalCoverage",
-    ),
-    "TestFlextAuthAdvancedPatterns": (
+    ],
+    "TestFlextAuthAdvancedPatterns": [
         "tests.unit.test_api",
         "TestFlextAuthAdvancedPatterns",
-    ),
-    "TestFlextAuthConstants": ("tests.unit.test_constants", "TestFlextAuthConstants"),
-    "TestFlextAuthErrorHandling": ("tests.unit.test_api", "TestFlextAuthErrorHandling"),
-    "TestFlextAuthErrorHandlingPaths": (
+    ],
+    "TestFlextAuthConstants": ["tests.unit.test_constants", "TestFlextAuthConstants"],
+    "TestFlextAuthErrorHandling": ["tests.unit.test_api", "TestFlextAuthErrorHandling"],
+    "TestFlextAuthErrorHandlingPaths": [
         "tests.unit.test_api",
         "TestFlextAuthErrorHandlingPaths",
-    ),
-    "TestFlextAuthErrorHandlingSecond": (
+    ],
+    "TestFlextAuthErrorHandlingSecond": [
         "tests.unit.test_api",
         "TestFlextAuthErrorHandlingSecond",
-    ),
-    "TestFlextAuthErrorPaths": ("tests.unit.test_api", "TestFlextAuthErrorPaths"),
-    "TestFlextAuthHandlerRegistration": (
+    ],
+    "TestFlextAuthErrorPaths": ["tests.unit.test_api", "TestFlextAuthErrorPaths"],
+    "TestFlextAuthHandlerRegistration": [
         "tests.unit.test_api",
         "TestFlextAuthHandlerRegistration",
-    ),
-    "TestFlextAuthInitializationCoverage": (
+    ],
+    "TestFlextAuthInitializationCoverage": [
         "tests.unit.test_api",
         "TestFlextAuthInitializationCoverage",
-    ),
-    "TestFlextAuthLogging": ("tests.unit.test_api", "TestFlextAuthLogging"),
-    "TestFlextAuthModelSettingsuration": (
+    ],
+    "TestFlextAuthLogging": ["tests.unit.test_api", "TestFlextAuthLogging"],
+    "TestFlextAuthModelSettingsuration": [
         "tests.unit.test_api",
         "TestFlextAuthModelSettingsuration",
-    ),
-    "TestFlextAuthPasswordMethods": (
+    ],
+    "TestFlextAuthPasswordMethods": [
         "tests.unit.test_api",
         "TestFlextAuthPasswordMethods",
-    ),
-    "TestFlextAuthProcessorRegistration": (
+    ],
+    "TestFlextAuthProcessorRegistration": [
         "tests.unit.test_api",
         "TestFlextAuthProcessorRegistration",
-    ),
-    "TestFlextAuthProviderRegistry": (
+    ],
+    "TestFlextAuthProviderRegistry": [
         "tests.unit.test_api",
         "TestFlextAuthProviderRegistry",
-    ),
-    "TestFlextAuthQuickStart": ("tests.unit.test_api", "TestFlextAuthQuickStart"),
-    "TestFlextAuthQuickStartFunction": (
+    ],
+    "TestFlextAuthQuickStart": ["tests.unit.test_api", "TestFlextAuthQuickStart"],
+    "TestFlextAuthQuickStartFunction": [
         "tests.unit.test_api",
         "TestFlextAuthQuickStartFunction",
-    ),
-    "TestFlextAuthQuickStartMethod": (
+    ],
+    "TestFlextAuthQuickStartMethod": [
         "tests.unit.test_api",
         "TestFlextAuthQuickStartMethod",
-    ),
-    "TestFlextAuthSecurity": ("tests.unit.test_api", "TestFlextAuthSecurity"),
-    "TestFlextAuthServiceInitialization": (
+    ],
+    "TestFlextAuthSecurity": ["tests.unit.test_api", "TestFlextAuthSecurity"],
+    "TestFlextAuthServiceInitialization": [
         "tests.unit.test_api",
         "TestFlextAuthServiceInitialization",
-    ),
-    "TestFlextAuthSessionManagement": (
+    ],
+    "TestFlextAuthSessionManagement": [
         "tests.unit.test_api",
         "TestFlextAuthSessionManagement",
-    ),
-    "TestFlextAuthSessionMethods": (
+    ],
+    "TestFlextAuthSessionMethods": [
         "tests.unit.test_api",
         "TestFlextAuthSessionMethods",
-    ),
-    "TestFlextAuthSettingsBasic": (
+    ],
+    "TestFlextAuthSettingsBasic": [
         "tests.unit.test_config",
         "TestFlextAuthSettingsBasic",
-    ),
-    "TestFlextAuthSettingsurationMethods": (
+    ],
+    "TestFlextAuthSettingsurationMethods": [
         "tests.unit.test_api",
         "TestFlextAuthSettingsurationMethods",
-    ),
-    "TestFlextAuthSettingsurationOverrides": (
+    ],
+    "TestFlextAuthSettingsurationOverrides": [
         "tests.unit.test_api",
         "TestFlextAuthSettingsurationOverrides",
-    ),
-    "TestFlextAuthStorageOperations": (
+    ],
+    "TestFlextAuthStorageOperations": [
         "tests.unit.test_api",
         "TestFlextAuthStorageOperations",
-    ),
-    "TestFlextAuthTokenMethods": ("tests.unit.test_api", "TestFlextAuthTokenMethods"),
-    "TestFlextAuthTokenOperations": (
+    ],
+    "TestFlextAuthTokenMethods": ["tests.unit.test_api", "TestFlextAuthTokenMethods"],
+    "TestFlextAuthTokenOperations": [
         "tests.unit.test_api",
         "TestFlextAuthTokenOperations",
-    ),
-    "TestFlextAuthTypes": ("tests.unit.test_typings", "TestFlextAuthTypes"),
-    "TestFlextAuthUserMethods": ("tests.unit.test_api", "TestFlextAuthUserMethods"),
-    "TestJwtTokenGenerator": ("tests.unit.test_config", "TestJwtTokenGenerator"),
-    "TestProviderTokenFlows": ("tests.unit.test_api", "TestProviderTokenFlows"),
-    "TestTokenRealFlows": ("tests.unit.test_token_real_flows", "TestTokenRealFlows"),
+    ],
+    "TestFlextAuthTypes": ["tests.unit.test_typings", "TestFlextAuthTypes"],
+    "TestFlextAuthUserMethods": ["tests.unit.test_api", "TestFlextAuthUserMethods"],
+    "TestJwtTokenGenerator": ["tests.unit.test_config", "TestJwtTokenGenerator"],
+    "TestProviderTokenFlows": ["tests.unit.test_api", "TestProviderTokenFlows"],
+    "TestTokenRealFlows": ["tests.unit.test_token_real_flows", "TestTokenRealFlows"],
 }
 
 __all__ = [
