@@ -69,7 +69,9 @@ class FlextAuthQuickstart(s[bool]):
         )
 
     def flext_auth_quick_start(
-        self, *, create_admin_user: bool = True
+        self,
+        *,
+        create_admin_user: bool = True,
     ) -> r[t.StrSequence]:
         """Quick start the auth service with demo users."""
 

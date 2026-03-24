@@ -31,7 +31,8 @@ class TestTokenRealFlows:
 
         @override
         def authenticate(
-            self, credentials: m.Auth.CredentialValidation
+            self,
+            credentials: m.Auth.CredentialValidation,
         ) -> r[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
@@ -51,13 +52,14 @@ class TestTokenRealFlows:
                     "issuer": "flext-auth-tests",
                     "audience": "flext-auth-tests",
                     "expiry_minutes": 10,
-                }
+                },
             )
             self.refresh_called = False
 
         @override
         def authenticate(
-            self, credentials: m.Auth.CredentialValidation
+            self,
+            credentials: m.Auth.CredentialValidation,
         ) -> r[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
@@ -87,7 +89,8 @@ class TestTokenRealFlows:
 
         @override
         def authenticate(
-            self, credentials: m.Auth.CredentialValidation
+            self,
+            credentials: m.Auth.CredentialValidation,
         ) -> r[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
@@ -104,7 +107,7 @@ class TestTokenRealFlows:
                 "issuer": "flext-auth-tests",
                 "audience": "flext-auth-tests",
                 "expiry_minutes": 30,
-            }
+            },
         )
         generate_token = (
             provider.generate_token if hasattr(provider, "generate_token") else None
@@ -133,7 +136,7 @@ class TestTokenRealFlows:
                 "issuer": "flext-auth-tests",
                 "audience": "flext-auth-tests",
                 "expiry_minutes": 15,
-            }
+            },
         )
         issued = provider.generate_token_for_user(
             user={
@@ -174,7 +177,7 @@ class TestTokenRealFlows:
                 "realm": "EXAMPLE.COM",
                 "kdc": "kdc.example.com",
                 "service_principal": "HTTP/api.example.com@EXAMPLE.COM",
-            }
+            },
         )
         result = provider.validate_token("opaque-kerberos-ticket")
         tm.fail(result)
@@ -207,7 +210,10 @@ class TestTokenRealFlows:
             })
 
         monkeypatch.setattr(
-            provider, "_introspect_token", _fake_introspect, raising=False
+            provider,
+            "_introspect_token",
+            _fake_introspect,
+            raising=False,
         )
         result = provider.validate_token("opaque-oauth2-token")
         tm.that(call_count["count"], eq=1)
@@ -229,7 +235,10 @@ class TestTokenRealFlows:
             return r[Mapping[str, str | bool]].ok({"active": False})
 
         monkeypatch.setattr(
-            provider, "_introspect_token", _inactive_introspect, raising=False
+            provider,
+            "_introspect_token",
+            _inactive_introspect,
+            raising=False,
         )
         result = provider.validate_token("inactive-token")
         tm.fail(result, contains="inactive")

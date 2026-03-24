@@ -435,7 +435,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                         user_data,
                     ))
             return r[tuple[str, MutableMapping[str, t.ContainerValue]]].fail(
-                "User not found"
+                "User not found",
             )
 
         def _modify_user_list_field(

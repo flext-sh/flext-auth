@@ -81,7 +81,9 @@ class TestFlextAuthProcessorRegistration:
         """Test username validation through processor."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result_valid = auth.register_user(
-            "validuser", "test@example.com", "ValidPass123!"
+            "validuser",
+            "test@example.com",
+            "ValidPass123!",
         )
         tm.that(result_valid.is_success, eq=True)
         result_short = auth.register_user("ab", "test2@example.com", "ValidPass123!")
@@ -254,7 +256,9 @@ class TestFlextAuthTokenOperations:
         """Test token validation — not implemented in JWT provider."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         register_result = auth.register_user(
-            "beareruser", "bearer@example.com", "BearerPass123!"
+            "beareruser",
+            "bearer@example.com",
+            "BearerPass123!",
         )
         tm.that(register_result.is_success, eq=True)
         identity = register_result.value
@@ -388,7 +392,9 @@ class TestFlextAuth:
         auth: FlextAuth = FlextAuth()
         auth.register_user("testuser", "test1@example.com", "Password123!")
         duplicate_result = auth.register_user(
-            "testuser", "test2@example.com", "Password123!"
+            "testuser",
+            "test2@example.com",
+            "Password123!",
         )
         tm.that(duplicate_result.is_failure, eq=True)
         tm.that((duplicate_result.error or ""), has="already exists")
@@ -399,7 +405,9 @@ class TestFlextAuth:
         first_result = auth.register_user("user1", "test@example.com", "Password123!")
         tm.that(first_result.is_success, eq=True)
         duplicate_result = auth.register_user(
-            "user2", "test@example.com", "Password123!"
+            "user2",
+            "test@example.com",
+            "Password123!",
         )
         tm.that(duplicate_result.is_failure, eq=True)
         tm.that((duplicate_result.error or ""), has="already exists")
@@ -472,7 +480,10 @@ class TestFlextAuth:
         password = "SessionPassword123!"
         auth.register_user(username, "session@example.com", password)
         auth_result = auth.authenticate_user(
-            username, password, "127.0.0.1", "test-user-agent"
+            username,
+            password,
+            "127.0.0.1",
+            "test-user-agent",
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
@@ -705,7 +716,8 @@ class TestFlextAuthErrorPaths:
         """Test authenticate_user method failure scenarios."""
         auth = FlextAuth()
         result = auth.authenticate_user(
-            username="nonexistent_user", password="any_password"
+            username="nonexistent_user",
+            password="any_password",
         )
         tm.that(not result.is_success, eq=True)
         tm.that(result.error, is_=str)
@@ -796,7 +808,9 @@ class TestFlextAuthTokenMethods:
         """Test that create_token fails via alternative path — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser", "test@example.com", "TestPassword123!"
+            "testuser",
+            "test@example.com",
+            "TestPassword123!",
         )
         tm.that(register_result.is_success, eq=True)
         identity = register_result.value
@@ -810,7 +824,9 @@ class TestFlextAuthTokenMethods:
         """Test that validate_token fails — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser", "test@example.com", "TestPassword123!"
+            "testuser",
+            "test@example.com",
+            "TestPassword123!",
         )
         tm.that(register_result.is_success, eq=True)
         identity = register_result.value
@@ -950,7 +966,8 @@ class TestFlextAuthErrorHandlingPaths:
         tm.that(user_result.is_success, eq=True)
         for _ in range(6):
             failed_result = auth.authenticate_user(
-                username="lockable_user", password="wrong_password"
+                username="lockable_user",
+                password="wrong_password",
             )
             tm.that(not failed_result.is_success, eq=True)
 
@@ -958,7 +975,9 @@ class TestFlextAuthErrorHandlingPaths:
         """Test that token creation fails — JWT provider not implemented."""
         auth = FlextAuth()
         user_result = auth.register_user(
-            "test_user", "test@example.com", "TestPassword123!"
+            "test_user",
+            "test@example.com",
+            "TestPassword123!",
         )
         tm.that(user_result.is_success, eq=True)
         user = user_result.value
@@ -1064,7 +1083,8 @@ class TestAuthModule:
         test_data = self._TestDataHelper.create_test_auth_data()
         if hasattr(auth, "authenticate_user"):
             result = auth.authenticate_user(
-                str(test_data["username"]), str(test_data["password"])
+                str(test_data["username"]),
+                str(test_data["password"]),
             )
             tm.that(result, is_=r)
 
@@ -1107,7 +1127,8 @@ class TestAuthModule:
         )
         tm.that(register_result.is_success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
@@ -1127,7 +1148,8 @@ class TestAuthModule:
         )
         tm.that(register_result.is_success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         tm.that(auth_result.is_success, eq=True)
         user = register_result.value
@@ -1147,7 +1169,8 @@ class TestAuthModule:
         )
         tm.that(register_result.is_success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
@@ -1169,7 +1192,8 @@ class TestAuthModule:
         )
         tm.that(register_result.is_success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
@@ -1197,7 +1221,8 @@ class TestAuthModule:
         tm.that(register_result, is_=r)
         tm.that(register_result.is_success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]), str(test_auth_data["password"])
+            str(test_auth_data["username"]),
+            str(test_auth_data["password"]),
         )
         tm.that(auth_result, is_=r)
         tm.that(auth_result.is_success, eq=True)
@@ -1238,7 +1263,8 @@ class TestAuthModule:
         tm.that(result, is_=r)
         tm.that(result.is_success, eq=True)
         result = auth.authenticate_user(
-            test_auth_data["username"], test_auth_data["password"]
+            test_auth_data["username"],
+            test_auth_data["password"],
         )
         tm.that(result, is_=r)
         tm.that(result.is_success, eq=True)
@@ -1305,7 +1331,8 @@ class TestAuthModule:
             tm.that(result.is_success, eq=True)
         for user_data in realistic_users:
             result = auth.authenticate_user(
-                user_data["username"], user_data["password"]
+                user_data["username"],
+                user_data["password"],
             )
             tm.that(result, is_=r)
             tm.that(result.is_success, eq=True)
@@ -1322,7 +1349,8 @@ class TestAuthModule:
         )
         tm.that(register_result, is_=r, ok=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]), str(test_auth_data["password"])
+            str(test_auth_data["username"]),
+            str(test_auth_data["password"]),
         )
         tm.that(auth_result, is_=r, ok=True)
         authenticated_identity = auth_result.value
@@ -1440,7 +1468,7 @@ class TestProviderTokenFlows:
                 "issuer": "flext-auth-tests",
                 "audience": "flext-auth-tests",
                 "expiry_minutes": 60,
-            }
+            },
         )
         token_result = provider.generate_token_for_user(
             user=_build_identity_for_flow_tests(
@@ -1493,7 +1521,7 @@ class TestProviderTokenFlows:
                 "issuer": "flext-auth-tests",
                 "audience": "flext-auth-tests",
                 "expiry_minutes": 30,
-            }
+            },
         )
         token_result = provider.generate_token_for_user(
             user={
@@ -1553,7 +1581,11 @@ class TestProviderTokenFlows:
 
 
 def _build_identity_for_flow_tests(
-    *, identity_id: str, name: str, contact: str, roles: t.StrSequence
+    *,
+    identity_id: str,
+    name: str,
+    contact: str,
+    roles: t.StrSequence,
 ) -> m.Auth.AuthIdentity:
     return m.Auth.AuthIdentity(
         unique_id=identity_id,

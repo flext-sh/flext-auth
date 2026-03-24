@@ -78,7 +78,9 @@ def example_session_management() -> None:
     """Demonstrate authentication session handling."""
     auth: FlextAuth = FlextAuth()
     user_result = auth.register_user(
-        "sessionuser", "session@example.com", "SessionPass123!"
+        "sessionuser",
+        "session@example.com",
+        "SessionPass123!",
     )
     if user_result.is_failure:
         return

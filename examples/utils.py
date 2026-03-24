@@ -14,7 +14,8 @@ from collections.abc import Callable, Sequence
 
 
 def basic_example_runner(
-    sync_examples: Sequence[Callable[[], None]], examples: Sequence[Callable[[], None]]
+    sync_examples: Sequence[Callable[[], None]],
+    examples: Sequence[Callable[[], None]],
 ) -> None:
     """Run all examples using the shared runner (DRY principle)."""
     for example in sync_examples:

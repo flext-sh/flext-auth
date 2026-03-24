@@ -267,7 +267,7 @@ def main() -> None:
         example_advanced_registration()
         example_complete_workflow()
         logger.info(
-            "All examples completed successfully - FLEXT Auth is working correctly"
+            "All examples completed successfully - FLEXT Auth is working correctly",
         )
     except Exception as e:
         logger.exception("Example execution failed", error=str(e))

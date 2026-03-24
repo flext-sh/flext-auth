@@ -22,7 +22,8 @@ class FlextAuthSettings(m.Value):
 
     _global_instance: ClassVar[FlextAuthSettings | None] = None
     model_config: ClassVar[ConfigDict] = ConfigDict(
-        validate_assignment=True, populate_by_name=True
+        validate_assignment=True,
+        populate_by_name=True,
     )
 
     secret_key: Annotated[
@@ -90,7 +91,7 @@ class FlextAuthSettings(m.Value):
 
     @classmethod
     def _reset_instance(cls) -> None:
-        setattr(cls, "_global_instance", None)
+        cls._global_instance = None
 
     @classmethod
     def get_or_create_global(cls) -> r[FlextAuthSettings]:
@@ -99,7 +100,7 @@ class FlextAuthSettings(m.Value):
         if existing_instance is not None:
             return r[FlextAuthSettings].ok(existing_instance)
         created_instance = cls.model_validate({})
-        setattr(cls, "_global_instance", created_instance)
+        cls._global_instance = created_instance
         return r[FlextAuthSettings].ok(created_instance)
 
 

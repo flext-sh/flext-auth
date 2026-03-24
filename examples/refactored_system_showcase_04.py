@@ -36,7 +36,9 @@ def demonstrate_quickstart_functionality() -> None:
         print(f"Admin credentials created: {admin_credentials}")
     auth_service = FlextAuth()
     reg_result = auth_service.register_user(
-        "quickstart_user", "quickstart@example.com", "QuickstartPassword123!"
+        "quickstart_user",
+        "quickstart@example.com",
+        "QuickstartPassword123!",
     )
     if reg_result.is_success:
         pass

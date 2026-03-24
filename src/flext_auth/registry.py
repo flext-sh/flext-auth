@@ -171,7 +171,8 @@ class FlextAuthRegistry(FlextRegistry):
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
         provider_wrapper = m.Auth.ProviderWrapper(
-            category=self.PROVIDERS, provider=provider
+            category=self.PROVIDERS,
+            provider=provider,
         )
         provider_result = self.register_plugin(self.PROVIDERS, name, provider_wrapper)
         if provider_result.is_failure:

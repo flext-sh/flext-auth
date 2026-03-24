@@ -649,7 +649,8 @@ class FlextAuthModels(FlextApiModels):
             """Generic HTTP response data."""
 
             status_code: Annotated[
-                t.HttpStatusCode, Field(..., description="HTTP status code")
+                t.HttpStatusCode,
+                Field(..., description="HTTP status code"),
             ]
             body: Annotated[str, Field(default="", description="Response body")]
             headers: Annotated[
@@ -672,12 +673,13 @@ class FlextAuthModels(FlextApiModels):
             """Wrapper for auth provider instances."""
 
             model_config: ClassVar[ConfigDict] = ConfigDict(
-                arbitrary_types_allowed=True
+                arbitrary_types_allowed=True,
             )
 
             category: Annotated[str, Field(description="Provider category")]
             provider: Annotated[
-                p.Auth.FlextAuthBaseProvider, Field(description="Provider instance")
+                p.Auth.FlextAuthBaseProvider,
+                Field(description="Provider instance"),
             ]
 
         class ConfigWrapper(FlextApiModels.Value):

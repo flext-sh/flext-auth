@@ -20,7 +20,9 @@ def main() -> None:
     try:
         test_password = "SecureDemoPassword123!"
         FlextAuthModels.Auth.AuthIdentityRequest(
-            name="testuser", contact="test@example.com", credential=test_password
+            name="testuser",
+            contact="test@example.com",
+            credential=test_password,
         )
         user_result = auth.register_user("testuser", "test@example.com", test_password)
         if user_result.is_success:

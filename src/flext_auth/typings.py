@@ -140,7 +140,8 @@ class FlextAuthTypes(FlextApiTypes):
             """Response payload abstractions."""
 
             type AuthenticationPayload = MutableMapping[
-                str, FlextApiTypes.ContainerValue
+                str,
+                FlextApiTypes.ContainerValue,
             ]
 
         class Managers:

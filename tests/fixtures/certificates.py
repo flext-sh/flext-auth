@@ -46,7 +46,8 @@ def generate_self_signed_cert(
 
 
 def generate_client_cert(
-    common_name: str = "client.example.com", organization: str = "Test Client"
+    common_name: str = "client.example.com",
+    organization: str = "Test Client",
 ) -> CertificateFixture:
     """Generate a mock client certificate fixture for testing.
 

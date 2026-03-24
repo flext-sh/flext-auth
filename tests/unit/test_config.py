@@ -37,7 +37,7 @@ class TestFlextAuthSettingsBasic:
         """Test config with custom values."""
         base_config = _require_settings()
         config = base_config.model_copy(
-            update={"expiry_minutes": 60, "hash_rounds": 12}
+            update={"expiry_minutes": 60, "hash_rounds": 12},
         )
         tm.that(config.expiry_minutes, eq=60)
         tm.that(config.hash_rounds, eq=12)

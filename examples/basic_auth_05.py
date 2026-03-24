@@ -12,7 +12,10 @@ def main() -> None:
     auth = FlextAuth(config=FlextAuthSettings())
     password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
     registration = auth.register_user(
-        username="demouser", email="demo@example.com", password=password, roles=["user"]
+        username="demouser",
+        email="demo@example.com",
+        password=password,
+        roles=["user"],
     )
     if registration.is_failure:
         print(f"registration failed: {registration.error}")
