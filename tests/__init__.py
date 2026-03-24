@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
     from tests import fixtures, helpers, unit
-    from tests.conftest import mock_get_global
+    from tests.conftest import mock_get_global, reset_singletons
     from tests.constants import FlextAuthTestConstants, FlextAuthTestConstants as c
     from tests.fixtures.certificates import (
         CertificateFixture,
@@ -185,6 +185,7 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "mock_get_global": ("tests.conftest", "mock_get_global"),
     "p": ("tests.protocols", "FlextAuthTestProtocols"),
     "r": ("flext_tests", "r"),
+    "reset_singletons": ("tests.conftest", "reset_singletons"),
     "s": ("flext_tests", "s"),
     "t": ("tests.typings", "FlextAuthTestTypes"),
     "u": ("tests.utilities", "FlextAuthTestUtilities"),
@@ -249,6 +250,7 @@ __all__ = [
     "mock_get_global",
     "p",
     "r",
+    "reset_singletons",
     "s",
     "t",
     "u",
