@@ -82,7 +82,7 @@ def example_session_management() -> None:
     )
     if user_result.is_failure:
         return
-    tokens: Sequence[str] = []
+    tokens: t.StrSequence = []
     for _i in range(3):
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
         if auth_result.is_success:

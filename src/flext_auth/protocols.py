@@ -70,7 +70,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             "Contact information (e.g., email)."
             is_active: bool
             "Active status."
-            roles: Sequence[str]
+            roles: t.StrSequence
             "Identity roles."
             failed_attempts: int
             "Failed login attempts count."
@@ -251,7 +251,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 email: str,
                 password: str,
                 full_name: str | None = None,
-                roles: Sequence[str] | None = None,
+                roles: t.StrSequence | None = None,
             ) -> FlextApiProtocols.Result[FlextAuthProtocols.Auth.Identity]:
                 """Register new user.
 
@@ -263,7 +263,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         class RequestWithHeaders(Protocol):
             """Protocol for request-like objects with a headers attribute."""
 
-            headers: Mapping[str, str]
+            headers: t.StrMapping
 
         class FlextAuthBaseProvider(Protocol):
             """Base protocol for all authentication providers.
@@ -414,7 +414,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                         else f"{identity_id}@local"
                     )
                 roles_value = payload.get("roles")
-                user_roles: Sequence[str]
+                user_roles: t.StrSequence
                 if isinstance(roles_value, list):
                     user_roles = [
                         role for role in roles_value if isinstance(role, str) and role
@@ -769,9 +769,9 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...         self,
                 ...         url: str,
                 ...         method: str = "POST",
-                ...         data: Mapping[str, t.Scalar] | None = None,
-                ...         headers: Mapping[str, str] | None = None,
-                ...     ) -> r[Mapping[str, t.Scalar]]:
+                ...         data: t.ConfigurationMapping | None = None,
+                ...         headers: t.StrMapping | None = None,
+                ...     ) -> r[t.ConfigurationMapping]:
                 ...         # HTTP-specific implementation
                 ...         pass
 
@@ -790,10 +790,10 @@ class FlextAuthProtocols(FlextApiProtocols):
                 self,
                 url: str,
                 method: str = "POST",
-                data: Mapping[str, t.Scalar] | None = None,
-                headers: Mapping[str, str] | None = None,
+                data: t.ConfigurationMapping | None = None,
+                headers: t.StrMapping | None = None,
                 **kwargs: t.Scalar,
-            ) -> r[Mapping[str, t.Scalar]]:
+            ) -> r[t.ConfigurationMapping]:
                 """Send a request using this transport.
 
                 Args:

@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
@@ -216,7 +215,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             def build_auth_error_response(
                 error: str,
                 error_code: str = "AUTH_ERROR",
-            ) -> Mapping[str, t.Scalar]:
+            ) -> t.ConfigurationMapping:
                 """Build an authentication error response."""
                 return {
                     "success": False,
@@ -230,9 +229,9 @@ class FlextAuthUtilities(FlextApiUtilities):
                 token: str | None = None,
                 user_id: str | None = None,
                 expires_at: datetime | None = None,
-            ) -> Mapping[str, t.Scalar]:
+            ) -> t.ConfigurationMapping:
                 """Build a successful authentication response."""
-                response: MutableMapping[str, t.Scalar] = {
+                response: t.MutableConfigurationMapping = {
                     "success": True,
                     "message": "Authentication successful",
                     "timestamp": datetime.now(UTC).isoformat(),
@@ -265,7 +264,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         """
         try:
-            algorithms_list: Sequence[str]
+            algorithms_list: t.StrSequence
             if algorithms is None:
                 algorithms_list = [c.Auth.DEFAULT_JWT_ALGORITHM]
             else:

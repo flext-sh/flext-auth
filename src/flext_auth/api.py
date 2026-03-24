@@ -235,7 +235,7 @@ class FlextAuth:
     def create_token(
         self,
         identity_id: str,
-        extra_claims: Mapping[str, t.Scalar] | None = None,
+        extra_claims: t.ConfigurationMapping | None = None,
     ) -> r[str]:
         """Railway-oriented token creation.
 

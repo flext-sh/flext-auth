@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import base64
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, MutableMapping
 from typing import Final
 from urllib.parse import urlencode
 
@@ -21,7 +21,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import m, t
 
-_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[Mapping[str, t.Scalar]]] = TypeAdapter(
+_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[t.ConfigurationMapping]] = TypeAdapter(
     t.ScalarMapping,
 )
 
@@ -74,7 +74,7 @@ class FlextWebTransportAdapter:
         self,
         url: str,
         access_token: str,
-        headers: Mapping[str, str],
+        headers: t.StrMapping,
     ) -> r[t.Api.ResponseDict]:
         """GET request to OIDC UserInfo endpoint.
 
@@ -116,7 +116,7 @@ class FlextWebTransportAdapter:
         url: str,
         data: Mapping[str, t.ContainerValue],
         auth: tuple[str, str] | None = None,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
     ) -> r[t.Api.ResponseDict]:
         """POST request to OAuth2 token endpoint.
 
@@ -169,7 +169,7 @@ class FlextWebTransportAdapter:
         url: str,
         method: str = "POST",
         data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
+        headers: t.StrMapping | None = None,
         query: t.Api.WebParams | None = None,
         timeout: float | None = None,
     ) -> r[t.Api.ResponseDict]:
@@ -187,9 +187,7 @@ class FlextWebTransportAdapter:
         r containing response data or error
 
         """
-        request_headers: Mapping[str, str] = (
-            dict(headers) if headers is not None else {}
-        )
+        request_headers: t.StrMapping = dict(headers) if headers is not None else {}
         request_timeout = timeout if timeout is not None else self._timeout
         resolved_body = self._resolve_body(method, data)
         resolved_query = self._resolve_query(method, data, query)
@@ -322,7 +320,7 @@ class FlextWebTransportAdapter:
                 **query_dict,
                 **{str(key): value for key, value in data_mapping.items()},
             }
-            normalized: MutableMapping[str, Sequence[str] | str] = {}
+            normalized: MutableMapping[str, t.StrSequence | str] = {}
             for key, value in merged_query.items():
                 normalized[str(key)] = str(value)
             return normalized

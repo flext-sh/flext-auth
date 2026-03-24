@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
 from flext_core import r
@@ -23,7 +22,7 @@ class FlextAuthBasicProvider(p.Auth.FlextAuthBaseProvider):
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).
     """
 
-    def __init__(self, config: Mapping[str, t.Scalar] | None = None) -> None:
+    def __init__(self, config: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 

@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections import UserDict
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Annotated, ClassVar, Literal, Self
 
@@ -215,7 +215,7 @@ class FlextAuthModels(FlextApiModels):
             ]
             full_name: Annotated[str, Field(description="Full name")] = ""
             roles: Annotated[
-                Sequence[str],
+                t.StrSequence,
                 Field(
                     default_factory=lambda: ["user"],
                     description="Roles",
@@ -250,14 +250,14 @@ class FlextAuthModels(FlextApiModels):
             full_name: Annotated[str, Field(description="Full name")] = ""
             is_active: Annotated[bool, Field(description="Active status")] = True
             roles: Annotated[
-                Sequence[str],
+                t.StrSequence,
                 Field(
                     default_factory=lambda: ["user"],
                     description="Roles",
                 ),
             ]
             permissions: Annotated[
-                Sequence[str],
+                t.StrSequence,
                 Field(
                     default_factory=list,
                     description="Permissions",
@@ -392,7 +392,7 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             permissions: Annotated[
-                Sequence[str],
+                t.StrSequence,
                 Field(
                     default_factory=list,
                     description="Permissions",
@@ -439,7 +439,7 @@ class FlextAuthModels(FlextApiModels):
             provider_type: str | None = None
             secret_key: str | None = None
             algorithm: str | None = None
-            token_expiry_minutes: int | None = None
+            token_expiry_minutes: t.PositiveInt | None = None
             refresh_expiry_days: int | None = None
             client_id: str | None = None
             client_secret: str | None = None
@@ -451,7 +451,7 @@ class FlextAuthModels(FlextApiModels):
             issuer: str | None = None
             realm: str | None = None
             kdc_host: str | None = None
-            kdc_port: int | None = None
+            kdc_port: t.PortNumber | None = None
             service_principal: str | None = None
             keytab_path: str | None = None
             entity_id: str | None = None
@@ -495,7 +495,7 @@ class FlextAuthModels(FlextApiModels):
                 if "version" not in self:
                     self["version"] = "1.0.0"
                 if "capabilities" not in self:
-                    self["capabilities"] = Sequence[str]()
+                    self["capabilities"] = t.StrSequence()
 
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value t.NormalizedValue)."""
@@ -515,7 +515,7 @@ class FlextAuthModels(FlextApiModels):
             key_hash: Annotated[str, Field(..., description="Hashed API key")]
             name: Annotated[str, Field(..., description="Key name")]
             permissions: Annotated[
-                Sequence[str],
+                t.StrSequence,
                 Field(
                     default_factory=list,
                     description="Key permissions",
@@ -644,10 +644,12 @@ class FlextAuthModels(FlextApiModels):
         class HttpResponseData(FlextApiModels.Value):
             """Generic HTTP response data."""
 
-            status_code: Annotated[int, Field(..., description="HTTP status code")]
+            status_code: Annotated[
+                t.HttpStatusCode, Field(..., description="HTTP status code")
+            ]
             body: Annotated[str, Field(default="", description="Response body")]
             headers: Annotated[
-                Mapping[str, str],
+                t.StrMapping,
                 Field(
                     default_factory=dict,
                     description="Response headers",
@@ -678,7 +680,7 @@ class FlextAuthModels(FlextApiModels):
             """Protocol-conformant wrapper for config data."""
 
             category: Annotated[str, Field(description="Config category")]
-            data: Annotated[Mapping[str, t.Scalar], Field(description="Config data")]
+            data: Annotated[t.ConfigurationMapping, Field(description="Config data")]
 
         class MetadataWrapper(FlextApiModels.Value):
             """Protocol-conformant wrapper for metadata."""
@@ -720,12 +722,6 @@ class FlextAuthModels(FlextApiModels):
                     str,
                     Field(..., description="Provider type"),
                 ]
-
-    # Class-level aliases for flat namespace access (models moved from typings.py)
-    # These were previously defined in typings.py and are now in models.py
-    ProviderConfig: type[Auth.ProviderConfig] = Auth.ProviderConfig
-    OAuth2TokenResponse: type[Auth.OAuth2TokenResponse] = Auth.OAuth2TokenResponse
-    KerberosTicketData: type[Auth.KerberosTicketData] = Auth.KerberosTicketData
 
 
 # Short aliases

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from threading import Thread
 from typing import override
@@ -41,7 +41,7 @@ class HttpRequest:
 
     def __init__(self) -> None:
         """Initialize with empty headers."""
-        self.headers: Mapping[str, str] = {}
+        self.headers: t.StrMapping = {}
 
 
 class TestFlextAuthServiceInitialization:
@@ -1553,7 +1553,7 @@ class TestProviderTokenFlows:
 
 
 def _build_identity_for_flow_tests(
-    *, identity_id: str, name: str, contact: str, roles: Sequence[str]
+    *, identity_id: str, name: str, contact: str, roles: t.StrSequence
 ) -> m.Auth.AuthIdentity:
     return m.Auth.AuthIdentity(
         unique_id=identity_id,

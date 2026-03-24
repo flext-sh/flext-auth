@@ -14,7 +14,7 @@ from typing import Annotated, ClassVar
 from flext_core import r
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 
-from flext_auth import c, m
+from flext_auth import c, m, t
 
 
 class FlextAuthSettings(m.Value):
@@ -50,23 +50,20 @@ class FlextAuthSettings(m.Value):
         ),
     ] = c.Auth.DEFAULT_AUDIENCE
     expiry_minutes: Annotated[
-        int,
+        t.PositiveInt,
         Field(
-            ge=1,
             description="Access token expiry in minutes",
         ),
     ] = c.Auth.DEFAULT_JWT_EXPIRY_MINUTES
     session_expiry_minutes: Annotated[
-        int,
+        t.PositiveInt,
         Field(
-            ge=1,
             description="Session expiry in minutes",
         ),
     ] = c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES
     max_sessions_per_user: Annotated[
-        int,
+        t.PositiveInt,
         Field(
-            ge=1,
             description="Max parallel sessions per user",
         ),
     ] = c.Auth.DEFAULT_MAX_SESSIONS_PER_USER

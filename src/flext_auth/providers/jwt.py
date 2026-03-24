@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
 from flext_core import r
@@ -19,7 +18,7 @@ from flext_auth import m, p, t
 class FlextAuthJwtProvider(p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
-    def __init__(self, config: Mapping[str, t.Scalar] | None = None) -> None:
+    def __init__(self, config: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 

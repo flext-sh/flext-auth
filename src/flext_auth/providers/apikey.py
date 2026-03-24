@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
 from flext_core import r
@@ -24,7 +23,7 @@ class FlextAuthApiKeyProvider(p.Auth.FlextAuthBaseProvider):
     Provides API key-based authentication with token validation.
     """
 
-    def __init__(self, config: Mapping[str, t.Scalar] | None = None) -> None:
+    def __init__(self, config: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 

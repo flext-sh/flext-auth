@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 from typing import ClassVar, TypeIs, override
 
 from flext_core import FlextRegistry, r
@@ -44,14 +43,14 @@ class FlextAuthRegistry(FlextRegistry):
         for name in self.list_providers():
             self.unregister(name)
 
-    def find_by_capability(self, capability: str) -> r[Sequence[str]]:
+    def find_by_capability(self, capability: str) -> r[t.StrSequence]:
         """Find providers with specific capability."""
         matching = [
             name
             for name in self.list_providers()
             if self.has_capability(name, capability).value
         ]
-        return r[Sequence[str]].ok(matching)
+        return r[t.StrSequence].ok(matching)
 
     @override
     def get(self, data: str) -> r[p.Auth.FlextAuthBaseProvider]:
@@ -97,7 +96,7 @@ class FlextAuthRegistry(FlextRegistry):
         ):
             return r[set[str]].ok(set())
 
-    def get_config(self, name: str) -> r[Mapping[str, t.Scalar]]:
+    def get_config(self, name: str) -> r[t.ConfigurationMapping]:
         """Get provider configuration."""
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
@@ -154,7 +153,7 @@ class FlextAuthRegistry(FlextRegistry):
         result = self.get_plugin(self.PROVIDERS, name)
         return result.is_success
 
-    def list_providers(self) -> Sequence[str]:
+    def list_providers(self) -> t.StrSequence:
         """List registered provider names."""
         result = self.list_plugins(self.PROVIDERS)
         if result.is_failure:
@@ -169,7 +168,7 @@ class FlextAuthRegistry(FlextRegistry):
         name: str,
         provider: p.Auth.FlextAuthBaseProvider,
         metadata: m.Auth.Providers.Metadata | None = None,
-        configuration: Mapping[str, t.Scalar] | None = None,
+        configuration: t.ConfigurationMapping | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
         provider_wrapper = m.Auth.ProviderWrapper(
@@ -216,7 +215,7 @@ class FlextAuthRegistry(FlextRegistry):
         self.unregister_plugin(f"{self.PROVIDERS}_metadata", name)
         return r[bool].ok(value=True)
 
-    def update_config(self, name: str, config: Mapping[str, t.Scalar]) -> r[bool]:
+    def update_config(self, name: str, config: t.ConfigurationMapping) -> r[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
