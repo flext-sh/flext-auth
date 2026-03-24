@@ -231,7 +231,7 @@ class TestFlextAuthSessionManagement:
         sessions_result = auth.get_user_sessions(user.unique_id)
         tm.that(sessions_result.is_success, eq=True)
         sessions = sessions_result.value
-        tm.that(len(sessions) == 0, eq=True)
+        tm.that(not sessions, eq=True)
         revoke_result = auth.revoke_session("nonexistent_session_id")
         tm.that(not revoke_result.is_success, eq=True)
 
@@ -610,7 +610,7 @@ class TestFlextAuthErrorHandlingSecond:
         auth_result = auth.authenticate_user("nonexistent", "password")
         tm.that(not auth_result.is_success, eq=True)
         tm.that(auth_result.error is not None, eq=True)
-        tm.that(len(auth_result.error or "") > 0, eq=True)
+        tm.that(auth_result.error or "", eq=True)
 
     def test_invalid_session_logout(self) -> None:
         """Test logout with invalid session ID."""
@@ -1248,7 +1248,7 @@ class TestAuthModule:
     def test_flext_auth_docstring(self) -> None:
         """Test that FlextAuth has proper docstring."""
         tm.that(FlextAuth.__doc__ is not None, eq=True)
-        tm.that(len((FlextAuth.__doc__ or "").strip()) > 0, eq=True)
+        tm.that((FlextAuth.__doc__ or "").strip(), eq=True)
 
     def test_flext_auth_method_signatures(self) -> None:
         """Test that auth methods have proper signatures."""

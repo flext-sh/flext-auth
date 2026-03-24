@@ -131,7 +131,7 @@ class FlextAuthProviderMixin:
         """
         if not token:
             return r[bool].fail("Token must be a non-empty string")
-        if len(token.strip()) == 0:
+        if not token.strip():
             return r[bool].fail("Token cannot be empty or whitespace only")
         return r[bool].ok(value=True)
 
