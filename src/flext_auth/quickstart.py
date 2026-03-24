@@ -7,14 +7,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthTypes as t
-
 from collections.abc import MutableSequence
 from typing import override
 
 from flext_core import r
 
-from flext_auth import FlextAuth, FlextAuthSettings, m, s
+from flext_auth import FlextAuth, FlextAuthSettings, FlextAuthTypes as t, m, s
 
 
 class FlextAuthQuickstart(s[bool]):

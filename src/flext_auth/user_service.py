@@ -9,8 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthTypes as t
-
 from collections.abc import MutableSequence
 from datetime import UTC, datetime, timedelta
 from typing import override
@@ -18,7 +16,16 @@ from typing import override
 from flext_core import r
 from pydantic import ValidationError
 
-from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers, c, m, p, s
+from flext_auth import (
+    FlextAuthManagers,
+    FlextAuthSettings,
+    FlextAuthTypes as t,
+    ServiceManagers,
+    c,
+    m,
+    p,
+    s,
+)
 
 
 class FlextAuthIdentityService(s[bool]):

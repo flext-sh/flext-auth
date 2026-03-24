@@ -17,7 +17,7 @@ from collections.abc import Sequence
 
 from flext_core import FlextLogger
 
-from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, t
 
 
 def example_advanced_configuration() -> None:
@@ -82,7 +82,7 @@ def example_session_management() -> None:
     )
     if user_result.is_failure:
         return
-    tokens: Sequence[str] = []
+    tokens: t.StrSequence = []
     for _i in range(3):
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
         if auth_result.is_success:

@@ -28,7 +28,7 @@ from flext_auth import FlextAuthRfcProvider, m, t, u
 _DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.JsonObject]] = TypeAdapter(
     t.ContainerValueMapping,
 )
-_LIST_STR_ADAPTER: Final[TypeAdapter[Sequence[str]]] = TypeAdapter(Sequence[str])
+_LIST_STR_ADAPTER: Final[TypeAdapter[t.StrSequence]] = TypeAdapter(t.StrSequence)
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -304,7 +304,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = f"{identity_id}@kerberos.local"
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
-            parsed_roles: Sequence[str]
+            parsed_roles: t.StrSequence
             try:
                 parsed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:

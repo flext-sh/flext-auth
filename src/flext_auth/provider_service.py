@@ -111,7 +111,7 @@ class FlextAuthProviderService(s[bool]):
         """Get registered provider."""
         return self._providers.get(name)
 
-    def list_providers(self) -> Sequence[str]:
+    def list_providers(self) -> t.StrSequence:
         """List registered provider names."""
         return self._providers.list_providers()
 
