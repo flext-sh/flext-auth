@@ -23,7 +23,7 @@ class TestTokenRealFlows:
         """Mock HTTP request for middleware testing."""
 
         def __init__(self) -> None:
-            self.headers: t.StrMapping = {}
+            self.headers: Mapping[str, str] = {}
 
     class BaseProvider(FlextAuthBaseProvider):
         """Base token provider for flow tests."""

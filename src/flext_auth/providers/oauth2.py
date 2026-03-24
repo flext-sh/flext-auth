@@ -27,7 +27,7 @@ from flext_auth import FlextAuthRfcProvider, c, m, p, t, u
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[t.ConfigurationMapping]] = TypeAdapter(
     t.ScalarMapping,
 )
-_LIST_STR_ADAPTER: Final[TypeAdapter[t.StrSequence]] = TypeAdapter(t.StrSequence)
+_LIST_STR_ADAPTER: Final[TypeAdapter[Sequence[str]]] = TypeAdapter(Sequence[str])
 _HTTP_BAD_REQUEST: Final[int] = 400
 
 
@@ -80,7 +80,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._flow = self._init_flow()
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
-        self._pkce_verifiers: t.StrMapping = {}
+        self._pkce_verifiers: Mapping[str, str] = {}
         self._http_client: http.client.HTTPSConnection | None = None
 
     @staticmethod
@@ -599,27 +599,27 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
         return r[str].ok(urlencode(form_payload))
 
-    def _build_introspection_headers(self) -> r[t.StrMapping]:
+    def _build_introspection_headers(self) -> r[Mapping[str, str]]:
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/x-www-form-urlencoded",
         }
         auth_method = self._token_endpoint_auth_method
         if auth_method != "client_secret_basic":
-            return r[t.StrMapping].ok(headers)
+            return r[Mapping[str, str]].ok(headers)
         client_id = self.get_client_id()
         client_secret_value = self._config.get("client_secret")
         client_secret = (
             client_secret_value if isinstance(client_secret_value, str) else ""
         )
         if not client_id or not client_secret:
-            return r[t.StrMapping].fail(
+            return r[Mapping[str, str]].fail(
                 "OAuth2 client_id and client_secret are required for client_secret_basic",
             )
         auth_input = f"{client_id}:{client_secret}".encode()
         encoded_auth = b64encode(auth_input).decode("ascii")
         headers["Authorization"] = f"Basic {encoded_auth}"
-        return r[t.StrMapping].ok(headers)
+        return r[Mapping[str, str]].ok(headers)
 
     def _introspect_token(self, token: str) -> r[t.ConfigurationMapping]:
         endpoint_result = self._introspection_endpoint()
@@ -726,7 +726,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         roles_value = payload.get("roles")
         if isinstance(roles_value, list):
-            typed_roles: t.StrSequence
+            typed_roles: Sequence[str]
             try:
                 typed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:

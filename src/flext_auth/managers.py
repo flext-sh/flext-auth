@@ -106,7 +106,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str,
             email: str,
             password_hash: str,
-            **extra_fields: t.Scalar | t.StrSequence | datetime | None,
+            **extra_fields: t.Scalar | Sequence[str] | datetime | None,
         ) -> r[m.Auth.AuthIdentity]:
             """Create a new user."""
             if username in self._users:
@@ -128,8 +128,8 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             credential_hash: str = str(password_hash)
             full_name: str = ""
             is_active: bool = True
-            roles: t.StrSequence = []
-            permissions: t.StrSequence = []
+            roles: Sequence[str] = []
+            permissions: Sequence[str] = []
             failed_attempts: int = 0
             locked_until: datetime = datetime.min.replace(tzinfo=UTC)
             last_access: datetime = datetime.min.replace(tzinfo=UTC)
@@ -269,7 +269,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def update_user(
             self,
             user_id: str,
-            **updates: t.Scalar | t.StrSequence | datetime | None,
+            **updates: t.Scalar | Sequence[str] | datetime | None,
         ) -> r[m.Auth.AuthIdentity]:
             """Update user data."""
             return self._find_user_by_id(user_id).map(
@@ -332,8 +332,8 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             is_active = self._validate_required_field(storage_data, "is_active", bool)
             roles_raw = storage_data.get("roles", [])
             permissions_raw = storage_data.get("permissions", [])
-            roles: t.StrSequence = []
-            permissions: t.StrSequence = []
+            roles: Sequence[str] = []
+            permissions: Sequence[str] = []
             if u.is_list(roles_raw):
                 roles = [role for role in roles_raw if isinstance(role, str)]
             if u.is_list(permissions_raw):
@@ -553,7 +553,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str,
             provider: str,
             reason: str,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log failed authentication."""
             self.log_event(
@@ -568,7 +568,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             self,
             username: str,
             provider: str,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log successful authentication."""
             self.log_event(
@@ -585,7 +585,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             action: str,
             *,
             allowed: bool,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log authorization check."""
             event_type = (
@@ -604,7 +604,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_event(
             self,
             event_type: str,
-            **data: t.Scalar | t.StrSequence | datetime | None,
+            **data: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Generic event logging - single method replaces 11 specific methods.
 
@@ -618,7 +618,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             self,
             username: str,
             reason: str,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log failed password change."""
             self.log_event(
@@ -631,7 +631,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_password_change_success(
             self,
             username: str,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log successful password change."""
             self.log_event(
@@ -643,7 +643,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_password_reset(
             self,
             username: str,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log password reset."""
             self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
@@ -654,7 +654,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             token_type: str | None = None,
             *,
             success: bool = True,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log token creation attempt."""
             event_type = (
@@ -669,7 +669,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str | None = None,
             *,
             success: bool = True,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log token refresh attempt."""
             event_type = (
@@ -684,7 +684,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             username: str | None = None,
             *,
             success: bool = True,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log token validation attempt."""
             event_type = (
@@ -697,7 +697,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def log_user_logout(
             self,
             username: str,
-            **extra: t.Scalar | t.StrSequence | datetime | None,
+            **extra: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log user logout."""
             self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
@@ -705,7 +705,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
         def _log_event(
             self,
             event_type: str,
-            **data: t.Scalar | t.StrSequence | datetime | None,
+            **data: t.Scalar | Sequence[str] | datetime | None,
         ) -> None:
             """Log an audit event."""
             log_entry: t.Auth.Managers.LogEntry = {

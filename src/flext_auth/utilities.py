@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
@@ -264,7 +265,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         """
         try:
-            algorithms_list: t.StrSequence
+            algorithms_list: Sequence[str]
             if algorithms is None:
                 algorithms_list = [c.Auth.DEFAULT_JWT_ALGORITHM]
             else:
