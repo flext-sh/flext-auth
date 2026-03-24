@@ -14,17 +14,18 @@ from pydantic import BaseModel
 from flext_auth import m, p, t
 
 
-def _is_auth_provider(
-    value: t.RuntimeAtomic | p.Auth.FlextAuthBaseProvider,
-) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
-    required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
-    return all(callable(getattr(value, attr, None)) for attr in required)
-
-
 class FlextAuthRegistry(FlextRegistry):
     """Auth provider registry using FlextRegistry generic plugin API."""
 
     PROVIDERS: ClassVar[str] = "auth_providers"
+
+    @staticmethod
+    def _is_auth_provider(
+        value: t.RuntimeAtomic | p.Auth.FlextAuthBaseProvider,
+    ) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
+        """Check if value implements FlextAuthBaseProvider protocol."""
+        required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
+        return all(callable(getattr(value, attr, None)) for attr in required)
 
     def __init__(self) -> None:
         """Initialize with FlextRegistry infrastructure."""
@@ -65,9 +66,9 @@ class FlextAuthRegistry(FlextRegistry):
                 f"Provider '{data}' is not registered",
             )
         inner = getattr(wrapped, "provider", None)
-        if inner is not None and _is_auth_provider(inner):
+        if inner is not None and self._is_auth_provider(inner):
             return r[p.Auth.FlextAuthBaseProvider].ok(inner)
-        if _is_auth_provider(wrapped):
+        if self._is_auth_provider(wrapped):
             return r[p.Auth.FlextAuthBaseProvider].ok(wrapped)
         return r[p.Auth.FlextAuthBaseProvider].fail(
             f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider",
@@ -79,7 +80,7 @@ class FlextAuthRegistry(FlextRegistry):
         if provider_result.is_failure:
             return r[set[str]].fail(str(provider_result.error))
         provider = provider_result.unwrap()
-        if not isinstance(provider, BaseModel) or not _is_auth_provider(provider):
+        if not isinstance(provider, BaseModel) or not self._is_auth_provider(provider):
             return r[set[str]].ok(set())
         try:
             caps = provider.supports()
