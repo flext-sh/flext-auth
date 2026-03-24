@@ -331,12 +331,12 @@ class FlextAuthProtocols(FlextApiProtocols):
                 if isinstance(value, datetime):
                     return value.isoformat()
                 if isinstance(value, (list, tuple)):
-                    normalized_items: MutableSequence[t.ContainerValue] = []
-                    for item in value:
-                        normalized_item = cls._normalize_claim_value(item)
-                        if normalized_item is not None:
-                            normalized_items.append(normalized_item)
-                    return normalized_items
+                    return [
+                        normalized_item
+                        for item in value
+                        if (normalized_item := cls._normalize_claim_value(item))
+                        is not None
+                    ]
                 if isinstance(value, Mapping):
                     normalized_mapping: MutableMapping[str, t.ContainerValue] = {}
                     for key, item in value.items():

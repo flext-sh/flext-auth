@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableSequence
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import override
 
@@ -139,13 +139,10 @@ class FlextAuthIdentityService(s[bool]):
                 roles=user_roles,
             )
         except ValidationError as e:
-            error_messages: MutableSequence[str] = []
-            for error in e.errors():
-                field = (
-                    error.get("loc", ("unknown",))[0] if error.get("loc") else "unknown"
-                )
-                msg = error.get("msg", "Validation error")
-                error_messages.append(f"{field}: {msg}")
+            error_messages: Sequence[str] = [
+                f"{error.get('loc', ('unknown',))[0] if error.get('loc') else 'unknown'}: {error.get('msg', 'Validation error')}"
+                for error in e.errors()
+            ]
             error_msg = "; ".join(error_messages) if error_messages else str(e)
             return r[m.Auth.AuthIdentity].fail(error_msg)
         except (

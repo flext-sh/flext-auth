@@ -3,16 +3,14 @@
 # Run `make mod` to regenerate all managed pyproject sections.
 # Sections with [CUSTOM] are project-specific extension points.
 # [MANAGED] build system
+
 [build-system]
 build-backend = "hatchling.build"
 requires = [ "hatchling" ]
 
-[tool.hatch.build.targets.wheel]
-packages = [ "src/flext_auth" ]
-
-# [CUSTOM] project metadata
 [project]
 
+# [MANAGED] consolidated development dependencies
 authors = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -28,7 +26,7 @@ classifiers = [
 dependencies = [
   "bcrypt>=4.3",
   "cryptography>=45.0.5",
-  "flext-core @ file:../flext-core",
+  "flext-core",
   "pydantic-core>=2.41.4",
   "pydantic-settings>=2.10.1",
   "pydantic>=2.12.3",
@@ -45,7 +43,6 @@ scripts = {"flext-auth" = "flext_auth.cli_new:cli", "flext-auth-legacy" = "flext
 urls = {Documentation = "https://github.com/flext-sh/flext/blob/main/README.md", Homepage = "https://github.com/flext-sh/flext"}
 version = "0.12.0-dev"
 
-# [MANAGED] consolidated development dependencies
 [project.optional-dependencies]
 dev = [
   "autoflake>=2.3.1",
@@ -109,22 +106,25 @@ dev = [
 ]
 
 # [MANAGED] coverage
+
 [tool.coverage.report]
 fail_under = 15
 precision = 2
 show_missing = true
 skip_covered = false
 
-# [MANAGED] deptry
 [tool.deptry]
 known_first_party = [
   "flext_auth",
 ]
-pep621_dev_dependency_groups = [ "dev" ]
+pep621_dev_dependency_groups = [
+  "dev",
+]
 
-# [MANAGED] mypy
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.mypy]
-
 disable_error_code = [
   "prop-decorator",
 ]
@@ -137,13 +137,13 @@ plugins = [
 ]
 python_version = "3.13"
 
-# [MANAGED] pydantic-mypy
+[tool.poetry]
+
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 
-# [MANAGED] pyrefly
 [tool.pyrefly]
 disable-project-excludes-heuristics = true
 ignore-errors-in-generated-code = true
@@ -192,7 +192,6 @@ unannotated-attribute = true
 unannotated-parameter = true
 unannotated-return = true
 
-# [MANAGED] pyright
 [tool.pyright]
 exclude = [
   "**/.*",
@@ -248,11 +247,10 @@ extraPaths = [ ".", "src" ]
 reportPrivateUsage = "none"
 root = "examples"
 
-# [MANAGED] pytest
 [tool.pytest.ini_options]
-
-addopts = [ "--strict-markers" ]
-enable_assertion_pass_hook = true
+addopts = [
+  "--strict-markers",
+]
 markers = [
   "docker: tests requiring Docker",
   "e2e: end-to-end integration tests",
@@ -265,10 +263,15 @@ markers = [
   "unit: unit tests",
 ]
 minversion = "8.0"
-python_classes = [ "Test*" ]
-python_files = [ "*_test.py", "*_tests.py", "test_*.py" ]
+python_classes = [
+  "Test*",
+]
+python_files = [
+  "*_test.py",
+  "*_tests.py",
+  "test_*.py",
+]
 
-# [MANAGED] ruff
 [tool.ruff]
 exclude = [
   ".git",
@@ -366,7 +369,6 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-
 combine-as-imports = true
 force-single-line = false
 known-first-party = [
@@ -375,7 +377,6 @@ known-first-party = [
 split-on-trailing-comma = true
 
 [tool.ruff.lint.per-file-ignores]
-
 "**/.vulture_whitelist.py" = [
   "ALL",
 ]
@@ -430,7 +431,6 @@ split-on-trailing-comma = true
 ]
 "**/*models*" = [
   "ANN401",
-  "F821",
   "FBT001",
   "PLC2701",
   "PLR0206",
@@ -561,7 +561,7 @@ split-on-trailing-comma = true
   "D107",
   "F822",
   "N999",
-  "PLC2701", # __init__.py re-exports from private submodules within own package
+  "PLC2701",
   "RUF067",
 ]
 "**/_utilities/parser.py" = [
@@ -666,7 +666,6 @@ split-on-trailing-comma = true
   "S607",
 ]
 
-# [MANAGED] tomlsort
 [tool.tomlsort]
 all = true
 in_place = true
@@ -677,10 +676,12 @@ sort_first = [
   "tool",
 ]
 
-# [MANAGED] yamlfix
 [tool.yamlfix]
 explicit_start = false
 line_length = 88
 preserve_quotes = true
 section_whitelines = 1
 whitelines = 1
+
+[tool.uv.sources.flext-core]
+workspace = true
