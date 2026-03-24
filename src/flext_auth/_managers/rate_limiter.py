@@ -49,7 +49,7 @@ class FlextAuthRateLimiterManagers:
                         attempts_list.append(attempt)
             else:
                 attempts_list = []
-                self._attempts[username]["attempts"] = attempts_list  # type: ignore[reportIndexIssue]
+                self._attempts[username]["attempts"] = attempts_list
             attempts_list.append(now)
             recent_attempts = self._cleanup_window(username, now)
             self._attempts[username]["attempts"] = recent_attempts
