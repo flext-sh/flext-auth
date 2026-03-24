@@ -42,7 +42,7 @@ class FlextAuthJwtTokenValidator:
         try:
             config = self._provider.config
             if not config:
-                return r[Mapping[str, t.ContainerValue]].fail(
+                return r[t.ContainerValueMapping].fail(
                     "JWT configuration not provided",
                 )
             secret_key_value = config.get("secret_key")
@@ -50,7 +50,7 @@ class FlextAuthJwtTokenValidator:
                 case str() as secret if secret:
                     secret_key = secret
                 case _:
-                    return r[Mapping[str, t.ContainerValue]].fail(
+                    return r[t.ContainerValueMapping].fail(
                         "JWT secret key not configured",
                     )
             algorithm_value = config.get("algorithm")
@@ -58,7 +58,7 @@ class FlextAuthJwtTokenValidator:
                 case str() as algorithm_str:
                     algorithm = algorithm_str
                 case _:
-                    return r[Mapping[str, t.ContainerValue]].fail(
+                    return r[t.ContainerValueMapping].fail(
                         "JWT algorithm not configured",
                     )
             audience_value = config.get("audience")
@@ -67,7 +67,7 @@ class FlextAuthJwtTokenValidator:
                     case str() as audience_str:
                         audience = audience_str
                     case _:
-                        return r[Mapping[str, t.ContainerValue]].fail(
+                        return r[t.ContainerValueMapping].fail(
                             "JWT audience must be a string if provided",
                         )
             else:
@@ -88,11 +88,11 @@ class FlextAuthJwtTokenValidator:
                     algorithms=[algorithm],
                     options=decode_options,
                 )
-            return r[Mapping[str, t.ContainerValue]].ok(payload)
+            return r[t.ContainerValueMapping].ok(payload)
         except jwt.ExpiredSignatureError:
-            return r[Mapping[str, t.ContainerValue]].fail("Token has expired")
+            return r[t.ContainerValueMapping].fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return r[Mapping[str, t.ContainerValue]].fail(f"Invalid token: {e}")
+            return r[t.ContainerValueMapping].fail(f"Invalid token: {e}")
         except (
             ValueError,
             TypeError,
@@ -102,7 +102,7 @@ class FlextAuthJwtTokenValidator:
             RuntimeError,
             ImportError,
         ) as e:
-            return r[Mapping[str, t.ContainerValue]].fail(
+            return r[t.ContainerValueMapping].fail(
                 f"Token validation failed: {e}",
             )
 

@@ -26,7 +26,7 @@ from pydantic import TypeAdapter, ValidationError
 from flext_auth import FlextAuthRfcProvider, m, t, u
 
 _DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.JsonObject]] = TypeAdapter(
-    Mapping[str, t.ContainerValue],
+    t.ContainerValueMapping,
 )
 _LIST_STR_ADAPTER: Final[TypeAdapter[Sequence[str]]] = TypeAdapter(Sequence[str])
 
@@ -200,7 +200,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
+        user: m.Auth.AuthIdentity | t.ContainerValueMapping,
         token_kind: str = "access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
@@ -333,9 +333,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     ) -> (
         Callable[
             [str],
-            m.Auth.AuthIdentity
-            | Mapping[str, t.ContainerValue]
-            | m.Auth.KerberosTicketData,
+            m.Auth.AuthIdentity | t.ContainerValueMapping | m.Auth.KerberosTicketData,
         ]
         | None
     ):

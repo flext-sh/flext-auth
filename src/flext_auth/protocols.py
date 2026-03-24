@@ -483,7 +483,7 @@ class FlextAuthProtocols(FlextApiProtocols):
 
             def generate_token_for_user(
                 self,
-                user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
+                user: m.Auth.AuthIdentity | t.ContainerValueMapping,
                 token_kind: str = c.Auth.TokenTypes.ACCESS.value,
                 token_type: str | None = None,
                 expiry_minutes: int | None = None,
@@ -645,12 +645,12 @@ class FlextAuthProtocols(FlextApiProtocols):
                 token: str,
             ) -> r[Mapping[str, t.ContainerValue]]:
                 if not token.strip():
-                    return r[Mapping[str, t.ContainerValue]].fail(
+                    return r[t.ContainerValueMapping].fail(
                         "Token must be a non-empty string",
                     )
                 settings_result = self._token_settings()
                 if settings_result.is_failure:
-                    return r[Mapping[str, t.ContainerValue]].fail(
+                    return r[t.ContainerValueMapping].fail(
                         settings_result.error or "Token settings are invalid",
                     )
                 (
@@ -670,9 +670,9 @@ class FlextAuthProtocols(FlextApiProtocols):
                         options={"verify_iat": True, "verify_exp": True},
                     )
                 except jwt.ExpiredSignatureError:
-                    return r[Mapping[str, t.ContainerValue]].fail("Token has expired")
+                    return r[t.ContainerValueMapping].fail("Token has expired")
                 except jwt.InvalidTokenError as exc:
-                    return r[Mapping[str, t.ContainerValue]].fail(
+                    return r[t.ContainerValueMapping].fail(
                         f"Invalid token: {exc}",
                     )
                 except (
@@ -684,18 +684,18 @@ class FlextAuthProtocols(FlextApiProtocols):
                     RuntimeError,
                     ImportError,
                 ) as exc:
-                    return r[Mapping[str, t.ContainerValue]].fail(
+                    return r[t.ContainerValueMapping].fail(
                         f"Token validation failed: {exc}",
                     )
-                return r[Mapping[str, t.ContainerValue]].ok(decoded_payload)
+                return r[t.ContainerValueMapping].ok(decoded_payload)
 
             def _normalize_identity_payload(
                 self,
-                user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
+                user: m.Auth.AuthIdentity | t.ContainerValueMapping,
             ) -> r[Mapping[str, t.ContainerValue]]:
                 if isinstance(user, Mapping):
-                    return r[Mapping[str, t.ContainerValue]].ok(user)
-                return r[Mapping[str, t.ContainerValue]].ok(
+                    return r[t.ContainerValueMapping].ok(user)
+                return r[t.ContainerValueMapping].ok(
                     user.model_dump(
                         exclude={"credential_hash", "token", "refresh_token"},
                     ),

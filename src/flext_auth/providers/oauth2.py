@@ -431,7 +431,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | Mapping[str, t.ContainerValue],
+        user: m.Auth.AuthIdentity | t.ContainerValueMapping,
         token_kind: str = "oauth2_access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
