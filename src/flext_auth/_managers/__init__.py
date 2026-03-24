@@ -17,14 +17,8 @@ if TYPE_CHECKING:
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextAuthRateLimiterManagers": [
-        "flext_auth._managers.rate_limiter",
-        "FlextAuthRateLimiterManagers",
-    ],
-    "FlextAuthSessionManagers": [
-        "flext_auth._managers.auth_managers_session",
-        "FlextAuthSessionManagers",
-    ],
+    "FlextAuthRateLimiterManagers": ["flext_auth._managers.rate_limiter", "FlextAuthRateLimiterManagers"],
+    "FlextAuthSessionManagers": ["flext_auth._managers.auth_managers_session", "FlextAuthSessionManagers"],
 }
 
 __all__ = [
