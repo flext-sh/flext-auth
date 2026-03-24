@@ -495,7 +495,8 @@ class FlextAuthModels(FlextApiModels):
                 if "version" not in self:
                     self["version"] = "1.0.0"
                 if "capabilities" not in self:
-                    self["capabilities"] = t.StrSequence()
+                    capabilities: list[str] = []
+                    self["capabilities"] = capabilities
 
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value t.NormalizedValue)."""

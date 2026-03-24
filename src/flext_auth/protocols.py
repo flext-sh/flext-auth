@@ -273,11 +273,11 @@ class FlextAuthProtocols(FlextApiProtocols):
             OAuth2, SAML, etc.).
             """
 
-            _provider_config: Mapping[str, t.Primitives] | None
+            _provider_config: t.ScalarMapping | None
 
             def __init__(
                 self,
-                config: Mapping[str, t.Primitives] | None = None,
+                config: t.ScalarMapping | None = None,
             ) -> None:
                 """Initialize provider with optional configuration.
 
@@ -288,7 +288,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 self._provider_config = config
 
             @property
-            def config(self) -> Mapping[str, t.Primitives] | None:
+            def config(self) -> t.ScalarMapping | None:
                 """Get provider configuration."""
                 return self._provider_config
 
