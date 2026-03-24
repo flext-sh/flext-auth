@@ -422,7 +422,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                         role for role in roles_value if isinstance(role, str) and role
                     ]
                 else:
-                    user_roles: list[str] = []
+                    user_roles: MutableSequence[str] = []
                 now = datetime.now(UTC)
                 claims: MutableMapping[str, t.ContainerValue] = {}
                 reserved_claims = {
