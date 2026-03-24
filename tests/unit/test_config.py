@@ -29,9 +29,9 @@ class TestFlextAuthSettingsBasic:
     def test_config_creation(self) -> None:
         """Test basic config creation."""
         config = _require_settings()
-        tm.that(isinstance(config, FlextAuthSettings), eq=True)
+        tm.that(config, is_=FlextAuthSettings)
         tm.that(config.expiry_minutes, gt=0)
-        tm.that(isinstance(config.algorithm, str), eq=True)
+        tm.that(config.algorithm, is_=str)
 
     def test_config_with_custom_values(self) -> None:
         """Test config with custom values."""
@@ -51,7 +51,7 @@ class TestFlextAuthSettingsBasic:
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
         config = _require_settings()
-        tm.that(isinstance(config, FlextAuthSettings), eq=True)
+        tm.that(config, is_=FlextAuthSettings)
 
 
 class TestJwtTokenGenerator:
@@ -76,7 +76,7 @@ class TestJwtTokenGenerator:
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-456")
         tm.ok(result)
-        tm.that(isinstance(result.value, str), eq=True)
+        tm.that(result.value, is_=str)
         token_text = str(result.value)
         tm.that(len(token_text), gt=0)
         tm.that(token_text.count("."), eq=2)

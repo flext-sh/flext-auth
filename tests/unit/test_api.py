@@ -135,7 +135,7 @@ class TestFlextAuthHandlerRegistration:
         tm.that(hasattr(auth, "_registry"), eq=True)
         tm.that(auth._registry, none=False)
         providers = auth._registry.list_providers()
-        tm.that(isinstance(providers, list), eq=True)
+        tm.that(providers, is_=list)
 
 
 class TestFlextAuthAdvancedPatterns:
@@ -414,7 +414,7 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user(username, password)
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
-        tm.that(isinstance(identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         tm.that(identity.name, eq=username)
         tm.that(identity.contact, eq="auth@example.com")
 
@@ -439,7 +439,7 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user(username, password)
         tm.that(auth_result.is_success, eq=True)
         authenticated_identity = auth_result.value
-        tm.that(isinstance(authenticated_identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
         tm.that(token_result.is_success, eq=False)
         tm.that(token_result.error, none=False)
@@ -476,11 +476,11 @@ class TestFlextAuth:
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
-        tm.that(isinstance(identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
         tm.that(sessions_result.is_success, eq=True)
         sessions = sessions_result.value
-        tm.that(isinstance(sessions, list), eq=True)
+        tm.that(sessions, is_=list)
         tm.that(len(sessions), gte=0)
 
     def test_user_logout(self) -> None:
@@ -492,7 +492,7 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user(username, password)
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
-        tm.that(isinstance(identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
         if sessions_result.is_success:
             sessions = sessions_result.value
@@ -507,7 +507,7 @@ class TestFlextAuth:
         cleanup_result = auth.cleanup_expired_sessions()
         tm.that(cleanup_result.is_success, eq=True)
         cleaned_count = cleanup_result.value
-        tm.that(isinstance(cleaned_count, int), eq=True)
+        tm.that(cleaned_count, is_=int)
         tm.that(cleaned_count, gte=0)
 
     def test_sync_api_methods(self) -> None:
@@ -527,22 +527,22 @@ class TestFlextAuthQuickStart:
     def test_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start with default parameters."""
         auth = FlextAuth.quick_start()
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with REDACTED_LDAP_BIND_PASSWORD user creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start without REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
 
 
 class TestFlextAuthSecurity:
@@ -625,14 +625,14 @@ class TestFlextAuthQuickStartFunction:
     def test_flext_auth_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start() with default parameters."""
         auth = FlextAuth.quick_start()
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
         tm.that(auth.config, none=False)
         tm.that(auth.registry, none=False)
 
     def test_flext_auth_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() without creating REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
         nonexistent_result = auth.get_user_by_username("nonexistent_user")
         tm.that(nonexistent_result.is_success, eq=False)
         tm.that(nonexistent_result.error, none=False)
@@ -641,7 +641,7 @@ class TestFlextAuthQuickStartFunction:
     def test_flext_auth_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
 
 
 class TestFlextAuthInitializationCoverage:
@@ -660,13 +660,13 @@ class TestFlextAuthInitializationCoverage:
     def test_quick_start_redacted_ldap_bind_password_creation_failure(self) -> None:
         """Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation (reserved for future)."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_general_failure(self) -> None:
         """Test quick_start general path."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, none=False)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
 
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
@@ -708,7 +708,7 @@ class TestFlextAuthErrorPaths:
             username="nonexistent_user", password="any_password"
         )
         tm.that(result.is_success, eq=False)
-        tm.that(isinstance(result.error, str), eq=True)
+        tm.that(result.error, is_=str)
 
     def test_validate_token_invalid_cases(self) -> None:
         """Test token validation with invalid tokens."""
@@ -817,7 +817,7 @@ class TestFlextAuthTokenMethods:
         auth_result = auth.authenticate_user("testuser", "TestPassword123!")
         tm.that(auth_result.is_success, eq=True)
         authenticated_identity = auth_result.value
-        tm.that(isinstance(authenticated_identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
         tm.that(token_result.is_success, eq=False)
         val_result = auth.validate_token("any.fake.token")
@@ -852,7 +852,7 @@ class TestFlextAuthUserMethods:
         )
         tm.that(user_result.is_success, eq=True)
         get_result = auth.get_user_by_username("test_username_lookup")
-        tm.that(isinstance(get_result.is_success, bool), eq=True)
+        tm.that(get_result.is_success, is_=bool)
 
     def test_get_user_by_token_direct_api_method(self) -> None:
         """Test that create_token fails — user retrieval by ID still works."""
@@ -885,7 +885,7 @@ class TestFlextAuthUserMethods:
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.logout_user(session_id)
-                tm.that(isinstance(logout_result.is_success, bool), eq=True)
+                tm.that(logout_result.is_success, is_=bool)
 
 
 class TestFlextAuthSessionMethods:
@@ -895,19 +895,19 @@ class TestFlextAuthSessionMethods:
         """Test revoke_session method functionality."""
         auth = FlextAuth()
         revoke_result = auth.revoke_session("test_session_id")
-        tm.that(isinstance(revoke_result.is_success, bool), eq=True)
+        tm.that(revoke_result.is_success, is_=bool)
 
     def test_get_user_sessions_method(self) -> None:
         """Test get_user_sessions method functionality."""
         auth = FlextAuth()
         sessions_result = auth.get_user_sessions("test_user_id")
-        tm.that(isinstance(sessions_result.is_success, bool), eq=True)
+        tm.that(sessions_result.is_success, is_=bool)
 
     def test_cleanup_expired_sessions_method(self) -> None:
         """Test cleanup_expired_sessions method functionality."""
         auth = FlextAuth()
         cleanup_result = auth.cleanup_expired_sessions()
-        tm.that(isinstance(cleanup_result.is_success, bool), eq=True)
+        tm.that(cleanup_result.is_success, is_=bool)
 
 
 class TestFlextAuthQuickStartMethod:
@@ -916,13 +916,13 @@ class TestFlextAuthQuickStartMethod:
     def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
         tm.that(auth.config, none=False)
 
     def test_quick_start_without_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method without REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        tm.that(isinstance(auth, FlextAuth), eq=True)
+        tm.that(auth, is_=FlextAuth)
         tm.that(auth.config, none=False)
 
 
@@ -992,11 +992,11 @@ class TestFlextAuthAdditionalCoverage:
         auth_result = auth.authenticate_user("testuser", "Password123!")
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
-        tm.that(isinstance(identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
         if sessions_result.is_success:
             sessions = sessions_result.value
-            tm.that(isinstance(sessions, list), eq=True)
+            tm.that(sessions, is_=list)
         cleanup_result = auth.cleanup_expired_sessions()
         tm.that(cleanup_result.is_success, eq=True)
 
@@ -1056,7 +1056,7 @@ class TestAuthModule:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
 
     def test_flext_auth_authenticate_user(self) -> None:
         """Test FlextAuth authenticate_user functionality."""
@@ -1066,7 +1066,7 @@ class TestAuthModule:
             result = auth.authenticate_user(
                 str(test_data["username"]), str(test_data["password"])
             )
-            tm.that(isinstance(result, r), eq=True)
+            tm.that(result, is_=r)
 
     def test_flext_auth_get_user_by_username(self) -> None:
         """Test FlextAuth get_user_by_username functionality."""
@@ -1079,7 +1079,7 @@ class TestAuthModule:
         )
         tm.that(register_result.is_success, eq=True)
         result = auth.get_user_by_username(str(test_data["username"]))
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
 
     def test_flext_auth_get_user(self) -> None:
         """Test FlextAuth get_user functionality."""
@@ -1094,7 +1094,7 @@ class TestAuthModule:
         user = register_result.value
         user_id = user.unique_id
         result = auth.get_user(str(user_id))
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
 
     def test_flext_auth_validate_token(self) -> None:
         """Test that create_token/validate_token fail — JWT provider not implemented."""
@@ -1111,7 +1111,7 @@ class TestAuthModule:
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
-        tm.that(isinstance(identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
         tm.that(token_result.is_success, eq=False)
         tm.that(token_result.error, none=False)
@@ -1133,7 +1133,7 @@ class TestAuthModule:
         user = register_result.value
         user_id = user.unique_id
         result = auth.get_user_sessions(user_id)
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
         tm.that(result.is_success, eq=True)
 
     def test_flext_auth_get_user_by_token_direct_api(self) -> None:
@@ -1151,11 +1151,11 @@ class TestAuthModule:
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
-        tm.that(isinstance(identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
         tm.that(token_result.is_success, eq=False)
         result = auth.get_user(identity.unique_id)
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
         tm.that(result.is_success, eq=True)
 
     def test_flext_auth_revoke_session(self) -> None:
@@ -1173,14 +1173,14 @@ class TestAuthModule:
         )
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
-        tm.that(isinstance(identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
         if sessions_result.is_success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 result = auth.revoke_session(session_id)
-                tm.that(isinstance(result, r), eq=True)
+                tm.that(result, is_=r)
                 tm.that(result.is_success, eq=True)
 
     def test_flext_auth_comprehensive_scenario(self) -> None:
@@ -1194,12 +1194,12 @@ class TestAuthModule:
             email=str(test_user_data["email"]),
             password=str(test_user_data["password"]),
         )
-        tm.that(isinstance(register_result, r), eq=True)
+        tm.that(register_result, is_=r)
         tm.that(register_result.is_success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_auth_data["username"]), str(test_auth_data["password"])
         )
-        tm.that(isinstance(auth_result, r), eq=True)
+        tm.that(auth_result, is_=r)
         tm.that(auth_result.is_success, eq=True)
         identity = auth_result.value
         token_result = auth.create_token(identity_id=identity.unique_id)
@@ -1210,13 +1210,13 @@ class TestAuthModule:
         """Test auth module error handling patterns."""
         auth = FlextAuth()
         result = auth.register_user(username="", email="invalid_email", password="")
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
         tm.that(result.is_success, eq=False)
         result = auth.authenticate_user("invalid_user", "invalid_password")
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
         tm.that(result.is_success, eq=False)
         result = auth.get_user_by_username("non_existent_user")
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
         tm.that(result.is_success, eq=False)
         tm.that(result.error, none=False)
         tm.that((result.error or "").lower(), has="not found")
@@ -1235,12 +1235,12 @@ class TestAuthModule:
             email=test_user_data["email"],
             password=test_user_data["password"],
         )
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
         tm.that(result.is_success, eq=True)
         result = auth.authenticate_user(
             test_auth_data["username"], test_auth_data["password"]
         )
-        tm.that(isinstance(result, r), eq=True)
+        tm.that(result, is_=r)
         tm.that(result.is_success, eq=True)
 
     def test_flext_auth_docstring(self) -> None:
@@ -1301,13 +1301,13 @@ class TestAuthModule:
                 password=user_data["password"],
                 roles=[user_data["role"]] if "role" in user_data else None,
             )
-            tm.that(isinstance(result, r), eq=True)
+            tm.that(result, is_=r)
             tm.that(result.is_success, eq=True)
         for user_data in realistic_users:
             result = auth.authenticate_user(
                 user_data["username"], user_data["password"]
             )
-            tm.that(isinstance(result, r), eq=True)
+            tm.that(result, is_=r)
             tm.that(result.is_success, eq=True)
 
     def test_flext_auth_integration_patterns(self) -> None:
@@ -1320,17 +1320,17 @@ class TestAuthModule:
             email=str(test_user_data["email"]),
             password=str(test_user_data["password"]),
         )
-        tm.that(isinstance(register_result, r), eq=True)
+        tm.that(register_result, is_=r)
         tm.that(register_result.is_success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_auth_data["username"]), str(test_auth_data["password"])
         )
-        tm.that(isinstance(auth_result, r), eq=True)
+        tm.that(auth_result, is_=r)
         tm.that(auth_result.is_success, eq=True)
         authenticated_identity = auth_result.value
-        tm.that(isinstance(authenticated_identity, m.Auth.AuthIdentity), eq=True)
+        tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=authenticated_identity.unique_id)
-        tm.that(isinstance(token_result, r), eq=True)
+        tm.that(token_result, is_=r)
         tm.that(token_result.is_success, eq=False)
         tm.that(token_result.error, none=False)
 
@@ -1345,7 +1345,7 @@ class TestAuthModule:
                 email=f"user_{i}@example.com",
                 password=str(test_user_data["password"]),
             )
-            tm.that(isinstance(result, r), eq=True)
+            tm.that(result, is_=r)
             tm.that(result.is_success, eq=True)
         end_time = time.time()
         tm.that(end_time - start_time, lt=30.0)
