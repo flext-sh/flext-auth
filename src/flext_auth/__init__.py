@@ -14,11 +14,7 @@ if TYPE_CHECKING:
     from flext_api import d, e, h, r, s
     from flext_core import FlextTypes
 
-    from flext_auth import (
-        _managers,
-        providers,
-        transports,
-    )
+    from flext_auth import _managers, providers, transports
     from flext_auth.__version__ import (
         __all__,
         __author__,
@@ -30,12 +26,8 @@ if TYPE_CHECKING:
         __version__,
         __version_info__,
     )
-    from flext_auth._managers.auth_managers_session import (
-        FlextAuthSessionManagers,
-    )
-    from flext_auth._managers.rate_limiter import (
-        FlextAuthRateLimiterManagers,
-    )
+    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
+    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
     from flext_auth.api import FlextAuth
     from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
     from flext_auth.managers import FlextAuthManagers, ServiceManagers
