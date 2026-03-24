@@ -542,7 +542,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                     ):
                         continue
                 filtered_logs.append(log)
-            return r[Sequence[t.ContainerValue]].ok(filtered_logs[-limit:])
+            return r[t.ContainerValueList].ok(filtered_logs[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""

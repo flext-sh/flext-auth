@@ -1320,19 +1320,15 @@ class TestAuthModule:
             email=str(test_user_data["email"]),
             password=str(test_user_data["password"]),
         )
-        tm.that(register_result, is_=r)
-        tm.that(register_result.is_success, eq=True)
+        tm.that(register_result, is_=r, ok=True)
         auth_result = auth.authenticate_user(
             str(test_auth_data["username"]), str(test_auth_data["password"])
         )
-        tm.that(auth_result, is_=r)
-        tm.that(auth_result.is_success, eq=True)
+        tm.that(auth_result, is_=r, ok=True)
         authenticated_identity = auth_result.value
         tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=authenticated_identity.unique_id)
-        tm.that(token_result, is_=r)
-        tm.that(not token_result.is_success, eq=True)
-        tm.that(token_result.error, none=False)
+        tm.that(token_result, is_=r, ok=False)
 
     def test_flext_auth_performance_patterns(self) -> None:
         """Test auth performance patterns."""
