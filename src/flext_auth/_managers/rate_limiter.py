@@ -47,7 +47,7 @@ class FlextAuthRateLimiterManagers:
                     attempt for attempt in attempts_raw if isinstance(attempt, datetime)
                 ]
             else:
-                attempts_list = []
+                attempts_list = list[t.ContainerValue]()
                 self._attempts[username]["attempts"] = attempts_list
             attempts_list.append(now)
             recent_attempts = self._cleanup_window(username, now)

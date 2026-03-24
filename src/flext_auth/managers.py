@@ -278,7 +278,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             **updates: t.Scalar | t.StrSequence | datetime | None,
         ) -> r[m.Auth.AuthIdentity]:
             """Update user data."""
-            filtered_updates: dict[str, t.ContainerValue] = {
+            filtered_updates: Mapping[str, t.ContainerValue] = {
                 k: v for k, v in updates.items() if v is not None
             }
             return self._find_user_by_id(user_id).map(
@@ -717,7 +717,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             **data: t.Scalar | t.StrSequence | datetime | None,
         ) -> None:
             """Log an audit event."""
-            filtered_data: dict[str, t.ContainerValue] = {
+            filtered_data: Mapping[str, t.ContainerValue] = {
                 k: v for k, v in data.items() if v is not None
             }
             log_entry: t.Auth.Managers.LogEntry = {
