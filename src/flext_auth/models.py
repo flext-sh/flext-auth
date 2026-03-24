@@ -9,15 +9,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections import UserDict
-from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Annotated, ClassVar, Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
 from flext_core import r
-from pydantic import ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from flext_auth import c, t
 
@@ -478,28 +476,14 @@ class FlextAuthModels(FlextApiModels):
                 """Check if configured."""
                 return bool(self.name and self.type)
 
-        class ProviderConfiguration(UserDict[str, t.ContainerValue]):
+        class ProviderConfiguration(BaseModel):
             """Provider configuration for authentication providers."""
 
-            def __init__(
-                self,
-                dict_: Mapping[str, t.ContainerValue] | None = None,
-                /,
-                **kwargs: t.Scalar,
-            ) -> None:
-                """Initialize provider configuration with defaults."""
-                if dict_ is not None:
-                    super().__init__(dict_, **kwargs)
-                else:
-                    super().__init__(**kwargs)
-                # Set defaults if not provided
-                if "name" not in self:
-                    self["name"] = "default"
-                if "version" not in self:
-                    self["version"] = "1.0.0"
-                if "capabilities" not in self:
-                    capabilities: list[str] = []
-                    self["capabilities"] = capabilities
+            model_config = ConfigDict(extra="allow")
+
+            name: Annotated[str, Field(default="default", description="Provider name")]
+            version: Annotated[str, Field(default="1.0.0", description="Provider version")]
+            capabilities: Annotated[list[str], Field(default_factory=list, description="Provider capabilities")]
 
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value t.NormalizedValue)."""
