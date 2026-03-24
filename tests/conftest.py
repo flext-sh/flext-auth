@@ -14,6 +14,14 @@ import pytest
 from flext_auth import FlextAuth, FlextAuthSettings
 
 
+class _MockGlobal:
+    """Mock for FlextAuthSettings.get_global."""
+
+    def get_global(self) -> None:
+        """Return None as mock global instance."""
+        return None
+
+
 @pytest.fixture(autouse=True)
 def _reset_singletons() -> Iterator[None]:
     """Reset FlextAuth and FlextAuthSettings singletons between tests.
@@ -30,16 +38,11 @@ def _reset_singletons() -> Iterator[None]:
 
 
 @pytest.fixture
-def mock_get_global() -> mock_get_global.MockGlobal:
+def mock_get_global() -> _MockGlobal:
     """Mock for FlextAuthSettings.get_global.
 
     Returns:
         Mock t.NormalizedValue for global instance
 
     """
-
-    class MockGlobal:
-        def get_global(self) -> None:
-            return None
-
-    return MockGlobal()
+    return _MockGlobal()

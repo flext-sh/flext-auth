@@ -10,7 +10,7 @@ from flext_auth import FlextAuthConstants
 class FlextAuthTestConstants(FlextTestsConstants, FlextAuthConstants):
     """Test constants for flext-auth."""
 
-    class Tests:
+    class Tests(FlextTestsConstants.Tests):
         """Test-specific constants."""
 
         TEST_USERNAME: Final[str] = "testuser"
