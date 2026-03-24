@@ -2,14 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 
 from flext_core import FlextContext, FlextLogger, FlextRegistry, r
 
-from flext_auth import p, t
-
-if TYPE_CHECKING:
-    from flext_auth import FlextAuthSettings
+from flext_auth import FlextAuthSettings, p, t
 
 
 class FlextAuthRateLimiterManagers:
