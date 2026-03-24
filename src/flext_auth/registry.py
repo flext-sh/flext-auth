@@ -100,15 +100,15 @@ class FlextAuthRegistry(FlextRegistry):
     def get_config(self, name: str) -> r[Mapping[str, t.Scalar]]:
         """Get provider configuration."""
         if not self.has_provider(name):
-            return r[Mapping[str, t.Scalar]].fail(f"Provider '{name}' not registered")
+            return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
         config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
         if config_result.is_failure:
-            return r[Mapping[str, t.Scalar]].fail("No config")
+            return r[t.ScalarMapping].fail("No config")
         wrapper = config_result.value
         config = getattr(wrapper, "data", None)
         if config is None:
-            return r[Mapping[str, t.Scalar]].fail("Invalid config format")
-        return r[Mapping[str, t.Scalar]].ok(config)
+            return r[t.ScalarMapping].fail("Invalid config format")
+        return r[t.ScalarMapping].ok(config)
 
     def get_metadata(self, name: str) -> r[m.Auth.Providers.Metadata]:
         """Get provider metadata."""

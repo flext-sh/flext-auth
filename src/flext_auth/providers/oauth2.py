@@ -25,7 +25,7 @@ from pydantic import TypeAdapter, ValidationError
 from flext_auth import FlextAuthRfcProvider, c, m, p, t, u
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[Mapping[str, t.Scalar]]] = TypeAdapter(
-    Mapping[str, t.Scalar],
+    t.ScalarMapping,
 )
 _LIST_STR_ADAPTER: Final[TypeAdapter[Sequence[str]]] = TypeAdapter(Sequence[str])
 _HTTP_BAD_REQUEST: Final[int] = 400
@@ -38,7 +38,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     Uses flext-core patterns and Python 3.13+ features for maximum maintainability.
     """
 
-    def __init__(self, config: m.Auth.ProviderConfig | Mapping[str, t.Scalar]) -> None:
+    def __init__(self, config: m.Auth.ProviderConfig | t.ScalarMapping) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
         Railway-oriented initialization with proper error handling.
@@ -304,7 +304,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             _credentials: Mapping[str, t.Scalar],
         ) -> r[Mapping[str, t.Scalar]]:
             """Handle OAuth2 authorization code flow."""
-            return r[Mapping[str, t.Scalar]].ok({
+            return r[t.ScalarMapping].ok({
                 "user_id": "oauth2_user",
                 "valid": True,
             })
@@ -397,7 +397,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def authenticate(
         self,
-        credentials: m.Auth.CredentialValidation | Mapping[str, t.Scalar],
+        credentials: m.Auth.CredentialValidation | t.ScalarMapping,
     ) -> r[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: Mapping[str, t.Scalar]
@@ -624,22 +624,22 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _introspect_token(self, token: str) -> r[Mapping[str, t.Scalar]]:
         endpoint_result = self._introspection_endpoint()
         if endpoint_result.is_failure:
-            return r[Mapping[str, t.Scalar]].fail(
+            return r[t.ScalarMapping].fail(
                 endpoint_result.error or "OAuth2 introspection endpoint is required",
             )
         headers_result = self._build_introspection_headers()
         if headers_result.is_failure:
-            return r[Mapping[str, t.Scalar]].fail(
+            return r[t.ScalarMapping].fail(
                 headers_result.error or "OAuth2 introspection headers are invalid",
             )
         body_result = self._build_introspection_form_data(token)
         if body_result.is_failure:
-            return r[Mapping[str, t.Scalar]].fail(
+            return r[t.ScalarMapping].fail(
                 body_result.error or "OAuth2 introspection payload is invalid",
             )
         parsed = urlparse(endpoint_result.value)
         if parsed.scheme != "https":
-            return r[Mapping[str, t.Scalar]].fail(
+            return r[t.ScalarMapping].fail(
                 f"Unsupported URL scheme: {parsed.scheme}",
             )
         request_path = parsed.path or "/"
@@ -657,7 +657,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             status_code = response.status
             response_payload = response.read().decode("utf-8")
         except (http.client.HTTPException, OSError, ValueError, TypeError) as exc:
-            return r[Mapping[str, t.Scalar]].fail(
+            return r[t.ScalarMapping].fail(
                 f"OAuth2 introspection request failed: {exc}",
             )
         finally:
@@ -669,16 +669,16 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 if error_body
                 else f"OAuth2 introspection request failed with status {status_code}"
             )
-            return r[Mapping[str, t.Scalar]].fail(error_message)
+            return r[t.ScalarMapping].fail(error_message)
         try:
             parsed_mapping: Mapping[str, t.Scalar] = (
                 _DICT_STR_SCALAR_ADAPTER.validate_json(response_payload)
             )
         except (ValueError, ValidationError) as exc:
-            return r[Mapping[str, t.Scalar]].fail(
+            return r[t.ScalarMapping].fail(
                 f"OAuth2 introspection payload is not valid JSON: {exc}",
             )
-        return r[Mapping[str, t.Scalar]].ok(parsed_mapping)
+        return r[t.ScalarMapping].ok(parsed_mapping)
 
     def _introspection_endpoint(self) -> r[str]:
         for key in ("introspection_endpoint", "token_introspection_endpoint"):

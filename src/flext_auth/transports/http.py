@@ -22,7 +22,7 @@ from pydantic import TypeAdapter, ValidationError
 from flext_auth import m, t
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[Mapping[str, t.Scalar]]] = TypeAdapter(
-    Mapping[str, t.Scalar],
+    t.ScalarMapping,
 )
 
 
