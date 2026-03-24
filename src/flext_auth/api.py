@@ -235,7 +235,7 @@ class FlextAuth:
     def create_token(
         self,
         identity_id: str,
-        extra_claims: Mapping[str, str | int | bool] | None = None,
+        extra_claims: Mapping[str, t.Scalar] | None = None,
     ) -> r[str]:
         """Railway-oriented token creation.
 
@@ -304,7 +304,7 @@ class FlextAuth:
         password: str,
         roles: Sequence[str] | None = None,
         role: str | None = None,
-        **kwargs: str | int | bool | Sequence[str] | None,
+        **kwargs: t.Scalar | Sequence[str] | None,
     ) -> r[m.Auth.AuthIdentity]:
         """Register a new user.
 
@@ -354,7 +354,7 @@ class FlextAuth:
     def update_user(
         self,
         user_id: str,
-        **updates: str | int | bool | Sequence[str] | None,
+        **updates: t.Scalar | Sequence[str] | None,
     ) -> r[m.Auth.AuthIdentity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)

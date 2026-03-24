@@ -13,13 +13,13 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import m, p
+from flext_auth import m, p, t
 
 
 class FlextAuthJwtProvider(p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
-    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.Scalar] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
