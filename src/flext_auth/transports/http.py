@@ -315,7 +315,7 @@ class FlextWebTransportAdapter:
             data_mapping: t.JsonObject = {
                 str(key): value for key, value in data.items()
             }
-            query_dict = query if query is not None else {}
+            query_dict: t.Api.WebParams = query if query is not None else {}
             merged_query = {
                 **query_dict,
                 **{str(key): value for key, value in data_mapping.items()},

@@ -441,7 +441,7 @@ class FlextAuthConstants(FlextApiConstants):
         VALIDATE = "validate"
 
     @unique
-    class TokenType(StrEnum):
+    class AuthTokenType(StrEnum):
         """Token type enumeration."""
 
         ACCESS = "access"

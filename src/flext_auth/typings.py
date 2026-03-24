@@ -54,7 +54,7 @@ class FlextAuthTypes(FlextApiTypes):
         class TokenManagement:
             """Token management type definitions."""
 
-            type TokenType = c.TokenType
+            type TokenType = c.AuthTokenType
             type TokenStatus = c.TokenStatus
 
         class Authorization:

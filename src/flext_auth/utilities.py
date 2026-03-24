@@ -96,49 +96,33 @@ class FlextAuthUtilities(FlextApiUtilities):
         """
 
         class Pydantic:
-            """Annotated type factories for Pydantic models."""
+            """Annotated type factories for Pydantic models.
 
-            @staticmethod
-            def coerced_provider_type() -> type[c.Auth.ProviderTypes]:
-                """Return Annotated[ProviderTypes, BeforeValidator(...)] for Pydantic Field.
+            These return Annotated type forms for Pydantic BeforeValidator usage.
+            The coerce functions are typed as returning the enum type for downstream
+            compatibility, since Annotated[X, ...] acts as type X at validation time.
+            """
 
-                Note: Returns Annotated type form, typed as type for pyright compatibility.
-                """
-                result: type[c.Auth.ProviderTypes] = Annotated[
-                    c.Auth.ProviderTypes,
-                    BeforeValidator(
-                        FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes),
-                    ),
-                ]
-                return result
+            COERCED_PROVIDER_TYPE = Annotated[
+                c.Auth.ProviderTypes,
+                BeforeValidator(
+                    FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes),
+                ),
+            ]
 
-            @staticmethod
-            def coerced_role_type() -> type[c.Auth.RoleTypes]:
-                """Return Annotated[RoleTypes, BeforeValidator(...)] for Pydantic Field.
+            COERCED_ROLE_TYPE = Annotated[
+                c.Auth.RoleTypes,
+                BeforeValidator(
+                    FlextApiUtilities.coerce_validator(c.Auth.RoleTypes),
+                ),
+            ]
 
-                Note: Returns Annotated type form, typed as type for pyright compatibility.
-                """
-                result: type[c.Auth.RoleTypes] = Annotated[
-                    c.Auth.RoleTypes,
-                    BeforeValidator(
-                        FlextApiUtilities.coerce_validator(c.Auth.RoleTypes),
-                    ),
-                ]
-                return result
-
-            @staticmethod
-            def coerced_token_type() -> type[c.Auth.TokenTypes]:
-                """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field.
-
-                Note: Returns Annotated type form, typed as type for pyright compatibility.
-                """
-                result: type[c.Auth.TokenTypes] = Annotated[
-                    c.Auth.TokenTypes,
-                    BeforeValidator(
-                        FlextApiUtilities.coerce_validator(c.Auth.TokenTypes),
-                    ),
-                ]
-                return result
+            COERCED_TOKEN_TYPE = Annotated[
+                c.Auth.TokenTypes,
+                BeforeValidator(
+                    FlextApiUtilities.coerce_validator(c.Auth.TokenTypes),
+                ),
+            ]
 
         class Validation:
             """Domain-specific validation utilities."""

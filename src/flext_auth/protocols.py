@@ -337,12 +337,14 @@ class FlextAuthProtocols(FlextApiProtocols):
                         if normalized_item is not None:
                             normalized_items.append(normalized_item)
                     return normalized_items
-                normalized_mapping: MutableMapping[str, t.ContainerValue] = {}
-                for key, item in value.items():
-                    normalized_item = cls._normalize_claim_value(item)
-                    if normalized_item is not None:
-                        normalized_mapping[key] = normalized_item
-                return normalized_mapping
+                if isinstance(value, Mapping):
+                    normalized_mapping: MutableMapping[str, t.ContainerValue] = {}
+                    for key, item in value.items():
+                        normalized_item = cls._normalize_claim_value(item)
+                        if normalized_item is not None:
+                            normalized_mapping[key] = normalized_item
+                    return normalized_mapping
+                return None
 
             def authenticate(
                 self,
