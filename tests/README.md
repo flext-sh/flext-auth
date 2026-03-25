@@ -220,13 +220,8 @@ class TestUserFactory:
 def mock_password_service():
     """Mock password service for isolated testing."""
     with patch("flext_auth.services.password_service.FlextPasswordService") as mock:
-<<<<<<< Updated upstream
         mock.hash_password.return_value = r[bool].ok("hashed_password")
         mock.verify_password.return_value = r[bool].ok(data=True)
-=======
-        mock.hash_password.return_value = FlextResult[bool].ok("hashed_password")
-        mock.verify_password.return_value = FlextResult[bool].ok(data=True)
->>>>>>> Stashed changes
         yield mock
 ```
 

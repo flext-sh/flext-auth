@@ -286,7 +286,6 @@ class FlextAuthRegistry:
 class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers."""
 
-<<<<<<< Updated upstream
     def authenticate(self, credentials: dict) -> r[AuthToken]:
         """Authenticate user with provided credentials."""
         ...
@@ -300,21 +299,6 @@ class FlextAuthBaseProvider(Protocol):
         ...
 
     def revoke(self, token: str | AuthToken) -> r[bool]:
-=======
-    def authenticate(self, credentials: dict) -> FlextResult[AuthToken]:
-        """Authenticate user with provided credentials."""
-        ...
-
-    def validate(self, token: str | AuthToken) -> FlextResult[bool]:
-        """Validate authentication token."""
-        ...
-
-    def refresh(self, token: str | AuthToken) -> FlextResult[AuthToken]:
-        """Refresh authentication token."""
-        ...
-
-    def revoke(self, token: str | AuthToken) -> FlextResult[bool]:
->>>>>>> Stashed changes
         """Revoke authentication token."""
         ...
 
@@ -459,7 +443,6 @@ from flext_auth import FlextAuthBaseProvider
 from flext_auth import FlextAuthModels
 
 
-
 class FlextAuthExampleProvider(FlextAuthBaseProvider):
     """Example authentication provider implementation."""
 
@@ -467,19 +450,11 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         self._config = config
         self.logger = FlextLogger(__name__)
 
-<<<<<<< Updated upstream
     def authenticate(self, credentials: dict) -> r[FlextAuthModels.AuthToken]:
         """Authenticate using provider-specific logic."""
         # Validation
         if not credentials.get("username"):
             return r[FlextAuthModels.AuthToken].fail("Username required")
-=======
-    def authenticate(self, credentials: dict) -> FlextResult[FlextAuthModels.AuthToken]:
-        """Authenticate using provider-specific logic."""
-        # Validation
-        if not credentials.get("username"):
-            return FlextResult[FlextAuthModels.AuthToken].fail("Username required")
->>>>>>> Stashed changes
 
         # Provider-specific authentication
         try:
@@ -489,22 +464,14 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         except Exception as e:
             return r[FlextAuthModels.AuthToken].fail(f"Authentication failed: {e}")
 
-<<<<<<< Updated upstream
     def validate(self, token: str | FlextAuthModels.AuthToken) -> r[bool]:
-=======
-    def validate(self, token: str | FlextAuthModels.AuthToken) -> FlextResult[bool]:
->>>>>>> Stashed changes
         """Validate token using provider-specific logic."""
         # Implementation
         ...
 
     def refresh(
         self, token: str | FlextAuthModels.AuthToken
-<<<<<<< Updated upstream
     ) -> r[FlextAuthModels.AuthToken]:
-=======
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
->>>>>>> Stashed changes
         """Refresh token if provider supports it."""
         if "refresh" not in self.supports():
             return r[FlextAuthModels.AuthToken].fail(
@@ -513,11 +480,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         # Implementation
         ...
 
-<<<<<<< Updated upstream
     def revoke(self, token: str | FlextAuthModels.AuthToken) -> r[bool]:
-=======
-    def revoke(self, token: str | FlextAuthModels.AuthToken) -> FlextResult[bool]:
->>>>>>> Stashed changes
         """Revoke token if provider supports it."""
         # Implementation
         ...
@@ -550,27 +513,17 @@ class BaseTransportAdapter(Protocol):
         self,
         endpoint: str,
         credentials: dict,
-<<<<<<< Updated upstream
         metadata: t.ContainerMapping | None = None,
     ) -> r[t.Dict]:
-=======
-        metadata: dict[str, object] | None = None,
-    ) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Send authentication request over transport."""
         ...
 
     def send_validate_request(
-<<<<<<< Updated upstream
         self,
         endpoint: str,
         token: str,
         metadata: t.ContainerMapping | None = None,
     ) -> r[t.Dict]:
-=======
-        self, endpoint: str, token: str, metadata: dict[str, object] | None = None
-    ) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Send token validation request over transport."""
         ...
 
@@ -618,22 +571,13 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-<<<<<<< Updated upstream
         metadata: t.ContainerMapping | None = None,
     ) -> r[t.Dict]:
-=======
-        metadata: dict[str, object] | None = None,
-    ) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(url=endpoint, json=credentials, headers=metadata)
 
         if result.is_failure:
-<<<<<<< Updated upstream
             return r[t.Dict].fail(f"HTTP transport failed: {result.error}")
-=======
-            return FlextResult[t.Dict].fail(f"HTTP transport failed: {result.error}")
->>>>>>> Stashed changes
 
         return r[t.Dict].ok(result.unwrap())
 ```
@@ -677,13 +621,8 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-<<<<<<< Updated upstream
         metadata: t.ContainerMapping | None = None,
     ) -> r[t.Dict]:
-=======
-        metadata: dict[str, object] | None = None,
-    ) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
             service="AuthService",
@@ -693,11 +632,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         )
 
         if result.is_failure:
-<<<<<<< Updated upstream
             return r[t.Dict].fail(f"gRPC transport failed: {result.error}")
-=======
-            return FlextResult[t.Dict].fail(f"gRPC transport failed: {result.error}")
->>>>>>> Stashed changes
 
         return r[t.Dict].ok(result.unwrap())
 ```
@@ -716,13 +651,8 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-<<<<<<< Updated upstream
         metadata: t.ContainerMapping | None = None,
     ) -> r[t.Dict]:
-=======
-        metadata: dict[str, object] | None = None,
-    ) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
         ...
@@ -739,21 +669,12 @@ class BaseProtocolHandler(Protocol):
     """Base protocol for protocol-specific handlers."""
 
     def format_auth_request(
-<<<<<<< Updated upstream
         self, credentials: dict, metadata: t.ContainerMapping | None = None
     ) -> r[bytes | str]:
         """Format authentication request for protocol."""
         ...
 
     def parse_auth_response(self, response: bytes | str) -> r[t.Dict]:
-=======
-        self, credentials: dict, metadata: dict[str, object] | None = None
-    ) -> FlextResult[bytes | str]:
-        """Format authentication request for protocol."""
-        ...
-
-    def parse_auth_response(self, response: bytes | str) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Parse authentication response from protocol."""
         ...
 ```
@@ -765,13 +686,8 @@ class RestProtocolHandler(BaseProtocolHandler):
     """REST/JSON protocol handler (default)."""
 
     def format_auth_request(
-<<<<<<< Updated upstream
         self, credentials: dict, metadata: t.ContainerMapping | None = None
     ) -> r[str]:
-=======
-        self, credentials: dict, metadata: dict[str, object] | None = None
-    ) -> FlextResult[str]:
->>>>>>> Stashed changes
         """Format as JSON REST request."""
         import json
 
@@ -781,11 +697,7 @@ class RestProtocolHandler(BaseProtocolHandler):
         except Exception as e:
             return r[str].fail(f"JSON formatting failed: {e}")
 
-<<<<<<< Updated upstream
     def parse_auth_response(self, response: str) -> r[t.Dict]:
-=======
-    def parse_auth_response(self, response: str) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Parse JSON REST response."""
         import json
 
@@ -803,22 +715,13 @@ class SoapProtocolHandler(BaseProtocolHandler):
     """SOAP/XML protocol handler (stub)."""
 
     def format_auth_request(
-<<<<<<< Updated upstream
         self, credentials: dict, metadata: t.ContainerMapping | None = None
     ) -> r[str]:
-=======
-        self, credentials: dict, metadata: dict[str, object] | None = None
-    ) -> FlextResult[str]:
->>>>>>> Stashed changes
         """Format as SOAP XML request."""
         # Implementation for SOAP envelope creation
         ...
 
-<<<<<<< Updated upstream
     def parse_auth_response(self, response: str) -> r[t.Dict]:
-=======
-    def parse_auth_response(self, response: str) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Parse SOAP XML response."""
         # Implementation for SOAP envelope parsing
         ...
@@ -855,13 +758,7 @@ class TokenManager:
         self._retry = retry_policy or RetryPolicy()
         self.logger = FlextLogger(__name__)
 
-<<<<<<< Updated upstream
     def get_token(self, credentials: dict, use_cache: bool = True) -> r[AuthToken]:
-=======
-    def get_token(
-        self, credentials: dict, use_cache: bool = True
-    ) -> FlextResult[AuthToken]:
->>>>>>> Stashed changes
         """Get token with caching."""
         if use_cache:
             cached = self._cache.get(credentials)
@@ -880,13 +777,8 @@ class TokenManager:
         credentials: dict,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-<<<<<<< Updated upstream
         retry_on: Sequence[type[Exception]] | None = None,
     ) -> r[AuthToken]:
-=======
-        retry_on: list[type[Exception]] | None = None,
-    ) -> FlextResult[AuthToken]:
->>>>>>> Stashed changes
         """Get token with automatic retry on failure."""
         return self._retry.execute(
             func=self._provider.authenticate,
@@ -896,22 +788,14 @@ class TokenManager:
             retry_on=retry_on or [],
         )
 
-<<<<<<< Updated upstream
     def refresh_token(self, token: AuthToken) -> r[AuthToken]:
-=======
-    def refresh_token(self, token: AuthToken) -> FlextResult[AuthToken]:
->>>>>>> Stashed changes
         """Refresh token if provider supports it."""
         if "refresh" not in self._provider.supports():
             return r[AuthToken].fail("Provider does not support token refresh")
 
         return self._provider.refresh(token)
 
-<<<<<<< Updated upstream
     def validate_token(self, token: AuthToken) -> r[bool]:
-=======
-    def validate_token(self, token: AuthToken) -> FlextResult[bool]:
->>>>>>> Stashed changes
         """Validate token."""
         return self._provider.validate(token)
 ```
@@ -927,15 +811,9 @@ class RetryPolicy:
         func: Callable,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-<<<<<<< Updated upstream
         retry_on: Sequence[type[Exception]] | None = None,
         **kwargs,
     ) -> r[T]:
-=======
-        retry_on: list[type[Exception]] | None = None,
-        **kwargs,
-    ) -> FlextResult[T]:
->>>>>>> Stashed changes
         """Execute function with retry logic."""
         retry_on = retry_on or [ConnectionError, TimeoutError]
 
@@ -963,11 +841,7 @@ class TokenCache:
     def __init__(
         self,
         backend: str = "memory",  # "memory", "redis", "memcached"
-<<<<<<< Updated upstream
         config: t.ContainerMapping | None = None,
-=======
-        config: dict[str, object] | None = None,
->>>>>>> Stashed changes
     ) -> None:
         self._backend = self._create_backend(backend, config)
         self.logger = FlextLogger(__name__)
@@ -1016,22 +890,13 @@ class CredentialManager:
         self,
         identifier: str,
         credential: dict,
-<<<<<<< Updated upstream
         metadata: t.ContainerMapping | None = None,
     ) -> r[bool]:
-=======
-        metadata: dict[str, object] | None = None,
-    ) -> FlextResult[bool]:
->>>>>>> Stashed changes
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)
         return self._storage.save(identifier, encrypted, metadata)
 
-<<<<<<< Updated upstream
     def retrieve_credential(self, identifier: str) -> r[t.Dict]:
-=======
-    def retrieve_credential(self, identifier: str) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
         """Retrieve and decrypt credential."""
         result = self._storage.load(identifier)
         if result.is_failure:
@@ -1041,13 +906,7 @@ class CredentialManager:
         decrypted = self._cipher.decrypt(encrypted)
         return r[t.Dict].ok(decrypted)
 
-<<<<<<< Updated upstream
     def rotate_credential(self, identifier: str, new_credential: dict) -> r[bool]:
-=======
-    def rotate_credential(
-        self, identifier: str, new_credential: dict
-    ) -> FlextResult[bool]:
->>>>>>> Stashed changes
         """Rotate credential with old credential backup."""
         # Archive old credential
         old_result = self.retrieve_credential(identifier)
@@ -1220,11 +1079,7 @@ result = auth.authenticate_user("username", "password")
 
 ```python
 from flext_auth import FlextAuth, FlextAuthRegistry
-<<<<<<< Updated upstream
 from flext_auth import (
-=======
-from flext_auth.providers import (
->>>>>>> Stashed changes
     FlextAuthJwtProvider,
     FlextAuthOAuth2Provider,
     FlextAuthSamlProvider,

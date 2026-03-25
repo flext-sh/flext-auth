@@ -332,11 +332,7 @@ from flext_core import t
 from flext_core import u
 
 
-<<<<<<< Updated upstream
 def complete_auth_flow(username: str, password: str) -> r[t.Dict]:
-=======
-def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
->>>>>>> Stashed changes
     return (
         auth
         .authenticate_user(username, password)

@@ -139,7 +139,6 @@ def authenticate_user(username: str, password: str) -> r[t.Dict]:
     return r[t.Dict].ok(result)
 
 
-
 # ❌ Incorrect - Don't use exceptions for business logic
 def authenticate_user(username: str, password: str) -> t.ContainerMapping:
     if not username:
