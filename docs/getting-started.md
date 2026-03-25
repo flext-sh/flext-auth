@@ -209,8 +209,15 @@ from flext_core import t
 from flext_core import u
 
 
+<<<<<<< Updated upstream
 def process_authentication_workflow(username: str, password: str) -> r[t.Dict]:
     """Authentication workflow using r error handling."""
+=======
+def process_authentication_workflow(
+    username: str, password: str
+) -> FlextResult[t.Dict]:
+    """Authentication workflow using FlextResult error handling."""
+>>>>>>> Stashed changes
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 

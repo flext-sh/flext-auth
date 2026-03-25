@@ -337,6 +337,7 @@ from flext_db_oracle import OracleRepository
 from flext_auth import User
 
 
+
 class UserRepository(OracleRepository[User]):
     """User storage using Oracle database."""
 
@@ -359,6 +360,7 @@ Integration with Redis for session management:
 # Future integration pattern
 import redis
 from flext_auth import Session
+
 
 
 class RedisSessionStorage:
@@ -422,7 +424,13 @@ class FlextAuthWorkspaceSettings(FlextWorkspaceSettings):
     def get_auth_service(self) -> r[FlextAuth]:
         """Get configured authentication service."""
         if self.auth_config.is_success:
+<<<<<<< Updated upstream
             return r[FlextAuth].ok(FlextAuth(config=self.auth_config.unwrap()))
+=======
+            return FlextResult[FlextAuth].ok(
+                FlextAuth(config=self.auth_config.unwrap())
+            )
+>>>>>>> Stashed changes
         else:
             return r[FlextAuth].fail("Auth configuration failed")
 ```

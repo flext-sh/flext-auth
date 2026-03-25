@@ -356,7 +356,11 @@ mypy src/flext_auth/
    from typing import Optional
 
 
+<<<<<<< Updated upstream
    def find_user(username: str) -> r[Optional[User]]:
+=======
+   def find_user(username: str) -> FlextResult[Optional[User]]:
+>>>>>>> Stashed changes
        pass
    ```
 

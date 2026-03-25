@@ -10,23 +10,27 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+
 if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
-    from tests import fixtures, helpers, unit
+
     from tests.conftest import mock_get_global, reset_singletons
     from tests.constants import FlextAuthTestConstants, FlextAuthTestConstants as c
+    import tests.fixtures as fixtures
     from tests.fixtures.certificates import (
         CertificateFixture,
         generate_client_cert,
         generate_self_signed_cert,
     )
+    import tests.helpers as helpers
     from tests.helpers.protocols import TestsProtocols
     from tests.helpers.typings import TestsTypings
     from tests.helpers.utilities import TestsUtilities
     from tests.models import FlextAuthTestModels, FlextAuthTestModels as m
     from tests.protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
     from tests.typings import FlextAuthTestTypes, FlextAuthTestTypes as t
+    import tests.unit as unit
     from tests.unit.test_api import (
         HttpRequest,
         TestAuthModule,
@@ -75,93 +79,33 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "HttpRequest": ["tests.unit.test_api", "HttpRequest"],
     "TestAuthModule": ["tests.unit.test_api", "TestAuthModule"],
     "TestFlextAuth": ["tests.unit.test_api", "TestFlextAuth"],
-    "TestFlextAuthAdditionalCoverage": [
-        "tests.unit.test_api",
-        "TestFlextAuthAdditionalCoverage",
-    ],
-    "TestFlextAuthAdvancedPatterns": [
-        "tests.unit.test_api",
-        "TestFlextAuthAdvancedPatterns",
-    ],
+    "TestFlextAuthAdditionalCoverage": ["tests.unit.test_api", "TestFlextAuthAdditionalCoverage"],
+    "TestFlextAuthAdvancedPatterns": ["tests.unit.test_api", "TestFlextAuthAdvancedPatterns"],
     "TestFlextAuthConstants": ["tests.unit.test_constants", "TestFlextAuthConstants"],
     "TestFlextAuthErrorHandling": ["tests.unit.test_api", "TestFlextAuthErrorHandling"],
-    "TestFlextAuthErrorHandlingPaths": [
-        "tests.unit.test_api",
-        "TestFlextAuthErrorHandlingPaths",
-    ],
-    "TestFlextAuthErrorHandlingSecond": [
-        "tests.unit.test_api",
-        "TestFlextAuthErrorHandlingSecond",
-    ],
+    "TestFlextAuthErrorHandlingPaths": ["tests.unit.test_api", "TestFlextAuthErrorHandlingPaths"],
+    "TestFlextAuthErrorHandlingSecond": ["tests.unit.test_api", "TestFlextAuthErrorHandlingSecond"],
     "TestFlextAuthErrorPaths": ["tests.unit.test_api", "TestFlextAuthErrorPaths"],
-    "TestFlextAuthHandlerRegistration": [
-        "tests.unit.test_api",
-        "TestFlextAuthHandlerRegistration",
-    ],
-    "TestFlextAuthInitializationCoverage": [
-        "tests.unit.test_api",
-        "TestFlextAuthInitializationCoverage",
-    ],
+    "TestFlextAuthHandlerRegistration": ["tests.unit.test_api", "TestFlextAuthHandlerRegistration"],
+    "TestFlextAuthInitializationCoverage": ["tests.unit.test_api", "TestFlextAuthInitializationCoverage"],
     "TestFlextAuthLogging": ["tests.unit.test_api", "TestFlextAuthLogging"],
-    "TestFlextAuthModelSettingsuration": [
-        "tests.unit.test_api",
-        "TestFlextAuthModelSettingsuration",
-    ],
-    "TestFlextAuthPasswordMethods": [
-        "tests.unit.test_api",
-        "TestFlextAuthPasswordMethods",
-    ],
-    "TestFlextAuthProcessorRegistration": [
-        "tests.unit.test_api",
-        "TestFlextAuthProcessorRegistration",
-    ],
-    "TestFlextAuthProviderRegistry": [
-        "tests.unit.test_api",
-        "TestFlextAuthProviderRegistry",
-    ],
+    "TestFlextAuthModelSettingsuration": ["tests.unit.test_api", "TestFlextAuthModelSettingsuration"],
+    "TestFlextAuthPasswordMethods": ["tests.unit.test_api", "TestFlextAuthPasswordMethods"],
+    "TestFlextAuthProcessorRegistration": ["tests.unit.test_api", "TestFlextAuthProcessorRegistration"],
+    "TestFlextAuthProviderRegistry": ["tests.unit.test_api", "TestFlextAuthProviderRegistry"],
     "TestFlextAuthQuickStart": ["tests.unit.test_api", "TestFlextAuthQuickStart"],
-    "TestFlextAuthQuickStartFunction": [
-        "tests.unit.test_api",
-        "TestFlextAuthQuickStartFunction",
-    ],
-    "TestFlextAuthQuickStartMethod": [
-        "tests.unit.test_api",
-        "TestFlextAuthQuickStartMethod",
-    ],
+    "TestFlextAuthQuickStartFunction": ["tests.unit.test_api", "TestFlextAuthQuickStartFunction"],
+    "TestFlextAuthQuickStartMethod": ["tests.unit.test_api", "TestFlextAuthQuickStartMethod"],
     "TestFlextAuthSecurity": ["tests.unit.test_api", "TestFlextAuthSecurity"],
-    "TestFlextAuthServiceInitialization": [
-        "tests.unit.test_api",
-        "TestFlextAuthServiceInitialization",
-    ],
-    "TestFlextAuthSessionManagement": [
-        "tests.unit.test_api",
-        "TestFlextAuthSessionManagement",
-    ],
-    "TestFlextAuthSessionMethods": [
-        "tests.unit.test_api",
-        "TestFlextAuthSessionMethods",
-    ],
-    "TestFlextAuthSettingsBasic": [
-        "tests.unit.test_config",
-        "TestFlextAuthSettingsBasic",
-    ],
-    "TestFlextAuthSettingsurationMethods": [
-        "tests.unit.test_api",
-        "TestFlextAuthSettingsurationMethods",
-    ],
-    "TestFlextAuthSettingsurationOverrides": [
-        "tests.unit.test_api",
-        "TestFlextAuthSettingsurationOverrides",
-    ],
-    "TestFlextAuthStorageOperations": [
-        "tests.unit.test_api",
-        "TestFlextAuthStorageOperations",
-    ],
+    "TestFlextAuthServiceInitialization": ["tests.unit.test_api", "TestFlextAuthServiceInitialization"],
+    "TestFlextAuthSessionManagement": ["tests.unit.test_api", "TestFlextAuthSessionManagement"],
+    "TestFlextAuthSessionMethods": ["tests.unit.test_api", "TestFlextAuthSessionMethods"],
+    "TestFlextAuthSettingsBasic": ["tests.unit.test_config", "TestFlextAuthSettingsBasic"],
+    "TestFlextAuthSettingsurationMethods": ["tests.unit.test_api", "TestFlextAuthSettingsurationMethods"],
+    "TestFlextAuthSettingsurationOverrides": ["tests.unit.test_api", "TestFlextAuthSettingsurationOverrides"],
+    "TestFlextAuthStorageOperations": ["tests.unit.test_api", "TestFlextAuthStorageOperations"],
     "TestFlextAuthTokenMethods": ["tests.unit.test_api", "TestFlextAuthTokenMethods"],
-    "TestFlextAuthTokenOperations": [
-        "tests.unit.test_api",
-        "TestFlextAuthTokenOperations",
-    ],
+    "TestFlextAuthTokenOperations": ["tests.unit.test_api", "TestFlextAuthTokenOperations"],
     "TestFlextAuthTypes": ["tests.unit.test_typings", "TestFlextAuthTypes"],
     "TestFlextAuthUserMethods": ["tests.unit.test_api", "TestFlextAuthUserMethods"],
     "TestJwtTokenGenerator": ["tests.unit.test_config", "TestJwtTokenGenerator"],
@@ -175,10 +119,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "e": ["flext_tests", "e"],
     "fixtures": ["tests.fixtures", ""],
     "generate_client_cert": ["tests.fixtures.certificates", "generate_client_cert"],
-    "generate_self_signed_cert": [
-        "tests.fixtures.certificates",
-        "generate_self_signed_cert",
-    ],
+    "generate_self_signed_cert": ["tests.fixtures.certificates", "generate_self_signed_cert"],
     "h": ["flext_tests", "h"],
     "helpers": ["tests.helpers", ""],
     "m": ["tests.models", "FlextAuthTestModels"],
@@ -276,7 +217,6 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
-
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -291,7 +231,6 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
-
     """
     return sorted(__all__)
 

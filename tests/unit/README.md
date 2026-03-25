@@ -147,8 +147,13 @@ def test_user_authentication_with_valid_credentials():
 def mock_password_service():
     """Mock password service for isolated testing."""
     with patch("flext_auth.services.FlextPasswordService") as mock:
+<<<<<<< Updated upstream
         mock.hash_password.return_value = r[bool].ok("hashed_password")
         mock.verify_password.return_value = r[bool].ok(data=True)
+=======
+        mock.hash_password.return_value = FlextResult[bool].ok("hashed_password")
+        mock.verify_password.return_value = FlextResult[bool].ok(data=True)
+>>>>>>> Stashed changes
         yield mock
 
 
@@ -156,8 +161,13 @@ def mock_password_service():
 def mock_user_repository():
     """Mock user repository for isolated testing."""
     with patch("flext_auth.user.InMemoryUserRepository") as mock:
+<<<<<<< Updated upstream
         mock.get_by_username.return_value = r[bool].ok(test_user)
         mock.create.return_value = r[bool].ok(test_user)
+=======
+        mock.get_by_username.return_value = FlextResult[bool].ok(test_user)
+        mock.create.return_value = FlextResult[bool].ok(test_user)
+>>>>>>> Stashed changes
         yield mock
 ```
 
