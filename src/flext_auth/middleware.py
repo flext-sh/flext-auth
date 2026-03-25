@@ -145,9 +145,7 @@ class FlextAuthMiddleware(s[bool]):
                 mutable_headers: MutableMapping[str, str] = {
                     str(key): str(value) for key, value in headers_val.items()
                 }
-                mutable_headers["Authorization"] = (
-                    f"Bearer {self._current_token.token}"
-                )
+                mutable_headers["Authorization"] = f"Bearer {self._current_token.token}"
                 request.headers = mutable_headers
             except (AttributeError, TypeError):
                 pass
