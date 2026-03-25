@@ -74,171 +74,171 @@ class FlextAuthUtilities(FlextApiUtilities):
 
         """
 
-    class Collection(FlextApiUtilities):
-        """Collection utilities extending u via inheritance.
+        class Collection(FlextApiUtilities):
+            """Collection utilities extending u via inheritance.
 
-        Exposes all flext-core Collection methods through inheritance hierarchy.
-        Access via u.Auth.Collection.* pattern.
-        """
-
-    class Args(FlextApiUtilities):
-        """Args utilities extending u via inheritance.
-
-        Exposes all flext-core Args methods through inheritance hierarchy.
-        Access via u.Auth.Args.* pattern.
-        """
-
-    class Model(FlextApiUtilities):
-        """Model utilities extending u via inheritance.
-
-        Exposes all flext-core Model methods through inheritance hierarchy.
-        Access via u.Auth.Model.* pattern.
-        """
-
-        class Pydantic:
-            """Annotated type factories for Pydantic models.
-
-            These return Annotated type forms for Pydantic BeforeValidator usage.
-            The coerce functions are typed as returning the enum type for downstream
-            compatibility, since Annotated[X, ...] acts as type X at validation time.
+            Exposes all flext-core Collection methods through inheritance hierarchy.
+            Access via u.Auth.Collection.* pattern.
             """
 
-            COERCED_PROVIDER_TYPE = Annotated[
-                c.Auth.ProviderTypes,
-                BeforeValidator(
-                    FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes),
-                ),
-            ]
+        class Args(FlextApiUtilities):
+            """Args utilities extending u via inheritance.
 
-            COERCED_ROLE_TYPE = Annotated[
-                c.Auth.RoleTypes,
-                BeforeValidator(
-                    FlextApiUtilities.coerce_validator(c.Auth.RoleTypes),
-                ),
-            ]
+            Exposes all flext-core Args methods through inheritance hierarchy.
+            Access via u.Auth.Args.* pattern.
+            """
 
-            COERCED_TOKEN_TYPE = Annotated[
-                c.Auth.TokenTypes,
-                BeforeValidator(
-                    FlextApiUtilities.coerce_validator(c.Auth.TokenTypes),
-                ),
-            ]
+        class Model(FlextApiUtilities):
+            """Model utilities extending u via inheritance.
 
-        class Validation:
-            """Domain-specific validation utilities."""
+            Exposes all flext-core Model methods through inheritance hierarchy.
+            Access via u.Auth.Model.* pattern.
+            """
 
-            @staticmethod
-            def validate_email(email: str) -> r[str]:
-                """Validate email format."""
-                if not email or not email.strip():
-                    return r[str].fail("Email cannot be empty")
-                email = email.strip()
-                if len(email) > c.Auth.MAX_EMAIL_LENGTH:
-                    return r[str].fail(
-                        f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)",
-                    )
-                if "@" not in email or "." not in email.split("@")[1]:
-                    return r[str].fail("Invalid email format")
-                return r[str].ok(email)
+            class Pydantic:
+                """Annotated type factories for Pydantic models.
 
-            @staticmethod
-            def validate_password(password: str) -> r[str]:
-                """Validate password strength."""
-                if not password:
-                    return r[str].fail("Password cannot be empty")
-                if len(password) < c.Auth.Credentials.Password.MIN_LENGTH:
-                    return r[str].fail(
-                        f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)",
-                    )
-                if len(password) > c.Auth.Credentials.Password.MAX_LENGTH:
-                    return r[str].fail(
-                        f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)",
-                    )
-                return r[str].ok(password)
+                These return Annotated type forms for Pydantic BeforeValidator usage.
+                The coerce functions are typed as returning the enum type for downstream
+                compatibility, since Annotated[X, ...] acts as type X at validation time.
+                """
 
-            @staticmethod
-            def validate_username(username: str) -> r[str]:
-                """Validate username with auth-specific rules."""
-                if not username or not username.strip():
-                    return r[str].fail("Username cannot be empty")
-                username = username.strip()
-                if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
-                    return r[str].fail(
-                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
-                    )
-                if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
-                    return r[str].fail(
-                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
-                    )
-                return r[str].ok(username)
+                COERCED_PROVIDER_TYPE = Annotated[
+                    c.Auth.ProviderTypes,
+                    BeforeValidator(
+                        FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes),
+                    ),
+                ]
 
-        class Token:
-            """Token manipulation utilities."""
+                COERCED_ROLE_TYPE = Annotated[
+                    c.Auth.RoleTypes,
+                    BeforeValidator(
+                        FlextApiUtilities.coerce_validator(c.Auth.RoleTypes),
+                    ),
+                ]
 
-            @staticmethod
-            def calculate_expiry_time(minutes: int) -> datetime:
-                """Calculate token/session expiry time."""
-                return datetime.now(UTC) + timedelta(minutes=minutes)
+                COERCED_TOKEN_TYPE = Annotated[
+                    c.Auth.TokenTypes,
+                    BeforeValidator(
+                        FlextApiUtilities.coerce_validator(c.Auth.TokenTypes),
+                    ),
+                ]
 
-            @staticmethod
-            def generate_session_id() -> str:
-                """Generate a secure session ID."""
-                return secrets.token_hex(16)
+            class Validation:
+                """Domain-specific validation utilities."""
 
-            @staticmethod
-            def is_expired(expiry_time: datetime) -> bool:
-                """Check if a timestamp is expired."""
-                return datetime.now(UTC) > expiry_time
+                @staticmethod
+                def validate_email(email: str) -> r[str]:
+                    """Validate email format."""
+                    if not email or not email.strip():
+                        return r[str].fail("Email cannot be empty")
+                    email = email.strip()
+                    if len(email) > c.Auth.MAX_EMAIL_LENGTH:
+                        return r[str].fail(
+                            f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)",
+                        )
+                    if "@" not in email or "." not in email.split("@")[1]:
+                        return r[str].fail("Invalid email format")
+                    return r[str].ok(email)
 
-        class Password:
-            """Password hashing utilities using best practices."""
+                @staticmethod
+                def validate_password(password: str) -> r[str]:
+                    """Validate password strength."""
+                    if not password:
+                        return r[str].fail("Password cannot be empty")
+                    if len(password) < c.Auth.Credentials.Password.MIN_LENGTH:
+                        return r[str].fail(
+                            f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)",
+                        )
+                    if len(password) > c.Auth.Credentials.Password.MAX_LENGTH:
+                        return r[str].fail(
+                            f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)",
+                        )
+                    return r[str].ok(password)
 
-            @staticmethod
-            def hash_password(password: str) -> str:
-                """Hash a password using bcrypt."""
-                salt = bcrypt.gensalt(rounds=c.Auth.DEFAULT_HASH_ROUNDS)
-                return bcrypt.hashpw(password.encode(), salt).decode()
+                @staticmethod
+                def validate_username(username: str) -> r[str]:
+                    """Validate username with auth-specific rules."""
+                    if not username or not username.strip():
+                        return r[str].fail("Username cannot be empty")
+                    username = username.strip()
+                    if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
+                        return r[str].fail(
+                            f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
+                        )
+                    if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
+                        return r[str].fail(
+                            f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
+                        )
+                    return r[str].ok(username)
 
-            @staticmethod
-            def verify_password(password: str, hashed: str) -> bool:
-                """Verify a password against its hash."""
-                return bcrypt.checkpw(password.encode(), hashed.encode())
+            class Token:
+                """Token manipulation utilities."""
 
-        class Response:
-            """Utilities for building authentication responses."""
+                @staticmethod
+                def calculate_expiry_time(minutes: int) -> datetime:
+                    """Calculate token/session expiry time."""
+                    return datetime.now(UTC) + timedelta(minutes=minutes)
 
-            @staticmethod
-            def build_auth_error_response(
-                error: str,
-                error_code: str = "AUTH_ERROR",
-            ) -> t.ConfigurationMapping:
-                """Build an authentication error response."""
-                return {
-                    "success": False,
-                    "error": error,
-                    "error_code": error_code,
-                    "timestamp": datetime.now(UTC).isoformat(),
-                }
+                @staticmethod
+                def generate_session_id() -> str:
+                    """Generate a secure session ID."""
+                    return secrets.token_hex(16)
 
-            @staticmethod
-            def build_auth_success_response(
-                token: str | None = None,
-                user_id: str | None = None,
-                expires_at: datetime | None = None,
-            ) -> t.ConfigurationMapping:
-                """Build a successful authentication response."""
-                response: t.MutableConfigurationMapping = {
-                    "success": True,
-                    "message": "Authentication successful",
-                    "timestamp": datetime.now(UTC).isoformat(),
-                }
-                if token:
-                    response["token"] = token
-                if user_id:
-                    response["user_id"] = user_id
-                if expires_at:
-                    response["expires_at"] = expires_at.isoformat()
-                return response
+                @staticmethod
+                def is_expired(expiry_time: datetime) -> bool:
+                    """Check if a timestamp is expired."""
+                    return datetime.now(UTC) > expiry_time
+
+            class Password:
+                """Password hashing utilities using best practices."""
+
+                @staticmethod
+                def hash_password(password: str) -> str:
+                    """Hash a password using bcrypt."""
+                    salt = bcrypt.gensalt(rounds=c.Auth.DEFAULT_HASH_ROUNDS)
+                    return bcrypt.hashpw(password.encode(), salt).decode()
+
+                @staticmethod
+                def verify_password(password: str, hashed: str) -> bool:
+                    """Verify a password against its hash."""
+                    return bcrypt.checkpw(password.encode(), hashed.encode())
+
+            class Response:
+                """Utilities for building authentication responses."""
+
+                @staticmethod
+                def build_auth_error_response(
+                    error: str,
+                    error_code: str = "AUTH_ERROR",
+                ) -> t.ConfigurationMapping:
+                    """Build an authentication error response."""
+                    return {
+                        "success": False,
+                        "error": error,
+                        "error_code": error_code,
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+
+                @staticmethod
+                def build_auth_success_response(
+                    token: str | None = None,
+                    user_id: str | None = None,
+                    expires_at: datetime | None = None,
+                ) -> t.ConfigurationMapping:
+                    """Build a successful authentication response."""
+                    response: t.MutableConfigurationMapping = {
+                        "success": True,
+                        "message": "Authentication successful",
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+                    if token:
+                        response["token"] = token
+                    if user_id:
+                        response["user_id"] = user_id
+                    if expires_at:
+                        response["expires_at"] = expires_at.isoformat()
+                    return response
 
     @staticmethod
     def decode_token(

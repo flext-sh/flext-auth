@@ -386,198 +386,198 @@ class FlextAuthConstants(FlextApiConstants):
             MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
             "Maximum length for permission descriptions."
 
-    @unique
-    class AuthMethod(StrEnum):
-        """Auth method enumeration."""
+        @unique
+        class AuthMethod(StrEnum):
+            """Auth method enumeration."""
 
-        BASIC = "basic"
-        JWT = "jwt"
-        OAUTH2 = "oauth2"
-        APIKEY = "apikey"
+            BASIC = "basic"
+            JWT = "jwt"
+            OAUTH2 = "oauth2"
+            APIKEY = "apikey"
 
-    @unique
-    class AuthStatus(StrEnum):
-        """Auth status enumeration."""
+        @unique
+        class AuthStatus(StrEnum):
+            """Auth status enumeration."""
 
-        AUTHENTICATED = "authenticated"
-        UNAUTHENTICATED = "unauthenticated"
-        EXPIRED = "expired"
-        INVALID = "invalid"
+            AUTHENTICATED = "authenticated"
+            UNAUTHENTICATED = "unauthenticated"
+            EXPIRED = "expired"
+            INVALID = "invalid"
 
-    @unique
-    class UserStatus(StrEnum):
-        """User status enumeration."""
+        @unique
+        class UserStatus(StrEnum):
+            """User status enumeration."""
 
-        ACTIVE = "active"
-        INACTIVE = "inactive"
-        LOCKED = "locked"
-        PENDING = "pending"
+            ACTIVE = "active"
+            INACTIVE = "inactive"
+            LOCKED = "locked"
+            PENDING = "pending"
 
-    @unique
-    class UserAction(StrEnum):
-        """User action enumeration."""
+        @unique
+        class UserAction(StrEnum):
+            """User action enumeration."""
 
-        CREATE = "create"
-        UPDATE = "update"
-        DELETE = "delete"
-        ACTIVATE = "activate"
-        DEACTIVATE = "deactivate"
+            CREATE = "create"
+            UPDATE = "update"
+            DELETE = "delete"
+            ACTIVATE = "activate"
+            DEACTIVATE = "deactivate"
 
-    @unique
-    class SessionStatus(StrEnum):
-        """Session status enumeration."""
+        @unique
+        class SessionStatus(StrEnum):
+            """Session status enumeration."""
 
-        ACTIVE = "active"
-        EXPIRED = "expired"
-        REVOKED = "revoked"
+            ACTIVE = "active"
+            EXPIRED = "expired"
+            REVOKED = "revoked"
 
-    @unique
-    class SessionAction(StrEnum):
-        """Session action enumeration."""
+        @unique
+        class SessionAction(StrEnum):
+            """Session action enumeration."""
 
-        CREATE = "create"
-        EXTEND = "extend"
-        REVOKE = "revoke"
-        VALIDATE = "validate"
+            CREATE = "create"
+            EXTEND = "extend"
+            REVOKE = "revoke"
+            VALIDATE = "validate"
 
-    @unique
-    class AuthTokenType(StrEnum):
-        """Token type enumeration."""
+        @unique
+        class AuthTokenType(StrEnum):
+            """Token type enumeration."""
 
-        ACCESS = "access"
-        REFRESH = "refresh"
-        API = "api"
-        BEARER = "bearer"
+            ACCESS = "access"
+            REFRESH = "refresh"
+            API = "api"
+            BEARER = "bearer"
 
-    @unique
-    class TokenStatus(StrEnum):
-        """Token status enumeration."""
+        @unique
+        class TokenStatus(StrEnum):
+            """Token status enumeration."""
 
-        VALID = "valid"
-        EXPIRED = "expired"
-        REVOKED = "revoked"
-        INVALID = "invalid"
+            VALID = "valid"
+            EXPIRED = "expired"
+            REVOKED = "revoked"
+            INVALID = "invalid"
 
-    @unique
-    class Permission(StrEnum):
-        """Permission enumeration."""
+        @unique
+        class Permission(StrEnum):
+            """Permission enumeration."""
 
-        READ = "read"
-        WRITE = "write"
-        DELETE = "delete"
-        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+            READ = "read"
+            WRITE = "write"
+            DELETE = "delete"
+            REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
 
-    @unique
-    class Role(StrEnum):
-        """Role enumeration."""
+        @unique
+        class Role(StrEnum):
+            """Role enumeration."""
 
-        USER = "user"
-        MODERATOR = "moderator"
-        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
-        GUEST = "guest"
+            USER = "user"
+            MODERATOR = "moderator"
+            REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+            GUEST = "guest"
 
-    @unique
-    class SecurityEvent(StrEnum):
-        """Security event enumeration."""
+        @unique
+        class SecurityEvent(StrEnum):
+            """Security event enumeration."""
 
-        LOGIN_SUCCESS = "login_success"
-        LOGIN_FAILURE = "login_failure"
-        TOKEN_CREATED = "token_created"
-        TOKEN_REVOKED = "token_revoked"
+            LOGIN_SUCCESS = "login_success"
+            LOGIN_FAILURE = "login_failure"
+            TOKEN_CREATED = "token_created"
+            TOKEN_REVOKED = "token_revoked"
 
-    @unique
-    class ThreatLevel(StrEnum):
-        """Threat level enumeration."""
+        @unique
+        class ThreatLevel(StrEnum):
+            """Threat level enumeration."""
 
-        LOW = "low"
-        MEDIUM = "medium"
-        HIGH = "high"
-        CRITICAL = "critical"
+            LOW = "low"
+            MEDIUM = "medium"
+            HIGH = "high"
+            CRITICAL = "critical"
 
-    @unique
-    class ProjectType(StrEnum):
-        """Project type enumeration."""
+        @unique
+        class ProjectType(StrEnum):
+            """Project type enumeration."""
 
-        FLEXT_AUTH = "flext-auth"
-        FLEXT_CORE = "flext-core"
-        FLEXT_API = "flext-api"
+            FLEXT_AUTH = "flext-auth"
+            FLEXT_CORE = "flext-core"
+            FLEXT_API = "flext-api"
 
-    @unique
-    class AccessTokens(StrEnum):
-        """Access tokens enumeration."""
+        @unique
+        class AccessTokens(StrEnum):
+            """Access tokens enumeration."""
 
-        ACCESS = "access"
-        BEARER = "bearer"
+            ACCESS = "access"
+            BEARER = "bearer"
 
-    @unique
-    class BearerTokens(StrEnum):
-        """Bearer tokens enumeration."""
+        @unique
+        class BearerTokens(StrEnum):
+            """Bearer tokens enumeration."""
 
-        BEARER = "bearer"
-        ACCESS = "access"
+            BEARER = "bearer"
+            ACCESS = "access"
 
-    @unique
-    class UserRoles(StrEnum):
-        """User roles enumeration."""
+        @unique
+        class UserRoles(StrEnum):
+            """User roles enumeration."""
 
-        USER = "user"
-        MODERATOR = "moderator"
-        GUEST = "guest"
+            USER = "user"
+            MODERATOR = "moderator"
+            GUEST = "guest"
 
-    @unique
-    class WritePermissions(StrEnum):
-        """Write permissions enumeration."""
+        @unique
+        class WritePermissions(StrEnum):
+            """Write permissions enumeration."""
 
-        WRITE = "write"
-        DELETE = "delete"
+            WRITE = "write"
+            DELETE = "delete"
 
-    @unique
-    class TokenTypeLiteral(StrEnum):
-        """Token type literal enumeration."""
+        @unique
+        class TokenTypeLiteral(StrEnum):
+            """Token type literal enumeration."""
 
-        ACCESS = "access"
-        REFRESH = "refresh"
-        API = "api"
-        BEARER = "bearer"
+            ACCESS = "access"
+            REFRESH = "refresh"
+            API = "api"
+            BEARER = "bearer"
 
-    @unique
-    class ProviderTypeLiteral(StrEnum):
-        """Provider type literal enumeration."""
+        @unique
+        class ProviderTypeLiteral(StrEnum):
+            """Provider type literal enumeration."""
 
-        BASIC = "basic"
-        JWT = "jwt"
-        OAUTH2 = "oauth2"
-        SAML = "saml"
-        LDAP = "ldap"
-        CERTIFICATE = "certificate"
-        KERBEROS = "kerberos"
-        APIKEY = "apikey"
+            BASIC = "basic"
+            JWT = "jwt"
+            OAUTH2 = "oauth2"
+            SAML = "saml"
+            LDAP = "ldap"
+            CERTIFICATE = "certificate"
+            KERBEROS = "kerberos"
+            APIKEY = "apikey"
 
-    @unique
-    class RoleTypeLiteral(StrEnum):
-        """Role type literal enumeration."""
+        @unique
+        class RoleTypeLiteral(StrEnum):
+            """Role type literal enumeration."""
 
-        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
-        USER = "user"
-        MODERATOR = "moderator"
-        GUEST = "guest"
+            REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+            USER = "user"
+            MODERATOR = "moderator"
+            GUEST = "guest"
 
-    @unique
-    class PermissionTypeLiteral(StrEnum):
-        """Permission type literal enumeration."""
+        @unique
+        class PermissionTypeLiteral(StrEnum):
+            """Permission type literal enumeration."""
 
-        READ = "read"
-        WRITE = "write"
-        DELETE = "delete"
-        REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
+            READ = "read"
+            WRITE = "write"
+            DELETE = "delete"
+            REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
 
-    @unique
-    class AlgorithmLiteral(StrEnum):
-        """Algorithm literal enumeration."""
+        @unique
+        class AlgorithmLiteral(StrEnum):
+            """Algorithm literal enumeration."""
 
-        HS256 = "HS256"
-        RS256 = "RS256"
-        ES256 = "ES256"
+            HS256 = "HS256"
+            RS256 = "RS256"
+            ES256 = "ES256"
 
 
 c = FlextAuthConstants

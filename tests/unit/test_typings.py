@@ -30,7 +30,7 @@ class TestFlextAuthTypes:
 
     def test_project_types_exist(self) -> None:
         tm.that(hasattr(t, "Project"), eq=True)
-        tm.that(hasattr(t.Project, "ProjectType"), eq=True)
+        tm.that(hasattr(t.Auth.Project, "ProjectType"), eq=True)
         # AuthProjectConfig was removed; ProjectType remains
 
     def test_providers_types_exist(self) -> None:
