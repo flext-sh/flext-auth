@@ -13,11 +13,10 @@ from __future__ import annotations
 import os
 import secrets
 import string
-from collections.abc import Sequence
 
 from flext_core import FlextLogger
 
-from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, t
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings
 
 
 def example_advanced_configuration() -> None:
@@ -63,7 +62,7 @@ def example_role_based_access() -> None:
         ("manager", "manager@company.com", "ManagerPass123!", ["manager", "user"]),
         ("employee", "employee@company.com", "EmployeePass123!", ["user"]),
     ]
-    registered_users: Sequence[FlextAuthModels.Auth.AuthIdentity] = []
+    registered_users: list[FlextAuthModels.Auth.AuthIdentity] = []
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
         if result.is_success:
@@ -84,7 +83,7 @@ def example_session_management() -> None:
     )
     if user_result.is_failure:
         return
-    tokens: t.StrSequence = []
+    tokens: list[str] = []
     for _i in range(3):
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
         if auth_result.is_success:

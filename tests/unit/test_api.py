@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from threading import Thread
 from typing import override
@@ -1388,14 +1387,14 @@ class TestAuthModule:
         def authenticate_user(index: int) -> None:
             _ = auth.authenticate_user(f"user_{index}", "Password123!")
 
-        threads: Sequence[Thread] = []
+        threads: list[Thread] = []
         for i in range(5):
             thread = threading.Thread(target=register_user, args=(i,))
             threads.append(thread)
             thread.start()
         for thread in threads:
             thread.join()
-        auth_threads: Sequence[Thread] = []
+        auth_threads: list[Thread] = []
         for i in range(5):
             thread = threading.Thread(target=authenticate_user, args=(i,))
             auth_threads.append(thread)
