@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Annotated, ClassVar, Literal, Self
+from typing import Annotated, ClassVar, Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
@@ -18,9 +18,6 @@ from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field
 
 from flext_auth import c, t
-
-if TYPE_CHECKING:
-    from flext_auth import p
 
 
 class FlextAuthModels(FlextApiModels):
