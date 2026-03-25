@@ -134,8 +134,8 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             credential_hash: str = str(password_hash)
             full_name: str = ""
             is_active: bool = True
-            roles: t.StrSequence = []
-            permissions: t.StrSequence = []
+            roles: list[str] = []
+            permissions: list[str] = []
             failed_attempts: int = 0
             locked_until: datetime = datetime.min.replace(tzinfo=UTC)
             last_access: datetime = datetime.min.replace(tzinfo=UTC)
@@ -551,7 +551,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                     ):
                         continue
                 filtered_logs.append(log)
-            return r[t.ContainerValueList].ok(filtered_logs[-limit:])
+            return r[Sequence[Mapping[str, t.ContainerValue]]].ok(filtered_logs[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""

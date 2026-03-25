@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Protocol, override, runtime_checkable
 
@@ -416,13 +416,11 @@ class FlextAuthProtocols(FlextApiProtocols):
                         else f"{identity_id}@local"
                     )
                 roles_value = payload.get("roles")
-                user_roles: t.StrSequence
+                user_roles: list[str] = []
                 if isinstance(roles_value, list):
                     user_roles = [
                         role for role in roles_value if isinstance(role, str) and role
                     ]
-                else:
-                    user_roles: MutableSequence[str] = []
                 now = datetime.now(UTC)
                 claims: MutableMapping[str, t.ContainerValue] = {}
                 reserved_claims = {
@@ -460,14 +458,11 @@ class FlextAuthProtocols(FlextApiProtocols):
                 claims["aud"] = audience_name
 
                 def _encode_token() -> str:
-                    encoded_token = jwt.encode(
-                        claims,
+                    return jwt.encode(
+                        dict(claims),
                         secret_key,
                         algorithm=algorithm_name,
                     )
-                    if isinstance(encoded_token, str):
-                        return encoded_token
-                    return str(encoded_token)
 
                 return u.try_(
                     _encode_token,

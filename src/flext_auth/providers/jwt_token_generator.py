@@ -92,11 +92,7 @@ class FlextAuthJwtTokenGenerator:
                 secret_result.value,
                 algorithm=algorithm_result.value,
             )
-            if isinstance(token_result, str):
-                token = token_result
-            else:
-                token = token_result.decode("utf-8")
-            return r[str].ok(token)
+            return r[str].ok(token_result)
         except (
             ValueError,
             TypeError,

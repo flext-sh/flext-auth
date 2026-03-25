@@ -315,10 +315,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         """
 
         def _encode() -> str:
-            token = jwt.encode(dict(payload), secret, algorithm=algorithm)
-            if isinstance(token, str):
-                return token
-            return str(token)
+            return jwt.encode(dict(payload), secret, algorithm=algorithm)
 
         return FlextApiUtilities.try_(
             _encode,

@@ -17,7 +17,7 @@ from flext_api import FlextApiModels
 from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field
 
-from flext_auth import c, t
+from flext_auth import c, p, t
 
 
 class FlextAuthModels(FlextApiModels):
@@ -645,7 +645,7 @@ class FlextAuthModels(FlextApiModels):
 
             category: Annotated[str, Field(description="Provider category")]
             provider: Annotated[
-                BaseModel,
+                p.Auth.FlextAuthBaseProvider,
                 Field(description="Provider instance"),
             ]
 

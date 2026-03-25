@@ -144,9 +144,7 @@ class FlextAuthRegistry(FlextRegistry):
         if caps_result.is_failure:
             return r[bool].fail(caps_result.error or f"Provider '{name}' not found")
         caps = caps_result.unwrap()
-        if isinstance(caps, set):
-            return r[bool].ok(capability in caps)
-        return r[bool].ok(False)
+        return r[bool].ok(capability in caps)
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
@@ -157,11 +155,11 @@ class FlextAuthRegistry(FlextRegistry):
         """List registered provider names."""
         result = self.list_plugins(self.PROVIDERS)
         if result.is_failure:
-            return []
+            return list[str]()
         plugins = result.unwrap()
         if isinstance(plugins, list):
             return [str(name) for name in plugins]
-        return []
+        return list[str]()
 
     def register_provider(
         self,

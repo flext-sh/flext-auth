@@ -260,19 +260,15 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                         f"Kerberos ticket validator mapping payload is invalid: {exc}",
                     )
                 return self._map_identity_payload(parsed_claims)
-            if isinstance(validator_result, m.Auth.KerberosTicketData):
-                principal_value = validator_result.principal
-                principal = principal_value or "kerberos-user"
-                identity_map: t.JsonObject = {
-                    "identity_id": principal,
-                    "name": principal,
-                    "contact": f"{principal}@kerberos.local",
-                    "roles": ["user"],
-                }
-                return self._map_identity_payload(identity_map)
-            return r[m.Auth.AuthIdentity].fail(
-                "Kerberos ticket validator returned unsupported payload",
-            )
+            principal_value = validator_result.principal
+            principal = principal_value or "kerberos-user"
+            identity_map: t.JsonObject = {
+                "identity_id": principal,
+                "name": principal,
+                "contact": f"{principal}@kerberos.local",
+                "roles": ["user"],
+            }
+            return self._map_identity_payload(identity_map)
         claims_result = self._decode_token_claims(token)
         return claims_result.fold(
             on_failure=lambda _: r[m.Auth.AuthIdentity].fail(

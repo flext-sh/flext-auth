@@ -80,7 +80,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._flow = self._init_flow()
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
-        self._pkce_verifiers: t.StrMapping = {}
+        self._pkce_verifiers: dict[str, str] = {}
         self._http_client: http.client.HTTPSConnection | None = None
 
     @staticmethod
@@ -730,7 +730,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             try:
                 typed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
             except ValidationError:
-                typed_roles = []
+                typed_roles = list[str]()
             roles = [role for role in typed_roles if role]
         else:
             scope_value = payload.get("scope")

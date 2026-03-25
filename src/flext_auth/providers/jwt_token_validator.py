@@ -14,6 +14,7 @@ from collections.abc import Mapping
 
 import jwt
 from flext_core import r
+from jwt.types import Options
 
 from flext_auth import FlextAuthJwtProvider, t
 
@@ -72,7 +73,7 @@ class FlextAuthJwtTokenValidator:
                         )
             else:
                 audience = None
-            decode_options = {"verify_exp": True, "verify_iat": True}
+            decode_options = Options(verify_exp=True, verify_iat=True)
             if audience is not None:
                 payload = jwt.decode(
                     token,
