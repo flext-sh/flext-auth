@@ -1272,7 +1272,7 @@ class TestAuthModule:
     def test_flext_auth_docstring(self) -> None:
         """Test that FlextAuth has proper docstring."""
         tm.that(FlextAuth.__doc__, none=False)
-        tm.that((FlextAuth.__doc__ or "").strip(), eq=True)
+        tm.that(len((FlextAuth.__doc__ or "").strip()) > 0, eq=True)
 
     def test_flext_auth_method_signatures(self) -> None:
         """Test that auth methods have proper signatures."""

@@ -648,7 +648,7 @@ class FlextAuthModels(FlextApiModels):
 
             category: Annotated[str, Field(description="Provider category")]
             provider: Annotated[
-                p.Auth.FlextAuthBaseProvider,
+                BaseModel,
                 Field(description="Provider instance"),
             ]
 
