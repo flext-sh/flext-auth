@@ -49,5 +49,5 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         sys.exit(0)
-    except Exception:
+    except (RuntimeError, ValueError, OSError):
         sys.exit(1)
