@@ -1,0 +1,25 @@
+src/flext_auth/api.py
+  68dbd4878595068b 47,49
+tests/unit/test_config.py
+  68dbd4878595068b 69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.20",
+  "base_commit_sha": "a83c0a2b46d3dca6b6996929543ec60fcbb6912f",
+  "prompts": {
+    "68dbd4878595068b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e713beea-5d5d-4f90-bbc7-9650893a58f6",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 4,
+      "total_deletions": 3,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    }
+  }
+}
