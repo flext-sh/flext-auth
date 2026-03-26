@@ -24,7 +24,10 @@ if TYPE_CHECKING:
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "CertificateFixture": ["tests.fixtures.certificates", "CertificateFixture"],
     "generate_client_cert": ["tests.fixtures.certificates", "generate_client_cert"],
-    "generate_self_signed_cert": ["tests.fixtures.certificates", "generate_self_signed_cert"],
+    "generate_self_signed_cert": [
+        "tests.fixtures.certificates",
+        "generate_self_signed_cert",
+    ],
 }
 
 __all__ = [
