@@ -1564,14 +1564,7 @@ class TestProviderTokenFlows:
             "unit-test-secret-key-for-oauth-provider-12345",
             algorithm="HS256",
         )
-        match encoded_token:
-            case str() as token:
-                token_value = token
-            case bytes() as token_bytes:
-                token_value = token_bytes.decode("utf-8")
-            case _:
-                token_value = str(encoded_token)
-        result = provider.validate_token(token_value)
+        result = provider.validate_token(encoded_token)
         tm.that(result.is_success, eq=True)
         identity = result.value
         tm.that(identity.unique_id, eq="oauth-user-123")
