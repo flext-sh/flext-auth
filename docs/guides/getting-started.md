@@ -132,10 +132,7 @@ print("FLEXT application initialized!")
 ### 2. Using flext-ldif for LDIF Processing
 
 ```python
-from flext_ldif import FlextLdif
-
-# Initialize LDIF API
-ldif = FlextLdif()
+from flext_ldif import ldif
 
 # Parse LDIF content
 ldif_content = """dn: cn=test,dc=example,dc=com
@@ -291,7 +288,7 @@ config = FlextLdifSettings(
 )
 
 # Use configuration
-ldif = FlextLdif(config=config)
+ldif = ldif(config=config)
 ```
 
 ## Next Steps

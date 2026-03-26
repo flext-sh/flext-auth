@@ -998,7 +998,7 @@ from flext_core import t
 from flext_core import u
 from flext_api import FlextApi  # For HTTP transport
 from flext_grpc import FlextGrpc  # For gRPC transport
-from flext_ldap import FlextLdap  # For LDAP provider
+from flext_ldap import ldap  # For LDAP provider
 
 
 class FlextWebTransportAdapter:
@@ -1011,7 +1011,7 @@ class FlextWebTransportAdapter:
 
 class FlextAuthLdapProvider:
     def __init__(self, config: dict) -> None:
-        self._ldap = FlextLdap(config)  # MANDATORY: Use flext-ldap
+        self._ldap = ldap(config)  # MANDATORY: Use flext-ldap
 
     def authenticate(self, credentials: dict) -> r[AuthToken]:
         return self._ldap.bind(

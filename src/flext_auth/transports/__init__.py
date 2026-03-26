@@ -26,7 +26,10 @@ if TYPE_CHECKING:
     from flext_auth.transports.http import FlextWebTransportAdapter
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextWebTransportAdapter": ["flext_auth.transports.http", "FlextWebTransportAdapter"],
+    "FlextWebTransportAdapter": [
+        "flext_auth.transports.http",
+        "FlextWebTransportAdapter",
+    ],
 }
 
 __all__ = [
