@@ -66,7 +66,7 @@ class TestJwtTokenGenerator:
 
     def test_generate_token_success(self) -> None:
         """Test successful token generation."""
-        config = {
+        config: dict[str, str | int] = {
             "secret_key": "test-secret-key-for-jwt-minimum-32-chars",
             "algorithm": "HS256",
             "expiry_minutes": 30,

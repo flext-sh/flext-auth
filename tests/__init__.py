@@ -13,6 +13,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
+
     from tests import fixtures, helpers, unit
     from tests.conftest import mock_get_global, reset_singletons
     from tests.constants import FlextAuthTestConstants, FlextAuthTestConstants as c

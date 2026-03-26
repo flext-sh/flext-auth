@@ -20,7 +20,6 @@ import jwt
 import pytest
 from flext_core import r
 from flext_tests import tm
-from tests import t
 
 from flext_auth import (
     FlextAuth,
@@ -33,6 +32,7 @@ from flext_auth import (
     p,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+from tests import t
 
 
 class HttpRequest:

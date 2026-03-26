@@ -17,7 +17,6 @@ import secrets
 import string
 
 from flext_core import FlextLogger
-from pydantic_settings import BaseSettings
 
 from flext_auth import FlextAuth, FlextAuthSettings, c
 
@@ -29,7 +28,7 @@ def example_basic_authentication() -> None:
     logger.info("Starting basic authentication example")
     FlextAuth()
     logger.info("FlextAuth instance created with in-memory storage")
-    config = FlextAuthSettings(config_class=BaseSettings)
+    config = FlextAuthSettings()
     logger.info(
         "Authentication configuration loaded",
         expiry_minutes=config.expiry_minutes,
