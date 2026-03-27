@@ -34,6 +34,8 @@ if TYPE_CHECKING:
         TestFlextAuth,
         TestFlextAuthAdditionalCoverage,
         TestFlextAuthAdvancedPatterns,
+        TestFlextAuthConfigurationMethods,
+        TestFlextAuthConfigurationOverrides,
         TestFlextAuthErrorHandling,
         TestFlextAuthErrorHandlingPaths,
         TestFlextAuthErrorHandlingSecond,
@@ -41,7 +43,7 @@ if TYPE_CHECKING:
         TestFlextAuthHandlerRegistration,
         TestFlextAuthInitializationCoverage,
         TestFlextAuthLogging,
-        TestFlextAuthModelSettingsuration,
+        TestFlextAuthModelConfiguration,
         TestFlextAuthPasswordMethods,
         TestFlextAuthProcessorRegistration,
         TestFlextAuthProviderRegistry,
@@ -52,8 +54,6 @@ if TYPE_CHECKING:
         TestFlextAuthServiceInitialization,
         TestFlextAuthSessionManagement,
         TestFlextAuthSessionMethods,
-        TestFlextAuthSettingsurationMethods,
-        TestFlextAuthSettingsurationOverrides,
         TestFlextAuthStorageOperations,
         TestFlextAuthTokenMethods,
         TestFlextAuthTokenOperations,
@@ -104,9 +104,9 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "TestFlextAuthInitializationCoverage",
     ],
     "TestFlextAuthLogging": ["tests.unit.test_api", "TestFlextAuthLogging"],
-    "TestFlextAuthModelSettingsuration": [
+    "TestFlextAuthModelConfiguration": [
         "tests.unit.test_api",
-        "TestFlextAuthModelSettingsuration",
+        "TestFlextAuthModelConfiguration",
     ],
     "TestFlextAuthPasswordMethods": [
         "tests.unit.test_api",
@@ -146,13 +146,13 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "tests.unit.test_config",
         "TestFlextAuthSettingsBasic",
     ],
-    "TestFlextAuthSettingsurationMethods": [
+    "TestFlextAuthConfigurationMethods": [
         "tests.unit.test_api",
-        "TestFlextAuthSettingsurationMethods",
+        "TestFlextAuthConfigurationMethods",
     ],
-    "TestFlextAuthSettingsurationOverrides": [
+    "TestFlextAuthConfigurationOverrides": [
         "tests.unit.test_api",
-        "TestFlextAuthSettingsurationOverrides",
+        "TestFlextAuthConfigurationOverrides",
     ],
     "TestFlextAuthStorageOperations": [
         "tests.unit.test_api",
@@ -206,6 +206,8 @@ __all__ = [
     "TestFlextAuth",
     "TestFlextAuthAdditionalCoverage",
     "TestFlextAuthAdvancedPatterns",
+    "TestFlextAuthConfigurationMethods",
+    "TestFlextAuthConfigurationOverrides",
     "TestFlextAuthConstants",
     "TestFlextAuthErrorHandling",
     "TestFlextAuthErrorHandlingPaths",
@@ -214,7 +216,7 @@ __all__ = [
     "TestFlextAuthHandlerRegistration",
     "TestFlextAuthInitializationCoverage",
     "TestFlextAuthLogging",
-    "TestFlextAuthModelSettingsuration",
+    "TestFlextAuthModelConfiguration",
     "TestFlextAuthPasswordMethods",
     "TestFlextAuthProcessorRegistration",
     "TestFlextAuthProviderRegistry",
@@ -226,8 +228,6 @@ __all__ = [
     "TestFlextAuthSessionManagement",
     "TestFlextAuthSessionMethods",
     "TestFlextAuthSettingsBasic",
-    "TestFlextAuthSettingsurationMethods",
-    "TestFlextAuthSettingsurationOverrides",
     "TestFlextAuthStorageOperations",
     "TestFlextAuthTokenMethods",
     "TestFlextAuthTokenOperations",

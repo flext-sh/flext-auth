@@ -193,7 +193,7 @@ class TestFlextAuthStorageOperations:
         tm.that(sessions_result.is_success, eq=True)
 
 
-class TestFlextAuthSettingsurationOverrides:
+class TestFlextAuthConfigurationOverrides:
     """Test configuration override capabilities."""
 
     def test_create_with_config_overrides_method_exists(self) -> None:
@@ -328,7 +328,7 @@ class TestFlextAuthProviderRegistry:
         tm.that(providers, has="jwt")
 
 
-class TestFlextAuthModelSettingsuration:
+class TestFlextAuthModelConfiguration:
     """Test Pydantic model configuration."""
 
     def test_model_config_arbitrary_types_allowed(self) -> None:
@@ -941,7 +941,7 @@ class TestFlextAuthQuickStartMethod:
         tm.that(auth.config, none=False)
 
 
-class TestFlextAuthSettingsurationMethods:
+class TestFlextAuthConfigurationMethods:
     """Test configuration and utility methods."""
 
     def test_get_config_method(self) -> None:
