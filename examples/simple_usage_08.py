@@ -24,9 +24,7 @@ def main() -> None:
             contact="test@example.com",
             credential=test_password,
         )
-        user_result = auth.register_user("testuser", "test@example.com", test_password)
-        if user_result.is_success:
-            pass
+        auth.register_user("testuser", "test@example.com", test_password)
     except Exception as e:
         error_message = f"Password verification failed: {e}"
         del error_message

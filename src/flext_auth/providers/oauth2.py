@@ -345,8 +345,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 expires_in=3600,
                 scope=scope,
             )
-            if code_verifier:
-                pass
             return r[m.Auth.OAuth2TokenResponse].ok(token_response)
 
         def get_client_credentials_token(self) -> r[m.Auth.OAuth2TokenResponse]:

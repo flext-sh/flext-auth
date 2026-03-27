@@ -40,17 +40,11 @@ def demo_complete_auth_workflow() -> None:
         session_id = auth_data.session_id
         jwt_token = auth_data.token
         if jwt_token:
-            token_result = auth.validate_token(str(jwt_token))
-            if token_result.is_success:
-                pass
+            auth.validate_token(str(jwt_token))
         identity_id: str = user.name
-        user_sessions = auth.get_user_sessions(identity_id)
-        if user_sessions.is_success:
-            pass
+        auth.get_user_sessions(identity_id)
         if session_id:
-            logout_result = auth.logout_user(str(session_id))
-            if logout_result.is_success:
-                pass
+            auth.logout_user(str(session_id))
 
 
 def demo_password_operations() -> None:
@@ -81,9 +75,7 @@ def demo_jwt_operations() -> None:
     token_result = auth.create_token(identity_id=identity_id)
     if token_result.is_success:
         token_string = token_result.value
-        validation_result = auth.validate_token(token_string)
-        if validation_result.is_success:
-            pass
+        auth.validate_token(token_string)
 
 
 def demo_user_management() -> None:
@@ -106,9 +98,7 @@ def demo_user_management() -> None:
             user = result.value
             registered_users.append(user)
     for user in registered_users:
-        lookup_result = auth.get_user_by_username(user.name)
-        if lookup_result.is_success and lookup_result.value:
-            pass
+        auth.get_user_by_username(user.name)
 
 
 def demo_security_features() -> None:
@@ -117,24 +107,16 @@ def demo_security_features() -> None:
     FlextAuthSettings()
     weak_passwords = ["123", "password", "abc"]
     for weak_pass in weak_passwords:
-        weak_result = auth.register_user("weakuser", "weak@example.com", weak_pass)
-        if weak_result.is_failure:
-            pass
+        auth.register_user("weakuser", "weak@example.com", weak_pass)
 
 
 def demo_error_handling() -> None:
     """Demonstrate comprehensive error handling."""
     auth: FlextAuth = FlextAuth()
     auth.register_user("duplicate", "dup@example.com", "DupPass123!")
-    dup_result = auth.register_user("duplicate", "dup2@example.com", "DupPass123!")
-    if dup_result.is_failure:
-        pass
-    invalid_result = auth.authenticate_user("nonexistent", "password")
-    if invalid_result.is_failure:
-        pass
-    invalid_token_result = auth.validate_token("invalid.jwt.token")
-    if invalid_token_result.is_failure:
-        pass
+    auth.register_user("duplicate", "dup2@example.com", "DupPass123!")
+    auth.authenticate_user("nonexistent", "password")
+    auth.validate_token("invalid.jwt.token")
 
 
 def generate_secure_password(length: int = 16) -> str:

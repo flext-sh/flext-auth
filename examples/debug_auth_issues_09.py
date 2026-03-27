@@ -44,13 +44,9 @@ def debug_jwt_operations() -> None:
     if token_result.is_failure:
         return
     token = token_result.value
-    validate_result = auth.validate_token(token)
-    if validate_result.is_success:
-        pass
+    auth.validate_token(token)
     bearer_token = f"Bearer {token}"
-    bearer_result = auth.validate_token(bearer_token)
-    if bearer_result.is_success:
-        pass
+    auth.validate_token(bearer_token)
 
 
 def debug_authentication_workflow() -> None:
@@ -64,9 +60,7 @@ def debug_authentication_workflow() -> None:
     )
     if reg_result.is_failure:
         return
-    auth_result = auth.authenticate_user("debuguser", "DebugPassword123!")
-    if auth_result.is_success:
-        pass
+    auth.authenticate_user("debuguser", "DebugPassword123!")
 
 
 def main() -> None:

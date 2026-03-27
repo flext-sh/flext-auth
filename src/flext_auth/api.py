@@ -145,16 +145,26 @@ class FlextAuth:
         """Quick start factory with default configuration.
 
         Args:
-        create_admin_user: Reserved for future admin creation functionality
+        create_admin_user: Whether to provision the demo admin user
 
         Returns:
         Initialized FlextAuth instance
 
         """
-        instance = cls()
+        auth = cls()
         if create_admin_user:
-            pass
-        return instance
+            result = auth.register_user(
+                "REDACTED_LDAP_BIND_PASSWORD",
+                "REDACTED_LDAP_BIND_PASSWORD@example.com",
+                "AdminPass123!",
+                roles=["ADMIN"],
+            )
+            if result.is_failure and result.error is not None:
+                auth.logger.warning(
+                    "Quick start admin user provisioning failed: %s",
+                    result.error,
+                )
+        return auth
 
     def authenticate(
         self,

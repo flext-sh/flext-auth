@@ -47,15 +47,12 @@ class FlextAuthDemo:
             r[m.Identity]: Registration result
 
         """
-        result = self.auth.register_user(
+        return self.auth.register_user(
             username="demouser",
             email="demo@example.com",
             password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!"),
             roles=["user"],
         )
-        if result.is_success:
-            pass
-        return result
 
     def _print_token_info(self, auth_data: m.Auth.AuthIdentity) -> None:
         """Helper: Print token information."""
@@ -135,9 +132,7 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
         token_result = demo.auth.create_token(identity_id=identity_id)
         if token_result.is_success:
             token_string = token_result.value
-            token_validation = demo.auth.validate_token(token_string)
-            if token_validation.is_success:
-                pass
+            demo.auth.validate_token(token_string)
 
 
 def main() -> None:
@@ -157,9 +152,7 @@ def main() -> None:
         return
     auth_data = auth_result.value
     access_token = str(auth_data.token) if auth_data.token else ""
-    validation_result = demo.auth.validate_token(access_token)
-    if validation_result.is_success:
-        pass
+    demo.auth.validate_token(access_token)
     _demo_password_utilities()
     _demo_secure_password_generation()
     _demo_email_validation()

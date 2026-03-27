@@ -44,9 +44,7 @@ def example_jwt_operations() -> None:
     )
     if token_result.is_success:
         auth_token = token_result.value
-        validation_result = auth.validate_token(auth_token.token)
-        if validation_result.is_success:
-            pass
+        auth.validate_token(auth_token.token)
 
 
 def example_role_based_access() -> None:
@@ -66,11 +64,7 @@ def example_role_based_access() -> None:
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
         if result.is_success:
-            user = result.value
-            registered_users.append(user)
-    for user in registered_users:
-        if user.roles and "REDACTED_LDAP_BIND_PASSWORD" in user.roles:
-            pass
+            registered_users.append(result.value)
 
 
 def example_session_management() -> None:
@@ -102,9 +96,7 @@ def example_password_security() -> None:
         ("very_strong", "VeryStr0ng!P@ssw0rd#2025$"),
     ]
     for level, password in passwords_to_test:
-        result = auth.register_user(f"user_{level}", f"{level}@example.com", password)
-        if result.is_success:
-            pass
+        auth.register_user(f"user_{level}", f"{level}@example.com", password)
     os.getenv("TEST_PASSWORD", "TestPassword123!")
     _ = FlextAuthModels.Auth.AuthIdentityRequest(
         name="security_demo_request",
@@ -135,9 +127,7 @@ def example_token_validation() -> None:
         ("Malformed JWT", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.invalid"),
     ]
     for _desc, test_token in test_tokens:
-        validation_result = auth.validate_token(test_token)
-        if validation_result.is_success:
-            pass
+        auth.validate_token(test_token)
 
 
 def generate_secure_password(length: int = 16) -> str:

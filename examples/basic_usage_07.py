@@ -26,12 +26,8 @@ def exemplo_flext_auth() -> None:
         auth_data = auth_result.value
         access_token = str(auth_data.token) if auth_data.token else ""
         session_id = str(auth_data.session_id) if auth_data.session_id else ""
-        validation_result = auth.validate_token(access_token)
-        if validation_result.is_success:
-            pass
-        logout_result = auth.logout_user(session_id)
-        if logout_result.is_success:
-            pass
+        auth.validate_token(access_token)
+        auth.logout_user(session_id)
 
 
 if __name__ == "__main__":

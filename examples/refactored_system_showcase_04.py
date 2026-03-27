@@ -17,9 +17,7 @@ from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings
 def demonstrate_refactoring_benefits() -> None:
     """Demonstrate the benefits of the refactored system."""
     auth: FlextAuth = FlextAuth()
-    result = auth.register_user("modern_user", "modern@example.com", "ModernPass123!")
-    if result.is_success:
-        pass
+    auth.register_user("modern_user", "modern@example.com", "ModernPass123!")
     auth_result = auth.authenticate_user("modern_user", "ModernPass123!")
     if auth_result.is_success:
         auth_data = auth_result.value
@@ -35,13 +33,11 @@ def demonstrate_quickstart_functionality() -> None:
         admin_credentials = quickstart_result.value
         print(f"Admin credentials created: {admin_credentials}")
     auth_service = FlextAuth()
-    reg_result = auth_service.register_user(
+    auth_service.register_user(
         "quickstart_user",
         "quickstart@example.com",
         "QuickstartPassword123!",
     )
-    if reg_result.is_success:
-        pass
 
 
 def demonstrate_flext_result_integration() -> None:
@@ -49,9 +45,7 @@ def demonstrate_flext_result_integration() -> None:
     _ = r[str].ok("Refactoring successful")
     _ = r[str].fail("Example failure case")
     auth: FlextAuth = FlextAuth()
-    auth_result = auth.authenticate_user("test_user", "password")
-    if auth_result.is_success:
-        pass
+    auth.authenticate_user("test_user", "password")
 
 
 def demonstrate_system_architecture() -> None:
@@ -63,12 +57,8 @@ def demonstrate_system_architecture() -> None:
 def demonstrate_error_handling() -> None:
     """Demonstrate proper error handling patterns."""
     auth: FlextAuth = FlextAuth()
-    weak_result = auth.register_user("weakuser", "weak@example.com", "123")
-    if weak_result.is_failure:
-        pass
-    nonexistent_result = auth.authenticate_user("nonexistent", "password")
-    if nonexistent_result.is_failure:
-        pass
+    auth.register_user("weakuser", "weak@example.com", "123")
+    auth.authenticate_user("nonexistent", "password")
 
 
 def main() -> None:
