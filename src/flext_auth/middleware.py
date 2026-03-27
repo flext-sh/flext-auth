@@ -15,12 +15,12 @@ Integration Pattern:
     auth = FlextAuthMiddleware.FlextWebAuthMiddleware(FlextAuthJwtProvider(secret="key"))
     client = FlextApiClient(middlewares=[auth])
 
-    # Web App with OAuth2
-    from flext_web import create_fastapi_app
-    from flext_auth import FlextAuthOAuth2Provider, FlextAuthMiddleware
+    # flext-web bootstrap through its public facade
+    from flext_web import web
 
-    auth = FlextAuthMiddleware.WebAuthMiddleware(FlextAuthOAuth2Provider(...))
-    app = create_fastapi_app(middlewares=[auth])
+    app_result = web.create_fastapi_app()
+    if app_result.is_success:
+        app = app_result.value
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
