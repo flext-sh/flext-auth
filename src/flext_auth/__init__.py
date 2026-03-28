@@ -11,10 +11,10 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_api import d, e, h, r, s
+    from flext_api import d, e, h, r, s, x
     from flext_core import FlextTypes
 
-    from flext_auth import _managers, providers, transports
+    from flext_auth import _managers, _utilities, providers, transports
     from flext_auth.__version__ import (
         __all__,
         __author__,
@@ -28,14 +28,22 @@ if TYPE_CHECKING:
     )
     from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth._utilities.identity_service import FlextAuthIdentityService
+    from flext_auth._utilities.managers import (
+        FlextAuthManagers,
+        FlextAuthServiceManagers,
+    )
+    from flext_auth._utilities.middleware import FlextAuthMiddleware
+    from flext_auth._utilities.mixins import FlextAuthMixins
+    from flext_auth._utilities.provider_service import FlextAuthProviderService
+    from flext_auth._utilities.quickstart import FlextAuthQuickstart
+    from flext_auth._utilities.registry import FlextAuthRegistry
+    from flext_auth._utilities.session_service import FlextAuthSessionService
+    from flext_auth._utilities.token_service import FlextAuthTokenService
     from flext_auth.api import FlextAuth
     from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
-    from flext_auth.managers import FlextAuthManagers, FlextAuthServiceManagers
-    from flext_auth.middleware import FlextAuthMiddleware
-    from flext_auth.mixins import FlextAuthMixins, FlextAuthMixins as x
     from flext_auth.models import FlextAuthModels, FlextAuthModels as m
     from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
-    from flext_auth.provider_service import FlextAuthProviderService
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
@@ -50,14 +58,9 @@ if TYPE_CHECKING:
     from flext_auth.providers.oidc import FlextAuthOidcProvider
     from flext_auth.providers.rfc import FlextAuthRfcProvider
     from flext_auth.providers.saml import FlextAuthSamlProvider
-    from flext_auth.quickstart import FlextAuthQuickstart
-    from flext_auth.registry import FlextAuthRegistry
-    from flext_auth.session_service import FlextAuthSessionService
     from flext_auth.settings import FlextAuthSettings
-    from flext_auth.token_service import FlextAuthTokenService
     from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
-    from flext_auth.user_service import FlextAuthIdentityService
     from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
@@ -72,7 +75,10 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "FlextAuthCertificateProvider",
     ],
     "FlextAuthConstants": ["flext_auth.constants", "FlextAuthConstants"],
-    "FlextAuthIdentityService": ["flext_auth.user_service", "FlextAuthIdentityService"],
+    "FlextAuthIdentityService": [
+        "flext_auth._utilities.identity_service",
+        "FlextAuthIdentityService",
+    ],
     "FlextAuthJwtProvider": ["flext_auth.providers.jwt", "FlextAuthJwtProvider"],
     "FlextAuthJwtTokenGenerator": [
         "flext_auth.providers.jwt_token_generator",
@@ -87,9 +93,9 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "FlextAuthKerberosProvider",
     ],
     "FlextAuthLdapProvider": ["flext_auth.providers.ldap", "FlextAuthLdapProvider"],
-    "FlextAuthManagers": ["flext_auth.managers", "FlextAuthManagers"],
-    "FlextAuthMiddleware": ["flext_auth.middleware", "FlextAuthMiddleware"],
-    "FlextAuthMixins": ["flext_auth.mixins", "FlextAuthMixins"],
+    "FlextAuthManagers": ["flext_auth._utilities.managers", "FlextAuthManagers"],
+    "FlextAuthMiddleware": ["flext_auth._utilities.middleware", "FlextAuthMiddleware"],
+    "FlextAuthMixins": ["flext_auth._utilities.mixins", "FlextAuthMixins"],
     "FlextAuthModels": ["flext_auth.models", "FlextAuthModels"],
     "FlextAuthOAuth2Provider": [
         "flext_auth.providers.oauth2",
@@ -103,28 +109,34 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextAuthProtocols": ["flext_auth.protocols", "FlextAuthProtocols"],
     "FlextAuthProviderMixin": ["flext_auth.providers.mixin", "FlextAuthProviderMixin"],
     "FlextAuthProviderService": [
-        "flext_auth.provider_service",
+        "flext_auth._utilities.provider_service",
         "FlextAuthProviderService",
     ],
-    "FlextAuthQuickstart": ["flext_auth.quickstart", "FlextAuthQuickstart"],
+    "FlextAuthQuickstart": ["flext_auth._utilities.quickstart", "FlextAuthQuickstart"],
     "FlextAuthRateLimiterManagers": [
         "flext_auth._managers.rate_limiter",
         "FlextAuthRateLimiterManagers",
     ],
-    "FlextAuthRegistry": ["flext_auth.registry", "FlextAuthRegistry"],
+    "FlextAuthRegistry": ["flext_auth._utilities.registry", "FlextAuthRegistry"],
     "FlextAuthRfcProvider": ["flext_auth.providers.rfc", "FlextAuthRfcProvider"],
     "FlextAuthSamlProvider": ["flext_auth.providers.saml", "FlextAuthSamlProvider"],
-    "FlextAuthServiceManagers": ["flext_auth.managers", "FlextAuthServiceManagers"],
+    "FlextAuthServiceManagers": [
+        "flext_auth._utilities.managers",
+        "FlextAuthServiceManagers",
+    ],
     "FlextAuthSessionManagers": [
         "flext_auth._managers.auth_managers_session",
         "FlextAuthSessionManagers",
     ],
     "FlextAuthSessionService": [
-        "flext_auth.session_service",
+        "flext_auth._utilities.session_service",
         "FlextAuthSessionService",
     ],
     "FlextAuthSettings": ["flext_auth.settings", "FlextAuthSettings"],
-    "FlextAuthTokenService": ["flext_auth.token_service", "FlextAuthTokenService"],
+    "FlextAuthTokenService": [
+        "flext_auth._utilities.token_service",
+        "FlextAuthTokenService",
+    ],
     "FlextAuthTypes": ["flext_auth.typings", "FlextAuthTypes"],
     "FlextAuthUtilities": ["flext_auth.utilities", "FlextAuthUtilities"],
     "FlextWebTransportAdapter": [
@@ -141,6 +153,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "__version__": ["flext_auth.__version__", "__version__"],
     "__version_info__": ["flext_auth.__version__", "__version_info__"],
     "_managers": ["flext_auth._managers", ""],
+    "_utilities": ["flext_auth._utilities", ""],
     "c": ["flext_auth.constants", "FlextAuthConstants"],
     "d": ["flext_api", "d"],
     "e": ["flext_api", "e"],
@@ -153,7 +166,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "t": ["flext_auth.typings", "FlextAuthTypes"],
     "transports": ["flext_auth.transports", ""],
     "u": ["flext_auth.utilities", "FlextAuthUtilities"],
-    "x": ["flext_auth.mixins", "FlextAuthMixins"],
+    "x": ["flext_api", "x"],
 }
 
 __all__ = [
@@ -201,6 +214,7 @@ __all__ = [
     "__version__",
     "__version_info__",
     "_managers",
+    "_utilities",
     "c",
     "d",
     "e",
