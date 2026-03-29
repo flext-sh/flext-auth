@@ -27,31 +27,16 @@ if TYPE_CHECKING:
     from flext_auth._utilities.token_service import FlextAuthTokenService
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextAuthIdentityService": [
-        "flext_auth._utilities.identity_service",
-        "FlextAuthIdentityService",
-    ],
+    "FlextAuthIdentityService": ["flext_auth._utilities.identity_service", "FlextAuthIdentityService"],
     "FlextAuthManagers": ["flext_auth._utilities.managers", "FlextAuthManagers"],
     "FlextAuthMiddleware": ["flext_auth._utilities.middleware", "FlextAuthMiddleware"],
     "FlextAuthMixins": ["flext_auth._utilities.mixins", "FlextAuthMixins"],
-    "FlextAuthProviderService": [
-        "flext_auth._utilities.provider_service",
-        "FlextAuthProviderService",
-    ],
+    "FlextAuthProviderService": ["flext_auth._utilities.provider_service", "FlextAuthProviderService"],
     "FlextAuthQuickstart": ["flext_auth._utilities.quickstart", "FlextAuthQuickstart"],
     "FlextAuthRegistry": ["flext_auth._utilities.registry", "FlextAuthRegistry"],
-    "FlextAuthServiceManagers": [
-        "flext_auth._utilities.managers",
-        "FlextAuthServiceManagers",
-    ],
-    "FlextAuthSessionService": [
-        "flext_auth._utilities.session_service",
-        "FlextAuthSessionService",
-    ],
-    "FlextAuthTokenService": [
-        "flext_auth._utilities.token_service",
-        "FlextAuthTokenService",
-    ],
+    "FlextAuthServiceManagers": ["flext_auth._utilities.managers", "FlextAuthServiceManagers"],
+    "FlextAuthSessionService": ["flext_auth._utilities.session_service", "FlextAuthSessionService"],
+    "FlextAuthTokenService": ["flext_auth._utilities.token_service", "FlextAuthTokenService"],
 }
 
 __all__ = [
