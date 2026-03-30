@@ -10,22 +10,22 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+from flext_auth.__version__ import (
+    __author__,
+    __author_email__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+    __version_info__,
+)
+
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, s, x
     from flext_core import FlextTypes
 
     from flext_auth import _managers, _utilities, providers, transports
-    from flext_auth.__version__ import (
-        __all__,
-        __author__,
-        __author_email__,
-        __description__,
-        __license__,
-        __title__,
-        __url__,
-        __version__,
-        __version_info__,
-    )
     from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
     from flext_auth._utilities.identity_service import FlextAuthIdentityService
@@ -143,15 +143,6 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_auth.transports.http",
         "FlextWebTransportAdapter",
     ],
-    "__all__": ["flext_auth.__version__", "__all__"],
-    "__author__": ["flext_auth.__version__", "__author__"],
-    "__author_email__": ["flext_auth.__version__", "__author_email__"],
-    "__description__": ["flext_auth.__version__", "__description__"],
-    "__license__": ["flext_auth.__version__", "__license__"],
-    "__title__": ["flext_auth.__version__", "__title__"],
-    "__url__": ["flext_auth.__version__", "__url__"],
-    "__version__": ["flext_auth.__version__", "__version__"],
-    "__version_info__": ["flext_auth.__version__", "__version_info__"],
     "_managers": ["flext_auth._managers", ""],
     "_utilities": ["flext_auth._utilities", ""],
     "c": ["flext_auth.constants", "FlextAuthConstants"],
@@ -204,7 +195,6 @@ __all__ = [
     "FlextAuthTypes",
     "FlextAuthUtilities",
     "FlextWebTransportAdapter",
-    "__all__",
     "__author__",
     "__author_email__",
     "__description__",
