@@ -25,9 +25,33 @@ if TYPE_CHECKING:
     from flext_api import d, e, h, r, s, x
     from flext_core import FlextTypes
 
-    from flext_auth import _managers, _utilities, providers, transports
+    from flext_auth import (
+        _managers,
+        _utilities,
+        api,
+        constants,
+        models,
+        protocols,
+        providers,
+        settings,
+        transports,
+        typings,
+        utilities,
+    )
+    from flext_auth._managers import auth_managers_session, rate_limiter
     from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth._utilities import (
+        identity_service,
+        managers,
+        middleware,
+        mixins,
+        provider_service,
+        quickstart,
+        registry,
+        session_service,
+        token_service,
+    )
     from flext_auth._utilities.identity_service import FlextAuthIdentityService
     from flext_auth._utilities.managers import (
         FlextAuthManagers,
@@ -44,6 +68,23 @@ if TYPE_CHECKING:
     from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
     from flext_auth.models import FlextAuthModels, FlextAuthModels as m
     from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
+    from flext_auth.providers import (
+        apikey,
+        base,
+        basic,
+        certificate,
+        jwt,
+        jwt_password_hasher,
+        jwt_token_generator,
+        jwt_token_validator,
+        kerberos,
+        ldap,
+        mixin,
+        oauth2,
+        oidc,
+        rfc,
+        saml,
+    )
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
@@ -59,6 +100,7 @@ if TYPE_CHECKING:
     from flext_auth.providers.rfc import FlextAuthRfcProvider
     from flext_auth.providers.saml import FlextAuthSamlProvider
     from flext_auth.settings import FlextAuthSettings
+    from flext_auth.transports import http
     from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
     from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
@@ -145,18 +187,52 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     ],
     "_managers": ["flext_auth._managers", ""],
     "_utilities": ["flext_auth._utilities", ""],
+    "api": ["flext_auth.api", ""],
+    "apikey": ["flext_auth.providers.apikey", ""],
+    "auth_managers_session": ["flext_auth._managers.auth_managers_session", ""],
+    "base": ["flext_auth.providers.base", ""],
+    "basic": ["flext_auth.providers.basic", ""],
     "c": ["flext_auth.constants", "FlextAuthConstants"],
+    "certificate": ["flext_auth.providers.certificate", ""],
+    "constants": ["flext_auth.constants", ""],
     "d": ["flext_api", "d"],
     "e": ["flext_api", "e"],
     "h": ["flext_api", "h"],
+    "http": ["flext_auth.transports.http", ""],
+    "identity_service": ["flext_auth._utilities.identity_service", ""],
+    "jwt": ["flext_auth.providers.jwt", ""],
+    "jwt_password_hasher": ["flext_auth.providers.jwt_password_hasher", ""],
+    "jwt_token_generator": ["flext_auth.providers.jwt_token_generator", ""],
+    "jwt_token_validator": ["flext_auth.providers.jwt_token_validator", ""],
+    "kerberos": ["flext_auth.providers.kerberos", ""],
+    "ldap": ["flext_auth.providers.ldap", ""],
     "m": ["flext_auth.models", "FlextAuthModels"],
+    "managers": ["flext_auth._utilities.managers", ""],
+    "middleware": ["flext_auth._utilities.middleware", ""],
+    "mixin": ["flext_auth.providers.mixin", ""],
+    "mixins": ["flext_auth._utilities.mixins", ""],
+    "models": ["flext_auth.models", ""],
+    "oauth2": ["flext_auth.providers.oauth2", ""],
+    "oidc": ["flext_auth.providers.oidc", ""],
     "p": ["flext_auth.protocols", "FlextAuthProtocols"],
+    "protocols": ["flext_auth.protocols", ""],
+    "provider_service": ["flext_auth._utilities.provider_service", ""],
     "providers": ["flext_auth.providers", ""],
+    "quickstart": ["flext_auth._utilities.quickstart", ""],
     "r": ["flext_api", "r"],
+    "rate_limiter": ["flext_auth._managers.rate_limiter", ""],
+    "registry": ["flext_auth._utilities.registry", ""],
+    "rfc": ["flext_auth.providers.rfc", ""],
     "s": ["flext_api", "s"],
+    "saml": ["flext_auth.providers.saml", ""],
+    "session_service": ["flext_auth._utilities.session_service", ""],
+    "settings": ["flext_auth.settings", ""],
     "t": ["flext_auth.typings", "FlextAuthTypes"],
+    "token_service": ["flext_auth._utilities.token_service", ""],
     "transports": ["flext_auth.transports", ""],
+    "typings": ["flext_auth.typings", ""],
     "u": ["flext_auth.utilities", "FlextAuthUtilities"],
+    "utilities": ["flext_auth.utilities", ""],
     "x": ["flext_api", "x"],
 }
 
@@ -205,18 +281,52 @@ __all__ = [
     "__version_info__",
     "_managers",
     "_utilities",
+    "api",
+    "apikey",
+    "auth_managers_session",
+    "base",
+    "basic",
     "c",
+    "certificate",
+    "constants",
     "d",
     "e",
     "h",
+    "http",
+    "identity_service",
+    "jwt",
+    "jwt_password_hasher",
+    "jwt_token_generator",
+    "jwt_token_validator",
+    "kerberos",
+    "ldap",
     "m",
+    "managers",
+    "middleware",
+    "mixin",
+    "mixins",
+    "models",
+    "oauth2",
+    "oidc",
     "p",
+    "protocols",
+    "provider_service",
     "providers",
+    "quickstart",
     "r",
+    "rate_limiter",
+    "registry",
+    "rfc",
     "s",
+    "saml",
+    "session_service",
+    "settings",
     "t",
+    "token_service",
     "transports",
+    "typings",
     "u",
+    "utilities",
     "x",
 ]
 

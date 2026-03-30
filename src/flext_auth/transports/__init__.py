@@ -23,6 +23,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from flext_auth.transports import base, http
     from flext_auth.transports.http import FlextWebTransportAdapter
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
@@ -30,10 +31,14 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_auth.transports.http",
         "FlextWebTransportAdapter",
     ],
+    "base": ["flext_auth.transports.base", ""],
+    "http": ["flext_auth.transports.http", ""],
 }
 
 __all__ = [
     "FlextWebTransportAdapter",
+    "base",
+    "http",
 ]
 
 

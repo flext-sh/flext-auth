@@ -16,6 +16,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.fixtures import certificates
     from tests.fixtures.certificates import (
         CertificateFixture,
         generate_client_cert,
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "CertificateFixture": ["tests.fixtures.certificates", "CertificateFixture"],
+    "certificates": ["tests.fixtures.certificates", ""],
     "generate_client_cert": ["tests.fixtures.certificates", "generate_client_cert"],
     "generate_self_signed_cert": [
         "tests.fixtures.certificates",
@@ -33,6 +35,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
 
 __all__ = [
     "CertificateFixture",
+    "certificates",
     "generate_client_cert",
     "generate_self_signed_cert",
 ]

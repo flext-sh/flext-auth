@@ -13,6 +13,17 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from flext_auth._utilities import (
+        identity_service,
+        managers,
+        middleware,
+        mixins,
+        provider_service,
+        quickstart,
+        registry,
+        session_service,
+        token_service,
+    )
     from flext_auth._utilities.identity_service import FlextAuthIdentityService
     from flext_auth._utilities.managers import (
         FlextAuthManagers,
@@ -52,6 +63,15 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_auth._utilities.token_service",
         "FlextAuthTokenService",
     ],
+    "identity_service": ["flext_auth._utilities.identity_service", ""],
+    "managers": ["flext_auth._utilities.managers", ""],
+    "middleware": ["flext_auth._utilities.middleware", ""],
+    "mixins": ["flext_auth._utilities.mixins", ""],
+    "provider_service": ["flext_auth._utilities.provider_service", ""],
+    "quickstart": ["flext_auth._utilities.quickstart", ""],
+    "registry": ["flext_auth._utilities.registry", ""],
+    "session_service": ["flext_auth._utilities.session_service", ""],
+    "token_service": ["flext_auth._utilities.token_service", ""],
 }
 
 __all__ = [
@@ -65,6 +85,15 @@ __all__ = [
     "FlextAuthServiceManagers",
     "FlextAuthSessionService",
     "FlextAuthTokenService",
+    "identity_service",
+    "managers",
+    "middleware",
+    "mixins",
+    "provider_service",
+    "quickstart",
+    "registry",
+    "session_service",
+    "token_service",
 ]
 
 

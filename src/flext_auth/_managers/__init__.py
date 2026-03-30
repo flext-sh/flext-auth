@@ -13,6 +13,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from flext_auth._managers import auth_managers_session, rate_limiter
     from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 
@@ -25,11 +26,15 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_auth._managers.auth_managers_session",
         "FlextAuthSessionManagers",
     ],
+    "auth_managers_session": ["flext_auth._managers.auth_managers_session", ""],
+    "rate_limiter": ["flext_auth._managers.rate_limiter", ""],
 }
 
 __all__ = [
     "FlextAuthRateLimiterManagers",
     "FlextAuthSessionManagers",
+    "auth_managers_session",
+    "rate_limiter",
 ]
 
 

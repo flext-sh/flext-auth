@@ -18,6 +18,19 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from examples import (
+        advanced_features_02,
+        basic_auth_05,
+        basic_refactored_usage_06,
+        basic_usage_01,
+        basic_usage_07,
+        comprehensive_demo_03,
+        debug_auth_issues_09,
+        flext_config_usage,
+        refactored_system_showcase_04,
+        simple_usage_08,
+        utils,
+    )
     from examples.advanced_features_02 import (
         example_advanced_configuration,
         example_jwt_operations,
@@ -64,7 +77,14 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextAuthDemo": ["examples.basic_refactored_usage_06", "FlextAuthDemo"],
+    "advanced_features_02": ["examples.advanced_features_02", ""],
+    "basic_auth_05": ["examples.basic_auth_05", ""],
     "basic_example_runner": ["examples.utils", "basic_example_runner"],
+    "basic_refactored_usage_06": ["examples.basic_refactored_usage_06", ""],
+    "basic_usage_01": ["examples.basic_usage_01", ""],
+    "basic_usage_07": ["examples.basic_usage_07", ""],
+    "comprehensive_demo_03": ["examples.comprehensive_demo_03", ""],
+    "debug_auth_issues_09": ["examples.debug_auth_issues_09", ""],
     "debug_authentication_workflow": [
         "examples.debug_auth_issues_09",
         "debug_authentication_workflow",
@@ -153,17 +173,28 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     ],
     "example_user_lifecycle": ["examples.basic_usage_01", "example_user_lifecycle"],
     "exemplo_flext_auth": ["examples.basic_usage_07", "exemplo_flext_auth"],
+    "flext_config_usage": ["examples.flext_config_usage", ""],
     "generate_secure_password": [
         "examples.comprehensive_demo_03",
         "generate_secure_password",
     ],
     "logger": ["examples.basic_usage_01", "logger"],
     "main": ["examples.simple_usage_08", "main"],
+    "refactored_system_showcase_04": ["examples.refactored_system_showcase_04", ""],
+    "simple_usage_08": ["examples.simple_usage_08", ""],
+    "utils": ["examples.utils", ""],
 }
 
 __all__ = [
     "FlextAuthDemo",
+    "advanced_features_02",
+    "basic_auth_05",
     "basic_example_runner",
+    "basic_refactored_usage_06",
+    "basic_usage_01",
+    "basic_usage_07",
+    "comprehensive_demo_03",
+    "debug_auth_issues_09",
     "debug_authentication_workflow",
     "debug_jwt_operations",
     "debug_password_operations",
@@ -192,9 +223,13 @@ __all__ = [
     "example_token_validation",
     "example_user_lifecycle",
     "exemplo_flext_auth",
+    "flext_config_usage",
     "generate_secure_password",
     "logger",
     "main",
+    "refactored_system_showcase_04",
+    "simple_usage_08",
+    "utils",
 ]
 
 

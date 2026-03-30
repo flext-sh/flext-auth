@@ -25,6 +25,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.helpers import protocols, typings, utilities
     from tests.helpers.protocols import TestsProtocols, p
     from tests.helpers.typings import TestsTypings, t
     from tests.helpers.utilities import TestsUtilities, u
@@ -34,8 +35,11 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "TestsTypings": ["tests.helpers.typings", "TestsTypings"],
     "TestsUtilities": ["tests.helpers.utilities", "TestsUtilities"],
     "p": ["tests.helpers.protocols", "p"],
+    "protocols": ["tests.helpers.protocols", ""],
     "t": ["tests.helpers.typings", "t"],
+    "typings": ["tests.helpers.typings", ""],
     "u": ["tests.helpers.utilities", "u"],
+    "utilities": ["tests.helpers.utilities", ""],
 }
 
 __all__ = [
@@ -43,8 +47,11 @@ __all__ = [
     "TestsTypings",
     "TestsUtilities",
     "p",
+    "protocols",
     "t",
+    "typings",
     "u",
+    "utilities",
 ]
 
 

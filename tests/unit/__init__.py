@@ -13,6 +13,13 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.unit import (
+        test_api,
+        test_config,
+        test_constants,
+        test_token_real_flows,
+        test_typings,
+    )
     from tests.unit.test_api import (
         HttpRequest,
         TestAuthModule,
@@ -146,6 +153,11 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "TestJwtTokenGenerator": ["tests.unit.test_config", "TestJwtTokenGenerator"],
     "TestProviderTokenFlows": ["tests.unit.test_api", "TestProviderTokenFlows"],
     "TestTokenRealFlows": ["tests.unit.test_token_real_flows", "TestTokenRealFlows"],
+    "test_api": ["tests.unit.test_api", ""],
+    "test_config": ["tests.unit.test_config", ""],
+    "test_constants": ["tests.unit.test_constants", ""],
+    "test_token_real_flows": ["tests.unit.test_token_real_flows", ""],
+    "test_typings": ["tests.unit.test_typings", ""],
 }
 
 __all__ = [
@@ -184,6 +196,11 @@ __all__ = [
     "TestJwtTokenGenerator",
     "TestProviderTokenFlows",
     "TestTokenRealFlows",
+    "test_api",
+    "test_config",
+    "test_constants",
+    "test_token_real_flows",
+    "test_typings",
 ]
 
 

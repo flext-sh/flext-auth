@@ -14,9 +14,20 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests import fixtures, helpers, unit
+    from tests import (
+        conftest,
+        constants,
+        fixtures,
+        helpers,
+        models,
+        protocols,
+        typings,
+        unit,
+        utilities,
+    )
     from tests.conftest import mock_get_global, reset_singletons
     from tests.constants import FlextAuthTestConstants, FlextAuthTestConstants as c
+    from tests.fixtures import certificates
     from tests.fixtures.certificates import (
         CertificateFixture,
         generate_client_cert,
@@ -28,6 +39,13 @@ if TYPE_CHECKING:
     from tests.models import FlextAuthTestModels, FlextAuthTestModels as m
     from tests.protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
     from tests.typings import FlextAuthTestTypes, FlextAuthTestTypes as t
+    from tests.unit import (
+        test_api,
+        test_config,
+        test_constants,
+        test_token_real_flows,
+        test_typings,
+    )
     from tests.unit.test_api import (
         HttpRequest,
         TestAuthModule,
@@ -172,6 +190,9 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "TestsTypings": ["tests.helpers.typings", "TestsTypings"],
     "TestsUtilities": ["tests.helpers.utilities", "TestsUtilities"],
     "c": ["tests.constants", "FlextAuthTestConstants"],
+    "certificates": ["tests.fixtures.certificates", ""],
+    "conftest": ["tests.conftest", ""],
+    "constants": ["tests.constants", ""],
     "d": ["flext_tests", "d"],
     "e": ["flext_tests", "e"],
     "fixtures": ["tests.fixtures", ""],
@@ -184,13 +205,22 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "helpers": ["tests.helpers", ""],
     "m": ["tests.models", "FlextAuthTestModels"],
     "mock_get_global": ["tests.conftest", "mock_get_global"],
+    "models": ["tests.models", ""],
     "p": ["tests.protocols", "FlextAuthTestProtocols"],
+    "protocols": ["tests.protocols", ""],
     "r": ["flext_tests", "r"],
     "reset_singletons": ["tests.conftest", "reset_singletons"],
     "s": ["flext_tests", "s"],
     "t": ["tests.typings", "FlextAuthTestTypes"],
+    "test_api": ["tests.unit.test_api", ""],
+    "test_config": ["tests.unit.test_config", ""],
+    "test_constants": ["tests.unit.test_constants", ""],
+    "test_token_real_flows": ["tests.unit.test_token_real_flows", ""],
+    "test_typings": ["tests.unit.test_typings", ""],
+    "typings": ["tests.typings", ""],
     "u": ["tests.utilities", "FlextAuthTestUtilities"],
     "unit": ["tests.unit", ""],
+    "utilities": ["tests.utilities", ""],
     "x": ["flext_tests", "x"],
 }
 
@@ -240,6 +270,9 @@ __all__ = [
     "TestsTypings",
     "TestsUtilities",
     "c",
+    "certificates",
+    "conftest",
+    "constants",
     "d",
     "e",
     "fixtures",
@@ -249,13 +282,22 @@ __all__ = [
     "helpers",
     "m",
     "mock_get_global",
+    "models",
     "p",
+    "protocols",
     "r",
     "reset_singletons",
     "s",
     "t",
+    "test_api",
+    "test_config",
+    "test_constants",
+    "test_token_real_flows",
+    "test_typings",
+    "typings",
     "u",
     "unit",
+    "utilities",
     "x",
 ]
 
