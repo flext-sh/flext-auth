@@ -8,19 +8,17 @@ This package contains test fixtures and mock data for authentication testing.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
-
-    from tests.fixtures import certificates
+    from tests.fixtures import certificates as certificates
     from tests.fixtures.certificates import (
-        CertificateFixture,
-        generate_client_cert,
-        generate_self_signed_cert,
+        CertificateFixture as CertificateFixture,
+        generate_client_cert as generate_client_cert,
+        generate_self_signed_cert as generate_self_signed_cert,
     )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
@@ -33,7 +31,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     ],
 }
 
-__all__ = [
+_EXPORTS: Sequence[str] = [
     "CertificateFixture",
     "certificates",
     "generate_client_cert",
@@ -41,41 +39,4 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: MutableMapping[str, FlextTypes.ModuleExport] = {}
-
-
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
-    """Lazy-load module attributes on first access (PEP 562).
-
-    A local cache ``_LAZY_CACHE`` persists resolved objects across repeated
-    accesses during process lifetime.
-
-    Args:
-        name: Attribute name requested by dir()/import.
-
-    Returns:
-        Lazy-loaded module export type.
-
-    Raises:
-        AttributeError: If attribute not registered.
-
-    """
-    if name in _LAZY_CACHE:
-        return _LAZY_CACHE[name]
-
-    value = lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-    _LAZY_CACHE[name] = value
-    return value
-
-
-def __dir__() -> Sequence[str]:
-    """Return list of available attributes for dir() and autocomplete.
-
-    Returns:
-        List of public names from module exports.
-
-    """
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)

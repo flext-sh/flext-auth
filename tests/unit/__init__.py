@@ -5,57 +5,62 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from tests.unit import (
-        test_api,
-        test_config,
-        test_constants,
-        test_token_real_flows,
-        test_typings,
+        test_api as test_api,
+        test_config as test_config,
+        test_constants as test_constants,
+        test_token_real_flows as test_token_real_flows,
+        test_typings as test_typings,
     )
     from tests.unit.test_api import (
-        HttpRequest,
-        TestAuthModule,
-        TestFlextAuth,
-        TestFlextAuthAdditionalCoverage,
-        TestFlextAuthAdvancedPatterns,
-        TestFlextAuthConfigurationMethods,
-        TestFlextAuthConfigurationOverrides,
-        TestFlextAuthErrorHandling,
-        TestFlextAuthErrorHandlingPaths,
-        TestFlextAuthErrorHandlingSecond,
-        TestFlextAuthErrorPaths,
-        TestFlextAuthHandlerRegistration,
-        TestFlextAuthInitializationCoverage,
-        TestFlextAuthLogging,
-        TestFlextAuthModelConfiguration,
-        TestFlextAuthPasswordMethods,
-        TestFlextAuthProcessorRegistration,
-        TestFlextAuthProviderRegistry,
-        TestFlextAuthQuickStart,
-        TestFlextAuthQuickStartFunction,
-        TestFlextAuthQuickStartMethod,
-        TestFlextAuthSecurity,
-        TestFlextAuthServiceInitialization,
-        TestFlextAuthSessionManagement,
-        TestFlextAuthSessionMethods,
-        TestFlextAuthStorageOperations,
-        TestFlextAuthTokenMethods,
-        TestFlextAuthTokenOperations,
-        TestFlextAuthUserMethods,
-        TestProviderTokenFlows,
+        HttpRequest as HttpRequest,
+        TestAuthModule as TestAuthModule,
+        TestFlextAuth as TestFlextAuth,
+        TestFlextAuthAdditionalCoverage as TestFlextAuthAdditionalCoverage,
+        TestFlextAuthAdvancedPatterns as TestFlextAuthAdvancedPatterns,
+        TestFlextAuthConfigurationMethods as TestFlextAuthConfigurationMethods,
+        TestFlextAuthConfigurationOverrides as TestFlextAuthConfigurationOverrides,
+        TestFlextAuthErrorHandling as TestFlextAuthErrorHandling,
+        TestFlextAuthErrorHandlingPaths as TestFlextAuthErrorHandlingPaths,
+        TestFlextAuthErrorHandlingSecond as TestFlextAuthErrorHandlingSecond,
+        TestFlextAuthErrorPaths as TestFlextAuthErrorPaths,
+        TestFlextAuthHandlerRegistration as TestFlextAuthHandlerRegistration,
+        TestFlextAuthInitializationCoverage as TestFlextAuthInitializationCoverage,
+        TestFlextAuthLogging as TestFlextAuthLogging,
+        TestFlextAuthModelConfiguration as TestFlextAuthModelConfiguration,
+        TestFlextAuthPasswordMethods as TestFlextAuthPasswordMethods,
+        TestFlextAuthProcessorRegistration as TestFlextAuthProcessorRegistration,
+        TestFlextAuthProviderRegistry as TestFlextAuthProviderRegistry,
+        TestFlextAuthQuickStart as TestFlextAuthQuickStart,
+        TestFlextAuthQuickStartFunction as TestFlextAuthQuickStartFunction,
+        TestFlextAuthQuickStartMethod as TestFlextAuthQuickStartMethod,
+        TestFlextAuthSecurity as TestFlextAuthSecurity,
+        TestFlextAuthServiceInitialization as TestFlextAuthServiceInitialization,
+        TestFlextAuthSessionManagement as TestFlextAuthSessionManagement,
+        TestFlextAuthSessionMethods as TestFlextAuthSessionMethods,
+        TestFlextAuthStorageOperations as TestFlextAuthStorageOperations,
+        TestFlextAuthTokenMethods as TestFlextAuthTokenMethods,
+        TestFlextAuthTokenOperations as TestFlextAuthTokenOperations,
+        TestFlextAuthUserMethods as TestFlextAuthUserMethods,
+        TestProviderTokenFlows as TestProviderTokenFlows,
     )
-    from tests.unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
-    from tests.unit.test_constants import TestFlextAuthConstants
-    from tests.unit.test_token_real_flows import TestTokenRealFlows
-    from tests.unit.test_typings import TestFlextAuthTypes
+    from tests.unit.test_config import (
+        TestFlextAuthSettingsBasic as TestFlextAuthSettingsBasic,
+        TestJwtTokenGenerator as TestJwtTokenGenerator,
+    )
+    from tests.unit.test_constants import (
+        TestFlextAuthConstants as TestFlextAuthConstants,
+    )
+    from tests.unit.test_token_real_flows import (
+        TestTokenRealFlows as TestTokenRealFlows,
+    )
+    from tests.unit.test_typings import TestFlextAuthTypes as TestFlextAuthTypes
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "HttpRequest": ["tests.unit.test_api", "HttpRequest"],
@@ -160,7 +165,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "test_typings": ["tests.unit.test_typings", ""],
 }
 
-__all__ = [
+_EXPORTS: Sequence[str] = [
     "HttpRequest",
     "TestAuthModule",
     "TestFlextAuth",
@@ -204,41 +209,4 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: MutableMapping[str, FlextTypes.ModuleExport] = {}
-
-
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
-    """Lazy-load module attributes on first access (PEP 562).
-
-    A local cache ``_LAZY_CACHE`` persists resolved objects across repeated
-    accesses during process lifetime.
-
-    Args:
-        name: Attribute name requested by dir()/import.
-
-    Returns:
-        Lazy-loaded module export type.
-
-    Raises:
-        AttributeError: If attribute not registered.
-
-    """
-    if name in _LAZY_CACHE:
-        return _LAZY_CACHE[name]
-
-    value = lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-    _LAZY_CACHE[name] = value
-    return value
-
-
-def __dir__() -> Sequence[str]:
-    """Return list of available attributes for dir() and autocomplete.
-
-    Returns:
-        List of public names from module exports.
-
-    """
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)

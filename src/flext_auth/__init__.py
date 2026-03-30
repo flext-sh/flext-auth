@@ -5,105 +5,153 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import install_lazy_exports
 
 from flext_auth.__version__ import (
-    __author__,
-    __author_email__,
-    __description__,
-    __license__,
-    __title__,
-    __url__,
-    __version__,
-    __version_info__,
+    __author__ as __author__,
+    __author_email__ as __author_email__,
+    __description__ as __description__,
+    __license__ as __license__,
+    __title__ as __title__,
+    __url__ as __url__,
+    __version__ as __version__,
+    __version_info__ as __version_info__,
 )
 
 if TYPE_CHECKING:
-    from flext_api import d, e, h, r, s, x
-    from flext_core import FlextTypes
-
     from flext_auth import (
-        _managers,
-        _utilities,
-        api,
-        constants,
-        models,
-        protocols,
-        providers,
-        settings,
-        transports,
-        typings,
-        utilities,
+        _managers as _managers,
+        _utilities as _utilities,
+        api as api,
+        constants as constants,
+        models as models,
+        protocols as protocols,
+        providers as providers,
+        settings as settings,
+        transports as transports,
+        typings as typings,
+        utilities as utilities,
     )
-    from flext_auth._managers import auth_managers_session, rate_limiter
-    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
-    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth._managers import (
+        auth_managers_session as auth_managers_session,
+        rate_limiter as rate_limiter,
+    )
+    from flext_auth._managers.auth_managers_session import (
+        FlextAuthSessionManagers as FlextAuthSessionManagers,
+    )
+    from flext_auth._managers.rate_limiter import (
+        FlextAuthRateLimiterManagers as FlextAuthRateLimiterManagers,
+    )
     from flext_auth._utilities import (
-        identity_service,
-        managers,
-        middleware,
-        mixins,
-        provider_service,
-        quickstart,
-        registry,
-        session_service,
-        token_service,
+        identity_service as identity_service,
+        managers as managers,
+        middleware as middleware,
+        mixins as mixins,
+        provider_service as provider_service,
+        quickstart as quickstart,
+        registry as registry,
+        session_service as session_service,
+        token_service as token_service,
     )
-    from flext_auth._utilities.identity_service import FlextAuthIdentityService
+    from flext_auth._utilities.identity_service import (
+        FlextAuthIdentityService as FlextAuthIdentityService,
+    )
     from flext_auth._utilities.managers import (
-        FlextAuthManagers,
-        FlextAuthServiceManagers,
+        FlextAuthManagers as FlextAuthManagers,
+        FlextAuthServiceManagers as FlextAuthServiceManagers,
     )
-    from flext_auth._utilities.middleware import FlextAuthMiddleware
-    from flext_auth._utilities.mixins import FlextAuthMixins
-    from flext_auth._utilities.provider_service import FlextAuthProviderService
-    from flext_auth._utilities.quickstart import FlextAuthQuickstart
-    from flext_auth._utilities.registry import FlextAuthRegistry
-    from flext_auth._utilities.session_service import FlextAuthSessionService
-    from flext_auth._utilities.token_service import FlextAuthTokenService
-    from flext_auth.api import FlextAuth
-    from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
-    from flext_auth.models import FlextAuthModels, FlextAuthModels as m
-    from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
+    from flext_auth._utilities.middleware import (
+        FlextAuthMiddleware as FlextAuthMiddleware,
+    )
+    from flext_auth._utilities.mixins import FlextAuthMixins as FlextAuthMixins
+    from flext_auth._utilities.provider_service import (
+        FlextAuthProviderService as FlextAuthProviderService,
+    )
+    from flext_auth._utilities.quickstart import (
+        FlextAuthQuickstart as FlextAuthQuickstart,
+    )
+    from flext_auth._utilities.registry import FlextAuthRegistry as FlextAuthRegistry
+    from flext_auth._utilities.session_service import (
+        FlextAuthSessionService as FlextAuthSessionService,
+    )
+    from flext_auth._utilities.token_service import (
+        FlextAuthTokenService as FlextAuthTokenService,
+    )
+    from flext_auth.api import FlextAuth as FlextAuth
+    from flext_auth.constants import (
+        FlextAuthConstants as FlextAuthConstants,
+        FlextAuthConstants as c,
+    )
+    from flext_auth.models import (
+        FlextAuthModels as FlextAuthModels,
+        FlextAuthModels as m,
+    )
+    from flext_auth.protocols import (
+        FlextAuthProtocols as FlextAuthProtocols,
+        FlextAuthProtocols as p,
+    )
     from flext_auth.providers import (
-        apikey,
-        base,
-        basic,
-        certificate,
-        jwt,
-        jwt_password_hasher,
-        jwt_token_generator,
-        jwt_token_validator,
-        kerberos,
-        ldap,
-        mixin,
-        oauth2,
-        oidc,
-        rfc,
-        saml,
+        apikey as apikey,
+        base as base,
+        basic as basic,
+        certificate as certificate,
+        jwt as jwt,
+        jwt_password_hasher as jwt_password_hasher,
+        jwt_token_generator as jwt_token_generator,
+        jwt_token_validator as jwt_token_validator,
+        kerberos as kerberos,
+        ldap as ldap,
+        mixin as mixin,
+        oauth2 as oauth2,
+        oidc as oidc,
+        rfc as rfc,
+        saml as saml,
     )
-    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
-    from flext_auth.providers.basic import FlextAuthBasicProvider
-    from flext_auth.providers.certificate import FlextAuthCertificateProvider
-    from flext_auth.providers.jwt import FlextAuthJwtProvider
-    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
-    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
-    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
-    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
-    from flext_auth.providers.ldap import FlextAuthLdapProvider
-    from flext_auth.providers.mixin import FlextAuthProviderMixin
-    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-    from flext_auth.providers.oidc import FlextAuthOidcProvider
-    from flext_auth.providers.rfc import FlextAuthRfcProvider
-    from flext_auth.providers.saml import FlextAuthSamlProvider
-    from flext_auth.settings import FlextAuthSettings
-    from flext_auth.transports import http
-    from flext_auth.transports.http import FlextWebTransportAdapter
-    from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
-    from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
+    from flext_auth.providers.apikey import (
+        FlextAuthApiKeyProvider as FlextAuthApiKeyProvider,
+    )
+    from flext_auth.providers.basic import (
+        FlextAuthBasicProvider as FlextAuthBasicProvider,
+    )
+    from flext_auth.providers.certificate import (
+        FlextAuthCertificateProvider as FlextAuthCertificateProvider,
+    )
+    from flext_auth.providers.jwt import FlextAuthJwtProvider as FlextAuthJwtProvider
+    from flext_auth.providers.jwt_password_hasher import (
+        FlextAuthPasswordHasher as FlextAuthPasswordHasher,
+    )
+    from flext_auth.providers.jwt_token_generator import (
+        FlextAuthJwtTokenGenerator as FlextAuthJwtTokenGenerator,
+    )
+    from flext_auth.providers.jwt_token_validator import (
+        FlextAuthJwtTokenValidator as FlextAuthJwtTokenValidator,
+    )
+    from flext_auth.providers.kerberos import (
+        FlextAuthKerberosProvider as FlextAuthKerberosProvider,
+    )
+    from flext_auth.providers.ldap import FlextAuthLdapProvider as FlextAuthLdapProvider
+    from flext_auth.providers.mixin import (
+        FlextAuthProviderMixin as FlextAuthProviderMixin,
+    )
+    from flext_auth.providers.oauth2 import (
+        FlextAuthOAuth2Provider as FlextAuthOAuth2Provider,
+    )
+    from flext_auth.providers.oidc import FlextAuthOidcProvider as FlextAuthOidcProvider
+    from flext_auth.providers.rfc import FlextAuthRfcProvider as FlextAuthRfcProvider
+    from flext_auth.providers.saml import FlextAuthSamlProvider as FlextAuthSamlProvider
+    from flext_auth.settings import FlextAuthSettings as FlextAuthSettings
+    from flext_auth.transports import http as http
+    from flext_auth.transports.http import (
+        FlextWebTransportAdapter as FlextWebTransportAdapter,
+    )
+    from flext_auth.typings import FlextAuthTypes as FlextAuthTypes, FlextAuthTypes as t
+    from flext_auth.utilities import (
+        FlextAuthUtilities as FlextAuthUtilities,
+        FlextAuthUtilities as u,
+    )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextAuth": ["flext_auth.api", "FlextAuth"],
@@ -236,7 +284,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "x": ["flext_api", "x"],
 }
 
-__all__ = [
+_EXPORTS: Sequence[str] = [
     "FlextAuth",
     "FlextAuthApiKeyProvider",
     "FlextAuthBasicProvider",
@@ -331,41 +379,4 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: MutableMapping[str, FlextTypes.ModuleExport] = {}
-
-
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
-    """Lazy-load module attributes on first access (PEP 562).
-
-    A local cache ``_LAZY_CACHE`` persists resolved objects across repeated
-    accesses during process lifetime.
-
-    Args:
-        name: Attribute name requested by dir()/import.
-
-    Returns:
-        Lazy-loaded module export type.
-
-    Raises:
-        AttributeError: If attribute not registered.
-
-    """
-    if name in _LAZY_CACHE:
-        return _LAZY_CACHE[name]
-
-    value = lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-    _LAZY_CACHE[name] = value
-    return value
-
-
-def __dir__() -> Sequence[str]:
-    """Return list of available attributes for dir() and autocomplete.
-
-    Returns:
-        List of public names from module exports.
-
-    """
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)

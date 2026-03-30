@@ -10,70 +10,68 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from examples import (
-        advanced_features_02,
-        basic_auth_05,
-        basic_refactored_usage_06,
-        basic_usage_01,
-        basic_usage_07,
-        comprehensive_demo_03,
-        debug_auth_issues_09,
-        flext_config_usage,
-        refactored_system_showcase_04,
-        simple_usage_08,
-        utils,
+        advanced_features_02 as advanced_features_02,
+        basic_auth_05 as basic_auth_05,
+        basic_refactored_usage_06 as basic_refactored_usage_06,
+        basic_usage_01 as basic_usage_01,
+        basic_usage_07 as basic_usage_07,
+        comprehensive_demo_03 as comprehensive_demo_03,
+        debug_auth_issues_09 as debug_auth_issues_09,
+        flext_config_usage as flext_config_usage,
+        refactored_system_showcase_04 as refactored_system_showcase_04,
+        simple_usage_08 as simple_usage_08,
+        utils as utils,
     )
     from examples.advanced_features_02 import (
-        example_advanced_configuration,
-        example_jwt_operations,
-        example_password_security,
-        example_role_based_access,
-        example_session_management,
-        example_token_validation,
+        example_advanced_configuration as example_advanced_configuration,
+        example_jwt_operations as example_jwt_operations,
+        example_password_security as example_password_security,
+        example_role_based_access as example_role_based_access,
+        example_session_management as example_session_management,
+        example_token_validation as example_token_validation,
     )
-    from examples.basic_refactored_usage_06 import FlextAuthDemo
+    from examples.basic_refactored_usage_06 import FlextAuthDemo as FlextAuthDemo
     from examples.basic_usage_01 import (
-        example_advanced_registration,
-        example_basic_authentication,
-        example_complete_workflow,
-        example_direct_auth,
-        example_email_validation,
-        example_password_operations,
-        example_user_lifecycle,
-        logger,
+        example_advanced_registration as example_advanced_registration,
+        example_basic_authentication as example_basic_authentication,
+        example_complete_workflow as example_complete_workflow,
+        example_direct_auth as example_direct_auth,
+        example_email_validation as example_email_validation,
+        example_password_operations as example_password_operations,
+        example_user_lifecycle as example_user_lifecycle,
+        logger as logger,
     )
-    from examples.basic_usage_07 import exemplo_flext_auth
+    from examples.basic_usage_07 import exemplo_flext_auth as exemplo_flext_auth
     from examples.comprehensive_demo_03 import (
-        demo_complete_auth_workflow,
-        demo_error_handling,
-        demo_jwt_operations,
-        demo_password_operations,
-        demo_security_features,
-        demo_user_management,
-        generate_secure_password,
+        demo_complete_auth_workflow as demo_complete_auth_workflow,
+        demo_error_handling as demo_error_handling,
+        demo_jwt_operations as demo_jwt_operations,
+        demo_password_operations as demo_password_operations,
+        demo_security_features as demo_security_features,
+        demo_user_management as demo_user_management,
+        generate_secure_password as generate_secure_password,
     )
     from examples.debug_auth_issues_09 import (
-        debug_authentication_workflow,
-        debug_jwt_operations,
-        debug_password_operations,
+        debug_authentication_workflow as debug_authentication_workflow,
+        debug_jwt_operations as debug_jwt_operations,
+        debug_password_operations as debug_password_operations,
     )
     from examples.refactored_system_showcase_04 import (
-        demonstrate_error_handling,
-        demonstrate_flext_result_integration,
-        demonstrate_quickstart_functionality,
-        demonstrate_refactoring_benefits,
-        demonstrate_system_architecture,
+        demonstrate_error_handling as demonstrate_error_handling,
+        demonstrate_flext_result_integration as demonstrate_flext_result_integration,
+        demonstrate_quickstart_functionality as demonstrate_quickstart_functionality,
+        demonstrate_refactoring_benefits as demonstrate_refactoring_benefits,
+        demonstrate_system_architecture as demonstrate_system_architecture,
     )
-    from examples.simple_usage_08 import main
-    from examples.utils import basic_example_runner
+    from examples.simple_usage_08 import main as main
+    from examples.utils import basic_example_runner as basic_example_runner
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextAuthDemo": ["examples.basic_refactored_usage_06", "FlextAuthDemo"],
@@ -185,7 +183,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "utils": ["examples.utils", ""],
 }
 
-__all__ = [
+_EXPORTS: Sequence[str] = [
     "FlextAuthDemo",
     "advanced_features_02",
     "basic_auth_05",
@@ -233,41 +231,4 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: MutableMapping[str, FlextTypes.ModuleExport] = {}
-
-
-def __getattr__(name: str) -> FlextTypes.ModuleExport:
-    """Lazy-load module attributes on first access (PEP 562).
-
-    A local cache ``_LAZY_CACHE`` persists resolved objects across repeated
-    accesses during process lifetime.
-
-    Args:
-        name: Attribute name requested by dir()/import.
-
-    Returns:
-        Lazy-loaded module export type.
-
-    Raises:
-        AttributeError: If attribute not registered.
-
-    """
-    if name in _LAZY_CACHE:
-        return _LAZY_CACHE[name]
-
-    value = lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-    _LAZY_CACHE[name] = value
-    return value
-
-
-def __dir__() -> Sequence[str]:
-    """Return list of available attributes for dir() and autocomplete.
-
-    Returns:
-        List of public names from module exports.
-
-    """
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)
