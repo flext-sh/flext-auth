@@ -40,7 +40,8 @@ class HttpRequest:
 
     def __init__(self) -> None:
         """Initialize with empty headers."""
-        self.headers: t.StrMapping = {}
+        headers: dict[str, str] = {}
+        self.headers: t.StrMapping = headers
 
 
 class TestFlextAuthServiceInitialization:

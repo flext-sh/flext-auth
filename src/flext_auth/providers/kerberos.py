@@ -300,9 +300,9 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = f"{identity_id}@kerberos.local"
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
-            parsed_roles: t.StrSequence
+            parsed_roles: list[str]
             try:
-                parsed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
+                parsed_roles = list(_LIST_STR_ADAPTER.validate_python(roles_value))
             except ValidationError:
                 parsed_roles = []
             roles = [role for role in parsed_roles if role]

@@ -11,11 +11,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-if TYPE_CHECKING:
+if _TYPE_CHECKING:
     from examples.advanced_features_02 import *
     from examples.basic_refactored_usage_06 import *
     from examples.basic_usage_01 import *

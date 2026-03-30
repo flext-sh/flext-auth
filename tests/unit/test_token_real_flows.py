@@ -24,7 +24,8 @@ class TestTokenRealFlows:
         """Mock HTTP request for middleware testing."""
 
         def __init__(self) -> None:
-            self.headers: t.StrMapping = {}
+            headers: dict[str, str] = {}
+            self.headers: t.StrMapping = headers
 
     class BaseProvider(FlextAuthRfcProvider):
         """Base token provider for flow tests."""
@@ -109,14 +110,7 @@ class TestTokenRealFlows:
                 "expiry_minutes": 30,
             },
         )
-        generate_token = (
-            provider.generate_token if hasattr(provider, "generate_token") else None
-        )
-        tm.that(callable(generate_token), eq=True)
-        if not callable(generate_token):
-            msg = "provider must expose generate_token"
-            raise AssertionError(msg)
-        token_result = generate_token(
+        token_result = provider.generate_token(
             payload={
                 "identity_id": "base-token-user",
                 "name": "Base Token User",
