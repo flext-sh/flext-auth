@@ -13,39 +13,15 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_tests import *
 
-    from tests import (
-        conftest,
-        constants,
-        fixtures,
-        helpers,
-        models,
-        protocols,
-        typings,
-        unit,
-        utilities,
-    )
+    from tests import conftest, constants, models, protocols, typings, utilities
     from tests.conftest import *
     from tests.constants import *
-    from tests.fixtures import certificates
-    from tests.fixtures.certificates import *
-    from tests.helpers.protocols import *
-    from tests.helpers.typings import *
-    from tests.helpers.utilities import *
+    from tests.fixtures import *
+    from tests.helpers import *
     from tests.models import *
     from tests.protocols import *
     from tests.typings import *
-    from tests.unit import (
-        test_api,
-        test_config,
-        test_constants,
-        test_token_real_flows,
-        test_typings,
-    )
-    from tests.unit.test_api import *
-    from tests.unit.test_config import *
-    from tests.unit.test_constants import *
-    from tests.unit.test_token_real_flows import *
-    from tests.unit.test_typings import *
+    from tests.unit import *
     from tests.utilities import *
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {

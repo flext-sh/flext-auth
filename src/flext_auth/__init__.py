@@ -25,79 +25,23 @@ if TYPE_CHECKING:
     from flext_api import *
 
     from flext_auth import (
-        _managers,
-        _utilities,
         api,
         constants,
         models,
         protocols,
-        providers,
         settings,
-        transports,
         typings,
         utilities,
     )
-    from flext_auth._managers import auth_managers_session, rate_limiter
-    from flext_auth._managers.auth_managers_session import *
-    from flext_auth._managers.rate_limiter import *
-    from flext_auth._utilities import (
-        identity_service,
-        managers,
-        middleware,
-        mixins,
-        provider_service,
-        quickstart,
-        registry,
-        session_service,
-        token_service,
-    )
-    from flext_auth._utilities.identity_service import *
-    from flext_auth._utilities.managers import *
-    from flext_auth._utilities.middleware import *
-    from flext_auth._utilities.mixins import *
-    from flext_auth._utilities.provider_service import *
-    from flext_auth._utilities.quickstart import *
-    from flext_auth._utilities.registry import *
-    from flext_auth._utilities.session_service import *
-    from flext_auth._utilities.token_service import *
+    from flext_auth._managers import *
+    from flext_auth._utilities import *
     from flext_auth.api import *
     from flext_auth.constants import *
     from flext_auth.models import *
     from flext_auth.protocols import *
-    from flext_auth.providers import (
-        apikey,
-        base,
-        basic,
-        certificate,
-        jwt,
-        jwt_password_hasher,
-        jwt_token_generator,
-        jwt_token_validator,
-        kerberos,
-        ldap,
-        mixin,
-        oauth2,
-        oidc,
-        rfc,
-        saml,
-    )
-    from flext_auth.providers.apikey import *
-    from flext_auth.providers.basic import *
-    from flext_auth.providers.certificate import *
-    from flext_auth.providers.jwt import *
-    from flext_auth.providers.jwt_password_hasher import *
-    from flext_auth.providers.jwt_token_generator import *
-    from flext_auth.providers.jwt_token_validator import *
-    from flext_auth.providers.kerberos import *
-    from flext_auth.providers.ldap import *
-    from flext_auth.providers.mixin import *
-    from flext_auth.providers.oauth2 import *
-    from flext_auth.providers.oidc import *
-    from flext_auth.providers.rfc import *
-    from flext_auth.providers.saml import *
+    from flext_auth.providers import *
     from flext_auth.settings import *
-    from flext_auth.transports import http
-    from flext_auth.transports.http import *
+    from flext_auth.transports import *
     from flext_auth.typings import *
     from flext_auth.utilities import *
 
