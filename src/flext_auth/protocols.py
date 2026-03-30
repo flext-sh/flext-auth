@@ -16,10 +16,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol, override, runtime_checkable
 
 import jwt
-from flext_api import FlextApiProtocols
+from flext_api import FlextApiProtocols, m
 from flext_core import r
 
-from flext_auth import c, m, t, u
+from flext_auth import c, t, u
 
 
 class FlextAuthProtocols(FlextApiProtocols):

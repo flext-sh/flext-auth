@@ -13,11 +13,11 @@ from datetime import UTC, datetime
 from typing import Annotated, ClassVar, Literal, Self
 
 import bcrypt
-from flext_api import FlextApiModels
+from flext_api import FlextApiModels, p
 from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field
 
-from flext_auth import c, p, t
+from flext_auth import c, t
 
 
 class FlextAuthModels(FlextApiModels):
