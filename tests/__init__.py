@@ -10,10 +10,11 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-if TYPE_CHECKING:
-    from flext_tests import *
+from tests.fixtures import _LAZY_IMPORTS as _CHILD_LAZY_0
+from tests.helpers import _LAZY_IMPORTS as _CHILD_LAZY_1
+from tests.unit import _LAZY_IMPORTS as _CHILD_LAZY_2
 
-    from tests import conftest, constants, models, protocols, typings, utilities
+if TYPE_CHECKING:
     from tests.conftest import *
     from tests.constants import *
     from tests.fixtures import *
@@ -25,59 +26,20 @@ if TYPE_CHECKING:
     from tests.utilities import *
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
-    "CertificateFixture": "tests.fixtures.certificates",
+    **_CHILD_LAZY_0,
+    **_CHILD_LAZY_1,
+    **_CHILD_LAZY_2,
     "FlextAuthTestConstants": "tests.constants",
     "FlextAuthTestModels": "tests.models",
     "FlextAuthTestProtocols": "tests.protocols",
     "FlextAuthTestTypes": "tests.typings",
     "FlextAuthTestUtilities": "tests.utilities",
-    "HttpRequest": "tests.unit.test_api",
-    "TestAuthModule": "tests.unit.test_api",
-    "TestFlextAuth": "tests.unit.test_api",
-    "TestFlextAuthAdditionalCoverage": "tests.unit.test_api",
-    "TestFlextAuthAdvancedPatterns": "tests.unit.test_api",
-    "TestFlextAuthConfigurationMethods": "tests.unit.test_api",
-    "TestFlextAuthConfigurationOverrides": "tests.unit.test_api",
-    "TestFlextAuthConstants": "tests.unit.test_constants",
-    "TestFlextAuthErrorHandling": "tests.unit.test_api",
-    "TestFlextAuthErrorHandlingPaths": "tests.unit.test_api",
-    "TestFlextAuthErrorHandlingSecond": "tests.unit.test_api",
-    "TestFlextAuthErrorPaths": "tests.unit.test_api",
-    "TestFlextAuthHandlerRegistration": "tests.unit.test_api",
-    "TestFlextAuthInitializationCoverage": "tests.unit.test_api",
-    "TestFlextAuthLogging": "tests.unit.test_api",
-    "TestFlextAuthModelConfiguration": "tests.unit.test_api",
-    "TestFlextAuthPasswordMethods": "tests.unit.test_api",
-    "TestFlextAuthProcessorRegistration": "tests.unit.test_api",
-    "TestFlextAuthProviderRegistry": "tests.unit.test_api",
-    "TestFlextAuthQuickStart": "tests.unit.test_api",
-    "TestFlextAuthQuickStartFunction": "tests.unit.test_api",
-    "TestFlextAuthQuickStartMethod": "tests.unit.test_api",
-    "TestFlextAuthSecurity": "tests.unit.test_api",
-    "TestFlextAuthServiceInitialization": "tests.unit.test_api",
-    "TestFlextAuthSessionManagement": "tests.unit.test_api",
-    "TestFlextAuthSessionMethods": "tests.unit.test_api",
-    "TestFlextAuthSettingsBasic": "tests.unit.test_config",
-    "TestFlextAuthStorageOperations": "tests.unit.test_api",
-    "TestFlextAuthTokenMethods": "tests.unit.test_api",
-    "TestFlextAuthTokenOperations": "tests.unit.test_api",
-    "TestFlextAuthTypes": "tests.unit.test_typings",
-    "TestFlextAuthUserMethods": "tests.unit.test_api",
-    "TestJwtTokenGenerator": "tests.unit.test_config",
-    "TestProviderTokenFlows": "tests.unit.test_api",
-    "TestTokenRealFlows": "tests.unit.test_token_real_flows",
-    "TestsProtocols": "tests.helpers.protocols",
-    "TestsTypings": "tests.helpers.typings",
-    "TestsUtilities": "tests.helpers.utilities",
     "c": ["tests.constants", "FlextAuthTestConstants"],
-    "certificates": "tests.fixtures.certificates",
     "conftest": "tests.conftest",
     "constants": "tests.constants",
     "d": "flext_tests",
     "e": "flext_tests",
     "fixtures": "tests.fixtures",
-    "generate_client_cert": "tests.fixtures.certificates",
-    "generate_self_signed_cert": "tests.fixtures.certificates",
     "h": "flext_tests",
     "helpers": "tests.helpers",
     "m": ["tests.models", "FlextAuthTestModels"],
@@ -89,11 +51,6 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "reset_singletons": "tests.conftest",
     "s": "flext_tests",
     "t": ["tests.typings", "FlextAuthTestTypes"],
-    "test_api": "tests.unit.test_api",
-    "test_config": "tests.unit.test_config",
-    "test_constants": "tests.unit.test_constants",
-    "test_token_real_flows": "tests.unit.test_token_real_flows",
-    "test_typings": "tests.unit.test_typings",
     "typings": "tests.typings",
     "u": ["tests.utilities", "FlextAuthTestUtilities"],
     "unit": "tests.unit",
@@ -102,4 +59,4 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
 }
 
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)

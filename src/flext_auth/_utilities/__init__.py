@@ -11,17 +11,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth._utilities import (
-        identity_service,
-        managers,
-        middleware,
-        mixins,
-        provider_service,
-        quickstart,
-        registry,
-        session_service,
-        token_service,
-    )
     from flext_auth._utilities.identity_service import *
     from flext_auth._utilities.managers import *
     from flext_auth._utilities.middleware import *
@@ -55,4 +44,4 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
 }
 
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
