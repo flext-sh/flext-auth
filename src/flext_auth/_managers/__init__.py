@@ -11,36 +11,16 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth._managers import (
-        auth_managers_session as auth_managers_session,
-        rate_limiter as rate_limiter,
-    )
-    from flext_auth._managers.auth_managers_session import (
-        FlextAuthSessionManagers as FlextAuthSessionManagers,
-    )
-    from flext_auth._managers.rate_limiter import (
-        FlextAuthRateLimiterManagers as FlextAuthRateLimiterManagers,
-    )
+    from flext_auth._managers import auth_managers_session, rate_limiter
+    from flext_auth._managers.auth_managers_session import *
+    from flext_auth._managers.rate_limiter import *
 
-_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextAuthRateLimiterManagers": [
-        "flext_auth._managers.rate_limiter",
-        "FlextAuthRateLimiterManagers",
-    ],
-    "FlextAuthSessionManagers": [
-        "flext_auth._managers.auth_managers_session",
-        "FlextAuthSessionManagers",
-    ],
-    "auth_managers_session": ["flext_auth._managers.auth_managers_session", ""],
-    "rate_limiter": ["flext_auth._managers.rate_limiter", ""],
+_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+    "FlextAuthRateLimiterManagers": "flext_auth._managers.rate_limiter",
+    "FlextAuthSessionManagers": "flext_auth._managers.auth_managers_session",
+    "auth_managers_session": "flext_auth._managers.auth_managers_session",
+    "rate_limiter": "flext_auth._managers.rate_limiter",
 }
 
-_EXPORTS: Sequence[str] = [
-    "FlextAuthRateLimiterManagers",
-    "FlextAuthSessionManagers",
-    "auth_managers_session",
-    "rate_limiter",
-]
 
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))

@@ -14,29 +14,15 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from tests.fixtures import certificates as certificates
-    from tests.fixtures.certificates import (
-        CertificateFixture as CertificateFixture,
-        generate_client_cert as generate_client_cert,
-        generate_self_signed_cert as generate_self_signed_cert,
-    )
+    from tests.fixtures import certificates
+    from tests.fixtures.certificates import *
 
-_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "CertificateFixture": ["tests.fixtures.certificates", "CertificateFixture"],
-    "certificates": ["tests.fixtures.certificates", ""],
-    "generate_client_cert": ["tests.fixtures.certificates", "generate_client_cert"],
-    "generate_self_signed_cert": [
-        "tests.fixtures.certificates",
-        "generate_self_signed_cert",
-    ],
+_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+    "CertificateFixture": "tests.fixtures.certificates",
+    "certificates": "tests.fixtures.certificates",
+    "generate_client_cert": "tests.fixtures.certificates",
+    "generate_self_signed_cert": "tests.fixtures.certificates",
 }
 
-_EXPORTS: Sequence[str] = [
-    "CertificateFixture",
-    "certificates",
-    "generate_client_cert",
-    "generate_self_signed_cert",
-]
 
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))

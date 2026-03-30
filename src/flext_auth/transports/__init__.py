@@ -21,25 +21,14 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth.transports import base as base, http as http
-    from flext_auth.transports.http import (
-        FlextWebTransportAdapter as FlextWebTransportAdapter,
-    )
+    from flext_auth.transports import base, http
+    from flext_auth.transports.http import *
 
-_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextWebTransportAdapter": [
-        "flext_auth.transports.http",
-        "FlextWebTransportAdapter",
-    ],
-    "base": ["flext_auth.transports.base", ""],
-    "http": ["flext_auth.transports.http", ""],
+_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+    "FlextWebTransportAdapter": "flext_auth.transports.http",
+    "base": "flext_auth.transports.base",
+    "http": "flext_auth.transports.http",
 }
 
-_EXPORTS: Sequence[str] = [
-    "FlextWebTransportAdapter",
-    "base",
-    "http",
-]
 
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, _EXPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, sorted(_LAZY_IMPORTS))
