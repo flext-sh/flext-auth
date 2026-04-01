@@ -13,15 +13,29 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_auth._utilities.identity_service import *
-    from flext_auth._utilities.managers import *
-    from flext_auth._utilities.middleware import *
-    from flext_auth._utilities.mixins import *
-    from flext_auth._utilities.provider_service import *
-    from flext_auth._utilities.quickstart import *
-    from flext_auth._utilities.registry import *
-    from flext_auth._utilities.session_service import *
-    from flext_auth._utilities.token_service import *
+    from flext_auth._utilities import (
+        identity_service,
+        managers,
+        middleware,
+        mixins,
+        provider_service,
+        quickstart,
+        registry,
+        session_service,
+        token_service,
+    )
+    from flext_auth._utilities.identity_service import FlextAuthIdentityService
+    from flext_auth._utilities.managers import (
+        FlextAuthManagers,
+        FlextAuthServiceManagers,
+    )
+    from flext_auth._utilities.middleware import FlextAuthMiddleware
+    from flext_auth._utilities.mixins import FlextAuthMixins
+    from flext_auth._utilities.provider_service import FlextAuthProviderService
+    from flext_auth._utilities.quickstart import FlextAuthQuickstart
+    from flext_auth._utilities.registry import FlextAuthRegistry
+    from flext_auth._utilities.session_service import FlextAuthSessionService
+    from flext_auth._utilities.token_service import FlextAuthTokenService
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextAuthIdentityService": "flext_auth._utilities.identity_service",

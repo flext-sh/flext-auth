@@ -14,15 +14,72 @@ if _TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests.conftest import *
-    from tests.constants import *
-    from tests.fixtures import *
-    from tests.helpers import *
-    from tests.models import *
-    from tests.protocols import *
-    from tests.typings import *
-    from tests.unit import *
-    from tests.utilities import *
+    from tests import (
+        conftest,
+        constants,
+        fixtures,
+        helpers,
+        models,
+        protocols,
+        typings,
+        unit,
+        utilities,
+    )
+    from tests.conftest import mock_get_global, reset_singletons
+    from tests.constants import FlextAuthTestConstants, FlextAuthTestConstants as c
+    from tests.fixtures import (
+        CertificateFixture,
+        certificates,
+        generate_client_cert,
+        generate_self_signed_cert,
+    )
+    from tests.helpers import TestsProtocols, TestsTypings, TestsUtilities
+    from tests.models import FlextAuthTestModels, FlextAuthTestModels as m
+    from tests.protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
+    from tests.typings import FlextAuthTestTypes, FlextAuthTestTypes as t
+    from tests.unit import (
+        HttpRequest,
+        TestAuthModule,
+        TestFlextAuth,
+        TestFlextAuthAdditionalCoverage,
+        TestFlextAuthAdvancedPatterns,
+        TestFlextAuthConfigurationMethods,
+        TestFlextAuthConfigurationOverrides,
+        TestFlextAuthConstants,
+        TestFlextAuthErrorHandling,
+        TestFlextAuthErrorHandlingPaths,
+        TestFlextAuthErrorHandlingSecond,
+        TestFlextAuthErrorPaths,
+        TestFlextAuthHandlerRegistration,
+        TestFlextAuthInitializationCoverage,
+        TestFlextAuthLogging,
+        TestFlextAuthModelConfiguration,
+        TestFlextAuthPasswordMethods,
+        TestFlextAuthProcessorRegistration,
+        TestFlextAuthProviderRegistry,
+        TestFlextAuthQuickStart,
+        TestFlextAuthQuickStartFunction,
+        TestFlextAuthQuickStartMethod,
+        TestFlextAuthSecurity,
+        TestFlextAuthServiceInitialization,
+        TestFlextAuthSessionManagement,
+        TestFlextAuthSessionMethods,
+        TestFlextAuthSettingsBasic,
+        TestFlextAuthStorageOperations,
+        TestFlextAuthTokenMethods,
+        TestFlextAuthTokenOperations,
+        TestFlextAuthTypes,
+        TestFlextAuthUserMethods,
+        TestJwtTokenGenerator,
+        TestProviderTokenFlows,
+        TestTokenRealFlows,
+        test_api,
+        test_config,
+        test_constants,
+        test_token_real_flows,
+        test_typings,
+    )
+    from tests.utilities import FlextAuthTestUtilities, FlextAuthTestUtilities as u
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = merge_lazy_imports(
     (

@@ -13,8 +13,9 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_auth._managers.auth_managers_session import *
-    from flext_auth._managers.rate_limiter import *
+    from flext_auth._managers import auth_managers_session, rate_limiter
+    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
+    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextAuthRateLimiterManagers": "flext_auth._managers.rate_limiter",

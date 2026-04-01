@@ -16,6 +16,7 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.fixtures import certificates
     from tests.fixtures.certificates import (
         CertificateFixture,
         generate_client_cert,

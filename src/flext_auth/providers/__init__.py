@@ -22,20 +22,37 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_auth.providers.apikey import *
-    from flext_auth.providers.basic import *
-    from flext_auth.providers.certificate import *
-    from flext_auth.providers.jwt import *
-    from flext_auth.providers.jwt_password_hasher import *
-    from flext_auth.providers.jwt_token_generator import *
-    from flext_auth.providers.jwt_token_validator import *
-    from flext_auth.providers.kerberos import *
-    from flext_auth.providers.ldap import *
-    from flext_auth.providers.mixin import *
-    from flext_auth.providers.oauth2 import *
-    from flext_auth.providers.oidc import *
-    from flext_auth.providers.rfc import *
-    from flext_auth.providers.saml import *
+    from flext_auth.providers import (
+        apikey,
+        base,
+        basic,
+        certificate,
+        jwt,
+        jwt_password_hasher,
+        jwt_token_generator,
+        jwt_token_validator,
+        kerberos,
+        ldap,
+        mixin,
+        oauth2,
+        oidc,
+        rfc,
+        saml,
+    )
+    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
+    from flext_auth.providers.basic import FlextAuthBasicProvider
+    from flext_auth.providers.certificate import FlextAuthCertificateProvider
+    from flext_auth.providers.jwt import FlextAuthJwtProvider
+    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
+    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
+    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
+    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
+    from flext_auth.providers.ldap import FlextAuthLdapProvider
+    from flext_auth.providers.mixin import FlextAuthProviderMixin
+    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+    from flext_auth.providers.oidc import FlextAuthOidcProvider
+    from flext_auth.providers.rfc import FlextAuthRfcProvider
+    from flext_auth.providers.saml import FlextAuthSamlProvider
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextAuthApiKeyProvider": "flext_auth.providers.apikey",

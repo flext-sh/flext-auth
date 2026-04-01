@@ -25,17 +25,85 @@ if _TYPE_CHECKING:
     from flext_api import d, e, h, r, s, x
     from flext_core import FlextTypes
 
-    from flext_auth._managers import *
-    from flext_auth._utilities import *
-    from flext_auth.api import *
-    from flext_auth.constants import *
-    from flext_auth.models import *
-    from flext_auth.protocols import *
-    from flext_auth.providers import *
-    from flext_auth.settings import *
-    from flext_auth.transports import *
-    from flext_auth.typings import *
-    from flext_auth.utilities import *
+    from flext_auth import (
+        _managers,
+        _utilities,
+        api,
+        constants,
+        models,
+        protocols,
+        providers,
+        settings,
+        transports,
+        typings,
+        utilities,
+    )
+    from flext_auth._managers import (
+        FlextAuthRateLimiterManagers,
+        FlextAuthSessionManagers,
+        auth_managers_session,
+        rate_limiter,
+    )
+    from flext_auth._utilities import (
+        FlextAuthIdentityService,
+        FlextAuthManagers,
+        FlextAuthMiddleware,
+        FlextAuthMixins,
+        FlextAuthProviderService,
+        FlextAuthQuickstart,
+        FlextAuthRegistry,
+        FlextAuthServiceManagers,
+        FlextAuthSessionService,
+        FlextAuthTokenService,
+        identity_service,
+        managers,
+        middleware,
+        mixins,
+        provider_service,
+        quickstart,
+        registry,
+        session_service,
+        token_service,
+    )
+    from flext_auth.api import FlextAuth
+    from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
+    from flext_auth.models import FlextAuthModels, FlextAuthModels as m
+    from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
+    from flext_auth.providers import (
+        FlextAuthApiKeyProvider,
+        FlextAuthBasicProvider,
+        FlextAuthCertificateProvider,
+        FlextAuthJwtProvider,
+        FlextAuthJwtTokenGenerator,
+        FlextAuthJwtTokenValidator,
+        FlextAuthKerberosProvider,
+        FlextAuthLdapProvider,
+        FlextAuthOAuth2Provider,
+        FlextAuthOidcProvider,
+        FlextAuthPasswordHasher,
+        FlextAuthProviderMixin,
+        FlextAuthRfcProvider,
+        FlextAuthSamlProvider,
+        apikey,
+        base,
+        basic,
+        certificate,
+        jwt,
+        jwt_password_hasher,
+        jwt_token_generator,
+        jwt_token_validator,
+        kerberos,
+        ldap,
+        mixin,
+        oauth2,
+        oidc,
+        rfc,
+        saml,
+    )
+    from flext_auth.settings import FlextAuthSettings
+    from flext_auth.transports import FlextWebTransportAdapter, http
+    from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
+    from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = merge_lazy_imports(
     (

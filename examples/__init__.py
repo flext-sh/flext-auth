@@ -18,15 +18,62 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from examples.advanced_features_02 import *
-    from examples.basic_refactored_usage_06 import *
-    from examples.basic_usage_01 import *
-    from examples.basic_usage_07 import *
-    from examples.comprehensive_demo_03 import *
-    from examples.debug_auth_issues_09 import *
-    from examples.refactored_system_showcase_04 import *
-    from examples.simple_usage_08 import *
-    from examples.utils import *
+    from examples import (
+        advanced_features_02,
+        basic_auth_05,
+        basic_refactored_usage_06,
+        basic_usage_01,
+        basic_usage_07,
+        comprehensive_demo_03,
+        debug_auth_issues_09,
+        flext_config_usage,
+        refactored_system_showcase_04,
+        simple_usage_08,
+        utils,
+    )
+    from examples.advanced_features_02 import (
+        example_advanced_configuration,
+        example_jwt_operations,
+        example_password_security,
+        example_role_based_access,
+        example_session_management,
+        example_token_validation,
+    )
+    from examples.basic_refactored_usage_06 import FlextAuthDemo
+    from examples.basic_usage_01 import (
+        example_advanced_registration,
+        example_basic_authentication,
+        example_complete_workflow,
+        example_direct_auth,
+        example_email_validation,
+        example_password_operations,
+        example_user_lifecycle,
+        logger,
+    )
+    from examples.basic_usage_07 import exemplo_flext_auth
+    from examples.comprehensive_demo_03 import (
+        demo_complete_auth_workflow,
+        demo_error_handling,
+        demo_jwt_operations,
+        demo_password_operations,
+        demo_security_features,
+        demo_user_management,
+        generate_secure_password,
+    )
+    from examples.debug_auth_issues_09 import (
+        debug_authentication_workflow,
+        debug_jwt_operations,
+        debug_password_operations,
+    )
+    from examples.refactored_system_showcase_04 import (
+        demonstrate_error_handling,
+        demonstrate_flext_result_integration,
+        demonstrate_quickstart_functionality,
+        demonstrate_refactoring_benefits,
+        demonstrate_system_architecture,
+    )
+    from examples.simple_usage_08 import main
+    from examples.utils import basic_example_runner
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextAuthDemo": "examples.basic_refactored_usage_06",

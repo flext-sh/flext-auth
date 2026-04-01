@@ -23,7 +23,8 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from flext_auth.transports.http import *
+    from flext_auth.transports import base, http
+    from flext_auth.transports.http import FlextWebTransportAdapter
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextWebTransportAdapter": "flext_auth.transports.http",
