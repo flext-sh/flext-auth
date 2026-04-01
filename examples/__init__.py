@@ -16,6 +16,8 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
+    from flext_core import FlextTypes
+
     from examples.advanced_features_02 import *
     from examples.basic_refactored_usage_06 import *
     from examples.basic_usage_01 import *

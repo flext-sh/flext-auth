@@ -14,7 +14,13 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from tests.fixtures.certificates import *
+    from flext_core import FlextTypes
+
+    from tests.fixtures.certificates import (
+        CertificateFixture,
+        generate_client_cert,
+        generate_self_signed_cert,
+    )
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "CertificateFixture": "tests.fixtures.certificates",

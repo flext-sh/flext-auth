@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
+    from flext_core import FlextTypes
+
     from flext_auth._utilities.identity_service import *
     from flext_auth._utilities.managers import *
     from flext_auth._utilities.middleware import *
