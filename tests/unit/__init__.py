@@ -13,11 +13,42 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from tests.unit.test_api import *
-    from tests.unit.test_config import *
-    from tests.unit.test_constants import *
-    from tests.unit.test_token_real_flows import *
-    from tests.unit.test_typings import *
+    from tests.unit.test_api import (
+        HttpRequest,
+        TestAuthModule,
+        TestFlextAuth,
+        TestFlextAuthAdditionalCoverage,
+        TestFlextAuthAdvancedPatterns,
+        TestFlextAuthConfigurationMethods,
+        TestFlextAuthConfigurationOverrides,
+        TestFlextAuthErrorHandling,
+        TestFlextAuthErrorHandlingPaths,
+        TestFlextAuthErrorHandlingSecond,
+        TestFlextAuthErrorPaths,
+        TestFlextAuthHandlerRegistration,
+        TestFlextAuthInitializationCoverage,
+        TestFlextAuthLogging,
+        TestFlextAuthModelConfiguration,
+        TestFlextAuthPasswordMethods,
+        TestFlextAuthProcessorRegistration,
+        TestFlextAuthProviderRegistry,
+        TestFlextAuthQuickStart,
+        TestFlextAuthQuickStartFunction,
+        TestFlextAuthQuickStartMethod,
+        TestFlextAuthSecurity,
+        TestFlextAuthServiceInitialization,
+        TestFlextAuthSessionManagement,
+        TestFlextAuthSessionMethods,
+        TestFlextAuthStorageOperations,
+        TestFlextAuthTokenMethods,
+        TestFlextAuthTokenOperations,
+        TestFlextAuthUserMethods,
+        TestProviderTokenFlows,
+    )
+    from tests.unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
+    from tests.unit.test_constants import TestFlextAuthConstants
+    from tests.unit.test_token_real_flows import TestTokenRealFlows
+    from tests.unit.test_typings import TestFlextAuthTypes
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "HttpRequest": "tests.unit.test_api",
