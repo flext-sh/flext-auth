@@ -17,10 +17,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import FlextAuthProviderMixin, m, p, t
+from flext_auth import FlextAuthProviderMixin, p, t
 
 
-class FlextAuthRfcProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """Base class for RFC-compliant authentication providers.
 
     This class extends FlextAuthBaseProvider with RFC-specific functionality
@@ -84,7 +84,7 @@ class FlextAuthRfcProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin)
         return r[bool].ok(value=True)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         """Authenticate user with provided credentials.
 
         This is an abstract method that must be implemented by RFC-specific providers.

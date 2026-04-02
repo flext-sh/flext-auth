@@ -1406,7 +1406,7 @@ class TestAuthModule:
 
 class _BaseTokenProviderForFlowTests(FlextAuthRfcProvider):
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
@@ -1422,7 +1422,7 @@ class _RefreshCapableProviderForFlowTests(FlextAuthRfcProvider):
         self.last_refresh_input: str | None = None
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
@@ -1448,7 +1448,7 @@ class _RefreshCapableProviderForFlowTests(FlextAuthRfcProvider):
 
 class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
@@ -1476,7 +1476,7 @@ class TestProviderTokenFlows:
                 name="Base User",
                 contact="base@example.com",
                 roles=["user"],
-            ),
+            ).model_dump(),
             token_type="access",
             expiry_minutes=5,
         )

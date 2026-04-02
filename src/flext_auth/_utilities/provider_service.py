@@ -66,7 +66,9 @@ class FlextAuthProviderService(s[bool]):
         """Railway-oriented user authentication with provider selection."""
         credentials = m.Auth.CredentialValidation(username=username, password=password)
         return self._providers.get(provider).flat_map(
-            lambda auth_provider: auth_provider.authenticate(credentials),
+            lambda auth_provider: auth_provider.authenticate(
+                credentials.model_dump(exclude_none=True)
+            ),
         )
 
     @override

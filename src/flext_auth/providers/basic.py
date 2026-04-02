@@ -13,10 +13,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import m, p, t
+from flext_auth import FlextAuthProviderMixin, p, t
 
 
-class FlextAuthBasicProvider(p.Auth.FlextAuthBaseProvider):
+class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """HTTP Basic authentication provider.
 
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).
@@ -27,7 +27,7 @@ class FlextAuthBasicProvider(p.Auth.FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         """Authenticate using HTTP Basic credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")

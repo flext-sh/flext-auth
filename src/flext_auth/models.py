@@ -65,14 +65,14 @@ class FlextAuthModels(FlextApiModels):
 
             is_valid: Annotated[bool, Field(..., description="Validation outcome")]
             data: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Result data",
                 ),
             ] = Field(default_factory=dict)
             error: Annotated[str, Field(default="", description="Error message")]
             metadata: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Additional metadata",
                 ),
@@ -133,7 +133,7 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             extra_claims: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Additional claims",
                 ),
@@ -482,7 +482,7 @@ class FlextAuthModels(FlextApiModels):
 
             api_key: Annotated[str, Field(..., description="API key to validate")]
             metadata: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Additional validation data",
                 ),
@@ -522,7 +522,7 @@ class FlextAuthModels(FlextApiModels):
             username: Annotated[str, Field(..., description="Username")]
             password: Annotated[str, Field(..., description="Password", exclude=True)]
             metadata: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Additional validation data",
                 ),
@@ -541,7 +541,7 @@ class FlextAuthModels(FlextApiModels):
                 Field(..., description="Credential value", exclude=True),
             ]
             metadata: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Additional data",
                 ),
@@ -556,7 +556,7 @@ class FlextAuthModels(FlextApiModels):
 
             success: Annotated[bool, Field(..., description="Authentication success")]
             identity: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Identity data",
                 ),
@@ -564,7 +564,7 @@ class FlextAuthModels(FlextApiModels):
             token: Annotated[str, Field(default="", description="Token", exclude=True)]
             message: Annotated[str, Field(default="", description="Response message")]
             metadata: Annotated[
-                t.JsonObject,
+                t.ContainerMapping,
                 Field(
                     description="Additional data",
                 ),
@@ -679,7 +679,7 @@ class FlextAuthModels(FlextApiModels):
                     ),
                 ] = Field(default_factory=tuple)
                 extras: Annotated[
-                    t.JsonObject,
+                    t.ContainerMapping,
                     Field(
                         description="Extra metadata",
                     ),

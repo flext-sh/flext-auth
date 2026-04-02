@@ -10,25 +10,183 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
+from datetime import UTC, datetime, timedelta
 
 from flext_core import e, r
+from pydantic import SecretStr
 
-from flext_auth import p, t, u
+from flext_auth import c, m, p, t, u
 
 
 class FlextAuthProviderMixin:
     """Mixin providing common functionality for authentication providers.
 
-    This mixin can be used by concrete providers to inherit common utility
-    methods and reduce code duplication.
+    Provides default implementations for FlextAuthBaseProvider protocol methods
+    and shared utility methods used by concrete providers. Stores provider
+    configuration and supplies JWT-based token operations.
 
     Example:
     >>> class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
-    ... # Provider implementation with mixin utilities
-    ... pass
+    ...     pass
 
     """
+
+    _provider_config: t.ScalarMapping | None
+
+    def __init__(self, config: t.ScalarMapping | None = None) -> None:
+        """Initialize provider mixin with optional configuration.
+
+        Args:
+            config: Provider configuration mapping with scalar values.
+
+        """
+        super().__init__()
+        self._provider_config = config
+
+    @property
+    def config(self) -> t.ScalarMapping | None:
+        """Get provider configuration."""
+        return self._provider_config
+
+    def generate_token(
+        self,
+        payload: Mapping[str, t.ContainerValue],
+        token_kind: str = "access",
+        expiry_minutes: int | None = None,
+    ) -> r[str]:
+        """Generate a token from the provided payload.
+
+        Uses JWT encoding with the provider's configured secret_key and algorithm.
+
+        Args:
+            payload: Token payload claims.
+            token_kind: Token type (access, refresh, id, bearer).
+            expiry_minutes: Token expiration time in minutes (optional).
+
+        Returns:
+            r[str]: Encoded token string on success, error on failure.
+
+        """
+        config = self._provider_config
+        if not config:
+            return r[str].fail(
+                "Provider configuration is required for token generation"
+            )
+        secret_key_value = config.get("secret_key")
+        if not isinstance(secret_key_value, str) or not secret_key_value:
+            return r[str].fail("JWT secret_key not configured")
+        algorithm_value = config.get("algorithm")
+        algorithm = (
+            algorithm_value
+            if isinstance(algorithm_value, str)
+            else c.Auth.DEFAULT_JWT_ALGORITHM
+        )
+        expiry_config_value = config.get("expiry_minutes")
+        default_expiry = (
+            expiry_config_value if isinstance(expiry_config_value, int) else 30
+        )
+        effective_expiry = (
+            expiry_minutes if expiry_minutes is not None else default_expiry
+        )
+        now = datetime.now(UTC)
+        claims: MutableMapping[str, t.ContainerValue] = dict(payload)
+        claims["iat"] = int(now.timestamp())
+        claims["exp"] = int((now + timedelta(minutes=effective_expiry)).timestamp())
+        claims["token_type"] = token_kind
+        issuer_value = config.get("issuer")
+        if isinstance(issuer_value, str) and issuer_value:
+            claims["iss"] = issuer_value
+        audience_value = config.get("audience")
+        if isinstance(audience_value, str) and audience_value:
+            claims["aud"] = audience_value
+        return u.encode_token(claims, secret_key_value, algorithm)
+
+    def generate_token_for_user(
+        self,
+        user: m.Auth.AuthIdentity | t.ContainerValueMapping,
+        token_kind: str = "access",
+        token_type: str | None = None,
+        expiry_minutes: int | None = None,
+    ) -> r[str]:
+        """Generate token for a user identity or claims mapping.
+
+        Args:
+            user: User identity model or claims dict.
+            token_kind: Token type (access, refresh, id, bearer).
+            token_type: Optional explicit token type.
+            expiry_minutes: Token expiration time in minutes (optional).
+
+        Returns:
+            r[str]: Encoded token string on success, error on failure.
+
+        """
+        if isinstance(user, Mapping):
+            payload: MutableMapping[str, t.ContainerValue] = dict(user)
+        else:
+            payload = dict(user.model_dump())
+        effective_token_type = token_type if token_type is not None else token_kind
+        payload["token_type"] = effective_token_type
+        return self.generate_token(payload, token_kind, expiry_minutes)
+
+    def refresh(self, token: str) -> r[p.Auth.Token]:
+        """Refresh authentication token.
+
+        Decodes the existing token, extracts identity, and generates a new token.
+
+        Args:
+            token: Existing token to refresh.
+
+        Returns:
+            r[Token]: New token on success, error if refresh not supported or failed.
+
+        """
+        token_text = token
+        claims_result = self._decode_token_claims(token_text)
+        if claims_result.is_failure:
+            return r[p.Auth.Token].fail(
+                claims_result.error or "Token decode failed during refresh"
+            )
+        claims = claims_result.value
+        identity_result = self._extract_identity_id(claims)
+        if identity_result.is_failure:
+            return r[p.Auth.Token].fail(
+                identity_result.error or "Identity extraction failed during refresh"
+            )
+        identity_id = identity_result.value
+        new_token_result = self.generate_token(dict(claims), "access")
+        if new_token_result.is_failure:
+            return r[p.Auth.Token].fail(
+                new_token_result.error or "Token generation failed during refresh"
+            )
+        config = self._provider_config
+        expiry_config_value = config.get("expiry_minutes") if config else None
+        default_expiry = (
+            expiry_config_value if isinstance(expiry_config_value, int) else 30
+        )
+        refreshed = m.Auth.AuthToken(
+            identity_id=identity_id,
+            token=new_token_result.value,
+            token_type="Bearer",
+            expires_at=datetime.now(UTC) + timedelta(minutes=default_expiry),
+        )
+        return r[p.Auth.Token].ok(refreshed)
+
+    def revoke(self, token: str) -> r[bool]:
+        """Revoke authentication token.
+
+        Default implementation returns an error indicating revocation is
+        not supported. Providers that support revocation should override.
+
+        Args:
+            token: Token to revoke.
+
+        Returns:
+            r[bool]: True on success, error if revocation not supported.
+
+        """
+        _ = token
+        return r[bool].fail("Token revocation not supported by this provider")
 
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.
@@ -58,6 +216,70 @@ class FlextAuthProviderMixin:
                 f"Provider does not support '{capability}' capability. Supported capabilities: {', '.join(sorted(self.supports()))}",
             )
         return r[bool].ok(value=True)
+
+    def _decode_token_claims(
+        self,
+        token: str,
+    ) -> r[t.Auth.Tokens.ClaimMap]:
+        """Decode JWT token and return claims payload.
+
+        Args:
+            token: JWT token string to decode.
+
+        Returns:
+            r[Mapping[str, t.ContainerValue]]: Decoded claims on success, error on failure.
+
+        """
+        config = self._provider_config
+        if not config:
+            return r[t.Auth.Tokens.ClaimMap].fail(
+                "Provider configuration required for token decoding"
+            )
+        secret_key_value = config.get("secret_key")
+        if not isinstance(secret_key_value, (str, SecretStr)):
+            return r[t.Auth.Tokens.ClaimMap].fail("JWT secret_key not configured")
+        secret_key = (
+            secret_key_value.get_secret_value()
+            if isinstance(secret_key_value, SecretStr)
+            else secret_key_value
+        )
+        secret_key_obj = SecretStr(secret_key)
+
+        algorithm_value = config.get("algorithm")
+        algorithm = algorithm_value if isinstance(algorithm_value, str) else "HS256"
+
+        # We need to map `r[ClaimMap]` to whatever the expected return type is, but `decode_token` returns `r[ClaimMap]`
+        return u.decode_token(
+            token,
+            secret_key_obj,
+            algorithms=(algorithm,) if algorithm else None,
+        )
+
+    def _extract_identity_id(
+        self,
+        claims: Mapping[str, t.ContainerValue],
+    ) -> r[str]:
+        """Extract identity ID from token claims.
+
+        Checks common identity fields (sub, identity_id, user_id, username)
+        in priority order and returns the first valid string.
+
+        Args:
+            claims: Token claims mapping.
+
+        Returns:
+            r[str]: Identity ID on success, error if no identity field found.
+
+        """
+        identity_fields = ("sub", "identity_id", "user_id", "username")
+        for field in identity_fields:
+            value = claims.get(field)
+            if isinstance(value, str) and value:
+                return r[str].ok(value)
+        return r[str].fail(
+            "No identity field found in token claims "
+            f"(checked: {', '.join(identity_fields)})"
+        )
 
     def _extract_token_string(self, token: str | p.Auth.Token) -> str:
         """Extract token string from token or Token t.NormalizedValue.

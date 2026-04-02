@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_core import FlextLogger, r
+from flext_core.service import FlextService
 
 from flext_auth import (
     FlextAuthJwtProvider,
@@ -23,11 +24,10 @@ from flext_auth import (
     c,
     m,
     p,
-    s,
 )
 
 
-class FlextAuthTokenService(s[bool]):
+class FlextAuthTokenService(FlextService[bool]):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.

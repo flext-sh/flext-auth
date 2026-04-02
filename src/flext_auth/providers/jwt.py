@@ -12,10 +12,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import m, p, t
+from flext_auth import FlextAuthProviderMixin, p, t
 
 
-class FlextAuthJwtProvider(p.Auth.FlextAuthBaseProvider):
+class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
     def __init__(self, config: t.ConfigurationMapping | None = None) -> None:
@@ -23,7 +23,7 @@ class FlextAuthJwtProvider(p.Auth.FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         """Authenticate using JWT credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")

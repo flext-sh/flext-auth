@@ -15,10 +15,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import m, p, t
+from flext_auth import FlextAuthProviderMixin, p, t
 
 
-class FlextAuthSamlProvider(p.Auth.FlextAuthBaseProvider):
+class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """SAML 2.0 authentication provider.
 
     Provides SAML 2.0 authentication support following the FlextAuthBaseProvider protocol.
@@ -42,7 +42,7 @@ class FlextAuthSamlProvider(p.Auth.FlextAuthBaseProvider):
     """
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         """Authenticate using SAML 2.0 assertion.
 
         Args:

@@ -395,17 +395,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def authenticate(
         self,
-        credentials: m.Auth.CredentialValidation | t.ScalarMapping,
+        credentials: t.ContainerValueMapping,
     ) -> r[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
-        credential_payload: t.ConfigurationMapping
-        if isinstance(credentials, Mapping):
-            credential_payload = dict(credentials)
-        else:
-            credential_payload = {
-                "username": credentials.username,
-                "password": credentials.password,
-            }
+        credential_payload: t.ConfigurationMapping = {
+            str(k): v
+            for k, v in credentials.items()
+            if isinstance(v, (str, int, float, bool))
+        }
         flow_result = self._flow_manager.handle_authorization_code_flow(
             credential_payload,
         )
@@ -508,10 +505,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[p.Auth.Token].ok(refreshed_model)
 
     @override
-    def revoke(self, _token: str | p.Auth.Token) -> r[bool]:
-        """Revoke OAuth2 token."""
-        _ = _token
-        return r[bool].ok(value=True)
+    def revoke(self, token: str) -> r[bool]:
+        """Revoke an OAuth2 token."""
+        return super().revoke(token)
 
     @override
     def supports(self) -> set[str]:

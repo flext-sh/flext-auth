@@ -25,7 +25,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthRfcProvider, m, t, u
 
-_DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.JsonObject]] = TypeAdapter(
+_DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.ContainerValueMapping]] = TypeAdapter(
     t.ContainerValueMapping,
 )
 _LIST_STR_ADAPTER: Final[TypeAdapter[t.StrSequence]] = TypeAdapter(t.StrSequence)
@@ -262,7 +262,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 return self._map_identity_payload(parsed_claims)
             principal_value = validator_result.principal
             principal = principal_value or "kerberos-user"
-            identity_map: t.JsonObject = {
+            identity_map: t.ContainerValueMapping = {
                 "identity_id": principal,
                 "name": principal,
                 "contact": f"{principal}@kerberos.local",

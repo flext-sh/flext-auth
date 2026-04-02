@@ -33,7 +33,7 @@ class TestTokenRealFlows:
         @override
         def authenticate(
             self,
-            credentials: m.Auth.CredentialValidation,
+            credentials: t.ContainerValueMapping,
         ) -> r[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
@@ -60,7 +60,7 @@ class TestTokenRealFlows:
         @override
         def authenticate(
             self,
-            credentials: m.Auth.CredentialValidation,
+            credentials: t.ContainerValueMapping,
         ) -> r[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
@@ -91,7 +91,7 @@ class TestTokenRealFlows:
         @override
         def authenticate(
             self,
-            credentials: m.Auth.CredentialValidation,
+            credentials: t.ContainerValueMapping,
         ) -> r[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")

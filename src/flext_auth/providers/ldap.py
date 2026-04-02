@@ -10,10 +10,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import FlextAuthProviderMixin, m, p
+from flext_auth import FlextAuthProviderMixin, p, t
 
 
-class FlextAuthLdapProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.
@@ -29,7 +29,7 @@ class FlextAuthLdapProvider(p.Auth.FlextAuthBaseProvider, FlextAuthProviderMixin
     """
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         """Authenticate using LDAP credentials.
 
         Args:

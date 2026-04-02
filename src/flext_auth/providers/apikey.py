@@ -14,10 +14,10 @@ from typing import override
 
 from flext_core import r
 
-from flext_auth import m, p, t
+from flext_auth import FlextAuthProviderMixin, p, t
 
 
-class FlextAuthApiKeyProvider(p.Auth.FlextAuthBaseProvider):
+class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """API key authentication provider.
 
     Provides API key-based authentication with token validation.
@@ -28,7 +28,7 @@ class FlextAuthApiKeyProvider(p.Auth.FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         """Authenticate using API key credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")

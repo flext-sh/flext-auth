@@ -12,12 +12,12 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import r
+from flext_core import r, t
 
-from flext_auth import FlextAuthProviderMixin, FlextAuthRfcProvider, m, p
+from flext_auth import FlextAuthRfcProvider, p
 
 
-class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
+class FlextAuthOidcProvider(FlextAuthRfcProvider):
     """OpenID Connect (OIDC) authentication provider.
 
     This provider implements OpenID Connect authentication. It validates
@@ -33,7 +33,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     """
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
         """Authenticate using OIDC credentials.
 
         Args:

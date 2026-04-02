@@ -19,7 +19,8 @@ from flext_auth import (
 
 def _require_settings() -> FlextAuthSettings:
     result = FlextAuthSettings.get_or_create_global()
-    tm.ok(result)
+    assert result.is_success
+    assert result.value is not None
     return result.value
 
 
@@ -62,7 +63,9 @@ class TestJwtTokenGenerator:
         provider = FlextAuthJwtProvider(config=None)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-123")
-        tm.fail(result, contains="not configured")
+        assert result.is_failure
+        assert result.error is not None
+        assert "not configured" in result.error
 
     def test_generate_token_success(self) -> None:
         """Test successful token generation."""
@@ -75,7 +78,8 @@ class TestJwtTokenGenerator:
         provider = FlextAuthJwtProvider(config=config)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-456")
-        tm.ok(result)
+        assert result.is_success
+        assert result.value is not None
         tm.that(result.value, is_=str)
         token_text = str(result.value)
         tm.that(len(token_text), gt=0)
