@@ -10,8 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-
 import jwt
 from jwt.types import Options
 
@@ -30,7 +28,7 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
+    def validate_token(self, token: str) -> r[t.ContainerValueMapping]:
         """Validate JWT token with railway-oriented programming.
 
         Args:

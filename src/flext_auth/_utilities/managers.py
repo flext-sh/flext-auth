@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
+from collections.abc import MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -277,7 +277,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             **updates: t.Scalar | t.StrSequence | datetime | None,
         ) -> r[m.Auth.AuthIdentity]:
             """Update user data."""
-            filtered_updates: Mapping[str, t.ContainerValue] = {
+            filtered_updates: t.ContainerValueMapping = {
                 k: v for k, v in updates.items() if v is not None
             }
             return self._find_user_by_id(user_id).map(
@@ -320,7 +320,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
 
         def _create_identity_from_storage(
             self,
-            storage_data: Mapping[str, t.ContainerValue],
+            storage_data: t.ContainerValueMapping,
         ) -> m.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
@@ -402,7 +402,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
 
         def _extract_identity_id(
             self,
-            storage_data: Mapping[str, t.ContainerValue],
+            storage_data: t.ContainerValueMapping,
         ) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
@@ -429,11 +429,11 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, MutableMapping[str, t.ContainerValue]]].ok((
+                    return r[tuple[str, t.MutableContainerValueMapping]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, MutableMapping[str, t.ContainerValue]]].fail(
+            return r[tuple[str, t.MutableContainerValueMapping]].fail(
                 "User not found",
             )
 
@@ -460,7 +460,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
 
         def _validate_required_field[T](
             self,
-            storage_data: Mapping[str, t.ContainerValue],
+            storage_data: t.ContainerValueMapping,
             field: str,
             field_type: type[T],
         ) -> T:
@@ -509,9 +509,9 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> r[Sequence[Mapping[str, t.ContainerValue]]]:
+        ) -> r[Sequence[t.ContainerValueMapping]]:
             """Get audit logs with optional filtering."""
-            filtered_logs: MutableSequence[Mapping[str, t.ContainerValue]] = []
+            filtered_logs: MutableSequence[t.ContainerValueMapping] = []
             for log in self._logs:
                 if user_id is not None:
                     username_value = log.get("username")
@@ -550,9 +550,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
                     ):
                         continue
                 filtered_logs.append(log)
-            return r[Sequence[Mapping[str, t.ContainerValue]]].ok(
-                filtered_logs[-limit:]
-            )
+            return r[Sequence[t.ContainerValueMapping]].ok(filtered_logs[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""
@@ -718,7 +716,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
             **data: t.Scalar | t.StrSequence | datetime | None,
         ) -> None:
             """Log an audit event."""
-            filtered_data: Mapping[str, t.ContainerValue] = {
+            filtered_data: t.ContainerValueMapping = {
                 k: v for k, v in data.items() if v is not None
             }
             log_entry: t.Auth.Managers.LogEntry = {

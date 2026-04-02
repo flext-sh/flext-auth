@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, override, runtime_checkable
 
@@ -207,9 +206,9 @@ class FlextAuthProtocols(FlextApiProtocols):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, t.ContainerValue]
+            user: t.ContainerValueMapping
             "User/identity data."
-            session: Mapping[str, t.ContainerValue]
+            session: t.ContainerValueMapping
             "Session data."
             jwt_token: str
             "JWT token string."
@@ -307,7 +306,7 @@ class FlextAuthProtocols(FlextApiProtocols):
 
             def generate_token(
                 self,
-                payload: Mapping[str, t.ContainerValue],
+                payload: t.ContainerValueMapping,
                 token_kind: str = c.Auth.TokenTypes.ACCESS.value,
                 expiry_minutes: int | None = None,
             ) -> r[str]:

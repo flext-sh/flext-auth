@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 
 from pydantic import SecretStr
@@ -51,7 +51,7 @@ class FlextAuthProviderMixin:
 
     def generate_token(
         self,
-        payload: Mapping[str, t.ContainerValue],
+        payload: t.ContainerValueMapping,
         token_kind: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -90,7 +90,7 @@ class FlextAuthProviderMixin:
             expiry_minutes if expiry_minutes is not None else default_expiry
         )
         now = datetime.now(UTC)
-        claims: MutableMapping[str, t.ContainerValue] = dict(payload)
+        claims: t.MutableContainerValueMapping = dict(payload)
         claims["iat"] = int(now.timestamp())
         claims["exp"] = int((now + timedelta(minutes=effective_expiry)).timestamp())
         claims["token_type"] = token_kind
@@ -122,7 +122,7 @@ class FlextAuthProviderMixin:
 
         """
         if isinstance(user, Mapping):
-            payload: MutableMapping[str, t.ContainerValue] = dict(user)
+            payload: t.MutableContainerValueMapping = dict(user)
         else:
             payload = user.model_dump()
         effective_token_type = token_type if token_type is not None else token_kind
@@ -227,7 +227,7 @@ class FlextAuthProviderMixin:
             token: JWT token string to decode.
 
         Returns:
-            r[Mapping[str, t.ContainerValue]]: Decoded claims on success, error on failure.
+            r[t.ContainerValueMapping]: Decoded claims on success, error on failure.
 
         """
         config = self._provider_config
@@ -257,7 +257,7 @@ class FlextAuthProviderMixin:
 
     def _extract_identity_id(
         self,
-        claims: Mapping[str, t.ContainerValue],
+        claims: t.ContainerValueMapping,
     ) -> r[str]:
         """Extract identity ID from token claims.
 
@@ -301,11 +301,11 @@ class FlextAuthProviderMixin:
         error_msg = f"Invalid token type: expected str or Token, got {type(token)}"
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
-    def _get_capability_metadata(self) -> Mapping[str, t.ContainerValue]:
+    def _get_capability_metadata(self) -> t.ContainerValueMapping:
         """Get metadata about provider capabilities.
 
         Returns:
-            Mapping[str, t.ContainerValue]: Metadata including supported capabilities
+            t.ContainerValueMapping: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()
@@ -319,7 +319,7 @@ class FlextAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: Mapping[str, t.ContainerValue],
+        credentials: t.ContainerValueMapping,
         required_fields: t.StrSequence,
     ) -> r[bool]:
         """Validate that credentials contain required fields.

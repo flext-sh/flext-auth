@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
+from collections.abc import MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -134,7 +134,7 @@ class FlextAuthSessionManagers:
 
         def _is_session_active(
             self,
-            session_data: Mapping[str, t.ContainerValue],
+            session_data: t.ContainerValueMapping,
         ) -> bool:
             expires_at_value = session_data.get("expires_at")
             if not isinstance(expires_at_value, datetime):

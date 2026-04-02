@@ -14,20 +14,16 @@ import hashlib
 import http.client
 import secrets
 from base64 import b64encode, urlsafe_b64encode
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Final, override
 from urllib.parse import urlencode, urlparse
 
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_auth import FlextAuthRfcProvider, c, m, p, t, u
 from flext_core import e, r
 
-_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[t.ConfigurationMapping]] = TypeAdapter(
-    t.ScalarMapping,
-)
-_LIST_STR_ADAPTER: Final[TypeAdapter[t.StrSequence]] = TypeAdapter(t.StrSequence)
 _HTTP_BAD_REQUEST: Final[int] = 400
 
 
@@ -378,7 +374,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def __init__(self) -> None:
             """Initialize PKCE manager."""
-            self._verifiers: MutableMapping[str, str] = {}
+            self._verifiers: t.MutableStrMapping = {}
 
         def clear_verifier(self, state: str) -> None:
             """Clear stored PKCE code verifier."""
@@ -564,7 +560,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _build_introspection_form_data(self, token: str) -> r[str]:
         if not token.strip():
             return r[str].fail("OAuth2 token must be a non-empty string")
-        form_payload: MutableMapping[str, str] = {
+        form_payload: t.MutableStrMapping = {
             "token": token,
             "token_type_hint": "access_token",
         }
@@ -666,7 +662,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[t.ScalarMapping].fail(error_message)
         try:
             parsed_mapping: t.ConfigurationMapping = (
-                _DICT_STR_SCALAR_ADAPTER.validate_json(response_payload)
+                t.CONFIGURATION_MAPPING_ADAPTER.validate_json(response_payload)
             )
         except (ValueError, ValidationError) as exc:
             return r[t.ScalarMapping].fail(
@@ -683,7 +679,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _map_token_payload_to_identity(
         self,
-        payload: Mapping[str, t.ContainerValue],
+        payload: t.ContainerValueMapping,
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
         if identity_result.is_failure:
@@ -722,7 +718,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         if isinstance(roles_value, list):
             typed_roles: t.StrSequence
             try:
-                typed_roles = _LIST_STR_ADAPTER.validate_python(roles_value)
+                typed_roles = t.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
             except ValidationError:
                 typed_roles = list[str]()
             roles = [role for role in typed_roles if role]

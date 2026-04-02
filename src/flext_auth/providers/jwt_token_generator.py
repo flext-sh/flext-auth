@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping
 from datetime import UTC, datetime, timedelta
 
 import jwt
@@ -34,7 +33,7 @@ class FlextAuthJwtTokenGenerator:
         self,
         identity_id: str,
         expiry_minutes: int | None = None,
-        extra_claims: Mapping[str, t.ContainerValue] | None = None,
+        extra_claims: t.ContainerValueMapping | None = None,
     ) -> r[str]:
         """Generate JWT token with railway-oriented programming.
 
@@ -110,11 +109,11 @@ class FlextAuthJwtTokenGenerator:
         expiry_minutes: int,
         issuer: str,
         audience: str | None,
-        extra_claims: Mapping[str, t.ContainerValue] | None,
-    ) -> Mapping[str, t.ContainerValue]:
+        extra_claims: t.ContainerValueMapping | None,
+    ) -> t.ContainerValueMapping:
         """Build JWT token payload."""
         now = datetime.now(UTC)
-        payload: MutableMapping[str, t.ContainerValue] = {
+        payload: t.MutableContainerValueMapping = {
             "sub": identity_id,
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(minutes=expiry_minutes)).timestamp()),

@@ -12,18 +12,13 @@ from __future__ import annotations
 
 import base64
 from collections.abc import Mapping, MutableMapping
-from typing import Final
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_auth import m, t
 from flext_core import FlextLogger, r
-
-_DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[t.ConfigurationMapping]] = TypeAdapter(
-    t.ScalarMapping,
-)
 
 
 class FlextWebTransportAdapter:
@@ -114,7 +109,7 @@ class FlextWebTransportAdapter:
     def post_token_request(
         self,
         url: str,
-        data: Mapping[str, t.ContainerValue],
+        data: t.ContainerValueMapping,
         auth: tuple[str, str] | None = None,
         headers: t.StrMapping | None = None,
     ) -> r[t.ContainerValueMapping]:
@@ -140,7 +135,7 @@ class FlextWebTransportAdapter:
             ... )
 
         """
-        request_headers: MutableMapping[str, str] = dict(headers) if headers else {}
+        request_headers: t.MutableStrMapping = dict(headers) if headers else {}
         if "Content-Type" not in request_headers:
             request_headers["Content-Type"] = "application/x-www-form-urlencoded"
         if auth:
@@ -241,7 +236,7 @@ class FlextWebTransportAdapter:
                     f"Unsupported response body type: {type(body)}",
                 )
         try:
-            parsed = _DICT_STR_SCALAR_ADAPTER.validate_json(decoded)
+            parsed = t.CONFIGURATION_MAPPING_ADAPTER.validate_json(decoded)
             return r[t.ContainerValueMapping].ok(parsed)
         except (ValueError, ValidationError):
             return r[t.ContainerValueMapping].fail(

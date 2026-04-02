@@ -237,7 +237,7 @@ class FlextAuthConstants(FlextApiConstants):
         "Max requests per hour."
         SECRET_MIN_LENGTH: Final[int] = 32
         "Minimum secret key length."
-        VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
+        VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
             "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
             "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
             "MIN_PASSWORD_LENGTH": MIN_PASSWORD_LENGTH,

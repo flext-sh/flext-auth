@@ -13,13 +13,23 @@ from collections.abc import MutableMapping
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
-from pydantic import BeforeValidator, Field, SecretStr
+from pydantic import BeforeValidator, Field, SecretStr, TypeAdapter
 
 from flext_auth import FlextAuthConstants as c
 
 
 class FlextAuthTypes(FlextApiTypes):
     """Authentication-specific type definitions extending t with composition."""
+
+    CONFIGURATION_MAPPING_ADAPTER: TypeAdapter[FlextApiTypes.ConfigurationMapping] = (
+        TypeAdapter(FlextApiTypes.ConfigurationMapping)
+    )
+    STR_SEQUENCE_ADAPTER: TypeAdapter[FlextApiTypes.StrSequence] = TypeAdapter(
+        FlextApiTypes.StrSequence
+    )
+    CONTAINER_VALUE_MAPPING_ADAPTER: TypeAdapter[
+        FlextApiTypes.ContainerValueMapping
+    ] = TypeAdapter(FlextApiTypes.ContainerValueMapping)
 
     class Auth:
         """Authentication-related type definitions."""

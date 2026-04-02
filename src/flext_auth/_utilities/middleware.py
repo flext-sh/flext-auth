@@ -28,10 +28,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
 from typing import TypeIs, override
 
-from flext_auth import m, p, s
+from flext_auth import m, p, s, t
 from flext_core import FlextLogger, r
 
 
@@ -141,7 +140,7 @@ class FlextAuthMiddleware(s[bool]):
                 )
             try:
                 headers_val = request.headers
-                mutable_headers: MutableMapping[str, str] = {
+                mutable_headers: t.MutableStrMapping = {
                     str(key): str(value) for key, value in headers_val.items()
                 }
                 mutable_headers["Authorization"] = f"Bearer {self._current_token.token}"

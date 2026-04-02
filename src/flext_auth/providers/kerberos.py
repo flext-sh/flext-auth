@@ -18,17 +18,12 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
-from typing import Final, override
+from typing import override
 
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from flext_auth import FlextAuthRfcProvider, m, t, u
 from flext_core import r
-
-_DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.ContainerValueMapping]] = TypeAdapter(
-    t.ContainerValueMapping,
-)
-_LIST_STR_ADAPTER: Final[TypeAdapter[t.StrSequence]] = TypeAdapter(t.StrSequence)
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -252,7 +247,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 return r[m.Auth.AuthIdentity].ok(validator_result)
             if isinstance(validator_result, Mapping):
                 try:
-                    parsed_claims = _DICT_STR_CONTAINER_ADAPTER.validate_python(
+                    parsed_claims = t.CONTAINER_VALUE_MAPPING_ADAPTER.validate_python(
                         validator_result,
                     )
                 except ValidationError as exc:
@@ -279,7 +274,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     def _map_identity_payload(
         self,
-        claims: Mapping[str, t.ContainerValue],
+        claims: t.ContainerValueMapping,
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(claims)
         if identity_result.is_failure:
@@ -302,7 +297,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         if isinstance(roles_value, list):
             parsed_roles: list[str]
             try:
-                parsed_roles = list(_LIST_STR_ADAPTER.validate_python(roles_value))
+                parsed_roles = list(t.STR_SEQUENCE_ADAPTER.validate_python(roles_value))
             except ValidationError:
                 parsed_roles = []
             roles = [role for role in parsed_roles if role]
