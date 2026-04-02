@@ -13,10 +13,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import jwt
-from flext_core import r
 from jwt.types import Options
 
 from flext_auth import FlextAuthJwtProvider, t
+from flext_core import r
 
 
 class FlextAuthJwtTokenValidator:

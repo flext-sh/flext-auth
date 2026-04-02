@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import re
 
-from flext_core import r, x
-
 from flext_auth import c
+from flext_core import r, x
 
 MAX_USERNAME_LENGTH = 255
 

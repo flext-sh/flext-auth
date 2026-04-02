@@ -14,8 +14,6 @@ from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from flext_core import FlextContext, FlextLogger, r
-
 from flext_auth import (
     FlextAuthRateLimiterManagers,
     FlextAuthSessionManagers,
@@ -26,6 +24,7 @@ from flext_auth import (
     t,
     u,
 )
+from flext_core import FlextContext, FlextLogger, r
 
 
 class FlextAuthServiceManagers:

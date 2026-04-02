@@ -4,9 +4,8 @@ from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from flext_core import FlextContainer, FlextContext, FlextLogger, r
-
 from flext_auth import FlextAuthSettings, m, t
+from flext_core import FlextContainer, FlextContext, FlextLogger, r
 
 
 class FlextAuthSessionManagers:

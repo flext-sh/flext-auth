@@ -13,7 +13,6 @@ from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import override
 
-from flext_core import r
 from pydantic import ValidationError
 
 from flext_auth import (
@@ -26,6 +25,7 @@ from flext_auth import (
     p,
     s,
 )
+from flext_core import r
 
 
 class FlextAuthIdentityService(s[bool]):

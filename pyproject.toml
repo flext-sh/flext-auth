@@ -133,6 +133,7 @@ omit = [
 [tool.deptry]
 known_first_party = [
   "flext_auth",
+  "flext_core",
 ]
 pep621_dev_dependency_groups = [
   "dev",
@@ -543,6 +544,7 @@ combine-as-imports = true
 force-single-line = false
 known-first-party = [
   "flext_auth",
+  "flext_core",
 ]
 split-on-trailing-comma = true
 

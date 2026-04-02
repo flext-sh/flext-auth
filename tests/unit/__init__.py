@@ -12,7 +12,6 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.unit import (
         test_api,
         test_config,
@@ -57,7 +56,7 @@ if _TYPE_CHECKING:
     from tests.unit.test_token_real_flows import TestTokenRealFlows
     from tests.unit.test_typings import TestFlextAuthTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "HttpRequest": "tests.unit.test_api",
     "TestAuthModule": "tests.unit.test_api",
     "TestFlextAuth": "tests.unit.test_api",

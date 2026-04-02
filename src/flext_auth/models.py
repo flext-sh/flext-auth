@@ -14,10 +14,10 @@ from typing import Annotated, ClassVar, Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
-from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field
 
 from flext_auth import c, p, t
+from flext_core import r
 
 
 class FlextAuthModels(FlextApiModels):

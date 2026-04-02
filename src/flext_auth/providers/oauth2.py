@@ -19,10 +19,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Final, override
 from urllib.parse import urlencode, urlparse
 
-from flext_core import e, r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthRfcProvider, c, m, p, t, u
+from flext_core import e, r
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[t.ConfigurationMapping]] = TypeAdapter(
     t.ScalarMapping,

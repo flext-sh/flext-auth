@@ -10,12 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
-from flext_core import r
-
 from flext_auth import FlextAuthProviderMixin, p, t
+from flext_core import r
 
 
 class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -57,11 +55,11 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         _ = credentials
         return r[p.Auth.Token].fail("SAML provider not yet fully implemented")
 
-    def get_metadata(self) -> Mapping[str, str | t.StrSequence]:
+    def get_metadata(self) -> t.AttributeMapping:
         """Get provider metadata.
 
         Returns:
-            Mapping[str, str | t.StrSequence]: Provider metadata (name, version, capabilities, etc.)
+            t.AttributeMapping: Provider metadata (name, version, capabilities, etc.)
 
         Business Rule: Returns metadata for provider discovery and configuration.
 

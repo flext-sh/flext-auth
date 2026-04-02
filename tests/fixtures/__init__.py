@@ -15,7 +15,6 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.fixtures import certificates
     from tests.fixtures.certificates import (
         CertificateFixture,
@@ -23,7 +22,7 @@ if _TYPE_CHECKING:
         generate_self_signed_cert,
     )
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "CertificateFixture": "tests.fixtures.certificates",
     "certificates": "tests.fixtures.certificates",
     "generate_client_cert": "tests.fixtures.certificates",

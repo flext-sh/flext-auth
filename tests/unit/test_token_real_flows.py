@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import override
 
 import pytest
-from flext_core import r
 from flext_tests import tm
 
 from flext_auth import (
@@ -17,6 +15,7 @@ from flext_auth import (
     t,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+from flext_core import r
 
 
 class TestTokenRealFlows:
@@ -192,10 +191,10 @@ class TestTokenRealFlows:
         })
         call_count = {"count": 0}
 
-        def _fake_introspect(token: str) -> r[Mapping[str, str | bool]]:
+        def _fake_introspect(token: str) -> r[t.FeatureFlagMapping]:
             call_count["count"] += 1
             tm.that(token, eq="opaque-oauth2-token")
-            return r[Mapping[str, str | bool]].ok({
+            return r[t.FeatureFlagMapping].ok({
                 "active": True,
                 "sub": "oauth-user-123",
                 "username": "oauth-user",
@@ -225,8 +224,8 @@ class TestTokenRealFlows:
             "token_endpoint_auth_method": "client_secret_post",
         })
 
-        def _inactive_introspect(_token: str) -> r[Mapping[str, str | bool]]:
-            return r[Mapping[str, str | bool]].ok({"active": False})
+        def _inactive_introspect(_token: str) -> r[t.FeatureFlagMapping]:
+            return r[t.FeatureFlagMapping].ok({"active": False})
 
         monkeypatch.setattr(
             provider,

@@ -18,7 +18,6 @@ from typing import override
 
 import jwt
 import pytest
-from flext_core import r
 from flext_tests import tm
 
 from flext_auth import (
@@ -32,6 +31,7 @@ from flext_auth import (
     p,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+from flext_core import r
 from tests import t
 
 

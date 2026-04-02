@@ -31,9 +31,8 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from typing import TypeIs, override
 
-from flext_core import FlextLogger, r
-
 from flext_auth import m, p, s
+from flext_core import FlextLogger, r
 
 
 class FlextAuthMiddleware(s[bool]):

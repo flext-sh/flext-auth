@@ -20,10 +20,10 @@ from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Final, override
 
-from flext_core import r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import FlextAuthRfcProvider, m, t, u
+from flext_core import r
 
 _DICT_STR_CONTAINER_ADAPTER: Final[TypeAdapter[t.ContainerValueMapping]] = TypeAdapter(
     t.ContainerValueMapping,

@@ -8,8 +8,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING as _TYPE_CHECKING
 
-from flext_core.lazy import install_lazy_exports, merge_lazy_imports
-
 from flext_auth.__version__ import (
     __author__,
     __author_email__,
@@ -20,10 +18,10 @@ from flext_auth.__version__ import (
     __version__,
     __version_info__,
 )
+from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _TYPE_CHECKING:
     from flext_api import d, e, h, r, s, x
-    from flext_core import FlextTypes
 
     from flext_auth import (
         _managers,
@@ -104,8 +102,9 @@ if _TYPE_CHECKING:
     from flext_auth.transports import FlextWebTransportAdapter, http
     from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
     from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
+    from flext_core import FlextTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = merge_lazy_imports(
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
     (
         "flext_auth._managers",
         "flext_auth._utilities",

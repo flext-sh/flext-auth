@@ -16,8 +16,6 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from examples import (
         advanced_features_02,
         basic_auth_05,
@@ -74,8 +72,9 @@ if _TYPE_CHECKING:
     )
     from examples.simple_usage_08 import main
     from examples.utils import basic_example_runner
+    from flext_core import FlextTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextAuthDemo": "examples.basic_refactored_usage_06",
     "advanced_features_02": "examples.advanced_features_02",
     "basic_auth_05": "examples.basic_auth_05",

@@ -24,13 +24,12 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.helpers import protocols, typings, utilities
     from tests.helpers.protocols import TestsProtocols, p
     from tests.helpers.typings import TestsTypings, t
     from tests.helpers.utilities import TestsUtilities, u
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "TestsProtocols": "tests.helpers.protocols",
     "TestsTypings": "tests.helpers.typings",
     "TestsUtilities": "tests.helpers.utilities",

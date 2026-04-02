@@ -13,10 +13,10 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping
 from datetime import UTC, datetime, timedelta
 
-from flext_core import e, r
 from pydantic import SecretStr
 
 from flext_auth import c, m, p, t, u
+from flext_core import e, r
 
 
 class FlextAuthProviderMixin:
@@ -124,7 +124,7 @@ class FlextAuthProviderMixin:
         if isinstance(user, Mapping):
             payload: MutableMapping[str, t.ContainerValue] = dict(user)
         else:
-            payload = dict(user.model_dump())
+            payload = user.model_dump()
         effective_token_type = token_type if token_type is not None else token_kind
         payload["token_type"] = effective_token_type
         return self.generate_token(payload, token_kind, expiry_minutes)

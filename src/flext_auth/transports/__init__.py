@@ -21,12 +21,11 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from flext_auth.transports import base, http
     from flext_auth.transports.http import FlextWebTransportAdapter
+    from flext_core import FlextTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextWebTransportAdapter": "flext_auth.transports.http",
     "base": "flext_auth.transports.base",
     "http": "flext_auth.transports.http",

@@ -16,9 +16,8 @@ import os
 import secrets
 import string
 
-from flext_core import FlextLogger
-
 from flext_auth import FlextAuth, FlextAuthSettings, c
+from flext_core import FlextLogger
 
 logger = FlextLogger(__name__)
 

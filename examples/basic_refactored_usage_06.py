@@ -14,9 +14,8 @@ import secrets
 import string
 import sys
 
-from flext_core import r
-
 from flext_auth import FlextAuth, m
+from flext_core import r
 
 
 class FlextAuthDemo:

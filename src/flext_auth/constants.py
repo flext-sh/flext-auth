@@ -18,9 +18,12 @@ from __future__ import annotations
 from collections.abc import Mapping, Set as AbstractSet
 from enum import StrEnum, unique
 from types import MappingProxyType
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from flext_api import FlextApiConstants
+
+if TYPE_CHECKING:
+    from flext_auth import t
 
 
 class FlextAuthConstants(FlextApiConstants):
@@ -244,13 +247,13 @@ class FlextAuthConstants(FlextApiConstants):
             "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
         })
         "Validation limits mapping."
-        SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+        SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
             "status": "success",
             "message": "Authentication successful",
             "token_type": None,
         })
         "Template for successful authentication responses."
-        ERROR_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+        ERROR_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
             "status": "error",
             "message": None,
             "error_code": None,

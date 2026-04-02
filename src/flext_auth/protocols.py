@@ -16,9 +16,9 @@ from datetime import datetime
 from typing import Protocol, override, runtime_checkable
 
 from flext_api import FlextApiProtocols
-from flext_core import r
 
 from flext_auth import c, t
+from flext_core import r
 
 
 class FlextAuthProtocols(FlextApiProtocols):

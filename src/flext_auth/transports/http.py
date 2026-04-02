@@ -16,10 +16,10 @@ from typing import Final
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings
-from flext_core import FlextLogger, r
 from pydantic import TypeAdapter, ValidationError
 
 from flext_auth import m, t
+from flext_core import FlextLogger, r
 
 _DICT_STR_SCALAR_ADAPTER: Final[TypeAdapter[t.ConfigurationMapping]] = TypeAdapter(
     t.ScalarMapping,

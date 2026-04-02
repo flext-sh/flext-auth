@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from typing import ClassVar, TypeIs
 
-from flext_core import FlextRegistry, r
 from pydantic import BaseModel
 
 from flext_auth import m, p, t
+from flext_core import FlextRegistry, r
 
 
 class FlextAuthRegistry(FlextRegistry):

@@ -20,8 +20,6 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-
     from flext_auth.providers import (
         apikey,
         base,
@@ -53,8 +51,9 @@ if _TYPE_CHECKING:
     from flext_auth.providers.oidc import FlextAuthOidcProvider
     from flext_auth.providers.rfc import FlextAuthRfcProvider
     from flext_auth.providers.saml import FlextAuthSamlProvider
+    from flext_core import FlextTypes
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextAuthApiKeyProvider": "flext_auth.providers.apikey",
     "FlextAuthBasicProvider": "flext_auth.providers.basic",
     "FlextAuthCertificateProvider": "flext_auth.providers.certificate",
