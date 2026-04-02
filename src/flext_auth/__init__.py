@@ -21,8 +21,6 @@ from flext_auth.__version__ import (
 from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _TYPE_CHECKING:
-    from flext_api import d, e, h, r, s, x
-
     from flext_auth import (
         _managers,
         _utilities,
@@ -103,6 +101,12 @@ if _TYPE_CHECKING:
     from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
     from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
     from flext_core import FlextTypes
+    from flext_core.decorators import FlextDecorators as d
+    from flext_core.exceptions import FlextExceptions as e
+    from flext_core.handlers import FlextHandlers as h
+    from flext_core.mixins import FlextMixins as x
+    from flext_core.result import FlextResult as r
+    from flext_core.service import FlextService as s
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
     (
@@ -124,23 +128,23 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "api": "flext_auth.api",
         "c": ("flext_auth.constants", "FlextAuthConstants"),
         "constants": "flext_auth.constants",
-        "d": "flext_api",
-        "e": "flext_api",
-        "h": "flext_api",
+        "d": ("flext_core.decorators", "FlextDecorators"),
+        "e": ("flext_core.exceptions", "FlextExceptions"),
+        "h": ("flext_core.handlers", "FlextHandlers"),
         "m": ("flext_auth.models", "FlextAuthModels"),
         "models": "flext_auth.models",
         "p": ("flext_auth.protocols", "FlextAuthProtocols"),
         "protocols": "flext_auth.protocols",
         "providers": "flext_auth.providers",
-        "r": "flext_api",
-        "s": "flext_api",
+        "r": ("flext_core.result", "FlextResult"),
+        "s": ("flext_core.service", "FlextService"),
         "settings": "flext_auth.settings",
         "t": ("flext_auth.typings", "FlextAuthTypes"),
         "transports": "flext_auth.transports",
         "typings": "flext_auth.typings",
         "u": ("flext_auth.utilities", "FlextAuthUtilities"),
         "utilities": "flext_auth.utilities",
-        "x": "flext_api",
+        "x": ("flext_core.mixins", "FlextMixins"),
     },
 )
 

@@ -11,9 +11,13 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _TYPE_CHECKING:
-    from flext_tests import d, e, h, r, s, x
-
     from flext_core import FlextTypes
+    from flext_core.decorators import FlextDecorators as d
+    from flext_core.exceptions import FlextExceptions as e
+    from flext_core.handlers import FlextHandlers as h
+    from flext_core.mixins import FlextMixins as x
+    from flext_core.result import FlextResult as r
+    from flext_core.service import FlextService as s
     from tests import (
         conftest,
         constants,
@@ -96,25 +100,25 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "c": ("tests.constants", "FlextAuthTestConstants"),
         "conftest": "tests.conftest",
         "constants": "tests.constants",
-        "d": "flext_tests",
-        "e": "flext_tests",
+        "d": ("flext_core.decorators", "FlextDecorators"),
+        "e": ("flext_core.exceptions", "FlextExceptions"),
         "fixtures": "tests.fixtures",
-        "h": "flext_tests",
+        "h": ("flext_core.handlers", "FlextHandlers"),
         "helpers": "tests.helpers",
         "m": ("tests.models", "FlextAuthTestModels"),
         "mock_get_global": "tests.conftest",
         "models": "tests.models",
         "p": ("tests.protocols", "FlextAuthTestProtocols"),
         "protocols": "tests.protocols",
-        "r": "flext_tests",
+        "r": ("flext_core.result", "FlextResult"),
         "reset_singletons": "tests.conftest",
-        "s": "flext_tests",
+        "s": ("flext_core.service", "FlextService"),
         "t": ("tests.typings", "FlextAuthTestTypes"),
         "typings": "tests.typings",
         "u": ("tests.utilities", "FlextAuthTestUtilities"),
         "unit": "tests.unit",
         "utilities": "tests.utilities",
-        "x": "flext_tests",
+        "x": ("flext_core.mixins", "FlextMixins"),
     },
 )
 
