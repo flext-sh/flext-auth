@@ -5,7 +5,7 @@ from __future__ import annotations
 from flext_core import FlextConstants
 from flext_tests import tm
 
-from flext_auth import c
+from tests import c
 
 
 class TestFlextAuthConstants:

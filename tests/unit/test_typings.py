@@ -8,7 +8,7 @@ from __future__ import annotations
 from flext_api import FlextApiTypes
 from flext_tests import tm
 
-from flext_auth import t
+from tests import t
 
 
 class TestFlextAuthTypes:
