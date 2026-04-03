@@ -268,7 +268,7 @@ cd docs/architecture/diagrams
 
 # Validate architecture documentation
 cd docs/architecture
-./validate-docs.sh
+./validate_docs.sh
 ```
 
 ### Manual Updates
