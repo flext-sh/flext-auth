@@ -33,25 +33,56 @@ if _TYPE_CHECKING:
     from tests.constants import FlextAuthTestConstants, FlextAuthTestConstants as c
     from tests.fixtures import (
         CertificateFixture,
-        cert_pem,
-        fingerprint,
+        certificates,
         generate_client_cert,
-        key_pem,
-        mock_cert_pem,
-        mock_fingerprint,
-        mock_key_pem,
-        subject_cn,
+        generate_self_signed_cert,
     )
     from tests.helpers import TestsProtocols, TestsTypings, TestsUtilities
     from tests.models import FlextAuthTestModels, FlextAuthTestModels as m
     from tests.protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
     from tests.typings import FlextAuthTestTypes, FlextAuthTestTypes as t
     from tests.unit import (
+        HttpRequest,
+        TestAuthModule,
+        TestFlextAuth,
+        TestFlextAuthAdditionalCoverage,
+        TestFlextAuthAdvancedPatterns,
+        TestFlextAuthConfigurationMethods,
+        TestFlextAuthConfigurationOverrides,
         TestFlextAuthConstants,
+        TestFlextAuthErrorHandling,
+        TestFlextAuthErrorHandlingPaths,
+        TestFlextAuthErrorHandlingSecond,
+        TestFlextAuthErrorPaths,
+        TestFlextAuthHandlerRegistration,
+        TestFlextAuthInitializationCoverage,
+        TestFlextAuthLogging,
+        TestFlextAuthModelConfiguration,
+        TestFlextAuthPasswordMethods,
+        TestFlextAuthProcessorRegistration,
+        TestFlextAuthProviderRegistry,
+        TestFlextAuthQuickStart,
+        TestFlextAuthQuickStartFunction,
+        TestFlextAuthQuickStartMethod,
+        TestFlextAuthSecurity,
+        TestFlextAuthServiceInitialization,
+        TestFlextAuthSessionManagement,
+        TestFlextAuthSessionMethods,
+        TestFlextAuthSettingsBasic,
+        TestFlextAuthStorageOperations,
+        TestFlextAuthTokenMethods,
+        TestFlextAuthTokenOperations,
         TestFlextAuthTypes,
+        TestFlextAuthUserMethods,
+        TestJwtTokenGenerator,
+        TestProviderTokenFlows,
         TestTokenRealFlows,
+        test_api,
+        test_config,
+        test_constants,
+        test_token_real_flows,
+        test_typings,
     )
-    from tests.unit.test_api import HttpRequest
     from tests.utilities import FlextAuthTestUtilities, FlextAuthTestUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
@@ -67,7 +98,6 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "FlextAuthTestTypes": "tests.typings",
         "FlextAuthTestUtilities": "tests.utilities",
         "c": ("tests.constants", "FlextAuthTestConstants"),
-        "certificates": "tests.fixtures.certificates",
         "conftest": "tests.conftest",
         "constants": "tests.constants",
         "d": ("flext_core.decorators", "FlextDecorators"),

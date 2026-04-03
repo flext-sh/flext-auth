@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_auth import base, http
+    from flext_auth.transports import base, http
     from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_core import FlextTypes
     from flext_core.constants import FlextConstants as c
@@ -27,13 +27,13 @@ if _TYPE_CHECKING:
     from flext_core.utilities import FlextUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "FlextWebTransportAdapter": "flext_auth.http",
-    "base": "flext_auth.base",
+    "FlextWebTransportAdapter": "flext_auth.transports.http",
+    "base": "flext_auth.transports.base",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "http": "flext_auth.http",
+    "http": "flext_auth.transports.http",
     "m": ("flext_core.models", "FlextModels"),
     "p": ("flext_core.protocols", "FlextProtocols"),
     "r": ("flext_core.result", "FlextResult"),
