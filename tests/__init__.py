@@ -19,18 +19,12 @@ if _TYPE_CHECKING:
     from flext_core.result import FlextResult as r
     from flext_core.service import FlextService as s
     from tests import (
-        certificates,
         conftest,
         constants,
         fixtures,
         helpers,
         models,
         protocols,
-        test_api,
-        test_config,
-        test_constants,
-        test_token_real_flows,
-        test_typings,
         typings,
         unit,
         utilities,
@@ -53,24 +47,11 @@ if _TYPE_CHECKING:
     from tests.protocols import FlextAuthTestProtocols, FlextAuthTestProtocols as p
     from tests.typings import FlextAuthTestTypes, FlextAuthTestTypes as t
     from tests.unit import (
-        HttpRequest,
         TestFlextAuthConstants,
         TestFlextAuthTypes,
         TestTokenRealFlows,
-        contact,
-        credential_hash,
-        failed_attempts,
-        full_name,
-        is_active,
-        last_access,
-        locked_until,
-        name,
-        permissions,
-        roles,
-        session_id,
-        token,
-        unique_id,
     )
+    from tests.unit.test_api import HttpRequest
     from tests.utilities import FlextAuthTestUtilities, FlextAuthTestUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
@@ -86,7 +67,7 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "FlextAuthTestTypes": "tests.typings",
         "FlextAuthTestUtilities": "tests.utilities",
         "c": ("tests.constants", "FlextAuthTestConstants"),
-        "certificates": "tests.certificates",
+        "certificates": "tests.fixtures.certificates",
         "conftest": "tests.conftest",
         "constants": "tests.constants",
         "d": ("flext_core.decorators", "FlextDecorators"),
@@ -103,11 +84,6 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
         "reset_singletons": "tests.conftest",
         "s": ("flext_core.service", "FlextService"),
         "t": ("tests.typings", "FlextAuthTestTypes"),
-        "test_api": "tests.test_api",
-        "test_config": "tests.test_config",
-        "test_constants": "tests.test_constants",
-        "test_token_real_flows": "tests.test_token_real_flows",
-        "test_typings": "tests.test_typings",
         "typings": "tests.typings",
         "u": ("tests.utilities", "FlextAuthTestUtilities"),
         "unit": "tests.unit",

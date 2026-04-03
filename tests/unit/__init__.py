@@ -23,32 +23,17 @@ if _TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from tests.unit.test_api import (
-        HttpRequest,
-        contact,
-        credential_hash,
-        failed_attempts,
-        full_name,
-        is_active,
-        last_access,
-        locked_until,
-        name,
-        permissions,
-        roles,
-        session_id,
-        token,
-        unique_id,
-    )
-    from tests.unit.test_constants import TestFlextAuthConstants
-    from tests.unit.test_token_real_flows import TestTokenRealFlows
-    from tests.unit.test_typings import TestFlextAuthTypes
-    from tests.unit.unit import (
+    from tests.unit import (
         test_api,
         test_config,
         test_constants,
         test_token_real_flows,
         test_typings,
     )
+    from tests.unit.test_api import HttpRequest
+    from tests.unit.test_constants import TestFlextAuthConstants
+    from tests.unit.test_token_real_flows import TestTokenRealFlows
+    from tests.unit.test_typings import TestFlextAuthTypes
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "HttpRequest": "tests.unit.test_api",
@@ -56,33 +41,20 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "TestFlextAuthTypes": "tests.unit.test_typings",
     "TestTokenRealFlows": "tests.unit.test_token_real_flows",
     "c": ("flext_core.constants", "FlextConstants"),
-    "contact": "tests.unit.test_api",
-    "credential_hash": "tests.unit.test_api",
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
-    "failed_attempts": "tests.unit.test_api",
-    "full_name": "tests.unit.test_api",
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "is_active": "tests.unit.test_api",
-    "last_access": "tests.unit.test_api",
-    "locked_until": "tests.unit.test_api",
     "m": ("flext_core.models", "FlextModels"),
-    "name": "tests.unit.test_api",
     "p": ("flext_core.protocols", "FlextProtocols"),
-    "permissions": "tests.unit.test_api",
     "r": ("flext_core.result", "FlextResult"),
-    "roles": "tests.unit.test_api",
     "s": ("flext_core.service", "FlextService"),
-    "session_id": "tests.unit.test_api",
     "t": ("flext_core.typings", "FlextTypes"),
     "test_api": "tests.unit.test_api",
     "test_config": "tests.unit.test_config",
     "test_constants": "tests.unit.test_constants",
     "test_token_real_flows": "tests.unit.test_token_real_flows",
     "test_typings": "tests.unit.test_typings",
-    "token": "tests.unit.test_api",
     "u": ("flext_core.utilities", "FlextUtilities"),
-    "unique_id": "tests.unit.test_api",
     "x": ("flext_core.mixins", "FlextMixins"),
 }
 

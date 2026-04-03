@@ -20,28 +20,28 @@ if _TYPE_CHECKING:
     from flext_core.models import FlextModels as m
     from flext_core.result import FlextResult as r
     from flext_core.service import FlextService as s
-    from tests import protocols, typings, utilities
-    from tests.protocols import TestsProtocols, TestsProtocols as p
-    from tests.typings import TestsTypings, t
-    from tests.utilities import TestsUtilities, TestsUtilities as u
+    from tests.helpers import protocols, typings, utilities
+    from tests.helpers.protocols import TestsProtocols, TestsProtocols as p
+    from tests.helpers.typings import TestsTypings, TestsTypings as t
+    from tests.helpers.utilities import TestsUtilities, TestsUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "TestsProtocols": "tests.protocols",
-    "TestsTypings": "tests.typings",
-    "TestsUtilities": "tests.utilities",
+    "TestsProtocols": "tests.helpers.protocols",
+    "TestsTypings": "tests.helpers.typings",
+    "TestsUtilities": "tests.helpers.utilities",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
     "m": ("flext_core.models", "FlextModels"),
-    "p": ("tests.protocols", "TestsProtocols"),
-    "protocols": "tests.protocols",
+    "p": ("tests.helpers.protocols", "TestsProtocols"),
+    "protocols": "tests.helpers.protocols",
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
-    "t": "tests.typings",
-    "typings": "tests.typings",
-    "u": ("tests.utilities", "TestsUtilities"),
-    "utilities": "tests.utilities",
+    "t": ("tests.helpers.typings", "TestsTypings"),
+    "typings": "tests.helpers.typings",
+    "u": ("tests.helpers.utilities", "TestsUtilities"),
+    "utilities": "tests.helpers.utilities",
     "x": ("flext_core.mixins", "FlextMixins"),
 }
 
