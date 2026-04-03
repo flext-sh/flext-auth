@@ -5,32 +5,49 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING as _TYPE_CHECKING
+import typing as _t
 
+from flext_core.constants import FlextConstants as c
+from flext_core.decorators import FlextDecorators as d
+from flext_core.exceptions import FlextExceptions as e
+from flext_core.handlers import FlextHandlers as h
 from flext_core.lazy import install_lazy_exports
+from flext_core.mixins import FlextMixins as x
+from flext_core.models import FlextModels as m
+from flext_core.protocols import FlextProtocols as p
+from flext_core.result import FlextResult as r
+from flext_core.service import FlextService as s
+from flext_core.typings import FlextTypes as t
+from flext_core.utilities import FlextUtilities as u
+from tests.fixtures.certificates import (
+    CertificateFixture,
+    generate_client_cert,
+    generate_self_signed_cert,
+)
 
-if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-    from flext_core.constants import FlextConstants as c
-    from flext_core.decorators import FlextDecorators as d
-    from flext_core.exceptions import FlextExceptions as e
-    from flext_core.handlers import FlextHandlers as h
-    from flext_core.mixins import FlextMixins as x
-    from flext_core.models import FlextModels as m
-    from flext_core.protocols import FlextProtocols as p
-    from flext_core.result import FlextResult as r
-    from flext_core.service import FlextService as s
-    from flext_core.typings import FlextTypes as t
-    from flext_core.utilities import FlextUtilities as u
-    from tests.fixtures import certificates
-    from tests.fixtures.certificates import (
+if _t.TYPE_CHECKING:
+    import tests.fixtures.certificates as _tests_fixtures_certificates
+
+    certificates = _tests_fixtures_certificates
+
+    _ = (
         CertificateFixture,
+        c,
+        certificates,
+        d,
+        e,
         generate_client_cert,
         generate_self_signed_cert,
+        h,
+        m,
+        p,
+        r,
+        s,
+        t,
+        u,
+        x,
     )
-
-_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
+_LAZY_IMPORTS = {
     "CertificateFixture": "tests.fixtures.certificates",
     "c": ("flext_core.constants", "FlextConstants"),
     "certificates": "tests.fixtures.certificates",
@@ -47,6 +64,24 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
+
+__all__ = [
+    "CertificateFixture",
+    "c",
+    "certificates",
+    "d",
+    "e",
+    "generate_client_cert",
+    "generate_self_signed_cert",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "u",
+    "x",
+]
 
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)

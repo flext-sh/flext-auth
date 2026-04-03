@@ -5,28 +5,47 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING as _TYPE_CHECKING
+import typing as _t
 
+from flext_auth.transports.http import FlextWebTransportAdapter
+from flext_core.constants import FlextConstants as c
+from flext_core.decorators import FlextDecorators as d
+from flext_core.exceptions import FlextExceptions as e
+from flext_core.handlers import FlextHandlers as h
 from flext_core.lazy import install_lazy_exports
+from flext_core.mixins import FlextMixins as x
+from flext_core.models import FlextModels as m
+from flext_core.protocols import FlextProtocols as p
+from flext_core.result import FlextResult as r
+from flext_core.service import FlextService as s
+from flext_core.typings import FlextTypes as t
+from flext_core.utilities import FlextUtilities as u
 
-if _TYPE_CHECKING:
-    from flext_auth.transports import base, http
-    from flext_auth.transports.http import FlextWebTransportAdapter
-    from flext_core import FlextTypes
-    from flext_core.constants import FlextConstants as c
-    from flext_core.decorators import FlextDecorators as d
-    from flext_core.exceptions import FlextExceptions as e
-    from flext_core.handlers import FlextHandlers as h
-    from flext_core.mixins import FlextMixins as x
-    from flext_core.models import FlextModels as m
-    from flext_core.protocols import FlextProtocols as p
-    from flext_core.result import FlextResult as r
-    from flext_core.service import FlextService as s
-    from flext_core.typings import FlextTypes as t
-    from flext_core.utilities import FlextUtilities as u
+if _t.TYPE_CHECKING:
+    import flext_auth.transports.base as _flext_auth_transports_base
 
-_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
+    base = _flext_auth_transports_base
+    import flext_auth.transports.http as _flext_auth_transports_http
+
+    http = _flext_auth_transports_http
+
+    _ = (
+        FlextWebTransportAdapter,
+        base,
+        c,
+        d,
+        e,
+        h,
+        http,
+        m,
+        p,
+        r,
+        s,
+        t,
+        u,
+        x,
+    )
+_LAZY_IMPORTS = {
     "FlextWebTransportAdapter": "flext_auth.transports.http",
     "base": "flext_auth.transports.base",
     "c": ("flext_core.constants", "FlextConstants"),
@@ -42,6 +61,23 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
+
+__all__ = [
+    "FlextWebTransportAdapter",
+    "base",
+    "c",
+    "d",
+    "e",
+    "h",
+    "http",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "u",
+    "x",
+]
 
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
