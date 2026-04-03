@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_auth import (
+    from flext_auth._utilities import (
         identity_service,
         managers,
         middleware,
@@ -22,15 +22,15 @@ if _TYPE_CHECKING:
         session_service,
         token_service,
     )
-    from flext_auth.identity_service import FlextAuthIdentityService
-    from flext_auth.managers import FlextAuthServiceManagers
-    from flext_auth.middleware import FlextAuthMiddleware
-    from flext_auth.mixins import FlextAuthMixins
-    from flext_auth.provider_service import FlextAuthProviderService
-    from flext_auth.quickstart import FlextAuthQuickstart
-    from flext_auth.registry import FlextAuthRegistry
-    from flext_auth.session_service import FlextAuthSessionService
-    from flext_auth.token_service import FlextAuthTokenService
+    from flext_auth._utilities.identity_service import FlextAuthIdentityService
+    from flext_auth._utilities.managers import FlextAuthServiceManagers
+    from flext_auth._utilities.middleware import FlextAuthMiddleware
+    from flext_auth._utilities.mixins import FlextAuthMixins
+    from flext_auth._utilities.provider_service import FlextAuthProviderService
+    from flext_auth._utilities.quickstart import FlextAuthQuickstart
+    from flext_auth._utilities.registry import FlextAuthRegistry
+    from flext_auth._utilities.session_service import FlextAuthSessionService
+    from flext_auth._utilities.token_service import FlextAuthTokenService
     from flext_core import FlextTypes
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {

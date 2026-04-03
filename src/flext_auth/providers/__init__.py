@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_auth import (
+    from flext_auth.providers import (
         apikey,
         base,
         basic,
@@ -28,20 +28,20 @@ if _TYPE_CHECKING:
         rfc,
         saml,
     )
-    from flext_auth.apikey import FlextAuthApiKeyProvider
-    from flext_auth.basic import FlextAuthBasicProvider
-    from flext_auth.certificate import FlextAuthCertificateProvider
-    from flext_auth.jwt import FlextAuthJwtProvider
-    from flext_auth.jwt_password_hasher import FlextAuthPasswordHasher
-    from flext_auth.jwt_token_generator import FlextAuthJwtTokenGenerator
-    from flext_auth.jwt_token_validator import FlextAuthJwtTokenValidator
-    from flext_auth.kerberos import FlextAuthKerberosProvider
-    from flext_auth.ldap import FlextAuthLdapProvider
-    from flext_auth.mixin import FlextAuthProviderMixin
-    from flext_auth.oauth2 import FlextAuthOAuth2Provider
-    from flext_auth.oidc import FlextAuthOidcProvider
-    from flext_auth.rfc import FlextAuthRfcProvider
-    from flext_auth.saml import FlextAuthSamlProvider
+    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
+    from flext_auth.providers.basic import FlextAuthBasicProvider
+    from flext_auth.providers.certificate import FlextAuthCertificateProvider
+    from flext_auth.providers.jwt import FlextAuthJwtProvider
+    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
+    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
+    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
+    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
+    from flext_auth.providers.ldap import FlextAuthLdapProvider
+    from flext_auth.providers.mixin import FlextAuthProviderMixin
+    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+    from flext_auth.providers.oidc import FlextAuthOidcProvider
+    from flext_auth.providers.rfc import FlextAuthRfcProvider
+    from flext_auth.providers.saml import FlextAuthSamlProvider
     from flext_core import FlextTypes
     from flext_core.constants import FlextConstants as c
     from flext_core.decorators import FlextDecorators as d

@@ -12,8 +12,8 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_auth import auth_managers_session, rate_limiter
-    from flext_auth.auth_managers_session import FlextAuthSessionManagers
-    from flext_auth.rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
+    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
     from flext_core import FlextTypes
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {

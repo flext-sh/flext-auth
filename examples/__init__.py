@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
-    from flext_auth import (
+    from examples import (
         advanced_features_02,
         basic_auth_05,
         basic_refactored_usage_06,
@@ -24,17 +24,17 @@ if _TYPE_CHECKING:
         simple_usage_08,
         utils,
     )
-    from flext_auth.advanced_features_02 import example_advanced_configuration
-    from flext_auth.basic_refactored_usage_06 import FlextAuthDemo
-    from flext_auth.basic_usage_01 import example_basic_authentication, logger
-    from flext_auth.basic_usage_07 import exemplo_flext_auth
-    from flext_auth.comprehensive_demo_03 import demo_complete_auth_workflow
-    from flext_auth.debug_auth_issues_09 import debug_password_operations
-    from flext_auth.refactored_system_showcase_04 import (
+    from examples.advanced_features_02 import example_advanced_configuration
+    from examples.basic_refactored_usage_06 import FlextAuthDemo
+    from examples.basic_usage_01 import example_basic_authentication, logger
+    from examples.basic_usage_07 import exemplo_flext_auth
+    from examples.comprehensive_demo_03 import demo_complete_auth_workflow
+    from examples.debug_auth_issues_09 import debug_password_operations
+    from examples.refactored_system_showcase_04 import (
         demonstrate_refactoring_benefits,
     )
-    from flext_auth.simple_usage_08 import main
-    from flext_auth.utils import basic_example_runner, run_examples
+    from examples.simple_usage_08 import main
+    from examples.utils import basic_example_runner
     from flext_core import FlextTypes
     from flext_core.constants import FlextConstants as c
     from flext_core.decorators import FlextDecorators as d
@@ -49,38 +49,37 @@ if _TYPE_CHECKING:
     from flext_core.utilities import FlextUtilities as u
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "FlextAuthDemo": "flext_auth.basic_refactored_usage_06",
-    "advanced_features_02": "flext_auth.advanced_features_02",
-    "basic_auth_05": "flext_auth.basic_auth_05",
-    "basic_example_runner": "flext_auth.utils",
-    "basic_refactored_usage_06": "flext_auth.basic_refactored_usage_06",
-    "basic_usage_01": "flext_auth.basic_usage_01",
-    "basic_usage_07": "flext_auth.basic_usage_07",
+    "FlextAuthDemo": "examples.basic_refactored_usage_06",
+    "advanced_features_02": "examples.advanced_features_02",
+    "basic_auth_05": "examples.basic_auth_05",
+    "basic_example_runner": "examples.utils",
+    "basic_refactored_usage_06": "examples.basic_refactored_usage_06",
+    "basic_usage_01": "examples.basic_usage_01",
+    "basic_usage_07": "examples.basic_usage_07",
     "c": ("flext_core.constants", "FlextConstants"),
-    "comprehensive_demo_03": "flext_auth.comprehensive_demo_03",
+    "comprehensive_demo_03": "examples.comprehensive_demo_03",
     "d": ("flext_core.decorators", "FlextDecorators"),
-    "debug_auth_issues_09": "flext_auth.debug_auth_issues_09",
-    "debug_password_operations": "flext_auth.debug_auth_issues_09",
-    "demo_complete_auth_workflow": "flext_auth.comprehensive_demo_03",
-    "demonstrate_refactoring_benefits": "flext_auth.refactored_system_showcase_04",
+    "debug_auth_issues_09": "examples.debug_auth_issues_09",
+    "debug_password_operations": "examples.debug_auth_issues_09",
+    "demo_complete_auth_workflow": "examples.comprehensive_demo_03",
+    "demonstrate_refactoring_benefits": "examples.refactored_system_showcase_04",
     "e": ("flext_core.exceptions", "FlextExceptions"),
-    "example_advanced_configuration": "flext_auth.advanced_features_02",
-    "example_basic_authentication": "flext_auth.basic_usage_01",
-    "exemplo_flext_auth": "flext_auth.basic_usage_07",
-    "flext_config_usage": "flext_auth.flext_config_usage",
+    "example_advanced_configuration": "examples.advanced_features_02",
+    "example_basic_authentication": "examples.basic_usage_01",
+    "exemplo_flext_auth": "examples.basic_usage_07",
+    "flext_config_usage": "examples.flext_config_usage",
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "logger": "flext_auth.basic_usage_01",
+    "logger": "examples.basic_usage_01",
     "m": ("flext_core.models", "FlextModels"),
-    "main": "flext_auth.simple_usage_08",
+    "main": "examples.simple_usage_08",
     "p": ("flext_core.protocols", "FlextProtocols"),
     "r": ("flext_core.result", "FlextResult"),
-    "refactored_system_showcase_04": "flext_auth.refactored_system_showcase_04",
-    "run_examples": "flext_auth.utils",
+    "refactored_system_showcase_04": "examples.refactored_system_showcase_04",
     "s": ("flext_core.service", "FlextService"),
-    "simple_usage_08": "flext_auth.simple_usage_08",
+    "simple_usage_08": "examples.simple_usage_08",
     "t": ("flext_core.typings", "FlextTypes"),
     "u": ("flext_core.utilities", "FlextUtilities"),
-    "utils": "flext_auth.utils",
+    "utils": "examples.utils",
     "x": ("flext_core.mixins", "FlextMixins"),
 }
 

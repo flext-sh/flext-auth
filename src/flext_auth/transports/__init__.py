@@ -12,7 +12,7 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_auth import base, http
-    from flext_auth.http import FlextWebTransportAdapter
+    from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_core import FlextTypes
     from flext_core.constants import FlextConstants as c
     from flext_core.decorators import FlextDecorators as d
