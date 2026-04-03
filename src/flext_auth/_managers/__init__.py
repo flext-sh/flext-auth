@@ -7,8 +7,6 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
-from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 from flext_core.lazy import install_lazy_exports
 
 if _t.TYPE_CHECKING:
@@ -16,15 +14,10 @@ if _t.TYPE_CHECKING:
 
     auth_managers_session = _flext_auth__managers_auth_managers_session
     import flext_auth._managers.rate_limiter as _flext_auth__managers_rate_limiter
+    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
 
     rate_limiter = _flext_auth__managers_rate_limiter
-
-    _ = (
-        FlextAuthRateLimiterManagers,
-        FlextAuthSessionManagers,
-        auth_managers_session,
-        rate_limiter,
-    )
+    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 _LAZY_IMPORTS = {
     "FlextAuthRateLimiterManagers": "flext_auth._managers.rate_limiter",
     "FlextAuthSessionManagers": "flext_auth._managers.auth_managers_session",
