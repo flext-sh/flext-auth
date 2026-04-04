@@ -22,12 +22,16 @@ if _t.TYPE_CHECKING:
 
     fixtures = _tests_fixtures
     import tests.helpers as _tests_helpers
+    from tests.fixtures import (
+        CertificateFixture,
+        certificates,
+        generate_client_cert,
+        generate_self_signed_cert,
+    )
 
     helpers = _tests_helpers
     import tests.models as _tests_models
-    from tests.helpers.protocols import TestsProtocols
-    from tests.helpers.typings import TestsTypings
-    from tests.helpers.utilities import TestsUtilities
+    from tests.helpers import TestsProtocols, TestsTypings, TestsUtilities
 
     models = _tests_models
     import tests.protocols as _tests_protocols
@@ -42,11 +46,8 @@ if _t.TYPE_CHECKING:
     from tests.typings import FlextAuthTestTypes, FlextAuthTestTypes as t
 
     unit = _tests_unit
-    import tests.unit.test_api as _tests_unit_test_api
-
-    test_api = _tests_unit_test_api
-    import tests.unit.test_config as _tests_unit_test_config
-    from tests.unit.test_api import (
+    import tests.utilities as _tests_utilities
+    from tests.unit import (
         HttpRequest,
         TestAuthModule,
         TestFlextAuth,
@@ -54,6 +55,7 @@ if _t.TYPE_CHECKING:
         TestFlextAuthAdvancedPatterns,
         TestFlextAuthConfigurationMethods,
         TestFlextAuthConfigurationOverrides,
+        TestFlextAuthConstants,
         TestFlextAuthErrorHandling,
         TestFlextAuthErrorHandlingPaths,
         TestFlextAuthErrorHandlingSecond,
@@ -72,31 +74,23 @@ if _t.TYPE_CHECKING:
         TestFlextAuthServiceInitialization,
         TestFlextAuthSessionManagement,
         TestFlextAuthSessionMethods,
+        TestFlextAuthSettingsBasic,
         TestFlextAuthStorageOperations,
         TestFlextAuthTokenMethods,
         TestFlextAuthTokenOperations,
+        TestFlextAuthTypes,
         TestFlextAuthUserMethods,
+        TestJwtTokenGenerator,
         TestProviderTokenFlows,
+        TestTokenRealFlows,
+        test_api,
+        test_config,
+        test_constants,
+        test_token_real_flows,
+        test_typings,
     )
 
-    test_config = _tests_unit_test_config
-    import tests.unit.test_constants as _tests_unit_test_constants
-    from tests.unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
-
-    test_constants = _tests_unit_test_constants
-    import tests.unit.test_token_real_flows as _tests_unit_test_token_real_flows
-    from tests.unit.test_constants import TestFlextAuthConstants
-
-    test_token_real_flows = _tests_unit_test_token_real_flows
-    import tests.unit.test_typings as _tests_unit_test_typings
-    from tests.unit.test_token_real_flows import TestTokenRealFlows
-
-    test_typings = _tests_unit_test_typings
-    import tests.utilities as _tests_utilities
-    from tests.unit.test_typings import TestFlextAuthTypes
-
     utilities = _tests_utilities
-    import tests.fixtures.certificates as _tests_fixtures_certificates
     from flext_core.decorators import FlextDecorators as d
     from flext_core.exceptions import FlextExceptions as e
     from flext_core.handlers import FlextHandlers as h
@@ -104,13 +98,6 @@ if _t.TYPE_CHECKING:
     from flext_core.result import FlextResult as r
     from flext_core.service import FlextService as s
     from tests.utilities import FlextAuthTestUtilities, FlextAuthTestUtilities as u
-
-    certificates = _tests_fixtures_certificates
-    from tests.fixtures.certificates import (
-        CertificateFixture,
-        generate_client_cert,
-        generate_self_signed_cert,
-    )
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "tests.fixtures",
