@@ -12,16 +12,6 @@ from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _t.TYPE_CHECKING:
     import flext_auth._managers as _flext_auth__managers
-    from flext_auth.__version__ import (
-        __author__,
-        __author_email__,
-        __description__,
-        __license__,
-        __title__,
-        __url__,
-        __version__,
-        __version_info__,
-    )
 
     _managers = _flext_auth__managers
     import flext_auth._utilities as _flext_auth__utilities
