@@ -619,7 +619,7 @@ class TestFlextAuthErrorHandlingSecond:
         auth_result = auth.authenticate_user("nonexistent", "password")
         tm.that(not auth_result.is_success, eq=True)
         tm.that(auth_result.error, none=False)
-        tm.that(auth_result.error or "", eq=True)
+        tm.that(auth_result.error or "", empty=False)
 
     def test_invalid_session_logout(self) -> None:
         """Test logout with invalid session ID."""

@@ -90,7 +90,10 @@ class FlextAuthProviderMixin:
             expiry_minutes if expiry_minutes is not None else default_expiry
         )
         now = datetime.now(UTC)
-        claims: t.MutableContainerValueMapping = dict(payload)
+        claims: t.MutableContainerValueMapping = {
+            k: int(v.timestamp()) if isinstance(v, datetime) else v
+            for k, v in payload.items()
+        }
         claims["iat"] = int(now.timestamp())
         claims["exp"] = int((now + timedelta(minutes=effective_expiry)).timestamp())
         claims["token_type"] = token_kind
@@ -125,6 +128,8 @@ class FlextAuthProviderMixin:
             payload: t.MutableContainerValueMapping = dict(user)
         else:
             payload = user.model_dump()
+        if "sub" not in payload and "unique_id" in payload:
+            payload["sub"] = payload["unique_id"]
         effective_token_type = token_type if token_type is not None else token_kind
         payload["token_type"] = effective_token_type
         return self.generate_token(payload, token_kind, expiry_minutes)
@@ -248,11 +253,18 @@ class FlextAuthProviderMixin:
         algorithm_value = config.get("algorithm")
         algorithm = algorithm_value if isinstance(algorithm_value, str) else "HS256"
 
-        # We need to map `r[ClaimMap]` to whatever the expected return type is, but `decode_token` returns `r[ClaimMap]`
+        audience_value = config.get("audience")
+        audience = (
+            audience_value
+            if isinstance(audience_value, str) and audience_value
+            else None
+        )
+
         return u.decode_token(
             token,
             secret_key_obj,
             algorithms=(algorithm,) if algorithm else None,
+            audience=audience,
         )
 
     def _extract_identity_id(

@@ -247,6 +247,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         *,
         verify: bool = True,
         algorithms: tuple[str, ...] | None = None,
+        audience: str | None = None,
     ) -> r[t.Auth.Tokens.ClaimMap]:
         """Generic JWT token decoding.
 
@@ -254,6 +255,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         token: JWT token to decode
         secret: Secret key for verification
         verify: Whether to verify signature
+        audience: Expected audience claim for validation
 
         Returns:
         r with decoded payload or error
@@ -268,8 +270,9 @@ class FlextAuthUtilities(FlextApiUtilities):
             payload = jwt.decode(
                 token,
                 secret.get_secret_value(),
-                algorithms=algorithms_list,
+                algorithms=list(algorithms_list),
                 options={"verify_signature": verify},
+                audience=audience,
             )
             if not FlextApiUtilities.is_dict_like(payload):
                 return r[t.Auth.Tokens.ClaimMap].fail(
