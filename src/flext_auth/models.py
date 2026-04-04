@@ -9,12 +9,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Annotated, ClassVar, Literal, Self
+from typing import Annotated, ClassVar, Self
 
 import bcrypt
 from flext_api import FlextApiModels
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from flext_auth import c, p, t
 from flext_core import r
@@ -64,19 +65,13 @@ class FlextAuthModels(FlextApiModels):
             """Generic validation result for any operation (immutable value t.NormalizedValue)."""
 
             is_valid: Annotated[bool, Field(..., description="Validation outcome")]
-            data: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Result data",
-                ),
-            ] = Field(default_factory=dict)
+            data: t.ContainerMapping = Field(
+                default_factory=dict, description="Result data"
+            )
             error: Annotated[str, Field(default="", description="Error message")]
-            metadata: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Additional metadata",
-                ),
-            ] = Field(default_factory=dict)
+            metadata: t.ContainerMapping = Field(
+                default_factory=dict, description="Additional metadata"
+            )
 
             @property
             def status(self) -> str:
@@ -119,7 +114,7 @@ class FlextAuthModels(FlextApiModels):
 
             identity_id: Annotated[str, Field(..., description="Identity ID")]
             token_type: Annotated[
-                Literal["access", "refresh", "id", "bearer"],
+                t.Auth.TokenRequestType,
                 Field(
                     default="access",
                     description="Token type",
@@ -132,12 +127,9 @@ class FlextAuthModels(FlextApiModels):
                     description="Token expiry",
                 ),
             ]
-            extra_claims: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Additional claims",
-                ),
-            ] = Field(default_factory=dict)
+            extra_claims: t.ContainerMapping = Field(
+                default_factory=dict, description="Additional claims"
+            )
             session_id: Annotated[str, Field(default="", description="Session ID")]
 
         class AuthToken(FlextApiModels.Entity):
@@ -209,12 +201,9 @@ class FlextAuthModels(FlextApiModels):
                 ),
             ]
             full_name: Annotated[str, Field(description="Full name")] = ""
-            roles: Annotated[
-                t.StrSequence,
-                Field(
-                    description="Roles",
-                ),
-            ] = Field(default_factory=lambda: ["user"])
+            roles: t.StrSequence = Field(
+                default_factory=lambda: ["user"], description="Roles"
+            )
 
         class AuthIdentity(FlextApiModels.Entity):
             """Generic identity/user entity with minimal fields."""
@@ -243,34 +232,24 @@ class FlextAuthModels(FlextApiModels):
             ] = ""
             full_name: Annotated[str, Field(description="Full name")] = ""
             is_active: Annotated[bool, Field(description="Active status")] = True
-            roles: Annotated[
-                t.StrSequence,
-                Field(
-                    description="Roles",
-                ),
-            ] = Field(default_factory=lambda: ["user"])
-            permissions: Annotated[
-                t.StrSequence,
-                Field(
-                    description="Permissions",
-                ),
-            ] = Field(default_factory=list)
+            roles: t.StrSequence = Field(
+                default_factory=lambda: ["user"], description="Roles"
+            )
+            permissions: t.StrSequence = Field(
+                default_factory=list, description="Permissions"
+            )
             failed_attempts: Annotated[
                 t.NonNegativeInt,
                 Field(description="Failed attempts"),
             ] = 0
-            locked_until: Annotated[
-                datetime,
-                Field(
-                    description="Lock time (datetime.min means not locked)",
-                ),
-            ] = Field(default_factory=lambda: datetime.min.replace(tzinfo=UTC))
-            last_access: Annotated[
-                datetime,
-                Field(
-                    description="Last access (datetime.min means never accessed)",
-                ),
-            ] = Field(default_factory=lambda: datetime.min.replace(tzinfo=UTC))
+            locked_until: datetime = Field(
+                default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+                description="Lock time (datetime.min means not locked)",
+            )
+            last_access: datetime = Field(
+                default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+                description="Last access (datetime.min means never accessed)",
+            )
 
             # Additional attributes expected by tests
             token: Annotated[
@@ -345,12 +324,10 @@ class FlextAuthModels(FlextApiModels):
             is_active: Annotated[bool, Field(default=True, description="Active status")]
             ip_address: Annotated[str, Field(default="", description="IP address")]
             user_agent: Annotated[str, Field(default="", description="User agent")]
-            last_accessed: Annotated[
-                datetime,
-                Field(
-                    description="Last access",
-                ),
-            ] = Field(default_factory=lambda: datetime.now(UTC))
+            last_accessed: datetime = Field(
+                default_factory=lambda: datetime.now(UTC),
+                description="Last access",
+            )
 
             @property
             def is_expired(self) -> bool:
@@ -380,12 +357,9 @@ class FlextAuthModels(FlextApiModels):
                     description="Description",
                 ),
             ]
-            permissions: Annotated[
-                t.StrSequence,
-                Field(
-                    description="Permissions",
-                ),
-            ] = Field(default_factory=list)
+            permissions: t.StrSequence = Field(
+                default_factory=list, description="Permissions"
+            )
 
         class Permission(FlextApiModels.Entity):
             """Generic permission entity."""
@@ -413,10 +387,8 @@ class FlextAuthModels(FlextApiModels):
         # PROVIDER MODELS - Generic provider configuration
         # =========================================================================
 
-        class ProviderConfig(FlextApiModels.Value):
+        class ProviderConfig(FlextApiModels.FlexibleModel):
             """Generic provider configuration (immutable value t.NormalizedValue)."""
-
-            model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")
 
             name: Annotated[str, Field(..., description="Provider name")]
             type: Annotated[str, Field(..., description="Provider type")]
@@ -424,35 +396,93 @@ class FlextAuthModels(FlextApiModels):
 
             # Extended configuration fields (migrated from TypedDict)
             # All optional to support various provider types
-            provider_type: str | None = None
-            secret_key: str | None = None
-            algorithm: str | None = None
-            token_expiry_minutes: t.PositiveInt | None = None
-            refresh_expiry_days: int | None = None
-            client_id: str | None = None
-            client_secret: str | None = None
-            authorization_endpoint: str | None = None
-            token_endpoint: str | None = None
-            redirect_uri: str | None = None
-            scope: str | None = None
-            audience: str | None = None
-            issuer: str | None = None
-            realm: str | None = None
-            kdc_host: str | None = None
-            kdc_port: t.PortNumber | None = None
-            service_principal: str | None = None
-            keytab_path: str | None = None
-            entity_id: str | None = None
-            sso_url: str | None = None
-            slo_url: str | None = None
-            x509_cert: str | None = None
-            ldap_url: str | None = None
-            bind_dn: str | None = None
-            base_dn: str | None = None
-            search_filter: str | None = None
-            flow: str | None = None
-            use_pkce: bool | None = None
-            token_endpoint_auth_method: str | None = None
+            provider_type: str | None = Field(
+                default=None, description="Authentication provider type"
+            )
+            secret_key: str | None = Field(
+                default=None, description="Provider secret key"
+            )
+            algorithm: str | None = Field(
+                default=None, description="Token signing algorithm"
+            )
+            token_expiry_minutes: t.PositiveInt | None = Field(
+                default=None, description="Token expiry in minutes"
+            )
+            refresh_expiry_days: int | None = Field(
+                default=None, description="Refresh token expiry in days"
+            )
+            client_id: str | None = Field(
+                default=None, description="OAuth client identifier"
+            )
+            client_secret: str | None = Field(
+                default=None, description="OAuth client secret"
+            )
+            authorization_endpoint: str | None = Field(
+                default=None, description="OAuth authorization endpoint URL"
+            )
+            token_endpoint: str | None = Field(
+                default=None, description="OAuth token endpoint URL"
+            )
+            redirect_uri: str | None = Field(
+                default=None, description="OAuth redirect URI"
+            )
+            scope: str | None = Field(
+                default=None, description="OAuth scope"
+            )
+            audience: str | None = Field(
+                default=None, description="Token audience claim"
+            )
+            issuer: str | None = Field(
+                default=None, description="Token issuer claim"
+            )
+            realm: str | None = Field(
+                default=None, description="Kerberos realm"
+            )
+            kdc_host: str | None = Field(
+                default=None, description="Kerberos KDC hostname"
+            )
+            kdc_port: t.PortNumber | None = Field(
+                default=None, description="Kerberos KDC port"
+            )
+            service_principal: str | None = Field(
+                default=None, description="Kerberos service principal"
+            )
+            keytab_path: str | None = Field(
+                default=None, description="Kerberos keytab file path"
+            )
+            entity_id: str | None = Field(
+                default=None, description="SAML entity identifier"
+            )
+            sso_url: str | None = Field(
+                default=None, description="SAML SSO endpoint URL"
+            )
+            slo_url: str | None = Field(
+                default=None, description="SAML SLO endpoint URL"
+            )
+            x509_cert: str | None = Field(
+                default=None, description="SAML X.509 certificate"
+            )
+            ldap_url: str | None = Field(
+                default=None, description="LDAP server URL"
+            )
+            bind_dn: str | None = Field(
+                default=None, description="LDAP bind distinguished name"
+            )
+            base_dn: str | None = Field(
+                default=None, description="LDAP base distinguished name"
+            )
+            search_filter: str | None = Field(
+                default=None, description="LDAP search filter"
+            )
+            flow: str | None = Field(
+                default=None, description="OAuth flow type"
+            )
+            use_pkce: bool | None = Field(
+                default=None, description="Enable PKCE for OAuth"
+            )
+            token_endpoint_auth_method: str | None = Field(
+                default=None, description="Token endpoint authentication method"
+            )
 
             def __contains__(self, key: str) -> bool:
                 """Dict-like containment check."""
@@ -463,70 +493,54 @@ class FlextAuthModels(FlextApiModels):
                 """Check if configured."""
                 return bool(self.name and self.type)
 
-        class ProviderConfiguration(BaseModel):
+        class ProviderConfiguration(FlextApiModels.FlexibleModel):
             """Provider configuration for authentication providers."""
-
-            model_config = ConfigDict(extra="allow")
 
             name: Annotated[str, Field(default="default", description="Provider name")]
             version: Annotated[
                 str, Field(default="1.0.0", description="Provider version")
             ]
-            capabilities: Annotated[
-                list[str],
-                Field(description="Provider capabilities"),
-            ] = Field(default_factory=list)
+            capabilities: Sequence[str] = Field(
+                default_factory=list, description="Provider capabilities"
+            )
 
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value t.NormalizedValue)."""
 
             api_key: Annotated[str, Field(..., description="API key to validate")]
-            metadata: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Additional validation data",
-                ),
-            ] = Field(default_factory=dict)
+            metadata: t.ContainerMapping = Field(
+                default_factory=dict, description="Additional validation data"
+            )
 
         class ApiKeyData(FlextApiModels.Value):
             """API key data structure (immutable value t.NormalizedValue)."""
 
             key_hash: Annotated[str, Field(..., description="Hashed API key")]
             name: Annotated[str, Field(..., description="Key name")]
-            permissions: Annotated[
-                t.StrSequence,
-                Field(
-                    description="Key permissions",
-                ),
-            ] = Field(default_factory=list)
+            permissions: t.StrSequence = Field(
+                default_factory=list, description="Key permissions"
+            )
             is_active: Annotated[
                 bool,
                 Field(default=True, description="Key active status"),
             ]
-            expires_at: Annotated[
-                datetime,
-                Field(
-                    description="Key expiration (datetime.max means never expires)",
-                ),
-            ] = Field(default_factory=lambda: datetime.max.replace(tzinfo=UTC))
-            created_at: Annotated[
-                datetime,
-                Field(
-                    description="Creation time",
-                ),
-            ] = Field(default_factory=lambda: datetime.now(UTC))
+            expires_at: datetime = Field(
+                default_factory=lambda: datetime.max.replace(tzinfo=UTC),
+                description="Key expiration (datetime.max means never expires)",
+            )
+            created_at: datetime = Field(
+                default_factory=lambda: datetime.now(UTC),
+                description="Creation time",
+            )
 
         class CredentialValidation(FlextApiModels.Value):
             """Credential validation request (immutable value t.NormalizedValue)."""
 
             username: Annotated[str, Field(..., description="Username")]
             password: Annotated[str, Field(..., description="Password", exclude=True)]
-            metadata: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Additional validation data",
-                ),
-            ] = Field(default_factory=dict)
+            metadata: t.ContainerMapping = Field(
+                default_factory=dict, description="Additional validation data"
+            )
 
         # =========================================================================
         # CREDENTIAL MODELS - Generic credential handling
@@ -540,12 +554,9 @@ class FlextAuthModels(FlextApiModels):
                 str,
                 Field(..., description="Credential value", exclude=True),
             ]
-            metadata: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Additional data",
-                ),
-            ] = Field(default_factory=dict)
+            metadata: t.ContainerMapping = Field(
+                default_factory=dict, description="Additional data"
+            )
 
         # =========================================================================
         # AUTHENTICATION RESPONSE - Generic response
@@ -555,20 +566,14 @@ class FlextAuthModels(FlextApiModels):
             """Generic authentication response (immutable value t.NormalizedValue)."""
 
             success: Annotated[bool, Field(..., description="Authentication success")]
-            identity: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Identity data",
-                ),
-            ] = Field(default_factory=dict)
+            identity: t.ContainerMapping = Field(
+                default_factory=dict, description="Identity data"
+            )
             token: Annotated[str, Field(default="", description="Token", exclude=True)]
             message: Annotated[str, Field(default="", description="Response message")]
-            metadata: Annotated[
-                t.ContainerMapping,
-                Field(
-                    description="Additional data",
-                ),
-            ] = Field(default_factory=dict)
+            metadata: t.ContainerMapping = Field(
+                default_factory=dict, description="Additional data"
+            )
 
         # =========================================================================
         # OAUTH2 TOKEN RESPONSE - OAuth2 token exchange result
@@ -621,12 +626,9 @@ class FlextAuthModels(FlextApiModels):
                 Field(..., description="HTTP status code"),
             ]
             body: Annotated[str, Field(default="", description="Response body")]
-            headers: Annotated[
-                t.StrMapping,
-                Field(
-                    description="Response headers",
-                ),
-            ] = Field(default_factory=dict)
+            headers: t.StrMapping = Field(
+                default_factory=dict, description="Response headers"
+            )
 
         # =========================================================================
         # PROVIDERS NAMESPACE - Provider metadata and related models
@@ -672,18 +674,12 @@ class FlextAuthModels(FlextApiModels):
                     str,
                     Field(description="Provider version"),
                 ] = "1.0.0"
-                capabilities: Annotated[
-                    tuple[str, ...],
-                    Field(
-                        description="Provider capabilities",
-                    ),
-                ] = Field(default_factory=tuple)
-                extras: Annotated[
-                    t.ContainerMapping,
-                    Field(
-                        description="Extra metadata",
-                    ),
-                ] = Field(default_factory=dict)
+                capabilities: tuple[str, ...] = Field(
+                    default_factory=tuple, description="Provider capabilities"
+                )
+                extras: t.ContainerMapping = Field(
+                    default_factory=dict, description="Extra metadata"
+                )
 
             class Registration(FlextApiModels.Value):
                 """Provider registration payload (immutable value t.NormalizedValue)."""

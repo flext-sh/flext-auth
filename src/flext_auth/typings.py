@@ -133,6 +133,9 @@ class FlextAuthTypes(FlextApiTypes):
                 ),
             ]
 
+        type TokenRequestType = Literal["access", "refresh", "id", "bearer"]
+        "Allowed token types for token generation requests."
+
         class Tokens:
             """Token-related type definitions."""
 
