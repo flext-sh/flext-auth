@@ -426,18 +426,12 @@ class FlextAuthModels(FlextApiModels):
             redirect_uri: str | None = Field(
                 default=None, description="OAuth redirect URI"
             )
-            scope: str | None = Field(
-                default=None, description="OAuth scope"
-            )
+            scope: str | None = Field(default=None, description="OAuth scope")
             audience: str | None = Field(
                 default=None, description="Token audience claim"
             )
-            issuer: str | None = Field(
-                default=None, description="Token issuer claim"
-            )
-            realm: str | None = Field(
-                default=None, description="Kerberos realm"
-            )
+            issuer: str | None = Field(default=None, description="Token issuer claim")
+            realm: str | None = Field(default=None, description="Kerberos realm")
             kdc_host: str | None = Field(
                 default=None, description="Kerberos KDC hostname"
             )
@@ -462,9 +456,7 @@ class FlextAuthModels(FlextApiModels):
             x509_cert: str | None = Field(
                 default=None, description="SAML X.509 certificate"
             )
-            ldap_url: str | None = Field(
-                default=None, description="LDAP server URL"
-            )
+            ldap_url: str | None = Field(default=None, description="LDAP server URL")
             bind_dn: str | None = Field(
                 default=None, description="LDAP bind distinguished name"
             )
@@ -474,9 +466,7 @@ class FlextAuthModels(FlextApiModels):
             search_filter: str | None = Field(
                 default=None, description="LDAP search filter"
             )
-            flow: str | None = Field(
-                default=None, description="OAuth flow type"
-            )
+            flow: str | None = Field(default=None, description="OAuth flow type")
             use_pkce: bool | None = Field(
                 default=None, description="Enable PKCE for OAuth"
             )
