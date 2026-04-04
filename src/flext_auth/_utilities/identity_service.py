@@ -18,11 +18,11 @@ from flext_auth import (
     FlextAuthManagers,
     FlextAuthServiceManagers,
     FlextAuthSettings,
-    FlextAuthTypes as t,
     c,
     m,
     p,
     s,
+    t,
 )
 from flext_core import r
 

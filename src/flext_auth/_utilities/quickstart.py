@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import MutableSequence
 from typing import override
 
-from flext_auth import FlextAuth, FlextAuthSettings, FlextAuthTypes as t, m, s
+from flext_auth import FlextAuth, FlextAuthSettings, m, s, t
 from flext_core import r
 
 
