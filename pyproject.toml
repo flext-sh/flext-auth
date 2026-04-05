@@ -139,6 +139,9 @@ pep621_dev_dependency_groups = [
   "dev",
 ]
 
+[tool.flext.docs]
+project_class = "platform"
+
 [tool.hatch.metadata]
 allow-direct-references = true
 

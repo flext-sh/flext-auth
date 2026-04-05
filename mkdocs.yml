@@ -1,33 +1,34 @@
-site_name: FLEXT Auth Documentation
-site_description: Authentication library docs
-site_url: https://github.com/flext-sh/flext
+# AUTO-GENERATED — DO NOT EDIT MANUALLY
+site_name: flext-auth Documentation
+site_description: Generated documentation for flext-auth
+site_url: https://github.com/flext-sh/flext/blob/main/README.md
 repo_name: flext-sh/flext
 repo_url: https://github.com/flext-sh/flext
-edit_uri: edit/main/flext-auth/docs/
+edit_uri: edit/main/flext-auth/
 docs_dir: docs
 site_dir: .reports/docs/site
-exclude_docs: README.md
 
 theme:
   name: material
 
-plugins: []
-
-markdown_extensions:
-  - admonition
-  - attr_list
-  - tables
-  - toc:
-      permalink: true
+plugins:
+  - search
+  - autorefs
+  - section-index
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            show_root_heading: true
+            show_root_full_path: false
+            show_source: false
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - Configuration: configuration.md
-  - Development: development.md
-  - API Reference: api-reference.md
-  - Architecture: architecture.md
-  - Troubleshooting: troubleshooting.md
+  - Guides: guides/README.md
+  - API Reference: api-reference/README.md
 
 validation:
   omitted_files: ignore
