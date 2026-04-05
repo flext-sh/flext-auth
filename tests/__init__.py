@@ -14,7 +14,12 @@ if _t.TYPE_CHECKING:
 
     conftest = _tests_conftest
     import tests.constants as _tests_constants
-    from tests.conftest import mock_get_global, reset_singletons
+    from tests.conftest import (
+        auth_settings,
+        mock_get_global,
+        pytest_plugins,
+        reset_auth_singleton,
+    )
 
     constants = _tests_constants
     import tests.fixtures as _tests_fixtures
@@ -110,6 +115,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
         "FlextAuthTestProtocols": "tests.protocols",
         "FlextAuthTestTypes": "tests.typings",
         "FlextAuthTestUtilities": "tests.utilities",
+        "auth_settings": "tests.conftest",
         "c": ("tests.constants", "FlextAuthTestConstants"),
         "conftest": "tests.conftest",
         "constants": "tests.constants",
@@ -123,8 +129,9 @@ _LAZY_IMPORTS = merge_lazy_imports(
         "models": "tests.models",
         "p": ("tests.protocols", "FlextAuthTestProtocols"),
         "protocols": "tests.protocols",
+        "pytest_plugins": "tests.conftest",
         "r": ("flext_core.result", "FlextResult"),
-        "reset_singletons": "tests.conftest",
+        "reset_auth_singleton": "tests.conftest",
         "s": ("flext_core.service", "FlextService"),
         "t": ("tests.typings", "FlextAuthTestTypes"),
         "typings": "tests.typings",
@@ -180,6 +187,7 @@ __all__ = [
     "TestsProtocols",
     "TestsTypings",
     "TestsUtilities",
+    "auth_settings",
     "c",
     "certificates",
     "conftest",
@@ -196,8 +204,9 @@ __all__ = [
     "models",
     "p",
     "protocols",
+    "pytest_plugins",
     "r",
-    "reset_singletons",
+    "reset_auth_singleton",
     "s",
     "t",
     "test_api",

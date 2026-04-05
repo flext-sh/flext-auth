@@ -7,16 +7,10 @@ from flext_auth import FlextAuth, FlextAuthSettings
 
 def main() -> None:
     """Demonstrate settings overrides and service wiring."""
-    base_result = FlextAuthSettings.get_or_create_global()
-    if base_result.is_failure:
-        return
-    base = base_result.value
+    base = FlextAuthSettings.get_global()
     if base.expiry_minutes < 1:
         return
-    production_result = FlextAuthSettings.get_or_create_global()
-    if production_result.is_failure:
-        return
-    production = production_result.value
+    production = FlextAuthSettings.get_global()
     if production.expiry_minutes < 1:
         return
     _ = FlextAuth(config=production)

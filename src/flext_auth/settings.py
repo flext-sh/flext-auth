@@ -11,17 +11,20 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from pydantic import ConfigDict, Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
+from pydantic_settings import SettingsConfigDict
 
-from flext_auth import c, m, t
-from flext_core import r
+from flext_auth import c, t
+from flext_core.settings import FlextSettings
 
 
-class FlextAuthSettings(m.Value):
+@FlextSettings.auto_register("auth")
+class FlextAuthSettings(FlextSettings):
     """Validated settings used by auth providers and token services."""
 
-    _global_instance: ClassVar[list[FlextAuthSettings | None]] = [None]
-    model_config: ClassVar[ConfigDict] = ConfigDict(
+    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
+        env_prefix="FLEXT_AUTH_",
+        extra="ignore",
         validate_assignment=True,
         populate_by_name=True,
     )
@@ -88,20 +91,6 @@ class FlextAuthSettings(m.Value):
         if isinstance(value, SecretStr):
             return value.get_secret_value()
         return value
-
-    @classmethod
-    def _reset_instance(cls) -> None:
-        cls._global_instance[0] = None
-
-    @classmethod
-    def get_or_create_global(cls) -> r[FlextAuthSettings]:
-        """Return the singleton settings instance, creating it on first access."""
-        existing_instance = cls._global_instance[0]
-        if existing_instance is not None:
-            return r[FlextAuthSettings].ok(existing_instance)
-        created_instance = cls.model_validate({})
-        cls._global_instance[0] = created_instance
-        return r[FlextAuthSettings].ok(created_instance)
 
 
 __all__ = ["FlextAuthSettings"]

@@ -18,10 +18,7 @@ from flext_auth import (
 
 
 def _require_settings() -> FlextAuthSettings:
-    result = FlextAuthSettings.get_or_create_global()
-    assert result.is_success
-    assert result.value is not None
-    return result.value
+    return FlextAuthSettings.get_global()
 
 
 class TestFlextAuthSettingsBasic:
