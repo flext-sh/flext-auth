@@ -137,12 +137,12 @@ class FlextAuthIdentityService(s[bool]):
                 credential=credential,
                 roles=user_roles,
             )
-        except ValidationError as e:
+        except ValidationError as exc:
             error_messages: t.StrSequence = [
                 f"{error.get('loc', ('unknown',))[0] if error.get('loc') else 'unknown'}: {error.get('msg', 'Validation error')}"
-                for error in e.errors()
+                for error in exc.errors()
             ]
-            error_msg = "; ".join(error_messages) if error_messages else str(e)
+            error_msg = "; ".join(error_messages) if error_messages else str(exc)
             return r[m.Auth.AuthIdentity].fail(error_msg)
         except (
             ValueError,
@@ -152,8 +152,8 @@ class FlextAuthIdentityService(s[bool]):
             OSError,
             RuntimeError,
             ImportError,
-        ) as e:
-            return r[m.Auth.AuthIdentity].fail(str(e))
+        ) as exc:
+            return r[m.Auth.AuthIdentity].fail(str(exc))
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.Auth.AuthIdentity].fail(
                 f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",

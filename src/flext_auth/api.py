@@ -129,7 +129,7 @@ class FlextAuth:
         return cls(config=custom_config)
 
     @classmethod
-    def get_global(cls) -> FlextAuth:
+    def get_global(cls) -> Self:
         """Thread-safe singleton pattern with configuration."""
         if cls._instance is not None:
             return cls._instance

@@ -202,8 +202,8 @@ class FlextAuthProviderService(s[bool]):
                     OSError,
                     RuntimeError,
                     ImportError,
-                ) as e:
-                    error_msg: str = str(e) if e else "Unknown error"
+                ) as exc:
+                    error_msg: str = str(exc) if exc else "Unknown error"
                     self.logger.warning(
                         "Failed to register %s provider: %s",
                         name,

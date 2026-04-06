@@ -279,8 +279,8 @@ class FlextAuthModels(FlextApiModels):
                     OSError,
                     RuntimeError,
                     ImportError,
-                ) as e:
-                    return r[bool].fail(f"Failed to hash credential: {e}")
+                ) as exc:
+                    return r[bool].fail(f"Failed to hash credential: {exc}")
 
             def verify_credential(self, credential: str) -> r[bool]:
                 """Verify a credential against stored hash using bcrypt."""
@@ -298,8 +298,8 @@ class FlextAuthModels(FlextApiModels):
                     OSError,
                     RuntimeError,
                     ImportError,
-                ) as e:
-                    return r[bool].fail(f"Credential verification failed: {e}")
+                ) as exc:
+                    return r[bool].fail(f"Credential verification failed: {exc}")
 
             def with_successful_access(self) -> Self:
                 """Record successful access (fluent interface)."""
