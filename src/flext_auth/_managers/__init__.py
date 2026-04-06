@@ -19,8 +19,14 @@ if _t.TYPE_CHECKING:
     rate_limiter = _flext_auth__managers_rate_limiter
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
 _LAZY_IMPORTS = {
-    "FlextAuthRateLimiterManagers": "flext_auth._managers.rate_limiter",
-    "FlextAuthSessionManagers": "flext_auth._managers.auth_managers_session",
+    "FlextAuthRateLimiterManagers": (
+        "flext_auth._managers.rate_limiter",
+        "FlextAuthRateLimiterManagers",
+    ),
+    "FlextAuthSessionManagers": (
+        "flext_auth._managers.auth_managers_session",
+        "FlextAuthSessionManagers",
+    ),
     "auth_managers_session": "flext_auth._managers.auth_managers_session",
     "rate_limiter": "flext_auth._managers.rate_limiter",
 }

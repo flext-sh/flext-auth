@@ -81,20 +81,41 @@ if _t.TYPE_CHECKING:
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
 _LAZY_IMPORTS = {
-    "FlextAuthApiKeyProvider": "flext_auth.providers.apikey",
-    "FlextAuthBasicProvider": "flext_auth.providers.basic",
-    "FlextAuthCertificateProvider": "flext_auth.providers.certificate",
-    "FlextAuthJwtProvider": "flext_auth.providers.jwt",
-    "FlextAuthJwtTokenGenerator": "flext_auth.providers.jwt_token_generator",
-    "FlextAuthJwtTokenValidator": "flext_auth.providers.jwt_token_validator",
-    "FlextAuthKerberosProvider": "flext_auth.providers.kerberos",
-    "FlextAuthLdapProvider": "flext_auth.providers.ldap",
-    "FlextAuthOAuth2Provider": "flext_auth.providers.oauth2",
-    "FlextAuthOidcProvider": "flext_auth.providers.oidc",
-    "FlextAuthPasswordHasher": "flext_auth.providers.jwt_password_hasher",
-    "FlextAuthProviderMixin": "flext_auth.providers.mixin",
-    "FlextAuthRfcProvider": "flext_auth.providers.rfc",
-    "FlextAuthSamlProvider": "flext_auth.providers.saml",
+    "FlextAuthApiKeyProvider": (
+        "flext_auth.providers.apikey",
+        "FlextAuthApiKeyProvider",
+    ),
+    "FlextAuthBasicProvider": ("flext_auth.providers.basic", "FlextAuthBasicProvider"),
+    "FlextAuthCertificateProvider": (
+        "flext_auth.providers.certificate",
+        "FlextAuthCertificateProvider",
+    ),
+    "FlextAuthJwtProvider": ("flext_auth.providers.jwt", "FlextAuthJwtProvider"),
+    "FlextAuthJwtTokenGenerator": (
+        "flext_auth.providers.jwt_token_generator",
+        "FlextAuthJwtTokenGenerator",
+    ),
+    "FlextAuthJwtTokenValidator": (
+        "flext_auth.providers.jwt_token_validator",
+        "FlextAuthJwtTokenValidator",
+    ),
+    "FlextAuthKerberosProvider": (
+        "flext_auth.providers.kerberos",
+        "FlextAuthKerberosProvider",
+    ),
+    "FlextAuthLdapProvider": ("flext_auth.providers.ldap", "FlextAuthLdapProvider"),
+    "FlextAuthOAuth2Provider": (
+        "flext_auth.providers.oauth2",
+        "FlextAuthOAuth2Provider",
+    ),
+    "FlextAuthOidcProvider": ("flext_auth.providers.oidc", "FlextAuthOidcProvider"),
+    "FlextAuthPasswordHasher": (
+        "flext_auth.providers.jwt_password_hasher",
+        "FlextAuthPasswordHasher",
+    ),
+    "FlextAuthProviderMixin": ("flext_auth.providers.mixin", "FlextAuthProviderMixin"),
+    "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
+    "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
     "apikey": "flext_auth.providers.apikey",
     "base": "flext_auth.providers.base",
     "basic": "flext_auth.providers.basic",

@@ -29,7 +29,10 @@ if _t.TYPE_CHECKING:
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
 _LAZY_IMPORTS = {
-    "FlextWebTransportAdapter": "flext_auth.transports.http",
+    "FlextWebTransportAdapter": (
+        "flext_auth.transports.http",
+        "FlextWebTransportAdapter",
+    ),
     "base": "flext_auth.transports.base",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),

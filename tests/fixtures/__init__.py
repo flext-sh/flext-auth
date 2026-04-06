@@ -30,13 +30,16 @@ if _t.TYPE_CHECKING:
         generate_self_signed_cert,
     )
 _LAZY_IMPORTS = {
-    "CertificateFixture": "tests.fixtures.certificates",
+    "CertificateFixture": ("tests.fixtures.certificates", "CertificateFixture"),
     "c": ("flext_core.constants", "FlextConstants"),
     "certificates": "tests.fixtures.certificates",
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
-    "generate_client_cert": "tests.fixtures.certificates",
-    "generate_self_signed_cert": "tests.fixtures.certificates",
+    "generate_client_cert": ("tests.fixtures.certificates", "generate_client_cert"),
+    "generate_self_signed_cert": (
+        "tests.fixtures.certificates",
+        "generate_self_signed_cert",
+    ),
     "h": ("flext_core.handlers", "FlextHandlers"),
     "m": ("flext_core.models", "FlextModels"),
     "p": ("flext_core.protocols", "FlextProtocols"),

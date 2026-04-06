@@ -31,9 +31,9 @@ if _t.TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from tests.helpers.utilities import TestsUtilities, TestsUtilities as u
 _LAZY_IMPORTS = {
-    "TestsProtocols": "tests.helpers.protocols",
-    "TestsTypings": "tests.helpers.typings",
-    "TestsUtilities": "tests.helpers.utilities",
+    "TestsProtocols": ("tests.helpers.protocols", "TestsProtocols"),
+    "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
+    "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
@@ -43,7 +43,7 @@ _LAZY_IMPORTS = {
     "protocols": "tests.helpers.protocols",
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
-    "t": "tests.helpers.typings",
+    "t": ("tests.helpers.typings", "t"),
     "typings": "tests.helpers.typings",
     "u": ("tests.helpers.utilities", "TestsUtilities"),
     "utilities": "tests.helpers.utilities",

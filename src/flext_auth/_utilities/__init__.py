@@ -50,16 +50,31 @@ if _t.TYPE_CHECKING:
     token_service = _flext_auth__utilities_token_service
     from flext_auth._utilities.token_service import FlextAuthTokenService
 _LAZY_IMPORTS = {
-    "FlextAuthIdentityService": "flext_auth._utilities.identity_service",
-    "FlextAuthManagers": "flext_auth._utilities.managers",
-    "FlextAuthMiddleware": "flext_auth._utilities.middleware",
-    "FlextAuthMixins": "flext_auth._utilities.mixins",
-    "FlextAuthProviderService": "flext_auth._utilities.provider_service",
-    "FlextAuthQuickstart": "flext_auth._utilities.quickstart",
-    "FlextAuthRegistry": "flext_auth._utilities.registry",
-    "FlextAuthServiceManagers": "flext_auth._utilities.managers",
-    "FlextAuthSessionService": "flext_auth._utilities.session_service",
-    "FlextAuthTokenService": "flext_auth._utilities.token_service",
+    "FlextAuthIdentityService": (
+        "flext_auth._utilities.identity_service",
+        "FlextAuthIdentityService",
+    ),
+    "FlextAuthManagers": ("flext_auth._utilities.managers", "FlextAuthManagers"),
+    "FlextAuthMiddleware": ("flext_auth._utilities.middleware", "FlextAuthMiddleware"),
+    "FlextAuthMixins": ("flext_auth._utilities.mixins", "FlextAuthMixins"),
+    "FlextAuthProviderService": (
+        "flext_auth._utilities.provider_service",
+        "FlextAuthProviderService",
+    ),
+    "FlextAuthQuickstart": ("flext_auth._utilities.quickstart", "FlextAuthQuickstart"),
+    "FlextAuthRegistry": ("flext_auth._utilities.registry", "FlextAuthRegistry"),
+    "FlextAuthServiceManagers": (
+        "flext_auth._utilities.managers",
+        "FlextAuthServiceManagers",
+    ),
+    "FlextAuthSessionService": (
+        "flext_auth._utilities.session_service",
+        "FlextAuthSessionService",
+    ),
+    "FlextAuthTokenService": (
+        "flext_auth._utilities.token_service",
+        "FlextAuthTokenService",
+    ),
     "identity_service": "flext_auth._utilities.identity_service",
     "managers": "flext_auth._utilities.managers",
     "middleware": "flext_auth._utilities.middleware",
