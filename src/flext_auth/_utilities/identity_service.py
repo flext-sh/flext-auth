@@ -111,7 +111,7 @@ class FlextAuthIdentityService(s[bool]):
             )
         set_result = identity.set_credential(new_credential)
         return set_result.fold(
-            on_failure=lambda e: r[bool].fail(e),
+            on_failure=lambda exc: r[bool].fail(exc),
             on_success=lambda _: r[bool].ok(
                 self._log_success("Password change successful", identity.name),
             ),
@@ -190,7 +190,7 @@ class FlextAuthIdentityService(s[bool]):
             )
         set_result = identity.set_credential(new_credential)
         return set_result.fold(
-            on_failure=lambda e: r[bool].fail(e),
+            on_failure=lambda exc: r[bool].fail(exc),
             on_success=lambda _: r[bool].ok(
                 self._log_success("Password reset successful", identity.name),
             ),

@@ -331,7 +331,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 RuntimeError,
                 ImportError,
             ),
-        ).map_error(lambda e: f"Encoding failed: {e}")
+        ).map_error(lambda exc: f"Encoding failed: {exc}")
 
 
 u = FlextAuthUtilities

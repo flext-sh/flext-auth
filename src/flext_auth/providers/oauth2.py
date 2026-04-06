@@ -531,7 +531,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Validate OAuth2 token using composition."""
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(
-            on_failure=lambda e: r[bool].fail(e or "OAuth2 token validation failed"),
+            on_failure=lambda exc: r[bool].fail(
+                exc or "OAuth2 token validation failed"
+            ),
             on_success=lambda _: r[bool].ok(value=True),
         )
 

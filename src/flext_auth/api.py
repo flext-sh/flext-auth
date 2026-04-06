@@ -40,7 +40,7 @@ class FlextAuth:
     - Python 3.13+ type safety throughout
     """
 
-    _instance: ClassVar[FlextAuth | None] = None
+    _instance: ClassVar[object | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
     logger: p.Logger
     _config: FlextAuthSettings
@@ -126,18 +126,22 @@ class FlextAuth:
 
         """
         custom_config = FlextAuthSettings.model_validate(config_overrides)
-        return cls(config=custom_config)
+        instance: Self = cls(config=custom_config)
+        return instance
 
     @classmethod
     def get_global(cls) -> Self:
         """Thread-safe singleton pattern with configuration."""
-        if cls._instance is not None:
-            return cls._instance
+        instance = cls._instance
+        if isinstance(instance, cls):
+            return instance
         with cls._lock:
-            if cls._instance is not None:
-                return cls._instance
-            cls._instance = cls(service_name="flext_auth")
-            return cls._instance
+            locked_instance = cls._instance
+            if isinstance(locked_instance, cls):
+                return locked_instance
+            instance = cls(service_name="flext_auth")
+            cls._instance = instance
+            return instance
 
     @classmethod
     def quick_start(cls, *, create_admin_user: bool = True) -> Self:
@@ -150,7 +154,7 @@ class FlextAuth:
         Initialized FlextAuth instance
 
         """
-        auth = cls()
+        auth: Self = cls()
         if create_admin_user:
             result = auth.register_user(
                 "REDACTED_LDAP_BIND_PASSWORD",

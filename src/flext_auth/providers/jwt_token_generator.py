@@ -100,8 +100,8 @@ class FlextAuthJwtTokenGenerator:
             OSError,
             RuntimeError,
             ImportError,
-        ) as e:
-            return r[str].fail(f"Token generation failed: {e}")
+        ) as exc:
+            return r[str].fail(f"Token generation failed: {exc}")
 
     def _build_payload(
         self,

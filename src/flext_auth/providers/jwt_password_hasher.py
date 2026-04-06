@@ -47,7 +47,7 @@ class FlextAuthPasswordHasher:
         return u.try_(
             _hash,
             catch=(ValueError, TypeError),
-        ).map_error(lambda e: f"Password hashing failed: {type(e).__name__}: {e}")
+        ).map_error(lambda exc: f"Password hashing failed: {type(exc).__name__}: {exc}")
 
     def verify_password(self, password: str, hashed_password: str) -> r[bool]:
         """Verify password against hash using bcrypt.
@@ -70,7 +70,9 @@ class FlextAuthPasswordHasher:
         return u.try_(
             _verify,
             catch=(ValueError, TypeError),
-        ).map_error(lambda e: f"Password verification failed: {type(e).__name__}: {e}")
+        ).map_error(
+            lambda exc: f"Password verification failed: {type(exc).__name__}: {exc}"
+        )
 
 
 __all__ = ["FlextAuthPasswordHasher"]

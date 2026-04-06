@@ -90,8 +90,8 @@ class FlextAuthJwtTokenValidator:
             return r[t.ContainerValueMapping].ok(payload)
         except jwt.ExpiredSignatureError:
             return r[t.ContainerValueMapping].fail("Token has expired")
-        except jwt.InvalidTokenError as e:
-            return r[t.ContainerValueMapping].fail(f"Invalid token: {e}")
+        except jwt.InvalidTokenError as exc:
+            return r[t.ContainerValueMapping].fail(f"Invalid token: {exc}")
         except (
             ValueError,
             TypeError,
@@ -100,9 +100,9 @@ class FlextAuthJwtTokenValidator:
             OSError,
             RuntimeError,
             ImportError,
-        ) as e:
+        ) as exc:
             return r[t.ContainerValueMapping].fail(
-                f"Token validation failed: {e}",
+                f"Token validation failed: {exc}",
             )
 
 
