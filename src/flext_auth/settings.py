@@ -15,7 +15,7 @@ from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_auth import c, t
-from flext_core.settings import FlextSettings
+from flext_core import FlextSettings
 
 
 @FlextSettings.auto_register("auth")
