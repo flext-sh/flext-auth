@@ -8,13 +8,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import tm
-
 from flext_auth import (
     FlextAuthJwtProvider,
     FlextAuthJwtTokenGenerator,
     FlextAuthSettings,
 )
+from tests import u
 
 
 def _require_settings() -> FlextAuthSettings:
@@ -27,9 +26,9 @@ class TestFlextAuthSettingsBasic:
     def test_config_creation(self) -> None:
         """Test basic config creation."""
         config = _require_settings()
-        tm.that(config, is_=FlextAuthSettings)
-        tm.that(config.expiry_minutes, gt=0)
-        tm.that(config.algorithm, is_=str)
+        u.Tests.Matchers.that(config, is_=FlextAuthSettings)
+        u.Tests.Matchers.that(config.expiry_minutes, gt=0)
+        u.Tests.Matchers.that(config.algorithm, is_=str)
 
     def test_config_with_custom_values(self) -> None:
         """Test config with custom values."""
@@ -37,19 +36,19 @@ class TestFlextAuthSettingsBasic:
         config = base_config.model_copy(
             update={"expiry_minutes": 60, "hash_rounds": 12},
         )
-        tm.that(config.expiry_minutes, eq=60)
-        tm.that(config.hash_rounds, eq=12)
+        u.Tests.Matchers.that(config.expiry_minutes, eq=60)
+        u.Tests.Matchers.that(config.hash_rounds, eq=12)
 
     def test_config_validation(self) -> None:
         """Test config validation."""
         base_config = _require_settings()
         config = base_config.model_copy(update={"expiry_minutes": 30})
-        tm.that(config.expiry_minutes, eq=30)
+        u.Tests.Matchers.that(config.expiry_minutes, eq=30)
 
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
         config = _require_settings()
-        tm.that(config, is_=FlextAuthSettings)
+        u.Tests.Matchers.that(config, is_=FlextAuthSettings)
 
 
 class TestJwtTokenGenerator:
@@ -77,7 +76,7 @@ class TestJwtTokenGenerator:
         result = generator.generate_token(identity_id="user-456")
         assert result.is_success
         assert result.value is not None
-        tm.that(result.value, is_=str)
+        u.Tests.Matchers.that(result.value, is_=str)
         token_text = str(result.value)
-        tm.that(len(token_text), gt=0)
-        tm.that(token_text.count("."), eq=2)
+        u.Tests.Matchers.that(len(token_text), gt=0)
+        u.Tests.Matchers.that(token_text.count("."), eq=2)

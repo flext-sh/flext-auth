@@ -4,18 +4,15 @@ from datetime import UTC, datetime, timedelta
 from typing import override
 
 import pytest
-from flext_tests import tm
 
 from flext_auth import (
     FlextAuthKerberosProvider,
     FlextAuthMiddleware,
     FlextAuthRfcProvider,
-    m,
-    p,
-    t,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 from flext_core import r
+from tests import m, p, t, u
 
 
 class TestTokenRealFlows:
@@ -117,9 +114,9 @@ class TestTokenRealFlows:
             },
             expiry_minutes=5,
         )
-        tm.ok(token_result)
+        u.Tests.Matchers.ok(token_result)
         claims_result = provider._decode_token_claims(str(token_result.value))
-        tm.ok(claims_result)
+        u.Tests.Matchers.ok(claims_result)
 
     def test_base_provider_refresh_valid_token_emits_new_token(self) -> None:
         provider = self.BaseProvider(
@@ -141,7 +138,7 @@ class TestTokenRealFlows:
             token_type="refresh",
             expiry_minutes=10,
         )
-        tm.ok(issued)
+        u.Tests.Matchers.ok(issued)
         refresh_result = provider.refresh(str(issued.value))
         assert refresh_result.is_success
 
@@ -159,8 +156,8 @@ class TestTokenRealFlows:
         )
         request = self.HttpRequest()
         result = middleware.process_request(request)
-        tm.fail(result, contains="invalid")
-        tm.that(not provider.refresh_called, eq=True)
+        u.Tests.Matchers.fail(result, contains="invalid")
+        u.Tests.Matchers.that(not provider.refresh_called, eq=True)
 
     def test_kerberos_validate_token_returns_honest_error_without_validator(
         self,
@@ -173,10 +170,10 @@ class TestTokenRealFlows:
             },
         )
         result = provider.validate_token("opaque-kerberos-ticket")
-        tm.fail(result)
+        u.Tests.Matchers.fail(result)
         error = (result.error or "").lower()
-        tm.that(error, has="kerberos")
-        tm.that("validator" in error or "gssapi" in error, eq=True)
+        u.Tests.Matchers.that(error, has="kerberos")
+        u.Tests.Matchers.that("validator" in error or "gssapi" in error, eq=True)
 
     def test_oauth2_validate_token_uses_authorization_server_introspection(
         self,
@@ -193,7 +190,7 @@ class TestTokenRealFlows:
 
         def _fake_introspect(token: str) -> r[t.FeatureFlagMapping]:
             call_count["count"] += 1
-            tm.that(token, eq="opaque-oauth2-token")
+            u.Tests.Matchers.that(token, eq="opaque-oauth2-token")
             return r[t.FeatureFlagMapping].ok({
                 "active": True,
                 "sub": "oauth-user-123",
@@ -209,8 +206,8 @@ class TestTokenRealFlows:
             raising=False,
         )
         result = provider.validate_token("opaque-oauth2-token")
-        tm.that(call_count["count"], eq=1)
-        tm.ok(result)
+        u.Tests.Matchers.that(call_count["count"], eq=1)
+        u.Tests.Matchers.ok(result)
 
     def test_oauth2_validate_token_fails_when_introspection_reports_inactive(
         self,
@@ -234,4 +231,4 @@ class TestTokenRealFlows:
             raising=False,
         )
         result = provider.validate_token("inactive-token")
-        tm.fail(result, contains="inactive")
+        u.Tests.Matchers.fail(result, contains="inactive")
