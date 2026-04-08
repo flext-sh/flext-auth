@@ -11,18 +11,12 @@ _LAZY_IMPORTS = {
     "TestsProtocols": ("tests.helpers.protocols", "TestsProtocols"),
     "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
     "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
-    "d": ("flext_core.decorators", "FlextDecorators"),
-    "e": ("flext_core.exceptions", "FlextExceptions"),
-    "h": ("flext_core.handlers", "FlextHandlers"),
-    "p": ("tests.helpers.protocols", "TestsProtocols"),
+    "p": ("tests.helpers.protocols", "p"),
     "protocols": "tests.helpers.protocols",
-    "r": ("flext_core.result", "FlextResult"),
-    "s": ("flext_core.service", "FlextService"),
     "t": ("tests.helpers.typings", "t"),
     "typings": "tests.helpers.typings",
-    "u": ("tests.helpers.utilities", "TestsUtilities"),
+    "u": ("tests.helpers.utilities", "u"),
     "utilities": "tests.helpers.utilities",
-    "x": ("flext_core.mixins", "FlextMixins"),
 }
 
 

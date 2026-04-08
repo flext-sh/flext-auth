@@ -13,13 +13,7 @@ _LAZY_IMPORTS = {
         "FlextWebTransportAdapter",
     ),
     "base": "flext_auth.transports.base",
-    "d": ("flext_core.decorators", "FlextDecorators"),
-    "e": ("flext_core.exceptions", "FlextExceptions"),
-    "h": ("flext_core.handlers", "FlextHandlers"),
     "http": "flext_auth.transports.http",
-    "r": ("flext_core.result", "FlextResult"),
-    "s": ("flext_core.service", "FlextService"),
-    "x": ("flext_core.mixins", "FlextMixins"),
 }
 
 
