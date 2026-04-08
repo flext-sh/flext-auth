@@ -5,7 +5,11 @@ from __future__ import annotations
 
 import typing as _t
 
-from flext_core.lazy import install_lazy_exports, merge_lazy_imports
+from flext_core.lazy import (
+    build_lazy_import_map,
+    install_lazy_exports,
+    merge_lazy_imports,
+)
 
 if _t.TYPE_CHECKING:
     from flext_core.decorators import FlextDecorators as d
@@ -24,24 +28,28 @@ if _t.TYPE_CHECKING:
     from tests.utilities import TestsFlextAuthUtilities, TestsFlextAuthUtilities as u
 _LAZY_IMPORTS = merge_lazy_imports(
     (".helpers",),
-    {
-        "TestsFlextAuthConstants": ".constants",
-        "TestsFlextAuthModels": ".models",
-        "TestsFlextAuthProtocols": ".protocols",
-        "TestsFlextAuthTypes": ".typings",
-        "TestsFlextAuthUtilities": ".utilities",
-        "c": (".constants", "TestsFlextAuthConstants"),
-        "d": ("flext_core.decorators", "FlextDecorators"),
-        "e": ("flext_core.exceptions", "FlextExceptions"),
-        "h": ("flext_core.handlers", "FlextHandlers"),
-        "m": (".models", "TestsFlextAuthModels"),
-        "p": (".protocols", "TestsFlextAuthProtocols"),
-        "r": ("flext_core.result", "FlextResult"),
-        "s": ("flext_core.service", "FlextService"),
-        "t": (".typings", "TestsFlextAuthTypes"),
-        "u": (".utilities", "TestsFlextAuthUtilities"),
-        "x": ("flext_core.mixins", "FlextMixins"),
-    },
+    build_lazy_import_map(
+        {
+            ".constants": ("TestsFlextAuthConstants",),
+            ".models": ("TestsFlextAuthModels",),
+            ".protocols": ("TestsFlextAuthProtocols",),
+            ".typings": ("TestsFlextAuthTypes",),
+            ".utilities": ("TestsFlextAuthUtilities",),
+        },
+        alias_groups={
+            ".constants": (("c", "TestsFlextAuthConstants"),),
+            ".models": (("m", "TestsFlextAuthModels"),),
+            ".protocols": (("p", "TestsFlextAuthProtocols"),),
+            ".typings": (("t", "TestsFlextAuthTypes"),),
+            ".utilities": (("u", "TestsFlextAuthUtilities"),),
+            "flext_core.decorators": (("d", "FlextDecorators"),),
+            "flext_core.exceptions": (("e", "FlextExceptions"),),
+            "flext_core.handlers": (("h", "FlextHandlers"),),
+            "flext_core.mixins": (("x", "FlextMixins"),),
+            "flext_core.result": (("r", "FlextResult"),),
+            "flext_core.service": (("s", "FlextService"),),
+        },
+    ),
     exclude_names=(
         "cleanup_submodule_namespace",
         "install_lazy_exports",
