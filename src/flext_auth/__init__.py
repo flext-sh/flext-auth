@@ -1,7 +1,5 @@
-# AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
-# Regenerate with: make gen
-#
-"""Flext auth package."""
+# AUTO-GENERATED FILE — Regenerate with: make gen
+"""Flext Auth package."""
 
 from __future__ import annotations
 
