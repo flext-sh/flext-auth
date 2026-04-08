@@ -71,7 +71,7 @@ class FlextAuthMiddleware(s[bool]):
 
     @override
     def execute(self) -> r[bool]:
-        """Execute method for FlextService interface.
+        """Execute method for s interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """

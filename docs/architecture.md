@@ -36,7 +36,7 @@
   - [Security Validations](#security-validations)
 - [🔗 FLEXT INTEGRATION](#flext-integration)
   - [Mandatory FLEXT Domain Library Usage](#mandatory-flext-domain-library-usage)
-  - [FlextService Integration](#flextservice-integration)
+  - [s Integration](#flextservice-integration)
 - [📘 API DESIGN](#api-design)
   - [Public API Patterns](#public-api-patterns)
 - [🏗️ IMPLEMENTATION PHASES](#implementation-phases)
@@ -94,7 +94,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 
 - **Purpose**: JWT/bcrypt authentication with session management
 - **Status**: Production-ready, 71/72 tests passing (99%)
-- **Integration**: Complete FlextService + h architecture
+- **Integration**: Complete s + h architecture
 - **Quality**: Zero lint/type errors, production security (bcrypt 12 rounds, JWT HS256)
 
 ### Target State (v2.0.0)
@@ -201,7 +201,7 @@ ______________________________________________________________________
 **Public API**:
 
 ```python
-class FlextAuth(FlextService[AuthenticationResponseDict]):
+class FlextAuth(s[AuthenticationResponseDict]):
     # Factory methods
     @classmethod
     def quick_start(cls, create_REDACTED_LDAP_BIND_PASSWORD: bool = False) -> FlextAuth
@@ -403,9 +403,9 @@ from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
-from flext_core import FlextDecorators
+from flext_core import d
 from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
+from flext_core import e
 from flext_core import h
 from flext_core import FlextLogger
 from flext_core import x
@@ -415,7 +415,7 @@ from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import r
 from flext_core import u
-from flext_core import FlextService
+from flext_core import s
 from flext_core import t
 from flext_core import u
 
@@ -424,9 +424,9 @@ from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
-from flext_core import FlextDecorators
+from flext_core import d
 from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
+from flext_core import e
 from flext_core import h
 from flext_core import FlextLogger
 from flext_core import x
@@ -436,7 +436,7 @@ from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import r
 from flext_core import u
-from flext_core import FlextService
+from flext_core import s
 from flext_core import t
 from flext_core import u
 from flext_auth import FlextAuthBaseProvider
@@ -543,9 +543,9 @@ from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
-from flext_core import FlextDecorators
+from flext_core import d
 from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
+from flext_core import e
 from flext_core import h
 from flext_core import FlextLogger
 from flext_core import x
@@ -555,7 +555,7 @@ from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import r
 from flext_core import u
-from flext_core import FlextService
+from flext_core import s
 from flext_core import t
 from flext_core import u
 
@@ -593,9 +593,9 @@ from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
-from flext_core import FlextDecorators
+from flext_core import d
 from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
+from flext_core import e
 from flext_core import h
 from flext_core import FlextLogger
 from flext_core import x
@@ -605,7 +605,7 @@ from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import r
 from flext_core import u
-from flext_core import FlextService
+from flext_core import s
 from flext_core import t
 from flext_core import u
 
@@ -959,7 +959,7 @@ ______________________________________________________________________
 | gRPC Operations      | **flext-grpc**      | MANDATORY | gRPC transport adapter                   |
 | LDAP Authentication  | **flext-ldap**      | MANDATORY | LDAP provider                            |
 | Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence                 |
-| Foundation Patterns  | **flext-core**      | MANDATORY | r, FlextService, FlextRegistry |
+| Foundation Patterns  | **flext-core**      | MANDATORY | r, s, FlextRegistry |
 
 #### FORBIDDEN Direct Imports
 
@@ -981,9 +981,9 @@ from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
-from flext_core import FlextDecorators
+from flext_core import d
 from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
+from flext_core import e
 from flext_core import h
 from flext_core import FlextLogger
 from flext_core import x
@@ -993,7 +993,7 @@ from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import r
 from flext_core import u
-from flext_core import FlextService
+from flext_core import s
 from flext_core import t
 from flext_core import u
 from flext_api import FlextApi  # For HTTP transport
@@ -1019,9 +1019,9 @@ class FlextAuthLdapProvider:
         )
 ```
 
-### FlextService Integration
+### s Integration
 
-All providers and managers extend FlextService for consistency:
+All providers and managers extend s for consistency:
 
 ```python
 from flext_core import FlextBus
@@ -1029,9 +1029,9 @@ from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
-from flext_core import FlextDecorators
+from flext_core import d
 from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
+from flext_core import e
 from flext_core import h
 from flext_core import FlextLogger
 from flext_core import x
@@ -1041,13 +1041,13 @@ from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import r
 from flext_core import u
-from flext_core import FlextService
+from flext_core import s
 from flext_core import t
 from flext_core import u
 
 
-class FlextAuthJwtProvider(FlextService[AuthToken]):
-    """JWT provider extending FlextService."""
+class FlextAuthJwtProvider(s[AuthToken]):
+    """JWT provider extending s."""
 
     def __init__(self, config: dict) -> None:
         super().__init__()

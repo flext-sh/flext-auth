@@ -39,7 +39,7 @@ class FlextAuthSessionService(s[bool]):
 
     @override
     def execute(self) -> r[bool]:
-        """Execute method for FlextService interface.
+        """Execute method for s interface.
 
         Session service doesn't use generic execute pattern.
         Use specific session methods instead.

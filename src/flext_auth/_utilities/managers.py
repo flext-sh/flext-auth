@@ -65,7 +65,7 @@ class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
     """
 
     def execute(self) -> r[bool]:
-        """Execute method for FlextService interface.
+        """Execute method for s interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
         """

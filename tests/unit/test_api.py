@@ -148,7 +148,7 @@ class TestFlextAuthAdvancedPatterns:
         u.Tests.Matchers.that(auth._dispatcher, none=False)
 
     def test_flext_context_integration(self) -> None:
-        """Test FlextService integration (FlextAuth extends FlextService)."""
+        """Test s integration (FlextAuth extends s)."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
         u.Tests.Matchers.that(auth._dispatcher, none=False)

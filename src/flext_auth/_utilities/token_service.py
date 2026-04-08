@@ -22,10 +22,10 @@ from flext_auth import (
     m,
     p,
 )
-from flext_core import FlextLogger, FlextService, r
+from flext_core import FlextLogger, r, s
 
 
-class FlextAuthTokenService(FlextService[bool]):
+class FlextAuthTokenService(s[bool]):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
