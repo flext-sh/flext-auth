@@ -11,79 +11,41 @@ from flext_auth.__version__ import *
 from flext_core.lazy import install_lazy_exports, merge_lazy_imports
 
 if _t.TYPE_CHECKING:
-    import flext_auth._managers as _flext_auth__managers
-
-    _managers = _flext_auth__managers
-    import flext_auth._utilities as _flext_auth__utilities
-    from flext_auth._managers import (
-        FlextAuthRateLimiterManagers,
-        FlextAuthSessionManagers,
-    )
-
-    _utilities = _flext_auth__utilities
-    import flext_auth.api as _flext_auth_api
-    from flext_auth._utilities import (
-        FlextAuthIdentityService,
+    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
+    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth._utilities.identity_service import FlextAuthIdentityService
+    from flext_auth._utilities.managers import (
         FlextAuthManagers,
-        FlextAuthMiddleware,
-        FlextAuthMixins,
-        FlextAuthMixins as x,
-        FlextAuthProviderService,
-        FlextAuthQuickstart,
-        FlextAuthRegistry,
         FlextAuthServiceManagers,
-        FlextAuthSessionService,
-        FlextAuthTokenService,
     )
-
-    api = _flext_auth_api
-    import flext_auth.constants as _flext_auth_constants
+    from flext_auth._utilities.middleware import FlextAuthMiddleware
+    from flext_auth._utilities.mixins import FlextAuthMixins, FlextAuthMixins as x
+    from flext_auth._utilities.provider_service import FlextAuthProviderService
+    from flext_auth._utilities.quickstart import FlextAuthQuickstart
+    from flext_auth._utilities.registry import FlextAuthRegistry
+    from flext_auth._utilities.session_service import FlextAuthSessionService
+    from flext_auth._utilities.token_service import FlextAuthTokenService
     from flext_auth.api import FlextAuth
-
-    constants = _flext_auth_constants
-    import flext_auth.models as _flext_auth_models
     from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
-
-    models = _flext_auth_models
-    import flext_auth.protocols as _flext_auth_protocols
     from flext_auth.models import FlextAuthModels, FlextAuthModels as m
-
-    protocols = _flext_auth_protocols
-    import flext_auth.providers as _flext_auth_providers
     from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
-
-    providers = _flext_auth_providers
-    import flext_auth.settings as _flext_auth_settings
-    from flext_auth.providers import (
-        FlextAuthApiKeyProvider,
-        FlextAuthBasicProvider,
-        FlextAuthCertificateProvider,
-        FlextAuthJwtProvider,
-        FlextAuthJwtTokenGenerator,
-        FlextAuthJwtTokenValidator,
-        FlextAuthKerberosProvider,
-        FlextAuthLdapProvider,
-        FlextAuthOAuth2Provider,
-        FlextAuthOidcProvider,
-        FlextAuthPasswordHasher,
-        FlextAuthProviderMixin,
-        FlextAuthRfcProvider,
-        FlextAuthSamlProvider,
-    )
-
-    settings = _flext_auth_settings
-    import flext_auth.transports as _flext_auth_transports
+    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
+    from flext_auth.providers.basic import FlextAuthBasicProvider
+    from flext_auth.providers.certificate import FlextAuthCertificateProvider
+    from flext_auth.providers.jwt import FlextAuthJwtProvider
+    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
+    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
+    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
+    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
+    from flext_auth.providers.ldap import FlextAuthLdapProvider
+    from flext_auth.providers.mixin import FlextAuthProviderMixin
+    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+    from flext_auth.providers.oidc import FlextAuthOidcProvider
+    from flext_auth.providers.rfc import FlextAuthRfcProvider
+    from flext_auth.providers.saml import FlextAuthSamlProvider
     from flext_auth.settings import FlextAuthSettings
-
-    transports = _flext_auth_transports
-    import flext_auth.typings as _flext_auth_typings
-    from flext_auth.transports import FlextWebTransportAdapter
-
-    typings = _flext_auth_typings
-    import flext_auth.utilities as _flext_auth_utilities
+    from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
-
-    utilities = _flext_auth_utilities
     from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
     from flext_core.decorators import FlextDecorators as d
     from flext_core.exceptions import FlextExceptions as e
