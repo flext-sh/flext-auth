@@ -16,8 +16,6 @@ _LAZY_IMPORTS = {
         "flext_auth._managers.auth_managers_session",
         "FlextAuthSessionManagers",
     ),
-    "auth_managers_session": "flext_auth._managers.auth_managers_session",
-    "rate_limiter": "flext_auth._managers.rate_limiter",
 }
 
 

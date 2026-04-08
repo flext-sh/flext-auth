@@ -12,11 +12,8 @@ _LAZY_IMPORTS = {
     "TestsTypings": ("tests.helpers.typings", "TestsTypings"),
     "TestsUtilities": ("tests.helpers.utilities", "TestsUtilities"),
     "p": ("tests.helpers.protocols", "p"),
-    "protocols": "tests.helpers.protocols",
     "t": ("tests.helpers.typings", "t"),
-    "typings": "tests.helpers.typings",
     "u": ("tests.helpers.utilities", "u"),
-    "utilities": "tests.helpers.utilities",
 }
 
 

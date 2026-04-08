@@ -43,21 +43,6 @@ _LAZY_IMPORTS = {
     "FlextAuthProviderMixin": ("flext_auth.providers.mixin", "FlextAuthProviderMixin"),
     "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
     "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
-    "apikey": "flext_auth.providers.apikey",
-    "base": "flext_auth.providers.base",
-    "basic": "flext_auth.providers.basic",
-    "certificate": "flext_auth.providers.certificate",
-    "jwt": "flext_auth.providers.jwt",
-    "jwt_password_hasher": "flext_auth.providers.jwt_password_hasher",
-    "jwt_token_generator": "flext_auth.providers.jwt_token_generator",
-    "jwt_token_validator": "flext_auth.providers.jwt_token_validator",
-    "kerberos": "flext_auth.providers.kerberos",
-    "ldap": "flext_auth.providers.ldap",
-    "mixin": "flext_auth.providers.mixin",
-    "oauth2": "flext_auth.providers.oauth2",
-    "oidc": "flext_auth.providers.oidc",
-    "rfc": "flext_auth.providers.rfc",
-    "saml": "flext_auth.providers.saml",
 }
 
 

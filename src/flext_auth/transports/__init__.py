@@ -12,8 +12,6 @@ _LAZY_IMPORTS = {
         "flext_auth.transports.http",
         "FlextWebTransportAdapter",
     ),
-    "base": "flext_auth.transports.base",
-    "http": "flext_auth.transports.http",
 }
 
 

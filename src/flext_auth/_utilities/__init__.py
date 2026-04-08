@@ -33,15 +33,6 @@ _LAZY_IMPORTS = {
         "flext_auth._utilities.token_service",
         "FlextAuthTokenService",
     ),
-    "identity_service": "flext_auth._utilities.identity_service",
-    "managers": "flext_auth._utilities.managers",
-    "middleware": "flext_auth._utilities.middleware",
-    "mixins": "flext_auth._utilities.mixins",
-    "provider_service": "flext_auth._utilities.provider_service",
-    "quickstart": "flext_auth._utilities.quickstart",
-    "registry": "flext_auth._utilities.registry",
-    "session_service": "flext_auth._utilities.session_service",
-    "token_service": "flext_auth._utilities.token_service",
 }
 
 
