@@ -5,13 +5,13 @@ from flext_tests import FlextTestsUtilities
 from flext_auth import FlextAuthUtilities
 
 
-class FlextAuthTestUtilities(FlextTestsUtilities, FlextAuthUtilities):
+class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
     """Test utilities for flext-auth."""
 
     class Tests(FlextTestsUtilities.Tests):
         """Test-specific utilities."""
 
 
-u = FlextAuthTestUtilities
+u = TestsFlextAuthUtilities
 
-__all__ = ["FlextAuthTestUtilities", "u"]
+__all__ = ["TestsFlextAuthUtilities", "u"]

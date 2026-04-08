@@ -7,7 +7,7 @@ from flext_tests import FlextTestsConstants
 from flext_auth import FlextAuthConstants
 
 
-class FlextAuthTestConstants(FlextTestsConstants, FlextAuthConstants):
+class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     """Test constants for flext-auth."""
 
     class Tests(FlextTestsConstants.Tests):
@@ -61,6 +61,6 @@ class FlextAuthTestConstants(FlextTestsConstants, FlextAuthConstants):
         ]
 
 
-c = FlextAuthTestConstants
+c = TestsFlextAuthConstants
 
-__all__ = ["FlextAuthTestConstants", "c"]
+__all__ = ["TestsFlextAuthConstants", "c"]

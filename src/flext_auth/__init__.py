@@ -49,27 +49,35 @@ if _t.TYPE_CHECKING:
     from flext_auth.models import FlextAuthModels, FlextAuthModels as m
 
     protocols = _flext_auth_protocols
-    import flext_auth.settings as _flext_auth_settings
+    import flext_auth.providers as _flext_auth_providers
     from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
-    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
-    from flext_auth.providers.basic import FlextAuthBasicProvider
-    from flext_auth.providers.certificate import FlextAuthCertificateProvider
-    from flext_auth.providers.jwt import FlextAuthJwtProvider
-    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
-    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
-    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
-    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
-    from flext_auth.providers.ldap import FlextAuthLdapProvider
-    from flext_auth.providers.mixin import FlextAuthProviderMixin
-    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-    from flext_auth.providers.oidc import FlextAuthOidcProvider
-    from flext_auth.providers.rfc import FlextAuthRfcProvider
-    from flext_auth.providers.saml import FlextAuthSamlProvider
+
+    providers = _flext_auth_providers
+    import flext_auth.settings as _flext_auth_settings
+    from flext_auth.providers import (
+        FlextAuthApiKeyProvider,
+        FlextAuthBasicProvider,
+        FlextAuthCertificateProvider,
+        FlextAuthJwtProvider,
+        FlextAuthJwtTokenGenerator,
+        FlextAuthJwtTokenValidator,
+        FlextAuthKerberosProvider,
+        FlextAuthLdapProvider,
+        FlextAuthOAuth2Provider,
+        FlextAuthOidcProvider,
+        FlextAuthPasswordHasher,
+        FlextAuthProviderMixin,
+        FlextAuthRfcProvider,
+        FlextAuthSamlProvider,
+    )
 
     settings = _flext_auth_settings
-    import flext_auth.typings as _flext_auth_typings
+    import flext_auth.transports as _flext_auth_transports
     from flext_auth.settings import FlextAuthSettings
-    from flext_auth.transports.http import FlextWebTransportAdapter
+
+    transports = _flext_auth_transports
+    import flext_auth.typings as _flext_auth_typings
+    from flext_auth.transports import FlextWebTransportAdapter
 
     typings = _flext_auth_typings
     import flext_auth.utilities as _flext_auth_utilities
@@ -86,60 +94,17 @@ _LAZY_IMPORTS = merge_lazy_imports(
     (
         "flext_auth._managers",
         "flext_auth._utilities",
+        "flext_auth.providers",
+        "flext_auth.transports",
     ),
     {
         "FlextAuth": ("flext_auth.api", "FlextAuth"),
-        "FlextAuthApiKeyProvider": (
-            "flext_auth.providers.apikey",
-            "FlextAuthApiKeyProvider",
-        ),
-        "FlextAuthBasicProvider": (
-            "flext_auth.providers.basic",
-            "FlextAuthBasicProvider",
-        ),
-        "FlextAuthCertificateProvider": (
-            "flext_auth.providers.certificate",
-            "FlextAuthCertificateProvider",
-        ),
         "FlextAuthConstants": ("flext_auth.constants", "FlextAuthConstants"),
-        "FlextAuthJwtProvider": ("flext_auth.providers.jwt", "FlextAuthJwtProvider"),
-        "FlextAuthJwtTokenGenerator": (
-            "flext_auth.providers.jwt_token_generator",
-            "FlextAuthJwtTokenGenerator",
-        ),
-        "FlextAuthJwtTokenValidator": (
-            "flext_auth.providers.jwt_token_validator",
-            "FlextAuthJwtTokenValidator",
-        ),
-        "FlextAuthKerberosProvider": (
-            "flext_auth.providers.kerberos",
-            "FlextAuthKerberosProvider",
-        ),
-        "FlextAuthLdapProvider": ("flext_auth.providers.ldap", "FlextAuthLdapProvider"),
         "FlextAuthModels": ("flext_auth.models", "FlextAuthModels"),
-        "FlextAuthOAuth2Provider": (
-            "flext_auth.providers.oauth2",
-            "FlextAuthOAuth2Provider",
-        ),
-        "FlextAuthOidcProvider": ("flext_auth.providers.oidc", "FlextAuthOidcProvider"),
-        "FlextAuthPasswordHasher": (
-            "flext_auth.providers.jwt_password_hasher",
-            "FlextAuthPasswordHasher",
-        ),
         "FlextAuthProtocols": ("flext_auth.protocols", "FlextAuthProtocols"),
-        "FlextAuthProviderMixin": (
-            "flext_auth.providers.mixin",
-            "FlextAuthProviderMixin",
-        ),
-        "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
-        "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
         "FlextAuthSettings": ("flext_auth.settings", "FlextAuthSettings"),
         "FlextAuthTypes": ("flext_auth.typings", "FlextAuthTypes"),
         "FlextAuthUtilities": ("flext_auth.utilities", "FlextAuthUtilities"),
-        "FlextWebTransportAdapter": (
-            "flext_auth.transports.http",
-            "FlextWebTransportAdapter",
-        ),
         "__author__": ("flext_auth.__version__", "__author__"),
         "__author_email__": ("flext_auth.__version__", "__author_email__"),
         "__description__": ("flext_auth.__version__", "__description__"),
@@ -160,10 +125,12 @@ _LAZY_IMPORTS = merge_lazy_imports(
         "models": "flext_auth.models",
         "p": ("flext_auth.protocols", "FlextAuthProtocols"),
         "protocols": "flext_auth.protocols",
+        "providers": "flext_auth.providers",
         "r": ("flext_core.result", "FlextResult"),
         "s": ("flext_core.service", "FlextService"),
         "settings": "flext_auth.settings",
         "t": ("flext_auth.typings", "FlextAuthTypes"),
+        "transports": "flext_auth.transports",
         "typings": "flext_auth.typings",
         "u": ("flext_auth.utilities", "FlextAuthUtilities"),
         "utilities": "flext_auth.utilities",
@@ -172,6 +139,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
 _ = _LAZY_IMPORTS.pop("cleanup_submodule_namespace", None)
 _ = _LAZY_IMPORTS.pop("install_lazy_exports", None)
 _ = _LAZY_IMPORTS.pop("lazy_getattr", None)
+_ = _LAZY_IMPORTS.pop("logger", None)
 _ = _LAZY_IMPORTS.pop("merge_lazy_imports", None)
 _ = _LAZY_IMPORTS.pop("output", None)
 _ = _LAZY_IMPORTS.pop("output_reporting", None)
@@ -231,10 +199,12 @@ __all__ = [
     "models",
     "p",
     "protocols",
+    "providers",
     "r",
     "s",
     "settings",
     "t",
+    "transports",
     "typings",
     "u",
     "utilities",

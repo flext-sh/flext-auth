@@ -5,13 +5,13 @@ from flext_tests import FlextTestsProtocols
 from flext_auth import FlextAuthProtocols
 
 
-class FlextAuthTestProtocols(FlextTestsProtocols, FlextAuthProtocols):
+class TestsFlextAuthProtocols(FlextTestsProtocols, FlextAuthProtocols):
     """Test protocols for flext-auth."""
 
     class Tests(FlextTestsProtocols.Tests):
         """Test-specific protocols."""
 
 
-p = FlextAuthTestProtocols
+p = TestsFlextAuthProtocols
 
-__all__ = ["FlextAuthTestProtocols", "p"]
+__all__ = ["TestsFlextAuthProtocols", "p"]
