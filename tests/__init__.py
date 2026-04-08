@@ -25,33 +25,36 @@ if _t.TYPE_CHECKING:
     from tests.typings import TestsFlextAuthTypes, TestsFlextAuthTypes as t
     from tests.utilities import TestsFlextAuthUtilities, TestsFlextAuthUtilities as u
 _LAZY_IMPORTS = merge_lazy_imports(
-    ("tests.helpers",),
+    (".helpers",),
     {
-        "TestsFlextAuthConstants": ("tests.constants", "TestsFlextAuthConstants"),
-        "TestsFlextAuthModels": ("tests.models", "TestsFlextAuthModels"),
-        "TestsFlextAuthProtocols": ("tests.protocols", "TestsFlextAuthProtocols"),
-        "TestsFlextAuthTypes": ("tests.typings", "TestsFlextAuthTypes"),
-        "TestsFlextAuthUtilities": ("tests.utilities", "TestsFlextAuthUtilities"),
-        "c": ("tests.constants", "TestsFlextAuthConstants"),
+        "TestsFlextAuthConstants": ".constants",
+        "TestsFlextAuthModels": ".models",
+        "TestsFlextAuthProtocols": ".protocols",
+        "TestsFlextAuthTypes": ".typings",
+        "TestsFlextAuthUtilities": ".utilities",
+        "c": (".constants", "TestsFlextAuthConstants"),
         "d": ("flext_core.decorators", "FlextDecorators"),
         "e": ("flext_core.exceptions", "FlextExceptions"),
         "h": ("flext_core.handlers", "FlextHandlers"),
-        "m": ("tests.models", "TestsFlextAuthModels"),
-        "p": ("tests.protocols", "TestsFlextAuthProtocols"),
+        "m": (".models", "TestsFlextAuthModels"),
+        "p": (".protocols", "TestsFlextAuthProtocols"),
         "r": ("flext_core.result", "FlextResult"),
         "s": ("flext_core.service", "FlextService"),
-        "t": ("tests.typings", "TestsFlextAuthTypes"),
-        "u": ("tests.utilities", "TestsFlextAuthUtilities"),
+        "t": (".typings", "TestsFlextAuthTypes"),
+        "u": (".utilities", "TestsFlextAuthUtilities"),
         "x": ("flext_core.mixins", "FlextMixins"),
     },
+    exclude_names=(
+        "cleanup_submodule_namespace",
+        "install_lazy_exports",
+        "lazy_getattr",
+        "logger",
+        "merge_lazy_imports",
+        "output",
+        "output_reporting",
+    ),
+    module_name=__name__,
 )
-_ = _LAZY_IMPORTS.pop("cleanup_submodule_namespace", None)
-_ = _LAZY_IMPORTS.pop("install_lazy_exports", None)
-_ = _LAZY_IMPORTS.pop("lazy_getattr", None)
-_ = _LAZY_IMPORTS.pop("logger", None)
-_ = _LAZY_IMPORTS.pop("merge_lazy_imports", None)
-_ = _LAZY_IMPORTS.pop("output", None)
-_ = _LAZY_IMPORTS.pop("output_reporting", None)
 
 __all__ = [
     "TestsFlextAuthConstants",

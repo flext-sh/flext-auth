@@ -54,46 +54,49 @@ if _t.TYPE_CHECKING:
     from flext_core.service import FlextService as s
 _LAZY_IMPORTS = merge_lazy_imports(
     (
-        "flext_auth._managers",
-        "flext_auth._utilities",
-        "flext_auth.providers",
-        "flext_auth.transports",
+        "._managers",
+        "._utilities",
+        ".providers",
+        ".transports",
     ),
     {
-        "FlextAuth": ("flext_auth.api", "FlextAuth"),
-        "FlextAuthConstants": ("flext_auth.constants", "FlextAuthConstants"),
-        "FlextAuthModels": ("flext_auth.models", "FlextAuthModels"),
-        "FlextAuthProtocols": ("flext_auth.protocols", "FlextAuthProtocols"),
-        "FlextAuthSettings": ("flext_auth.settings", "FlextAuthSettings"),
-        "FlextAuthTypes": ("flext_auth.typings", "FlextAuthTypes"),
-        "FlextAuthUtilities": ("flext_auth.utilities", "FlextAuthUtilities"),
-        "__author__": ("flext_auth.__version__", "__author__"),
-        "__author_email__": ("flext_auth.__version__", "__author_email__"),
-        "__description__": ("flext_auth.__version__", "__description__"),
-        "__license__": ("flext_auth.__version__", "__license__"),
-        "__title__": ("flext_auth.__version__", "__title__"),
-        "__url__": ("flext_auth.__version__", "__url__"),
-        "__version__": ("flext_auth.__version__", "__version__"),
-        "__version_info__": ("flext_auth.__version__", "__version_info__"),
-        "c": ("flext_auth.constants", "FlextAuthConstants"),
+        "FlextAuth": ".api",
+        "FlextAuthConstants": ".constants",
+        "FlextAuthModels": ".models",
+        "FlextAuthProtocols": ".protocols",
+        "FlextAuthSettings": ".settings",
+        "FlextAuthTypes": ".typings",
+        "FlextAuthUtilities": ".utilities",
+        "__author__": ".__version__",
+        "__author_email__": ".__version__",
+        "__description__": ".__version__",
+        "__license__": ".__version__",
+        "__title__": ".__version__",
+        "__url__": ".__version__",
+        "__version__": ".__version__",
+        "__version_info__": ".__version__",
+        "c": (".constants", "FlextAuthConstants"),
         "d": ("flext_core.decorators", "FlextDecorators"),
         "e": ("flext_core.exceptions", "FlextExceptions"),
         "h": ("flext_core.handlers", "FlextHandlers"),
-        "m": ("flext_auth.models", "FlextAuthModels"),
-        "p": ("flext_auth.protocols", "FlextAuthProtocols"),
+        "m": (".models", "FlextAuthModels"),
+        "p": (".protocols", "FlextAuthProtocols"),
         "r": ("flext_core.result", "FlextResult"),
         "s": ("flext_core.service", "FlextService"),
-        "t": ("flext_auth.typings", "FlextAuthTypes"),
-        "u": ("flext_auth.utilities", "FlextAuthUtilities"),
+        "t": (".typings", "FlextAuthTypes"),
+        "u": (".utilities", "FlextAuthUtilities"),
     },
+    exclude_names=(
+        "cleanup_submodule_namespace",
+        "install_lazy_exports",
+        "lazy_getattr",
+        "logger",
+        "merge_lazy_imports",
+        "output",
+        "output_reporting",
+    ),
+    module_name=__name__,
 )
-_ = _LAZY_IMPORTS.pop("cleanup_submodule_namespace", None)
-_ = _LAZY_IMPORTS.pop("install_lazy_exports", None)
-_ = _LAZY_IMPORTS.pop("lazy_getattr", None)
-_ = _LAZY_IMPORTS.pop("logger", None)
-_ = _LAZY_IMPORTS.pop("merge_lazy_imports", None)
-_ = _LAZY_IMPORTS.pop("output", None)
-_ = _LAZY_IMPORTS.pop("output_reporting", None)
 
 __all__ = [
     "FlextAuth",

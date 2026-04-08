@@ -8,41 +8,20 @@ from __future__ import annotations
 from flext_core.lazy import install_lazy_exports
 
 _LAZY_IMPORTS = {
-    "FlextAuthApiKeyProvider": (
-        "flext_auth.providers.apikey",
-        "FlextAuthApiKeyProvider",
-    ),
-    "FlextAuthBasicProvider": ("flext_auth.providers.basic", "FlextAuthBasicProvider"),
-    "FlextAuthCertificateProvider": (
-        "flext_auth.providers.certificate",
-        "FlextAuthCertificateProvider",
-    ),
-    "FlextAuthJwtProvider": ("flext_auth.providers.jwt", "FlextAuthJwtProvider"),
-    "FlextAuthJwtTokenGenerator": (
-        "flext_auth.providers.jwt_token_generator",
-        "FlextAuthJwtTokenGenerator",
-    ),
-    "FlextAuthJwtTokenValidator": (
-        "flext_auth.providers.jwt_token_validator",
-        "FlextAuthJwtTokenValidator",
-    ),
-    "FlextAuthKerberosProvider": (
-        "flext_auth.providers.kerberos",
-        "FlextAuthKerberosProvider",
-    ),
-    "FlextAuthLdapProvider": ("flext_auth.providers.ldap", "FlextAuthLdapProvider"),
-    "FlextAuthOAuth2Provider": (
-        "flext_auth.providers.oauth2",
-        "FlextAuthOAuth2Provider",
-    ),
-    "FlextAuthOidcProvider": ("flext_auth.providers.oidc", "FlextAuthOidcProvider"),
-    "FlextAuthPasswordHasher": (
-        "flext_auth.providers.jwt_password_hasher",
-        "FlextAuthPasswordHasher",
-    ),
-    "FlextAuthProviderMixin": ("flext_auth.providers.mixin", "FlextAuthProviderMixin"),
-    "FlextAuthRfcProvider": ("flext_auth.providers.rfc", "FlextAuthRfcProvider"),
-    "FlextAuthSamlProvider": ("flext_auth.providers.saml", "FlextAuthSamlProvider"),
+    "FlextAuthApiKeyProvider": ".apikey",
+    "FlextAuthBasicProvider": ".basic",
+    "FlextAuthCertificateProvider": ".certificate",
+    "FlextAuthJwtProvider": ".jwt",
+    "FlextAuthJwtTokenGenerator": ".jwt_token_generator",
+    "FlextAuthJwtTokenValidator": ".jwt_token_validator",
+    "FlextAuthKerberosProvider": ".kerberos",
+    "FlextAuthLdapProvider": ".ldap",
+    "FlextAuthOAuth2Provider": ".oauth2",
+    "FlextAuthOidcProvider": ".oidc",
+    "FlextAuthPasswordHasher": ".jwt_password_hasher",
+    "FlextAuthProviderMixin": ".mixin",
+    "FlextAuthRfcProvider": ".rfc",
+    "FlextAuthSamlProvider": ".saml",
 }
 
 
