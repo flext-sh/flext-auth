@@ -39,7 +39,7 @@ class FlextAuthJwtTokenGenerator:
 
         Args:
         identity_id: Identity identifier for token subject
-        expiry_minutes: Custom expiry time (uses config default if None)
+        expiry_minutes: Custom expiry time (uses settings default if None)
         extra_claims: Additional claims to include in token
 
         Returns:
@@ -127,10 +127,10 @@ class FlextAuthJwtTokenGenerator:
 
     def _get_config_int(self, key: str, error_msg: str) -> r[int]:
         """Get and validate integer configuration value."""
-        config = self._provider.config
-        if not config:
+        settings = self._provider.settings
+        if not settings:
             return r[int].fail(error_msg)
-        value = config.get(key)
+        value = settings.get(key)
         match value:
             case int() as number:
                 return r[int].ok(number)
@@ -139,10 +139,10 @@ class FlextAuthJwtTokenGenerator:
 
     def _get_config_str(self, key: str, error_msg: str) -> r[str]:
         """Get and validate string configuration value."""
-        config = self._provider.config
-        if not config:
+        settings = self._provider.settings
+        if not settings:
             return r[str].fail(error_msg)
-        value = config.get(key)
+        value = settings.get(key)
         match value:
             case str() as text if text:
                 return r[str].ok(text)
@@ -154,10 +154,10 @@ class FlextAuthJwtTokenGenerator:
 
         Returns empty string if not provided (no None in r).
         """
-        config = self._provider.config
-        if not config:
+        settings = self._provider.settings
+        if not settings:
             return r[str].ok("")
-        value = config.get(key)
+        value = settings.get(key)
         if value is None:
             return r[str].ok("")
         match value:

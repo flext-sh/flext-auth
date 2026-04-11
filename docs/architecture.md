@@ -258,7 +258,7 @@ class FlextAuthRegistry:
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-        config: t.ContainerMapping | None = None
+        settings: t.ContainerMapping | None = None
     ) -> r[bool]
 
     def unregister(self, name: str) -> r[bool]
@@ -274,7 +274,7 @@ class FlextAuthRegistry:
     def validate_config(
         self,
         name: str,
-        config: dict
+        settings: dict
     ) -> r[bool]
 ```
 
@@ -446,8 +446,8 @@ from flext_auth import FlextAuthModels
 class FlextAuthExampleProvider(FlextAuthBaseProvider):
     """Example authentication provider implementation."""
 
-    def __init__(self, config: dict) -> None:
-        self._config = config
+    def __init__(self, settings: dict) -> None:
+        self._config = settings
         self.logger = u.fetch_logger(__name__)
 
     def authenticate(self, credentials: dict) -> r[FlextAuthModels.AuthToken]:
@@ -563,8 +563,8 @@ from flext_core import u
 class FlextWebTransportAdapter(BaseTransportAdapter):
     """HTTP transport adapter using flext-api."""
 
-    def __init__(self, config: t.ContainerMapping | None = None) -> None:
-        self._api = FlextApi(config=config)  # MANDATORY: Use flext-api
+    def __init__(self, settings: t.ContainerMapping | None = None) -> None:
+        self._api = FlextApi(settings=settings)  # MANDATORY: Use flext-api
         self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
@@ -613,8 +613,8 @@ from flext_core import u
 class GrpcTransportAdapter(BaseTransportAdapter):
     """gRPC transport adapter using flext-grpc."""
 
-    def __init__(self, config: t.ContainerMapping | None = None) -> None:
-        self._grpc = FlextGrpc(config=config)  # MANDATORY: Use flext-grpc
+    def __init__(self, settings: t.ContainerMapping | None = None) -> None:
+        self._grpc = FlextGrpc(settings=settings)  # MANDATORY: Use flext-grpc
         self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
@@ -643,8 +643,8 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 class WebSocketTransportAdapter(BaseTransportAdapter):
     """WebSocket transport adapter for real-time authentication."""
 
-    def __init__(self, config: t.ContainerMapping | None = None) -> None:
-        self._config = config
+    def __init__(self, settings: t.ContainerMapping | None = None) -> None:
+        self._config = settings
         self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
@@ -841,9 +841,9 @@ class TokenCache:
     def __init__(
         self,
         backend: str = "memory",  # "memory", "redis", "memcached"
-        config: t.ContainerMapping | None = None,
+        settings: t.ContainerMapping | None = None,
     ) -> None:
-        self._backend = self._create_backend(backend, config)
+        self._backend = self._create_backend(backend, settings)
         self.logger = u.fetch_logger(__name__)
 
     def get(self, key: dict) -> AuthToken | None:
@@ -1010,8 +1010,8 @@ class FlextWebTransportAdapter:
 
 
 class FlextAuthLdapProvider:
-    def __init__(self, config: dict) -> None:
-        self._ldap = ldap(config)  # MANDATORY: Use flext-ldap
+    def __init__(self, settings: dict) -> None:
+        self._ldap = ldap(settings)  # MANDATORY: Use flext-ldap
 
     def authenticate(self, credentials: dict) -> r[AuthToken]:
         return self._ldap.bind(
@@ -1049,9 +1049,9 @@ from flext_core import u
 class FlextAuthJwtProvider(s[AuthToken]):
     """JWT provider extending s."""
 
-    def __init__(self, config: dict) -> None:
+    def __init__(self, settings: dict) -> None:
         super().__init__()
-        self._config = config
+        self._config = settings
         self.logger = u.fetch_logger(__name__)
 ```
 
@@ -1118,7 +1118,7 @@ from flext_auth import GrpcTransportAdapter
 
 # Create provider with gRPC transport
 provider = FlextAuthOAuth2Provider(
-    config=oauth_config, transport=GrpcTransportAdapter()
+    settings=oauth_config, transport=GrpcTransportAdapter()
 )
 
 # Create auth service

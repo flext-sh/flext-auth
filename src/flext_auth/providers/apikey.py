@@ -22,9 +22,9 @@ class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvid
     Provides API key-based authentication with token validation.
     """
 
-    def __init__(self, config: t.ConfigurationMapping | None = None) -> None:
+    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
-        super().__init__(config)
+        super().__init__(settings)
 
     @override
     def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:

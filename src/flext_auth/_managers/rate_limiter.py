@@ -9,9 +9,11 @@ from flext_core import FlextContext, FlextRegistry, r
 
 class FlextAuthRateLimiterManagers:
     class FlextAuthRateLimiter:
-        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
+        def __init__(
+            self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
+        ) -> None:
             super().__init__()
-            self._config = config
+            self._config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()

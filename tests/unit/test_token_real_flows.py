@@ -43,7 +43,7 @@ class TestTokenRealFlows:
 
         def __init__(self) -> None:
             super().__init__(
-                config={
+                settings={
                     "secret_key": "middleware-refresh-secret-for-tests-12345",
                     "algorithm": "HS256",
                     "issuer": "flext-auth-tests",
@@ -98,7 +98,7 @@ class TestTokenRealFlows:
 
     def test_base_provider_generate_token_with_real_jwt_claims(self) -> None:
         provider = self.BaseProvider(
-            config={
+            settings={
                 "secret_key": "base-provider-secret-for-token-tests-12345",
                 "algorithm": "HS256",
                 "issuer": "flext-auth-tests",
@@ -120,7 +120,7 @@ class TestTokenRealFlows:
 
     def test_base_provider_refresh_valid_token_emits_new_token(self) -> None:
         provider = self.BaseProvider(
-            config={
+            settings={
                 "secret_key": "base-provider-refresh-secret-for-tests-12345",
                 "algorithm": "HS256",
                 "issuer": "flext-auth-tests",
@@ -163,7 +163,7 @@ class TestTokenRealFlows:
         self,
     ) -> None:
         provider = self.KerberosProvider(
-            config={
+            settings={
                 "realm": "EXAMPLE.COM",
                 "kdc": "kdc.example.com",
                 "service_principal": "HTTP/api.example.com@EXAMPLE.COM",

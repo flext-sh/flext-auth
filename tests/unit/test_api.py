@@ -202,8 +202,8 @@ class TestFlextAuthConfigurationOverrides:
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
         custom_config = FlextAuthSettings.fetch_global()
-        auth = FlextAuth(config=custom_config)
-        u.Tests.Matchers.that(auth.config, eq=custom_config)
+        auth = FlextAuth(settings=custom_config)
+        u.Tests.Matchers.that(auth.settings, eq=custom_config)
 
 
 class TestFlextAuthSessionManagement:
@@ -331,14 +331,14 @@ class TestFlextAuthModelConfiguration:
     """Test Pydantic model configuration."""
 
     def test_model_config_arbitrary_types_allowed(self) -> None:
-        """Test that arbitrary types are allowed in model config."""
+        """Test that arbitrary types are allowed in model settings."""
         u.Tests.Matchers.that(hasattr(m.Auth.AuthIdentity, "model_config"), eq=True)
 
     def test_model_config_validate_assignment(self) -> None:
         """Test validate_assignment configuration."""
-        config = FlextAuthSettings.fetch_global()
+        settings = FlextAuthSettings.fetch_global()
         u.Tests.Matchers.that(
-            config.model_config.get("validate_assignment", False) is True, eq=True
+            settings.model_config.get("validate_assignment", False) is True, eq=True
         )
 
 
@@ -366,7 +366,7 @@ class TestFlextAuth:
             session_expiry_minutes=1440,
             max_sessions_per_user=5,
         )
-        auth_custom: FlextAuth = FlextAuth(config=custom_config)
+        auth_custom: FlextAuth = FlextAuth(settings=custom_config)
         u.Tests.Matchers.that(
             auth_custom._config.auth_secret.get_secret_value(), eq=custom_secret
         )
@@ -639,7 +639,7 @@ class TestFlextAuthQuickStartFunction:
         """Test FlextAuth.quick_start() with default parameters."""
         auth = FlextAuth.quick_start()
         assert isinstance(auth, FlextAuth)
-        u.Tests.Matchers.that(auth.config, none=False)
+        u.Tests.Matchers.that(auth.settings, none=False)
         u.Tests.Matchers.that(auth.registry, none=False)
 
     def test_flext_auth_quick_start_no_redacted_ldap_bind_password(self) -> None:
@@ -661,7 +661,7 @@ class TestFlextAuthInitializationCoverage:
     """Test FlextAuth initialization edge cases - covering lines 228-229."""
 
     def test_flext_auth_config_creation_failure(self) -> None:
-        """Test FlextAuth initialization when config creation fails - lines 228-229."""
+        """Test FlextAuth initialization when settings creation fails - lines 228-229."""
         try:
             auth = FlextAuth()
             u.Tests.Matchers.that(auth._config, none=False)
@@ -935,23 +935,23 @@ class TestFlextAuthQuickStartMethod:
         """Test quick_start class method with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         assert isinstance(auth, FlextAuth)
-        u.Tests.Matchers.that(auth.config, none=False)
+        u.Tests.Matchers.that(auth.settings, none=False)
 
     def test_quick_start_without_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method without REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         assert isinstance(auth, FlextAuth)
-        u.Tests.Matchers.that(auth.config, none=False)
+        u.Tests.Matchers.that(auth.settings, none=False)
 
 
 class TestFlextAuthConfigurationMethods:
     """Test configuration and utility methods."""
 
     def test_get_config_method(self) -> None:
-        """Test config property functionality."""
+        """Test settings property functionality."""
         auth = FlextAuth()
-        config = auth.config
-        u.Tests.Matchers.that(config, none=False)
+        settings = auth.settings
+        u.Tests.Matchers.that(settings, none=False)
 
 
 class TestFlextAuthErrorHandlingPaths:
@@ -1420,7 +1420,7 @@ class _BaseTokenProviderForFlowTests(FlextAuthRfcProvider):
 
 class _RefreshCapableProviderForFlowTests(FlextAuthRfcProvider):
     def __init__(self) -> None:
-        super().__init__(config={})
+        super().__init__(settings={})
         self.last_refresh_input: str | None = None
 
     @override
@@ -1464,7 +1464,7 @@ class TestProviderTokenFlows:
 
     def test_base_provider_generate_token_for_user(self) -> None:
         provider = _BaseTokenProviderForFlowTests(
-            config={
+            settings={
                 "secret_key": "unit-test-secret-key-for-base-provider-12345",
                 "algorithm": "HS256",
                 "issuer": "flext-auth-tests",
@@ -1516,7 +1516,7 @@ class TestProviderTokenFlows:
 
     def test_kerberos_generate_and_validate_token(self) -> None:
         provider = _ConcreteKerberosProviderForFlowTests(
-            config={
+            settings={
                 "realm": "EXAMPLE.COM",
                 "kdc": "kdc.example.com",
                 "service_principal": "HTTP/api.example.com@EXAMPLE.COM",

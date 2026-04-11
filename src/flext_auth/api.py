@@ -55,13 +55,13 @@ class FlextAuth:
 
     def __init__(
         self,
-        config: FlextAuthSettings | None = None,
+        settings: FlextAuthSettings | None = None,
         service_name: str | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
         super().__init__()
-        if config is not None:
-            self._config = config
+        if settings is not None:
+            self._config = settings
         else:
             self._config = FlextAuthSettings()
         self._registry = FlextAuthRegistry()
@@ -72,27 +72,27 @@ class FlextAuth:
         self._dispatcher = command_bus_result
         self._service_name = service_name if service_name is not None else "flext_auth"
         self.logger = u.fetch_logger(__name__)
-        self._provider_service = FlextAuthProviderService(config=self._config)
+        self._provider_service = FlextAuthProviderService(settings=self._config)
         for provider_name in self._provider_service.list_providers():
             provider_result = self._provider_service.get_provider(provider_name)
             if provider_result.success:
                 self._registry.register_provider(provider_name, provider_result.value)
         self._identity_service = FlextAuthIdentityService(
-            config=self._config,
+            settings=self._config,
             dispatcher=self._dispatcher,
         )
         self._token_service = FlextAuthTokenService(
-            config=self._config,
+            settings=self._config,
             provider_service=self._provider_service,
             dispatcher=self._dispatcher,
         )
         self._session_service = FlextAuthSessionService(
-            config=self._config,
+            settings=self._config,
             dispatcher=self._dispatcher,
         )
 
     @property
-    def config(self) -> FlextAuthSettings:
+    def settings(self) -> FlextAuthSettings:
         """Configuration access."""
         return self._config
 
@@ -128,7 +128,7 @@ class FlextAuth:
 
         """
         custom_config = FlextAuthSettings.model_validate(config_overrides)
-        instance: Self = cls(config=custom_config)
+        instance: Self = cls(settings=custom_config)
         return instance
 
     @classmethod

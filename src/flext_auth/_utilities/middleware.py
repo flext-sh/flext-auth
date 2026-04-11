@@ -30,11 +30,11 @@ from __future__ import annotations
 
 from typing import TypeIs, override
 
-from flext_auth import m, p, s, t, u
-from flext_core import r
+from flext_auth import m, p, t, u
+from flext_core import r, s
 
 
-class FlextAuthMiddleware(s[bool]):
+class FlextAuthMiddleware(s):
     """Authentication middleware adapters following FLEXT standards.
 
     This class provides middleware that adapts p.Auth.FlextAuthBaseProvider implementations

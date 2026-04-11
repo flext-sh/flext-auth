@@ -136,8 +136,8 @@ validation_result = auth.validate_token(token)
 
    ```python
    # Ensure same secret key is used for generation and validation
-   config = FlextAuthSettings()
-   print(f"JWT Secret: {config.jwt_secret_key}")
+   settings = FlextAuthSettings()
+   print(f"JWT Secret: {settings.jwt_secret_key}")
    ```
 
 ______________________________________________________________________
@@ -149,9 +149,9 @@ ______________________________________________________________________
 **Problem**: Configuration not loading correctly
 
 ```python
-config = FlextAuthSettings()
-if config.is_failure:
-    print(f"Config error: {config.error}")
+settings = FlextAuthSettings()
+if settings.is_failure:
+    print(f"Config error: {settings.error}")
 ```
 
 **Solutions**:
@@ -168,14 +168,14 @@ if config.is_failure:
    ```python
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
-   config = FlextAuthSettings()
+   settings = FlextAuthSettings()
    ```
 
 1. **Manual Configuration**:
 
    ```python
    # Create configuration manually if environment fails
-   config = FlextAuthSettings(jwt_secret_key="manual-secret-key", jwt_expiry_minutes=60)
+   settings = FlextAuthSettings(jwt_secret_key="manual-secret-key", jwt_expiry_minutes=60)
    ```
 
 ### JWT Configuration
@@ -185,10 +185,10 @@ if config.is_failure:
 **Check Configuration**:
 
 ```python
-config = FlextAuthSettings()
-print(f"JWT Algorithm: {config.jwt_algorithm}")
-print(f"JWT Expiry: {config.jwt_expiry_minutes}")
-print(f"Secret Key Length: {len(config.jwt_secret_key)}")
+settings = FlextAuthSettings()
+print(f"JWT Algorithm: {settings.jwt_algorithm}")
+print(f"JWT Expiry: {settings.jwt_expiry_minutes}")
+print(f"Secret Key Length: {len(settings.jwt_secret_key)}")
 ```
 
 **Recommendations**:
@@ -226,7 +226,7 @@ ______________________________________________________________________
    pytest tests/unit/test_config_coverage.py -v
 
    # Common issue: Singleton state between tests
-   # Solution: Reset global config in test fixtures
+   # Solution: Reset global settings in test fixtures
    ```
 
 1. **Mock Issues**:
@@ -277,8 +277,8 @@ bcrypt_time = time.time() - start
 print(f"Bcrypt hashing took: {bcrypt_time:.3f}s")
 
 # Check bcrypt rounds
-config = FlextAuthSettings()
-print(f"Bcrypt rounds: {config.bcrypt_rounds}")
+settings = FlextAuthSettings()
+print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
 ```
 
 **Solutions**:
@@ -398,10 +398,10 @@ bandit -r src/flext_auth/
 # Verify secure configuration
 python -c "
 from flext_auth import FlextAuthSettings
-config = FlextAuthSettings()
-print(f'Bcrypt rounds: {config.bcrypt_rounds}')  # Should be >= 12
-print(f'JWT expiry: {config.jwt_expiry_minutes}')  # Should be <= 60
-print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
+settings = FlextAuthSettings()
+print(f'Bcrypt rounds: {settings.bcrypt_rounds}')  # Should be >= 12
+print(f'JWT expiry: {settings.jwt_expiry_minutes}')  # Should be <= 60
+print(f'Max attempts: {settings.max_failed_attempts}')  # Should be <= 5
 "
 ```
 

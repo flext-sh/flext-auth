@@ -34,18 +34,18 @@ class FlextAuthProviderMixin:
 
     _provider_config: t.ScalarMapping | None
 
-    def __init__(self, config: t.ScalarMapping | None = None) -> None:
+    def __init__(self, settings: t.ScalarMapping | None = None) -> None:
         """Initialize provider mixin with optional configuration.
 
         Args:
-            config: Provider configuration mapping with scalar values.
+            settings: Provider configuration mapping with scalar values.
 
         """
         super().__init__()
-        self._provider_config = config
+        self._provider_config = settings
 
     @property
-    def config(self) -> t.ScalarMapping | None:
+    def settings(self) -> t.ScalarMapping | None:
         """Get provider configuration."""
         return self._provider_config
 
@@ -68,21 +68,21 @@ class FlextAuthProviderMixin:
             r[str]: Encoded token string on success, error on failure.
 
         """
-        config = self._provider_config
-        if not config:
+        settings = self._provider_config
+        if not settings:
             return r[str].fail(
                 "Provider configuration is required for token generation"
             )
-        secret_key_value = config.get("secret_key")
+        secret_key_value = settings.get("secret_key")
         if not isinstance(secret_key_value, str) or not secret_key_value:
             return r[str].fail("JWT secret_key not configured")
-        algorithm_value = config.get("algorithm")
+        algorithm_value = settings.get("algorithm")
         algorithm = (
             algorithm_value
             if isinstance(algorithm_value, str)
             else c.Auth.DEFAULT_JWT_ALGORITHM
         )
-        expiry_config_value = config.get("expiry_minutes")
+        expiry_config_value = settings.get("expiry_minutes")
         default_expiry = (
             expiry_config_value if isinstance(expiry_config_value, int) else 30
         )
@@ -97,10 +97,10 @@ class FlextAuthProviderMixin:
         claims["iat"] = int(now.timestamp())
         claims["exp"] = int((now + timedelta(minutes=effective_expiry)).timestamp())
         claims["token_type"] = token_kind
-        issuer_value = config.get("issuer")
+        issuer_value = settings.get("issuer")
         if isinstance(issuer_value, str) and issuer_value:
             claims["iss"] = issuer_value
-        audience_value = config.get("audience")
+        audience_value = settings.get("audience")
         if isinstance(audience_value, str) and audience_value:
             claims["aud"] = audience_value
         return u.encode_token(claims, secret_key_value, algorithm)
@@ -164,8 +164,8 @@ class FlextAuthProviderMixin:
             return r[p.Auth.Token].fail(
                 new_token_result.error or "Token generation failed during refresh"
             )
-        config = self._provider_config
-        expiry_config_value = config.get("expiry_minutes") if config else None
+        settings = self._provider_config
+        expiry_config_value = settings.get("expiry_minutes") if settings else None
         default_expiry = (
             expiry_config_value if isinstance(expiry_config_value, int) else 30
         )
@@ -235,12 +235,12 @@ class FlextAuthProviderMixin:
             r[t.ContainerValueMapping]: Decoded claims on success, error on failure.
 
         """
-        config = self._provider_config
-        if not config:
+        settings = self._provider_config
+        if not settings:
             return r[t.Auth.Tokens.ClaimMap].fail(
                 "Provider configuration required for token decoding"
             )
-        secret_key_value = config.get("secret_key")
+        secret_key_value = settings.get("secret_key")
         if not isinstance(secret_key_value, (str, SecretStr)):
             return r[t.Auth.Tokens.ClaimMap].fail("JWT secret_key not configured")
         secret_key = (
@@ -250,10 +250,10 @@ class FlextAuthProviderMixin:
         )
         secret_key_obj = SecretStr(secret_key)
 
-        algorithm_value = config.get("algorithm")
+        algorithm_value = settings.get("algorithm")
         algorithm = algorithm_value if isinstance(algorithm_value, str) else "HS256"
 
-        audience_value = config.get("audience")
+        audience_value = settings.get("audience")
         audience = (
             audience_value
             if isinstance(audience_value, str) and audience_value

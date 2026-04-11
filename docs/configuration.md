@@ -45,9 +45,9 @@ ______________________________________________________________________
 ```python
 from flext_auth import FlextAuthSettings
 
-config = FlextAuthSettings()
-print(f"JWT Expiry: {config.jwt_expiry_minutes} minutes")
-print(f"Bcrypt Rounds: {config.bcrypt_rounds}")
+settings = FlextAuthSettings()
+print(f"JWT Expiry: {settings.jwt_expiry_minutes} minutes")
+print(f"Bcrypt Rounds: {settings.bcrypt_rounds}")
 ```
 
 ### Environment-Specific Configuration
@@ -56,12 +56,12 @@ print(f"Bcrypt Rounds: {config.bcrypt_rounds}")
 # Development configuration
 dev_config = FlextAuthSettings()
 if dev_config.is_success:
-    config = dev_config.unwrap()
+    settings = dev_config.unwrap()
 
 # Production configuration
 prod_config = FlextAuthSettings()
 if prod_config.is_success:
-    config = prod_config.unwrap()
+    settings = prod_config.unwrap()
 ```
 
 ______________________________________________________________________
@@ -103,14 +103,14 @@ ______________________________________________________________________
 ### Override Specific Parameters
 
 ```python
-config = FlextAuthSettings(
+settings = FlextAuthSettings(
     jwt_expiry_minutes=30,  # 30-minute tokens
     bcrypt_rounds=14,  # Higher security
     max_failed_attempts=3,  # Stricter lockout
     session_timeout_minutes=60,  # 1-hour sessions
 )
 
-auth = FlextAuth(config=config)
+auth = FlextAuth(settings=settings)
 ```
 
 ### Production Security Settings
@@ -141,10 +141,10 @@ if config_result.is_failure:
 
 ```bash
 # Validate current configuration
-flext-auth validate-config
+flext-auth validate-settings
 
 # Show configuration summary
-flext-auth manage-config show
+flext-auth manage-settings show
 ```
 
 ______________________________________________________________________
@@ -157,11 +157,11 @@ FlextAuthSettings follows FLEXT singleton pattern for global configuration:
 
 ```python
 # Set global configuration
-config = FlextAuthSettings()
-FlextAuthSettings.set_global_instance(config)
+settings = FlextAuthSettings()
+FlextAuthSettings.set_global_instance(settings)
 
 # Use global configuration
-auth = FlextAuth()  # Uses global config automatically
+auth = FlextAuth()  # Uses global settings automatically
 ```
 
 ### Global Instance Access
@@ -221,7 +221,7 @@ ______________________________________________________________________
 import os
 
 env = os.getenv("FLEXT_ENV", "development")
-config = FlextAuthSettings()
+settings = FlextAuthSettings()
 ```
 
 ______________________________________________________________________

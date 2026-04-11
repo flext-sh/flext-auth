@@ -93,7 +93,7 @@ if auth_result.success:
 ```python
 from flext_auth import flext_auth_quick_start
 
-# Zero-config authentication setup
+# Zero-settings authentication setup
 auth_result = flext_auth_quick_start()
 if auth_result.success:
     auth = auth_result.value
@@ -300,13 +300,13 @@ def protected_view(request):
 from flext_auth import FlextAuthSettings, FlextAuthService
 
 # Optimized for high-throughput scenarios
-config = FlextAuthSettings(
+settings = FlextAuthSettings(
     bcrypt_rounds=4,  # Faster hashing for development
     access_token_expire_minutes=60,
     max_concurrent_sessions=10,
 )
 
-auth_service = FlextAuthService(config)
+auth_service = FlextAuthService(settings)
 ```
 
 ### Security-Hardened Configuration
@@ -315,14 +315,14 @@ auth_service = FlextAuthService(config)
 from flext_auth import FlextAuthSettings, FlextAuthService
 
 # Maximum security configuration
-config = FlextAuthSettings(
+settings = FlextAuthSettings(
     bcrypt_rounds=12,  # Strong password hashing
     access_token_expire_minutes=15,  # Short token lifetime
     max_failed_attempts=3,  # Strict lockout policy
     lockout_duration_minutes=60,
 )
 
-auth_service = FlextAuthService(config)
+auth_service = FlextAuthService(settings)
 ```
 
 ## Running Examples

@@ -17,9 +17,9 @@ from flext_core import r
 class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
-    def __init__(self, config: t.ConfigurationMapping | None = None) -> None:
+    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
-        super().__init__(config)
+        super().__init__(settings)
 
     @override
     def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:

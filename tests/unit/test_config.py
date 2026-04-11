@@ -24,31 +24,31 @@ class TestFlextAuthSettingsBasic:
     """Basic tests for FlextAuthSettings functionality."""
 
     def test_config_creation(self) -> None:
-        """Test basic config creation."""
-        config = _require_settings()
-        u.Tests.Matchers.that(config, is_=FlextAuthSettings)
-        u.Tests.Matchers.that(config.expiry_minutes, gt=0)
-        u.Tests.Matchers.that(config.algorithm, is_=str)
+        """Test basic settings creation."""
+        settings = _require_settings()
+        u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
+        u.Tests.Matchers.that(settings.expiry_minutes, gt=0)
+        u.Tests.Matchers.that(settings.algorithm, is_=str)
 
     def test_config_with_custom_values(self) -> None:
-        """Test config with custom values."""
+        """Test settings with custom values."""
         base_config = _require_settings()
-        config = base_config.model_copy(
+        settings = base_config.model_copy(
             update={"expiry_minutes": 60, "hash_rounds": 12},
         )
-        u.Tests.Matchers.that(config.expiry_minutes, eq=60)
-        u.Tests.Matchers.that(config.hash_rounds, eq=12)
+        u.Tests.Matchers.that(settings.expiry_minutes, eq=60)
+        u.Tests.Matchers.that(settings.hash_rounds, eq=12)
 
     def test_config_validation(self) -> None:
-        """Test config validation."""
+        """Test settings validation."""
         base_config = _require_settings()
-        config = base_config.model_copy(update={"expiry_minutes": 30})
-        u.Tests.Matchers.that(config.expiry_minutes, eq=30)
+        settings = base_config.model_copy(update={"expiry_minutes": 30})
+        u.Tests.Matchers.that(settings.expiry_minutes, eq=30)
 
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
-        config = _require_settings()
-        u.Tests.Matchers.that(config, is_=FlextAuthSettings)
+        settings = _require_settings()
+        u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
 
 
 class TestJwtTokenGenerator:
@@ -56,7 +56,7 @@ class TestJwtTokenGenerator:
 
     def test_generate_token_missing_config(self) -> None:
         """Test token generation with missing configuration."""
-        provider = FlextAuthJwtProvider(config=None)
+        provider = FlextAuthJwtProvider(settings=None)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-123")
         assert result.failure
@@ -65,13 +65,13 @@ class TestJwtTokenGenerator:
 
     def test_generate_token_success(self) -> None:
         """Test successful token generation."""
-        config: dict[str, str | int] = {
+        settings: dict[str, str | int] = {
             "secret_key": "test-secret-key-for-jwt-minimum-32-chars",
             "algorithm": "HS256",
             "expiry_minutes": 30,
             "issuer": "flext-auth-test",
         }
-        provider = FlextAuthJwtProvider(config=config)
+        provider = FlextAuthJwtProvider(settings=settings)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-456")
         assert result.success

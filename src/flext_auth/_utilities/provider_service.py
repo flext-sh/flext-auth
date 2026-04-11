@@ -30,17 +30,17 @@ from flext_auth import (
 from flext_core import r, s
 
 
-class FlextAuthProviderService(s[bool]):
+class FlextAuthProviderService(s):
     """Flexible provider service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
     Flexible composition with dependency injection and error handling.
     """
 
-    def __init__(self, *, config: FlextAuthSettings | None = None) -> None:
+    def __init__(self, *, settings: FlextAuthSettings | None = None) -> None:
         """Flexible initialization with automatic provider registration."""
         super().__init__()
-        self._auth_config = config if config is not None else FlextAuthSettings()
+        self._auth_config = settings if settings is not None else FlextAuthSettings()
         self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 
@@ -48,7 +48,7 @@ class FlextAuthProviderService(s[bool]):
     def _build_provider_init_config(
         provider_config: t.ConfigurationMapping,
     ) -> Mapping[str, t.Primitives]:
-        """Normalize provider config to base-provider scalar contract."""
+        """Normalize provider settings to base-provider scalar contract."""
         normalized: Mapping[str, t.Primitives] = {
             key: value
             for key, value in provider_config.items()

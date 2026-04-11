@@ -20,23 +20,26 @@ from flext_auth import (
     c,
     m,
     p,
-    s,
     t,
 )
-from flext_core import r
+from flext_core import r, s
 
 
-class FlextAuthIdentityService(s[bool]):
+class FlextAuthIdentityService(s):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
     SOLID principles with dependency injection and railway error handling.
     """
 
-    def __init__(self, *, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
+    def __init__(
+        self, *, settings: FlextAuthSettings, dispatcher: p.Dispatcher
+    ) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
-        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(config, dispatcher)
+        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(
+            settings, dispatcher
+        )
 
     @property
     def identity_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:

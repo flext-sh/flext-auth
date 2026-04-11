@@ -14,7 +14,7 @@ Descricao oficial atual: "FLEXT Auth - Enterprise Authentication & Authorization
 
 - Entrada: credenciais, tokens e contexto de permissao.
 - Saida: decisao de acesso e estado de autenticacao.
-- Dependencias: flext-core e provedores de identidade configurados.
+- Dependencias: flext-core e provedores de identidade settingsurados.
 
 ## Estado atual e risco de adocao
 

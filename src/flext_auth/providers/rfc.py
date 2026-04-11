@@ -35,9 +35,9 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
 
     """
 
-    def __init__(self, config: Mapping[str, t.Primitives] | None = None) -> None:
+    def __init__(self, settings: Mapping[str, t.Primitives] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration."""
-        super().__init__(config)
+        super().__init__(settings)
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.

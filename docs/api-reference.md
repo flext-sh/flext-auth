@@ -17,7 +17,7 @@
 - [CLI Interface](#cli-interface)
   - [create-user](#create-user)
   - [authenticate](#authenticate)
-  - [validate-config](#validate-config)
+  - [validate-settings](#validate-settings)
 - [Error Handling](#error-handling)
   - [Success Pattern](#success-pattern)
   - [Chaining Pattern](#chaining-pattern)
@@ -68,8 +68,8 @@ ______________________________________________________________________
 ```python
 from flext_auth import FlextAuth, FlextAuthSettings
 
-config = FlextAuthSettings()
-auth = FlextAuth(config=config)
+settings = FlextAuthSettings()
+auth = FlextAuth(settings=settings)
 ```
 
 ### register_user()
@@ -254,7 +254,7 @@ Create configuration for specific environment.
 ```python
 config_result = FlextAuthSettings()
 if config_result.is_success:
-    config = config_result.unwrap()
+    settings = config_result.unwrap()
 ```
 
 ______________________________________________________________________
@@ -282,12 +282,12 @@ flext-auth authenticate \
     --password securepass123
 ```
 
-### validate-config
+### validate-settings
 
 Validate current configuration.
 
 ```bash
-flext-auth validate-config
+flext-auth validate-settings
 ```
 
 ______________________________________________________________________

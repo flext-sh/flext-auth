@@ -26,12 +26,12 @@ def example_basic_authentication() -> None:
     logger.info("Starting basic authentication example")
     FlextAuth()
     logger.info("FlextAuth instance created with in-memory storage")
-    config = FlextAuthSettings()
+    settings = FlextAuthSettings()
     logger.info(
         "Authentication configuration loaded",
-        expiry_minutes=config.expiry_minutes,
-        hash_rounds=config.hash_rounds,
-        max_sessions_per_user=config.max_sessions_per_user,
+        expiry_minutes=settings.expiry_minutes,
+        hash_rounds=settings.hash_rounds,
+        max_sessions_per_user=settings.max_sessions_per_user,
     )
 
 

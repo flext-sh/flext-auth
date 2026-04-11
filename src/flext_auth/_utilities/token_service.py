@@ -20,13 +20,12 @@ from flext_auth import (
     c,
     m,
     p,
-    r,
-    s,
     u,
 )
+from flext_core import r, s
 
 
-class FlextAuthTokenService(s[bool]):
+class FlextAuthTokenService(s):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -36,13 +35,15 @@ class FlextAuthTokenService(s[bool]):
     def __init__(
         self,
         *,
-        config: FlextAuthSettings,
+        settings: FlextAuthSettings,
         provider_service: FlextAuthProviderService,
         dispatcher: p.Dispatcher,
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
-        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(config, dispatcher)
+        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(
+            settings, dispatcher
+        )
         self._provider_service = provider_service
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 

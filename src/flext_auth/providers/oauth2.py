@@ -34,16 +34,16 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     Uses flext-core patterns and Python 3.13+ features for maximum maintainability.
     """
 
-    def __init__(self, config: m.Auth.ProviderConfig | t.ScalarMapping) -> None:
+    def __init__(self, settings: m.Auth.ProviderConfig | t.ScalarMapping) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
         Railway-oriented initialization with proper error handling.
         Uses composition for better separation of concerns.
         """
-        if isinstance(config, Mapping):
-            normalized_config: t.ConfigurationMapping = dict(config)
+        if isinstance(settings, Mapping):
+            normalized_config: t.ConfigurationMapping = dict(settings)
         else:
-            normalized_config = dict(config.model_dump(exclude_none=True))
+            normalized_config = dict(settings.model_dump(exclude_none=True))
         super().__init__(self._to_scalar_config(normalized_config))
         self._config = normalized_config
         validation_result = self._validate_configuration()
@@ -51,7 +51,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             msg = f"OAuth2 configuration validation failed: {validation_result.error}"
             raise e.ValidationError(
                 msg,
-                field="config",
+                field="settings",
                 expected_type="valid_oauth2_config",
                 actual_type="invalid_config",
             )
@@ -80,11 +80,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._http_client: http.client.HTTPSConnection | None = None
 
     @staticmethod
-    def _to_scalar_config(config: t.ConfigurationMapping) -> Mapping[str, t.Primitives]:
-        """Project OAuth2 config to RFC base scalar contract."""
+    def _to_scalar_config(
+        settings: t.ConfigurationMapping,
+    ) -> Mapping[str, t.Primitives]:
+        """Project OAuth2 settings to RFC base scalar contract."""
         scalar_config: Mapping[str, t.Primitives] = {
             key: value
-            for key, value in config.items()
+            for key, value in settings.items()
             if isinstance(value, (bool, int, str))
         }
         return scalar_config

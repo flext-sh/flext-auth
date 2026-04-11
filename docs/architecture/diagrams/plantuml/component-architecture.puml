@@ -20,7 +20,7 @@ Container_Boundary(auth_service, "flext-auth Service") {
     Component(http_transport, "FlextWebTransportAdapter", "Python/FastAPI", "HTTP transport and middleware")
     Component(grpc_transport, "GrpcTransportAdapter", "Python/grpcio", "gRPC transport implementation")
 
-    Component(config, "FlextAuthSettings", "Python/Pydantic", "Configuration management")
+    Component(settings, "FlextAuthSettings", "Python/Pydantic", "Configuration management")
     Component(constants, "FlextAuthConstants", "Python", "System constants and defaults")
     Component(models, "FlextAuthModels", "Python/Pydantic", "Domain models and schemas")
 }
@@ -49,7 +49,7 @@ Rel(session_service, database, "Manages sessions")
 Rel(api_facade, http_transport, "Uses for HTTP communication")
 Rel(api_facade, grpc_transport, "Uses for gRPC communication")
 
-Rel(api_facade, config, "Reads configuration")
+Rel(api_facade, settings, "Reads configuration")
 Rel(api_facade, constants, "Uses system constants")
 Rel(api_facade, models, "Uses domain models")
 

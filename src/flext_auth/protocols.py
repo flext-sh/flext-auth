@@ -274,13 +274,13 @@ class FlextAuthProtocols(FlextApiProtocols):
 
             def __init__(
                 self,
-                config: t.ScalarMapping | None = None,
+                settings: t.ScalarMapping | None = None,
             ) -> None:
                 """Initialize provider with optional configuration."""
                 ...
 
             @property
-            def config(self) -> t.ScalarMapping | None:
+            def settings(self) -> t.ScalarMapping | None:
                 """Get provider configuration."""
                 ...
 

@@ -40,23 +40,27 @@ class FlextAuthUtilitiesManagers(
         """Manager composition helper for auth services."""
 
         __slots__ = (
-            "config",
             "dispatcher",
             "rate_limiter",
             "session_manager",
+            "settings",
             "user_manager",
         )
 
-        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
+        def __init__(
+            self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
+        ) -> None:
             """Initialize all standard managers used by services."""
-            self.config = config
+            self.settings = settings
             self.dispatcher = dispatcher
-            self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager(config)
+            self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager(
+                settings
+            )
             self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager(
-                config
+                settings
             )
             self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
-                config,
+                settings,
                 dispatcher,
             )
 
@@ -81,10 +85,10 @@ class FlextAuthUtilitiesManagers(
         _context: p.Context
         _users: MutableMapping[str, t.Auth.Managers.UserData]
 
-        def __init__(self, config: FlextAuthSettings) -> None:
+        def __init__(self, settings: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
             super().__init__()
-            self._config = config
+            self._config = settings
             self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()
             self._users: MutableMapping[str, t.Auth.Managers.UserData] = {}
@@ -489,10 +493,12 @@ class FlextAuthUtilitiesManagers(
         _EVENT_AUTHORIZATION_GRANTED = "authorization_granted"
         _EVENT_AUTHORIZATION_DENIED = "authorization_denied"
 
-        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
+        def __init__(
+            self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
+        ) -> None:
             """Initialize audit logger with configuration."""
             super().__init__()
-            self._config = config
+            self._config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()

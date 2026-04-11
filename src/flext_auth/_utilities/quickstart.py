@@ -10,11 +10,11 @@ from __future__ import annotations
 from collections.abc import MutableSequence
 from typing import override
 
-from flext_auth import FlextAuth, FlextAuthSettings, m, s, t
-from flext_core import r
+from flext_auth import FlextAuth, FlextAuthSettings, m, t
+from flext_core import r, s
 
 
-class FlextAuthQuickstart(s[bool]):
+class FlextAuthQuickstart(s):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
     This class provides a simplified interface for common authentication operations
@@ -22,10 +22,10 @@ class FlextAuthQuickstart(s[bool]):
     Uses newer FlextSettings features for complete integration.
     """
 
-    def __init__(self, config: FlextAuthSettings | None = None) -> None:
+    def __init__(self, settings: FlextAuthSettings | None = None) -> None:
         """Initialize quickstart auth service with sensible defaults."""
         super().__init__()
-        self._auth_config = config if config is not None else FlextAuthSettings()
+        self._auth_config = settings if settings is not None else FlextAuthSettings()
         self._auth = FlextAuth()
 
     @property

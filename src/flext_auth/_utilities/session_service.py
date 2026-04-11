@@ -9,16 +9,19 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, p, r, s, u
+from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, p, u
+from flext_core import r, s
 
 
-class FlextAuthSessionService(s[bool]):
+class FlextAuthSessionService(s):
     """Focused service for session management with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
+    def __init__(self, settings: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
-        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(config, dispatcher)
+        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(
+            settings, dispatcher
+        )
 
     @property
     def session_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthSessionManager:

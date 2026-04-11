@@ -10,9 +10,9 @@ from flext_core import FlextContainer, FlextContext, r, u
 
 class FlextAuthSessionManagers:
     class FlextAuthSessionManager:
-        def __init__(self, config: FlextAuthSettings) -> None:
+        def __init__(self, settings: FlextAuthSettings) -> None:
             super().__init__()
-            self._config = config
+            self._config = settings
             self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()
             self._dispatcher: t.RegisterableService = (

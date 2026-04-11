@@ -100,8 +100,8 @@ from flext_auth import FlextAuth, FlextAuthSettings
 # Register authentication service
 container = FlextContainer.get_global()
 
-config = FlextAuthSettings()
-auth_service = FlextAuth(config=config)
+settings = FlextAuthSettings()
+auth_service = FlextAuth(settings=settings)
 container.register("auth_service", auth_service)
 
 
@@ -398,7 +398,7 @@ flext_env = os.getenv("FLEXT_ENV", "development")
 config_result = FlextAuthSettings()
 if config_result.is_success:
     auth_config = config_result.unwrap()
-    auth = FlextAuth(config=auth_config)
+    auth = FlextAuth(settings=auth_config)
 else:
     raise RuntimeError(f"Configuration failed: {config_result.error}")
 ```
@@ -422,7 +422,7 @@ class FlextAuthWorkspaceSettings(FlextWorkspaceSettings):
     def get_auth_service(self) -> r[FlextAuth]:
         """Get configured authentication service."""
         if self.auth_config.is_success:
-            return r[FlextAuth].ok(FlextAuth(config=self.auth_config.unwrap()))
+            return r[FlextAuth].ok(FlextAuth(settings=self.auth_config.unwrap()))
         else:
             return r[FlextAuth].fail("Auth configuration failed")
 ```

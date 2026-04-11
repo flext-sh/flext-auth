@@ -126,10 +126,10 @@ ______________________________________________________________________
 from flext_auth import FlextAuthSettings
 
 # Development configuration
-config = FlextAuthSettings()
+settings = FlextAuthSettings()
 
-if config.is_success:
-    dev_config = config.unwrap()
+if settings.is_success:
+    dev_config = settings.unwrap()
     print(f"JWT expiry: {dev_config.jwt_expiry_minutes} minutes")
     print(f"bcrypt rounds: {dev_config.bcrypt_rounds}")
 ```
@@ -140,7 +140,7 @@ if config.is_success:
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Custom configuration
-config = FlextAuthSettings(
+settings = FlextAuthSettings(
     jwt_expiry_minutes=30,  # 30-minute tokens
     bcrypt_rounds=14,  # Higher security
     max_failed_attempts=3,  # Account lockout
@@ -148,7 +148,7 @@ config = FlextAuthSettings(
 )
 
 # Use custom configuration
-auth = FlextAuth(config=config)
+auth = FlextAuth(settings=settings)
 ```
 
 ______________________________________________________________________
@@ -174,10 +174,10 @@ flext-auth authenticate \
 
 ```bash
 # Validate current configuration
-flext-auth validate-config
+flext-auth validate-settings
 
 # Show configuration summary
-flext-auth manage-config show
+flext-auth manage-settings show
 ```
 
 ______________________________________________________________________
@@ -265,8 +265,8 @@ from flext_auth import FlextAuth, FlextAuthSettings
 container = FlextContainer.get_global()
 
 # Configure and register
-config = FlextAuthSettings()
-auth_service = FlextAuth(config=config)
+settings = FlextAuthSettings()
+auth_service = FlextAuth(settings=settings)
 container.register("auth_service", auth_service)
 
 # Use from container

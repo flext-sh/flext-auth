@@ -280,7 +280,7 @@ export FLEXT_LDIF_STRICT_VALIDATION=true
 from flext_ldif import FlextLdifSettings
 
 # Create custom configuration
-config = FlextLdifSettings(
+settings = FlextLdifSettings(
     default_encoding="utf-8",
     strict_validation=True,
     servers_enabled=True,
@@ -288,7 +288,7 @@ config = FlextLdifSettings(
 )
 
 # Use configuration
-ldif = ldif(config=config)
+ldif = ldif(settings=settings)
 ```
 
 ## Next Steps

@@ -212,7 +212,7 @@ jobs:
 
 ### Pre-commit Hooks
 
-Add to `.pre-commit-config.yaml`:
+Add to `.pre-commit-settings.yaml`:
 
 ```yaml
 repos:

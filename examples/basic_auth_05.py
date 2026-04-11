@@ -9,7 +9,7 @@ from flext_auth import FlextAuth, FlextAuthSettings
 
 def main() -> None:
     """Demonstrate core auth workflow with the supported API surface."""
-    auth = FlextAuth(config=FlextAuthSettings())
+    auth = FlextAuth(settings=FlextAuthSettings())
     password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
     registration = auth.register_user(
         username="demouser",

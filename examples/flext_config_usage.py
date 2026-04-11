@@ -13,7 +13,7 @@ def main() -> None:
     production = FlextAuthSettings.fetch_global()
     if production.expiry_minutes < 1:
         return
-    _ = FlextAuth(config=production)
+    _ = FlextAuth(settings=production)
 
 
 if __name__ == "__main__":

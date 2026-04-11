@@ -39,12 +39,12 @@ class FlextAuthJwtTokenValidator:
 
         """
         try:
-            config = self._provider.config
-            if not config:
+            settings = self._provider.settings
+            if not settings:
                 return r[t.ContainerValueMapping].fail(
                     "JWT configuration not provided",
                 )
-            secret_key_value = config.get("secret_key")
+            secret_key_value = settings.get("secret_key")
             match secret_key_value:
                 case str() as secret if secret:
                     secret_key = secret
@@ -52,7 +52,7 @@ class FlextAuthJwtTokenValidator:
                     return r[t.ContainerValueMapping].fail(
                         "JWT secret key not configured",
                     )
-            algorithm_value = config.get("algorithm")
+            algorithm_value = settings.get("algorithm")
             match algorithm_value:
                 case str() as algorithm_str:
                     algorithm = algorithm_str
@@ -60,7 +60,7 @@ class FlextAuthJwtTokenValidator:
                     return r[t.ContainerValueMapping].fail(
                         "JWT algorithm not configured",
                     )
-            audience_value = config.get("audience")
+            audience_value = settings.get("audience")
             if audience_value is not None:
                 match audience_value:
                     case str() as audience_str:

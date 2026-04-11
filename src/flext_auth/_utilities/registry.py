@@ -102,12 +102,12 @@ class FlextAuthRegistry(FlextRegistry):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
         config_result = self.fetch_plugin(f"{self.PROVIDERS}_config", name)
         if config_result.failure:
-            return r[t.ScalarMapping].fail("No config")
+            return r[t.ScalarMapping].fail("No settings")
         wrapper = config_result.value
-        config = getattr(wrapper, "data", None)
-        if config is None:
-            return r[t.ScalarMapping].fail("Invalid config format")
-        return r[t.ScalarMapping].ok(config)
+        settings = getattr(wrapper, "data", None)
+        if settings is None:
+            return r[t.ScalarMapping].fail("Invalid settings format")
+        return r[t.ScalarMapping].ok(settings)
 
     def get_metadata(self, name: str) -> r[m.Auth.Providers.Metadata]:
         """Get provider metadata."""
@@ -168,7 +168,7 @@ class FlextAuthRegistry(FlextRegistry):
         metadata: m.Auth.Providers.Metadata | None = None,
         configuration: t.ConfigurationMapping | None = None,
     ) -> r[bool]:
-        """Register auth provider with optional config and metadata."""
+        """Register auth provider with optional settings and metadata."""
         provider_wrapper = m.Auth.ProviderWrapper(
             category=self.PROVIDERS,
             provider=provider,
@@ -214,14 +214,14 @@ class FlextAuthRegistry(FlextRegistry):
         self.unregister_plugin(f"{self.PROVIDERS}_metadata", name)
         return r[bool].ok(value=True)
 
-    def update_config(self, name: str, config: t.ConfigurationMapping) -> r[bool]:
+    def update_config(self, name: str, settings: t.ConfigurationMapping) -> r[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
         self.unregister_plugin(f"{self.PROVIDERS}_config", name)
         config_wrapper = m.Auth.ConfigWrapper(
             category=f"{self.PROVIDERS}_config",
-            data=dict(config),
+            data=dict(settings),
         )
         return self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
 

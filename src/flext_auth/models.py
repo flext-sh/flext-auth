@@ -642,7 +642,7 @@ class FlextAuthModels(FlextApiModels):
             ]
 
         class ConfigWrapper(FlextApiModels.Value):
-            """Protocol-conformant wrapper for config data."""
+            """Protocol-conformant wrapper for settings data."""
 
             category: Annotated[str, Field(description="Config category")]
             data: Annotated[t.ConfigurationMapping, Field(description="Config data")]

@@ -32,14 +32,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     Uses composition for Kerberos ticket validation, service ticket handling,
     and authentication. Railway-oriented programming for maximum maintainability.
 
-        >>> config = {
+        >>> settings = {
         ...     "realm": "EXAMPLE.COM",
         ...     "kdc": "kdc.example.com",
         ...     "service_principal": "HTTP/api.example.com@EXAMPLE.COM",
         ...     "keytab_path": "/etc/krb5.keytab",
         ...     "ticket_lifetime": 10,
         ... }
-        >>> provider = FlextAuthKerberosProvider(config)
+        >>> provider = FlextAuthKerberosProvider(settings)
         >>> # Authenticate with Kerberos ticket
         >>> result = provider.authenticate({
         ...     "gssapi_token": "base64-encoded-gssapi-token",
@@ -47,14 +47,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     """
 
-    def __init__(self, config: t.ConfigurationMapping | None = None) -> None:
+    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
         """
-        super().__init__(self._to_scalar_config(config))
-        self._config = config
+        super().__init__(self._to_scalar_config(settings))
+        self._config = settings
         validation_result = self._validate_kerberos_configuration()
         if validation_result.failure:
             msg = f"Kerberos configuration validation failed: {validation_result.error}"
@@ -66,14 +66,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     @staticmethod
     def _to_scalar_config(
-        config: t.ConfigurationMapping | None,
+        settings: t.ConfigurationMapping | None,
     ) -> Mapping[str, t.Primitives] | None:
-        """Project provider config into RFC base scalar contract."""
-        if config is None:
+        """Project provider settings into RFC base scalar contract."""
+        if settings is None:
             return None
         scalar_config: Mapping[str, t.Primitives] = {
             key: value
-            for key, value in config.items()
+            for key, value in settings.items()
             if isinstance(value, (bool, int, str))
         }
         return scalar_config
@@ -82,9 +82,9 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         """Railway-oriented Kerberos configuration validation."""
         if self._config is None:
             return r[bool].fail("Kerberos configuration is required")
-        config = self._config
+        settings = self._config
         required_fields = ["realm", "kdc", "service_principal"]
-        missing_fields = u.filter(required_fields, lambda field: field not in config)
+        missing_fields = u.filter(required_fields, lambda field: field not in settings)
         if missing_fields:
             return r[bool].fail(
                 f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
@@ -129,7 +129,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             ),
         ]
         for field_name, expected_types, error_msg in validations:
-            field_value = config.get(field_name)
+            field_value = settings.get(field_name)
             if field_value is not None and (
                 not any(
                     u.matches_type(field_value, expected_type)
@@ -328,10 +328,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ]
         | None
     ):
-        config = self._config
-        if config is None:
+        settings = self._config
+        if settings is None:
             return None
-        validator_candidate = config.get("ticket_validator")
+        validator_candidate = settings.get("ticket_validator")
         if callable(validator_candidate):
             return validator_candidate
         return None
