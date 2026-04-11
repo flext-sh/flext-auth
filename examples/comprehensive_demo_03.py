@@ -30,12 +30,12 @@ def demo_complete_auth_workflow() -> None:
     email = "demo@example.com"
     password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoSecurePass123!")
     result = auth.register_user(username, email, password, roles=["user"])
-    if result.is_success:
+    if result.success:
         user = result.value
     else:
         return
     auth_result = auth.authenticate_user(username, password)
-    if auth_result.is_success:
+    if auth_result.success:
         auth_data = auth_result.value
         session_id = auth_data.session_id
         jwt_token = auth_data.token
@@ -68,12 +68,12 @@ def demo_jwt_operations() -> None:
     """Demonstrate JWT token operations."""
     auth: FlextAuth = FlextAuth()
     user_result = auth.register_user("jwtuser", "jwt@example.com", "JWTPassword123!")
-    if user_result.is_failure:
+    if user_result.failure:
         return
     user = user_result.value
     identity_id: str = user.name
     token_result = auth.create_token(identity_id=identity_id)
-    if token_result.is_success:
+    if token_result.success:
         token_string = token_result.value
         auth.validate_token(token_string)
 
@@ -94,7 +94,7 @@ def demo_user_management() -> None:
     registered_users: list[FlextAuthModels.Auth.AuthIdentity] = []
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
-        if result.is_success:
+        if result.success:
             user = result.value
             registered_users.append(user)
     for user in registered_users:

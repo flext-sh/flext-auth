@@ -34,7 +34,7 @@ class FlextAuthDemo:
 
         """
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
-        if result.is_success:
+        if result.success:
             auth_data = result.value
             self._print_token_info(auth_data)
         return result
@@ -125,11 +125,11 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
         email="jwt@example.com",
         password=os.getenv("JWT_PASSWORD", "JWTPassword123!"),
     )
-    if jwt_user_result.is_success:
+    if jwt_user_result.success:
         user = jwt_user_result.value
         identity_id: str = user.name
         token_result = demo.auth.create_token(identity_id=identity_id)
-        if token_result.is_success:
+        if token_result.success:
             token_string = token_result.value
             demo.auth.validate_token(token_string)
 
@@ -144,10 +144,10 @@ def main() -> None:
     """
     demo = FlextAuthDemo()
     registration_result = demo.demo_user_registration()
-    if registration_result.is_failure:
+    if registration_result.failure:
         return
     auth_result = demo.demo_user_authentication()
-    if auth_result.is_failure:
+    if auth_result.failure:
         return
     auth_data = auth_result.value
     access_token = str(auth_data.token) if auth_data.token else ""

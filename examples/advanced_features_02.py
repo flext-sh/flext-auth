@@ -35,13 +35,13 @@ def example_jwt_operations() -> None:
         password=os.getenv("EXAMPLE_PASSWORD", "AdvancedPassword123!"),
         roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
     )
-    if user_result.is_failure:
+    if user_result.failure:
         return
     token_result = auth.authenticate_user(
         username="advanced_user",
         password=os.getenv("EXAMPLE_PASSWORD", "AdvancedPassword123!"),
     )
-    if token_result.is_success:
+    if token_result.success:
         auth_token = token_result.value
         auth.validate_token(auth_token.token)
 
@@ -62,7 +62,7 @@ def example_role_based_access() -> None:
     registered_users: list[FlextAuthModels.Auth.AuthIdentity] = []
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
-        if result.is_success:
+        if result.success:
             registered_users.append(result.value)
 
 
@@ -74,12 +74,12 @@ def example_session_management() -> None:
         "session@example.com",
         "SessionPass123!",
     )
-    if user_result.is_failure:
+    if user_result.failure:
         return
     tokens: list[str] = []
     for _i in range(3):
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
-        if auth_result.is_success:
+        if auth_result.success:
             token = auth_result.value.token
             tokens.append(token)
 
@@ -110,12 +110,12 @@ def example_token_validation() -> None:
     """Demonstrate advanced token validation."""
     auth: FlextAuth = FlextAuth()
     user_result = auth.register_user("tokenuser", "token@example.com", "TokenPass123!")
-    if user_result.is_failure:
+    if user_result.failure:
         return
     user = user_result.value
     identity_id: str = user.name
     token_result = auth.create_token(identity_id=identity_id)
-    if token_result.is_failure:
+    if token_result.failure:
         return
     auth_token = token_result.value
     test_tokens = [

@@ -186,7 +186,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                     return secrets.token_hex(16)
 
                 @staticmethod
-                def is_expired(expiry_time: datetime) -> bool:
+                def expired(expiry_time: datetime) -> bool:
                     """Check if a timestamp is expired."""
                     return datetime.now(UTC) > expiry_time
 

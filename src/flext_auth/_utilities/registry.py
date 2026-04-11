@@ -56,7 +56,7 @@ class FlextAuthRegistry(FlextRegistry):
     def get(self, data: str) -> r[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name."""
         result = self.get_plugin(self.PROVIDERS, data)
-        if result.is_failure:
+        if result.failure:
             return r[p.Auth.FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{data}' not registered",
             )
@@ -77,7 +77,7 @@ class FlextAuthRegistry(FlextRegistry):
     def get_capabilities(self, name: str) -> r[set[str]]:
         """Get provider capabilities."""
         provider_result = self.get(name)
-        if provider_result.is_failure:
+        if provider_result.failure:
             return r[set[str]].fail(str(provider_result.error))
         provider = provider_result.unwrap()
         if not isinstance(provider, BaseModel) or not self._is_auth_provider(provider):
@@ -101,7 +101,7 @@ class FlextAuthRegistry(FlextRegistry):
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
         config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
-        if config_result.is_failure:
+        if config_result.failure:
             return r[t.ScalarMapping].fail("No config")
         wrapper = config_result.value
         config = getattr(wrapper, "data", None)
@@ -116,7 +116,7 @@ class FlextAuthRegistry(FlextRegistry):
                 f"Provider '{name}' not registered",
             )
         metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
-        if metadata_result.is_failure:
+        if metadata_result.failure:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
                     name=name,
@@ -141,7 +141,7 @@ class FlextAuthRegistry(FlextRegistry):
     def has_capability(self, name: str, capability: str) -> r[bool]:
         """Check if provider has capability."""
         caps_result = self.get_capabilities(name)
-        if caps_result.is_failure:
+        if caps_result.failure:
             return r[bool].fail(caps_result.error or f"Provider '{name}' not found")
         caps = caps_result.unwrap()
         return r[bool].ok(capability in caps)
@@ -149,12 +149,12 @@ class FlextAuthRegistry(FlextRegistry):
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
         result = self.get_plugin(self.PROVIDERS, name)
-        return result.is_success
+        return result.success
 
     def list_providers(self) -> t.StrSequence:
         """List registered provider names."""
         result = self.list_plugins(self.PROVIDERS)
-        if result.is_failure:
+        if result.failure:
             return list[str]()
         plugins = result.unwrap()
         if isinstance(plugins, list):
@@ -174,7 +174,7 @@ class FlextAuthRegistry(FlextRegistry):
             provider=provider,
         )
         provider_result = self.register_plugin(self.PROVIDERS, name, provider_wrapper)
-        if provider_result.is_failure:
+        if provider_result.failure:
             return provider_result
         if configuration:
             config_wrapper = m.Auth.ConfigWrapper(
@@ -186,7 +186,7 @@ class FlextAuthRegistry(FlextRegistry):
                 name,
                 config_wrapper,
             )
-            if config_result.is_failure:
+            if config_result.failure:
                 self.unregister_plugin(self.PROVIDERS, name)
                 return config_result
         if metadata:
@@ -199,7 +199,7 @@ class FlextAuthRegistry(FlextRegistry):
                 name,
                 metadata_wrapper,
             )
-            if metadata_result.is_failure:
+            if metadata_result.failure:
                 self.unregister_plugin(self.PROVIDERS, name)
                 self.unregister_plugin(f"{self.PROVIDERS}_config", name)
                 return metadata_result
@@ -208,7 +208,7 @@ class FlextAuthRegistry(FlextRegistry):
     def unregister(self, name: str) -> r[bool]:
         """Unregister provider and cleanup auth-specific data."""
         provider_result = self.unregister_plugin(self.PROVIDERS, name)
-        if provider_result.is_failure:
+        if provider_result.failure:
             return r[bool].fail(f"Provider '{name}' not registered")
         self.unregister_plugin(f"{self.PROVIDERS}_config", name)
         self.unregister_plugin(f"{self.PROVIDERS}_metadata", name)

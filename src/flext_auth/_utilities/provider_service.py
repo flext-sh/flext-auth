@@ -99,7 +99,7 @@ class FlextAuthProviderService(s[bool]):
     def get_jwt_provider(self) -> r[FlextAuthJwtProvider]:
         """Get registered JWT provider with strict provider type."""
         provider_result = self._providers.get("jwt")
-        if provider_result.is_failure:
+        if provider_result.failure:
             return r[FlextAuthJwtProvider].fail(
                 provider_result.error or "JWT provider is not registered",
             )

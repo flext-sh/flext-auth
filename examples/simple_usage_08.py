@@ -34,9 +34,9 @@ def main() -> None:
         password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "SecurePassword123!"),
         roles=["user"],
     )
-    if reg_result.is_success:
+    if reg_result.success:
         auth_result = auth.authenticate_user("testuser", "SecurePassword123!")
-        if auth_result.is_success:
+        if auth_result.success:
             auth_data = auth_result.value
             _ = str(auth_data.token)
             _ = auth_data.session_id

@@ -27,7 +27,7 @@ class FlextAuthSessionManagers:
                 session_data = self._sessions[session_id]
                 if not self._is_session_active(session_data):
                     end_result = self.end_session_by_id(session_id)
-                    if end_result.is_success:
+                    if end_result.success:
                         cleaned_count += 1
             return r[int].ok(cleaned_count)
 

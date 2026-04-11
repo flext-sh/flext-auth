@@ -129,7 +129,7 @@ class FlextAuthMiddleware(s[bool]):
                 return r[p.Auth.RequestWithHeaders].ok(request)
             if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
-                if token_result.is_failure:
+                if token_result.failure:
                     return r[p.Auth.RequestWithHeaders].fail(
                         token_result.error or "Authentication failed",
                     )
@@ -160,7 +160,7 @@ class FlextAuthMiddleware(s[bool]):
             token = self._current_token
             if token is None:
                 return False
-            if token.is_expired or token.is_revoked:
+            if token.expired or token.is_revoked:
                 return False
             validation_result = self._provider.validate(token.token)
             return validation_result.fold(
@@ -177,14 +177,14 @@ class FlextAuthMiddleware(s[bool]):
             if not refresh_input:
                 return r[m.Auth.AuthToken].fail("No refresh token available")
             validation_result = self._provider.validate(refresh_input)
-            if validation_result.is_failure:
+            if validation_result.failure:
                 return r[m.Auth.AuthToken].fail(
                     validation_result.error or "Refresh source token is invalid",
                 )
             if not validation_result.value:
                 return r[m.Auth.AuthToken].fail("Refresh source token is invalid")
             refresh_result = self._provider.refresh(refresh_input)
-            if refresh_result.is_failure:
+            if refresh_result.failure:
                 return r[m.Auth.AuthToken].fail(
                     refresh_result.error or "Token refresh failed",
                 )

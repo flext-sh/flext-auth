@@ -47,7 +47,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         super().__init__(self._to_scalar_config(normalized_config))
         self._config = normalized_config
         validation_result = self._validate_configuration()
-        if validation_result.is_failure:
+        if validation_result.failure:
             msg = f"OAuth2 configuration validation failed: {validation_result.error}"
             raise e.ValidationError(
                 msg,
@@ -402,7 +402,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         flow_result = self._flow_manager.handle_authorization_code_flow(
             credential_payload,
         )
-        if flow_result.is_failure:
+        if flow_result.failure:
             return r[p.Auth.Token].fail(
                 flow_result.error or "OAuth2 authentication failed",
             )
@@ -478,14 +478,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             identity_id_result = self._decode_token_claims(token_text).flat_map(
                 self._extract_identity_id,
             )
-            if identity_id_result.is_success:
+            if identity_id_result.success:
                 identity_id = identity_id_result.value
             else:
                 identity_id = "oauth2_user"
         if not refresh_source:
             return r[p.Auth.Token].fail("No refresh token available")
         token_result = self._token_manager.refresh_access_token(refresh_source)
-        if token_result.is_failure:
+        if token_result.failure:
             return r[p.Auth.Token].fail(token_result.error or "Token refresh failed")
         token_data = token_result.value
         expires_in_seconds = (
@@ -540,9 +540,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def validate_token(self, token: str) -> r[m.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user."""
         introspection_endpoint_result = self._introspection_endpoint()
-        if introspection_endpoint_result.is_success:
+        if introspection_endpoint_result.success:
             introspection_result = self._introspect_token(token)
-            if introspection_result.is_failure:
+            if introspection_result.failure:
                 return r[m.Auth.AuthIdentity].fail(
                     introspection_result.error
                     or "OAuth2 introspection token validation failed",
@@ -553,7 +553,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 return r[m.Auth.AuthIdentity].fail("OAuth2 token is inactive")
             return self._map_token_payload_to_identity(introspection_result.value)
         claims_result = self._decode_token_claims(token)
-        if claims_result.is_failure:
+        if claims_result.failure:
             return r[m.Auth.AuthIdentity].fail(
                 claims_result.error or "OAuth2 token validation failed",
             )
@@ -615,17 +615,17 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _introspect_token(self, token: str) -> r[t.ConfigurationMapping]:
         endpoint_result = self._introspection_endpoint()
-        if endpoint_result.is_failure:
+        if endpoint_result.failure:
             return r[t.ScalarMapping].fail(
                 endpoint_result.error or "OAuth2 introspection endpoint is required",
             )
         headers_result = self._build_introspection_headers()
-        if headers_result.is_failure:
+        if headers_result.failure:
             return r[t.ScalarMapping].fail(
                 headers_result.error or "OAuth2 introspection headers are invalid",
             )
         body_result = self._build_introspection_form_data(token)
-        if body_result.is_failure:
+        if body_result.failure:
             return r[t.ScalarMapping].fail(
                 body_result.error or "OAuth2 introspection payload is invalid",
             )
@@ -684,7 +684,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         payload: t.ContainerValueMapping,
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
-        if identity_result.is_failure:
+        if identity_result.failure:
             username_value = payload.get("username")
             if isinstance(username_value, str) and username_value:
                 identity_id = username_value

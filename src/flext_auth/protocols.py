@@ -85,7 +85,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """Alias for name property (backward compatibility)."""
                 ...
 
-            def is_locked(self) -> bool:
+            def locked(self) -> bool:
                 """Check if identity is locked."""
                 ...
 
@@ -137,12 +137,12 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """Extend session expiration time."""
                 ...
 
-            def is_expired(self) -> bool:
+            def expired(self) -> bool:
                 """Check if session is expired."""
                 ...
 
             @override
-            def is_valid(self) -> bool:
+            def valid(self) -> bool:
                 """Check if session is valid (active and not expired)."""
                 ...
 
@@ -169,7 +169,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
             @property
-            def is_expired(self) -> bool:
+            def expired(self) -> bool:
                 """Check if token is expired."""
                 ...
 

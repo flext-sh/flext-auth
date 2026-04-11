@@ -215,7 +215,7 @@ class FlextWebTransportAdapter:
         self, request: m.Api.HttpRequest
     ) -> r[t.ContainerValueMapping]:
         response = self._client.request(request)
-        if response.is_failure:
+        if response.failure:
             return r[t.ContainerValueMapping].fail(response.error)
         http_response = response.value
         body = http_response.body

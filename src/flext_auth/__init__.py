@@ -13,6 +13,8 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
+    from flext_api import d, e, h, r, s, x
+
     from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
     from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
     from flext_auth._utilities.identity_service import FlextAuthIdentityService
@@ -46,12 +48,6 @@ if _t.TYPE_CHECKING:
     from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes, t
     from flext_auth.utilities import FlextAuthUtilities, u
-    from flext_core.decorators import d
-    from flext_core.exceptions import e
-    from flext_core.handlers import h
-    from flext_core.mixins import x
-    from flext_core.result import r
-    from flext_core.service import s
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._managers",
@@ -93,12 +89,14 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextAuthUtilities",
                 "u",
             ),
-            "flext_core.decorators": ("d",),
-            "flext_core.exceptions": ("e",),
-            "flext_core.handlers": ("h",),
-            "flext_core.mixins": ("x",),
-            "flext_core.result": ("r",),
-            "flext_core.service": ("s",),
+            "flext_api": (
+                "d",
+                "e",
+                "h",
+                "r",
+                "s",
+                "x",
+            ),
         },
     ),
     exclude_names=(

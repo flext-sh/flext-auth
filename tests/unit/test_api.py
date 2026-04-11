@@ -81,18 +81,18 @@ class TestFlextAuthProcessorRegistration:
             "test@example.com",
             "ValidPass123!",
         )
-        u.Tests.Matchers.that(result_valid.is_success, eq=True)
+        u.Tests.Matchers.that(result_valid.success, eq=True)
         result_short = auth.register_user("ab", "test2@example.com", "ValidPass123!")
-        u.Tests.Matchers.that(not result_short.is_success, eq=True)
+        u.Tests.Matchers.that(not result_short.success, eq=True)
         u.Tests.Matchers.that(result_short.error, none=False)
 
     def test_email_normalization_processor(self) -> None:
         """Test email normalization to lowercase."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.register_user("testuser", "TEST@EXAMPLE.COM", "ValidPass123!")
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
         user_result = auth.get_user_by_username("testuser")
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         u.Tests.Matchers.that(user.contact, eq="test@example.com")
 
@@ -100,7 +100,7 @@ class TestFlextAuthProcessorRegistration:
         """Test password strength validation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.register_user("user1", "user1@example.com", "weak")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
         error_text = (result.error or "").lower()
         u.Tests.Matchers.that(
@@ -118,14 +118,14 @@ class TestFlextAuthHandlerRegistration:
         u.Tests.Matchers.that(hasattr(auth, "_identity_service"), eq=True)
         u.Tests.Matchers.that(auth._identity_service, none=False)
         result = auth.register_user("cmduser", "cmd@example.com", "CmdPass123!")
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
 
     def test_query_handlers_registered(self) -> None:
         """Test that query handlers are registered with FlextBus."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("queryuser", "query@example.com", "QueryPass123!")
         result = auth.get_user_by_username("queryuser")
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
 
     def test_registry_initialized(self) -> None:
         """Test that registry is initialized."""
@@ -168,14 +168,14 @@ class TestFlextAuthStorageOperations:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("indexuser", "index@example.com", "IndexPass123!")
         user_result = auth.get_user_by_username("indexuser")
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
 
     def test_email_index_management(self) -> None:
         """Test email index is maintained correctly."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("emailuser", "email@example.com", "EmailPass123!")
         user_result = auth.get_user_by_username("emailuser")
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         u.Tests.Matchers.that(user.contact, eq="email@example.com")
 
@@ -184,10 +184,10 @@ class TestFlextAuthStorageOperations:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("sessionuser", "session@example.com", "SessionPass123!")
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         user = auth_result.value
         sessions_result = auth.get_user_sessions(user.unique_id)
-        u.Tests.Matchers.that(sessions_result.is_success, eq=True)
+        u.Tests.Matchers.that(sessions_result.success, eq=True)
 
 
 class TestFlextAuthConfigurationOverrides:
@@ -214,26 +214,26 @@ class TestFlextAuthSessionManagement:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("sessuser", "sess@example.com", "SessPass123!")
         auth_result = auth.authenticate_user("sessuser", "SessPass123!")
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         user_result = auth.get_user_by_username("sessuser")
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         sessions_result = auth.get_user_sessions(user.unique_id)
-        u.Tests.Matchers.that(sessions_result.is_success, eq=True)
+        u.Tests.Matchers.that(sessions_result.success, eq=True)
 
     def test_revoke_session(self) -> None:
         """Test revoking a session — token creation is not implemented so no sessions are created."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("revokeuser", "revoke@example.com", "RevokePass123!")
         auth_result = auth.authenticate_user("revokeuser", "RevokePass123!")
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         user = auth_result.value
         sessions_result = auth.get_user_sessions(user.unique_id)
-        u.Tests.Matchers.that(sessions_result.is_success, eq=True)
+        u.Tests.Matchers.that(sessions_result.success, eq=True)
         sessions = sessions_result.value
         u.Tests.Matchers.that(not sessions, eq=True)
         revoke_result = auth.revoke_session("nonexistent_session_id")
-        u.Tests.Matchers.that(not revoke_result.is_success, eq=True)
+        u.Tests.Matchers.that(not revoke_result.success, eq=True)
 
 
 class TestFlextAuthTokenOperations:
@@ -244,10 +244,10 @@ class TestFlextAuthTokenOperations:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("tokenuser", "token@example.com", "TokenPass123!")
         user_result = auth.get_user_by_username("tokenuser")
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=False)
 
     def test_validate_token_with_bearer_prefix(self) -> None:
@@ -258,12 +258,12 @@ class TestFlextAuthTokenOperations:
             "bearer@example.com",
             "BearerPass123!",
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         validate_result = auth.validate_token("any.fake.token")
-        u.Tests.Matchers.that(not validate_result.is_success, eq=True)
+        u.Tests.Matchers.that(not validate_result.success, eq=True)
 
 
 class TestFlextAuthErrorHandling:
@@ -274,7 +274,7 @@ class TestFlextAuthErrorHandling:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("dupuser", "dup@example.com", "DupPass123!")
         result = auth.register_user("dupuser", "dup2@example.com", "DupPass123!")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(
             result.error is not None and "already exists" in result.error.lower(),
             eq=True,
@@ -285,13 +285,13 @@ class TestFlextAuthErrorHandling:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("authuser", "auth@example.com", "AuthPass123!")
         result = auth.authenticate_user("authuser", "WrongPassword123!")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
 
     def test_get_nonexistent_user(self) -> None:
         """Test retrieving non-existent user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.get_user_by_username("nonexistent")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
         u.Tests.Matchers.that((result.error or "").lower(), has="not found")
 
@@ -382,7 +382,7 @@ class TestFlextAuth:
             password="SecurePassword123!",
             roles=["user"],
         )
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
         user = result.value
         u.Tests.Matchers.that(user.name, eq="testuser")
         u.Tests.Matchers.that(user.contact, eq="test@example.com")
@@ -398,20 +398,20 @@ class TestFlextAuth:
             "test2@example.com",
             "Password123!",
         )
-        u.Tests.Matchers.that(duplicate_result.is_failure, eq=True)
+        u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")
 
     def test_user_registration_duplicate_email(self) -> None:
         """Test user registration with duplicate email."""
         auth: FlextAuth = FlextAuth()
         first_result = auth.register_user("user1", "test@example.com", "Password123!")
-        u.Tests.Matchers.that(first_result.is_success, eq=True)
+        u.Tests.Matchers.that(first_result.success, eq=True)
         duplicate_result = auth.register_user(
             "user2",
             "test@example.com",
             "Password123!",
         )
-        u.Tests.Matchers.that(duplicate_result.is_failure, eq=True)
+        u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")
 
     def test_user_authentication_success(self) -> None:
@@ -420,9 +420,9 @@ class TestFlextAuth:
         username = "authtest"
         password = "AuthPassword123!"
         reg_result = auth.register_user(username, "auth@example.com", password)
-        u.Tests.Matchers.that(reg_result.is_success, eq=True)
+        u.Tests.Matchers.that(reg_result.success, eq=True)
         auth_result = auth.authenticate_user(username, password)
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         u.Tests.Matchers.that(identity.name, eq=username)
@@ -434,8 +434,8 @@ class TestFlextAuth:
         username = "testuser"
         auth.register_user(username, "test@example.com", "CorrectPassword123!")
         failed_auth = auth.authenticate_user(username, "WrongPassword123!")
-        u.Tests.Matchers.that(not failed_auth.is_success, eq=True)
-        u.Tests.Matchers.that(not failed_auth.is_success, eq=True)
+        u.Tests.Matchers.that(not failed_auth.success, eq=True)
+        u.Tests.Matchers.that(not failed_auth.success, eq=True)
         u.Tests.Matchers.that((failed_auth.error or ""), has="Invalid credentials")
 
     def test_token_validation_valid_token(self) -> None:
@@ -444,21 +444,21 @@ class TestFlextAuth:
         username = "tokenuser"
         password = "TokenPassword123!"
         register_result = auth.register_user(username, "token@example.com", password)
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
         auth_result = auth.authenticate_user(username, password)
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         authenticated_identity = auth_result.value
         u.Tests.Matchers.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=False)
 
     def test_token_validation_invalid_token(self) -> None:
         """Test validation of invalid token — fails with 'not implemented'."""
         auth: FlextAuth = FlextAuth()
         invalid_result = auth.validate_token("invalid.token.here")
-        u.Tests.Matchers.that(not invalid_result.is_success, eq=True)
+        u.Tests.Matchers.that(not invalid_result.success, eq=True)
         u.Tests.Matchers.that(invalid_result.error, none=False)
 
     def test_token_validation_bearer_prefix(self) -> None:
@@ -467,12 +467,12 @@ class TestFlextAuth:
         username = "beareruser"
         password = "BearerPassword123!"
         register_result = auth.register_user(username, "bearer@example.com", password)
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
         auth_result = auth.authenticate_user(username, password)
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=False)
 
     def test_session_management(self) -> None:
@@ -487,11 +487,11 @@ class TestFlextAuth:
             "127.0.0.1",
             "test-user-agent",
         )
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
-        u.Tests.Matchers.that(sessions_result.is_success, eq=True)
+        u.Tests.Matchers.that(sessions_result.success, eq=True)
         sessions = sessions_result.value
         u.Tests.Matchers.that(sessions, is_=list)
         u.Tests.Matchers.that(len(sessions), gte=0)
@@ -503,22 +503,22 @@ class TestFlextAuth:
         password = "LogoutPassword123!"
         auth.register_user(username, "logout@example.com", password)
         auth_result = auth.authenticate_user(username, password)
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
-        if sessions_result.is_success:
+        if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.logout_user(session_id)
-                u.Tests.Matchers.that(logout_result.is_success, eq=True)
+                u.Tests.Matchers.that(logout_result.success, eq=True)
 
     def test_cleanup_expired_sessions(self) -> None:
         """Test cleanup of expired sessions."""
         auth: FlextAuth = FlextAuth()
         cleanup_result = auth.cleanup_expired_sessions()
-        u.Tests.Matchers.that(cleanup_result.is_success, eq=True)
+        u.Tests.Matchers.that(cleanup_result.success, eq=True)
         cleaned_count = cleanup_result.value
         u.Tests.Matchers.that(cleaned_count, is_=int)
         u.Tests.Matchers.that(cleaned_count, gte=0)
@@ -529,9 +529,9 @@ class TestFlextAuth:
         username = "syncuser"
         password = "SyncPassword123!"
         create_result = auth.register_user(username, "sync@example.com", password)
-        u.Tests.Matchers.that(create_result.is_success, eq=True)
+        u.Tests.Matchers.that(create_result.success, eq=True)
         auth_result = auth.authenticate_user(username, password)
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
 
 
 class TestFlextAuthQuickStart:
@@ -569,9 +569,9 @@ class TestFlextAuthSecurity:
         auth.register_user(username, "lock@example.com", password)
         for _ in range(c.Auth.MAX_ATTEMPTS_DEFAULT):
             failed_auth = auth.authenticate_user(username, "wrong_password")
-            u.Tests.Matchers.that(not failed_auth.is_success, eq=True)
+            u.Tests.Matchers.that(not failed_auth.success, eq=True)
         locked_auth = auth.authenticate_user(username, password)
-        u.Tests.Matchers.that(not locked_auth.is_success, eq=True)
+        u.Tests.Matchers.that(not locked_auth.success, eq=True)
         u.Tests.Matchers.that(
             (
                 "locked" in (locked_auth.error or "").lower()
@@ -584,7 +584,7 @@ class TestFlextAuthSecurity:
         """Test password strength requirements."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("weakuser", "weak@example.com", "weak")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
 
 
@@ -595,31 +595,31 @@ class TestFlextAuthErrorHandlingSecond:
         """Test registration with empty username."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("", "empty@example.com", "Password123!")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
 
     def test_empty_email_registration(self) -> None:
         """Test registration with empty email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "", "Password123!")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
 
     def test_empty_password_registration(self) -> None:
         """Test registration with empty password."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "test@example.com", "")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
 
     def test_invalid_email_registration(self) -> None:
         """Test registration with invalid email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "invalid-email", "Password123!")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
 
     def test_nonexistent_user_authentication(self) -> None:
         """Test authentication of non-existent user."""
         auth: FlextAuth = FlextAuth()
         auth_result = auth.authenticate_user("nonexistent", "password")
-        u.Tests.Matchers.that(not auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(not auth_result.success, eq=True)
         u.Tests.Matchers.that(auth_result.error, none=False)
         u.Tests.Matchers.that(auth_result.error or "", empty=False)
 
@@ -627,8 +627,8 @@ class TestFlextAuthErrorHandlingSecond:
         """Test logout with invalid session ID."""
         auth: FlextAuth = FlextAuth()
         logout_result = auth.logout_user("invalid_session_id")
-        u.Tests.Matchers.that(not logout_result.is_success, eq=True)
-        u.Tests.Matchers.that(not logout_result.is_success, eq=True)
+        u.Tests.Matchers.that(not logout_result.success, eq=True)
+        u.Tests.Matchers.that(not logout_result.success, eq=True)
         u.Tests.Matchers.that((logout_result.error or ""), has="Session not found")
 
 
@@ -647,7 +647,7 @@ class TestFlextAuthQuickStartFunction:
         auth = FlextAuth.quick_start(create_admin_user=False)
         assert isinstance(auth, FlextAuth)
         nonexistent_result = auth.get_user_by_username("nonexistent_user")
-        u.Tests.Matchers.that(not nonexistent_result.is_success, eq=True)
+        u.Tests.Matchers.that(not nonexistent_result.success, eq=True)
         u.Tests.Matchers.that(nonexistent_result.error, none=False)
         u.Tests.Matchers.that((nonexistent_result.error or "").lower(), has="not found")
 
@@ -703,7 +703,7 @@ class TestFlextAuthErrorPaths:
             email="invalid-email-format",
             password="ValidPassword123!",
         )
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         error_msg = result.error or ""
         u.Tests.Matchers.that(
             (
@@ -721,18 +721,18 @@ class TestFlextAuthErrorPaths:
             username="nonexistent_user",
             password="any_password",
         )
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, is_=str)
 
     def test_validate_token_invalid_cases(self) -> None:
         """Test token validation with invalid tokens."""
         auth = FlextAuth()
         result = auth.validate_token("invalid.malformed.token")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.validate_token("")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.validate_token("invalid.token.format")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
 
 
 class TestFlextAuthPasswordMethods:
@@ -756,7 +756,7 @@ class TestFlextAuthPasswordMethods:
             last_access=datetime.min.replace(tzinfo=UTC),
         )
         result = identity.set_credential("StrongTestPass123!@#")
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
         u.Tests.Matchers.that(result.value is True, eq=True)
         u.Tests.Matchers.that(identity.credential_hash, ne="StrongTestPass123!@#")
         u.Tests.Matchers.that(len(identity.credential_hash), gt=10)
@@ -780,12 +780,12 @@ class TestFlextAuthPasswordMethods:
             last_access=datetime.min.replace(tzinfo=UTC),
         )
         set_result = identity.set_credential(strong_password)
-        u.Tests.Matchers.that(set_result.is_success, eq=True)
+        u.Tests.Matchers.that(set_result.success, eq=True)
         verify_result = identity.verify_credential(strong_password)
-        u.Tests.Matchers.that(verify_result.is_success, eq=True)
+        u.Tests.Matchers.that(verify_result.success, eq=True)
         u.Tests.Matchers.that(verify_result.value is True, eq=True)
         wrong_result = identity.verify_credential("WrongPassword123!@")
-        u.Tests.Matchers.that(wrong_result.is_success, eq=True)
+        u.Tests.Matchers.that(wrong_result.success, eq=True)
         u.Tests.Matchers.that(wrong_result.value is False, eq=True)
 
 
@@ -800,10 +800,10 @@ class TestFlextAuthTokenMethods:
             email="jwt@example.com",
             password="JWTTestPass123!@#",
         )
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         result = auth.create_token(identity_id=user.unique_id)
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
 
     def test_generate_token_alternative_method(self) -> None:
@@ -814,12 +814,12 @@ class TestFlextAuthTokenMethods:
             "test@example.com",
             "TestPassword123!",
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
         auth_result = auth.authenticate_user("testuser", "TestPassword123!")
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=False)
 
     def test_validate_token_success_path(self) -> None:
@@ -830,16 +830,16 @@ class TestFlextAuthTokenMethods:
             "test@example.com",
             "TestPassword123!",
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
         auth_result = auth.authenticate_user("testuser", "TestPassword123!")
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         authenticated_identity = auth_result.value
         u.Tests.Matchers.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         val_result = auth.validate_token("any.fake.token")
-        u.Tests.Matchers.that(not val_result.is_success, eq=True)
+        u.Tests.Matchers.that(not val_result.success, eq=True)
 
 
 class TestFlextAuthUserMethods:
@@ -853,10 +853,10 @@ class TestFlextAuthUserMethods:
             email="getuser@example.com",
             password="GetUserPass123!@",
         )
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         get_result = auth.get_user(user.unique_id)
-        u.Tests.Matchers.that(get_result.is_success, eq=True)
+        u.Tests.Matchers.that(get_result.success, eq=True)
         retrieved_user = get_result.value
         u.Tests.Matchers.that(retrieved_user.unique_id, eq=user.unique_id)
 
@@ -868,9 +868,9 @@ class TestFlextAuthUserMethods:
             email="lookup@example.com",
             password="LookupPass123!@",
         )
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         get_result = auth.get_user_by_username("test_username_lookup")
-        u.Tests.Matchers.that(get_result.is_success, is_=bool)
+        u.Tests.Matchers.that(get_result.success, is_=bool)
 
     def test_get_user_by_token_direct_api_method(self) -> None:
         """Test that create_token fails — user retrieval by ID still works."""
@@ -880,12 +880,12 @@ class TestFlextAuthUserMethods:
             email="tokenuser@example.com",
             password="TokenUserPass123!@",
         )
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         get_result = auth.get_user(user.unique_id)
-        u.Tests.Matchers.that(get_result.is_success, eq=True)
+        u.Tests.Matchers.that(get_result.success, eq=True)
 
     def test_logout_user_method(self) -> None:
         """Test logout_user method functionality."""
@@ -895,15 +895,15 @@ class TestFlextAuthUserMethods:
             email="logout@example.com",
             password="LogoutPass123!@",
         )
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         sessions_result = auth.get_user_sessions(user.unique_id)
-        if sessions_result.is_success:
+        if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.logout_user(session_id)
-                u.Tests.Matchers.that(logout_result.is_success, is_=bool)
+                u.Tests.Matchers.that(logout_result.success, is_=bool)
 
 
 class TestFlextAuthSessionMethods:
@@ -913,19 +913,19 @@ class TestFlextAuthSessionMethods:
         """Test revoke_session method functionality."""
         auth = FlextAuth()
         revoke_result = auth.revoke_session("test_session_id")
-        u.Tests.Matchers.that(revoke_result.is_success, is_=bool)
+        u.Tests.Matchers.that(revoke_result.success, is_=bool)
 
     def test_get_user_sessions_method(self) -> None:
         """Test get_user_sessions method functionality."""
         auth = FlextAuth()
         sessions_result = auth.get_user_sessions("test_user_id")
-        u.Tests.Matchers.that(sessions_result.is_success, is_=bool)
+        u.Tests.Matchers.that(sessions_result.success, is_=bool)
 
     def test_cleanup_expired_sessions_method(self) -> None:
         """Test cleanup_expired_sessions method functionality."""
         auth = FlextAuth()
         cleanup_result = auth.cleanup_expired_sessions()
-        u.Tests.Matchers.that(cleanup_result.is_success, is_=bool)
+        u.Tests.Matchers.that(cleanup_result.success, is_=bool)
 
 
 class TestFlextAuthQuickStartMethod:
@@ -965,13 +965,13 @@ class TestFlextAuthErrorHandlingPaths:
             email="lockable@example.com",
             password="LockablePass123!",
         )
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         for _ in range(6):
             failed_result = auth.authenticate_user(
                 username="lockable_user",
                 password="wrong_password",
             )
-            u.Tests.Matchers.that(not failed_result.is_success, eq=True)
+            u.Tests.Matchers.that(not failed_result.success, eq=True)
 
     def test_token_expiry_edge_cases(self) -> None:
         """Test that token creation fails — JWT provider not implemented."""
@@ -981,10 +981,10 @@ class TestFlextAuthErrorHandlingPaths:
             "test@example.com",
             "TestPassword123!",
         )
-        u.Tests.Matchers.that(user_result.is_success, eq=True)
+        u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=False)
 
     def test_invalid_user_operations(self) -> None:
@@ -992,15 +992,15 @@ class TestFlextAuthErrorHandlingPaths:
         auth = FlextAuth()
         invalid_user_id = "nonexistent_user_id"
         get_result = auth.get_user(invalid_user_id)
-        u.Tests.Matchers.that(not get_result.is_success, eq=True)
+        u.Tests.Matchers.that(not get_result.success, eq=True)
         u.Tests.Matchers.that(get_result.error, none=False)
         u.Tests.Matchers.that((get_result.error or "").lower(), has="not found")
         username_result = auth.get_user_by_username("nonexistent_username")
-        u.Tests.Matchers.that(not username_result.is_success, eq=True)
+        u.Tests.Matchers.that(not username_result.success, eq=True)
         u.Tests.Matchers.that(username_result.error, none=False)
         u.Tests.Matchers.that((username_result.error or "").lower(), has="not found")
         logout_result = auth.logout_user(invalid_user_id)
-        u.Tests.Matchers.that(not logout_result.is_success, eq=True)
+        u.Tests.Matchers.that(not logout_result.success, eq=True)
 
 
 class TestFlextAuthAdditionalCoverage:
@@ -1011,21 +1011,21 @@ class TestFlextAuthAdditionalCoverage:
         auth = FlextAuth()
         auth.register_user("testuser", "test@example.com", "Password123!")
         auth_result = auth.authenticate_user("testuser", "Password123!")
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
-        if sessions_result.is_success:
+        if sessions_result.success:
             sessions = sessions_result.value
             u.Tests.Matchers.that(sessions, is_=list)
         cleanup_result = auth.cleanup_expired_sessions()
-        u.Tests.Matchers.that(cleanup_result.is_success, eq=True)
+        u.Tests.Matchers.that(cleanup_result.success, eq=True)
 
     def test_get_user_by_token_invalid_token_error_direct_api(self) -> None:
         """Test validate_token with invalid token — fails with 'not implemented'."""
         auth = FlextAuth()
         result = auth.validate_token("invalid_token")
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
 
 
@@ -1099,7 +1099,7 @@ class TestAuthModule:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         result = auth.get_user_by_username(str(test_data["username"]))
         u.Tests.Matchers.that(result, is_=r)
 
@@ -1112,7 +1112,7 @@ class TestAuthModule:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         user = register_result.value
         user_id = user.unique_id
         result = auth.get_user(str(user_id))
@@ -1127,16 +1127,16 @@ class TestAuthModule:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_data["username"]),
             str(test_data["password"]),
         )
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=False)
 
     def test_flext_auth_get_user_sessions(self) -> None:
@@ -1148,17 +1148,17 @@ class TestAuthModule:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_data["username"]),
             str(test_data["password"]),
         )
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         user = register_result.value
         user_id = user.unique_id
         result = auth.get_user_sessions(user_id)
         u.Tests.Matchers.that(result, is_=r)
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
 
     def test_flext_auth_get_user_by_token_direct_api(self) -> None:
         """Test that create_token fails — user retrieval still works by ID."""
@@ -1169,19 +1169,19 @@ class TestAuthModule:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_data["username"]),
             str(test_data["password"]),
         )
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         result = auth.get_user(identity.unique_id)
         u.Tests.Matchers.that(result, is_=r)
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
 
     def test_flext_auth_revoke_session(self) -> None:
         """Test FlextAuth revoke_session functionality."""
@@ -1192,22 +1192,22 @@ class TestAuthModule:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_data["username"]),
             str(test_data["password"]),
         )
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.get_user_sessions(identity.unique_id)
-        if sessions_result.is_success:
+        if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 result = auth.revoke_session(session_id)
                 u.Tests.Matchers.that(result, is_=r)
-                u.Tests.Matchers.that(result.is_success, eq=True)
+                u.Tests.Matchers.that(result.success, eq=True)
 
     def test_flext_auth_comprehensive_scenario(self) -> None:
         """Test comprehensive auth module scenario — token ops fail as expected."""
@@ -1221,16 +1221,16 @@ class TestAuthModule:
             password=str(test_user_data["password"]),
         )
         u.Tests.Matchers.that(register_result, is_=r)
-        u.Tests.Matchers.that(register_result.is_success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_auth_data["username"]),
             str(test_auth_data["password"]),
         )
         u.Tests.Matchers.that(auth_result, is_=r)
-        u.Tests.Matchers.that(auth_result.is_success, eq=True)
+        u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         token_result = auth.create_token(identity_id=identity.unique_id)
-        u.Tests.Matchers.that(not token_result.is_success, eq=True)
+        u.Tests.Matchers.that(not token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=False)
 
     def test_flext_auth_error_handling(self) -> None:
@@ -1238,13 +1238,13 @@ class TestAuthModule:
         auth = FlextAuth()
         result = auth.register_user(username="", email="invalid_email", password="")
         u.Tests.Matchers.that(result, is_=r)
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.authenticate_user("invalid_user", "invalid_password")
         u.Tests.Matchers.that(result, is_=r)
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.get_user_by_username("non_existent_user")
         u.Tests.Matchers.that(result, is_=r)
-        u.Tests.Matchers.that(not result.is_success, eq=True)
+        u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
         u.Tests.Matchers.that((result.error or "").lower(), has="not found")
 
@@ -1263,13 +1263,13 @@ class TestAuthModule:
             password=test_user_data["password"],
         )
         u.Tests.Matchers.that(result, is_=r)
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
         result = auth.authenticate_user(
             test_auth_data["username"],
             test_auth_data["password"],
         )
         u.Tests.Matchers.that(result, is_=r)
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
 
     def test_flext_auth_docstring(self) -> None:
         """Test that FlextAuth has proper docstring."""
@@ -1330,14 +1330,14 @@ class TestAuthModule:
                 roles=[user_data["role"]] if "role" in user_data else None,
             )
             u.Tests.Matchers.that(result, is_=r)
-            u.Tests.Matchers.that(result.is_success, eq=True)
+            u.Tests.Matchers.that(result.success, eq=True)
         for user_data in realistic_users:
             result = auth.authenticate_user(
                 user_data["username"],
                 user_data["password"],
             )
             u.Tests.Matchers.that(result, is_=r)
-            u.Tests.Matchers.that(result.is_success, eq=True)
+            u.Tests.Matchers.that(result.success, eq=True)
 
     def test_flext_auth_integration_patterns(self) -> None:
         """Test auth integration patterns — token ops fail as expected."""
@@ -1372,7 +1372,7 @@ class TestAuthModule:
                 password=str(test_user_data["password"]),
             )
             u.Tests.Matchers.that(result, is_=r)
-            u.Tests.Matchers.that(result.is_success, eq=True)
+            u.Tests.Matchers.that(result.success, eq=True)
         end_time = time.time()
         u.Tests.Matchers.that(end_time - start_time, lt=30.0)
 
@@ -1482,7 +1482,7 @@ class TestProviderTokenFlows:
             token_type="access",
             expiry_minutes=5,
         )
-        u.Tests.Matchers.that(token_result.is_success, eq=True)
+        u.Tests.Matchers.that(token_result.success, eq=True)
         payload = jwt.decode(
             token_result.value,
             "unit-test-secret-key-for-base-provider-12345",
@@ -1508,7 +1508,7 @@ class TestProviderTokenFlows:
         )
         request = HttpRequest()
         result = middleware.process_request(request)
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
         u.Tests.Matchers.that(
             request.headers.get("Authorization"), eq="Bearer refreshed-token"
         )
@@ -1537,9 +1537,9 @@ class TestProviderTokenFlows:
             token_type="kerberos",
             expiry_minutes=10,
         )
-        u.Tests.Matchers.that(token_result.is_success, eq=True)
+        u.Tests.Matchers.that(token_result.success, eq=True)
         identity_result = provider.validate_token(token_result.value)
-        u.Tests.Matchers.that(identity_result.is_success, eq=True)
+        u.Tests.Matchers.that(identity_result.success, eq=True)
         identity = identity_result.value
         u.Tests.Matchers.that(identity.name, eq="Kerberos User")
         u.Tests.Matchers.that(identity.contact, eq="kerberos@example.com")
@@ -1570,7 +1570,7 @@ class TestProviderTokenFlows:
             algorithm="HS256",
         )
         result = provider.validate_token(encoded_token)
-        u.Tests.Matchers.that(result.is_success, eq=True)
+        u.Tests.Matchers.that(result.success, eq=True)
         identity = result.value
         u.Tests.Matchers.that(identity.unique_id, eq="oauth-user-123")
         u.Tests.Matchers.that(identity.name, eq="OAuth User")

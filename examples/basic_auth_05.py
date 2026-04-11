@@ -17,20 +17,20 @@ def main() -> None:
         password=password,
         roles=["user"],
     )
-    if registration.is_failure:
+    if registration.failure:
         print(f"registration failed: {registration.error}")
         return
     authentication = auth.authenticate_user("demouser", password)
-    if authentication.is_failure:
+    if authentication.failure:
         print(f"authentication failed: {authentication.error}")
         return
     identity = authentication.value
     token_result = auth.create_token(identity_id=identity.unique_id)
-    if token_result.is_failure:
+    if token_result.failure:
         print(f"token generation failed: {token_result.error}")
         return
     validation_result = auth.validate_token(token_result.value)
-    print(f"token valid: {validation_result.is_success and validation_result.value}")
+    print(f"token valid: {validation_result.success and validation_result.value}")
 
 
 if __name__ == "__main__":

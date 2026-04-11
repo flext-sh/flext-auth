@@ -59,7 +59,7 @@ class TestJwtTokenGenerator:
         provider = FlextAuthJwtProvider(config=None)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-123")
-        assert result.is_failure
+        assert result.failure
         assert result.error is not None
         assert "not configured" in result.error
 
@@ -74,7 +74,7 @@ class TestJwtTokenGenerator:
         provider = FlextAuthJwtProvider(config=config)
         generator = FlextAuthJwtTokenGenerator(provider)
         result = generator.generate_token(identity_id="user-456")
-        assert result.is_success
+        assert result.success
         assert result.value is not None
         u.Tests.Matchers.that(result.value, is_=str)
         token_text = str(result.value)

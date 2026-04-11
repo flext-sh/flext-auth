@@ -50,20 +50,20 @@ class FlextAuthIdentityService(s[bool]):
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         identity_result = self.identity_manager.get_user_by_username(name)
-        if identity_result.is_failure:
+        if identity_result.failure:
             return r[m.Auth.AuthIdentity].fail(identity_result.error)
         identity = identity_result.value
-        if identity.is_locked():
+        if identity.locked():
             return r[m.Auth.AuthIdentity].fail(
                 "Account is locked due to too many failed attempts",
             )
         verification_result = identity.verify_credential(credential)
-        if verification_result.is_failure:
+        if verification_result.failure:
             return r[m.Auth.AuthIdentity].fail(verification_result.error)
         if verification_result.value:
             return r[m.Auth.AuthIdentity].ok(identity.with_successful_access())
         failed_attempt_result = self._handle_failed_attempt(identity)
-        if failed_attempt_result.is_failure:
+        if failed_attempt_result.failure:
             return r[m.Auth.AuthIdentity].fail(failed_attempt_result.error)
         return r[m.Auth.AuthIdentity].fail("Invalid credentials")
 
@@ -96,11 +96,11 @@ class FlextAuthIdentityService(s[bool]):
     ) -> r[bool]:
         """Railway-oriented credential change with validation."""
         identity_result = self.identity_manager.get_user(identity_id)
-        if identity_result.is_failure:
+        if identity_result.failure:
             return r[bool].fail(identity_result.error)
         identity = identity_result.value
         verify_result = identity.verify_credential(current_credential)
-        if verify_result.is_failure:
+        if verify_result.failure:
             return r[bool].fail(verify_result.error)
         if not verify_result.value:
             return r[bool].fail("Current credential is incorrect")
@@ -180,7 +180,7 @@ class FlextAuthIdentityService(s[bool]):
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         identity_result = self.identity_manager.get_user(identity_id)
-        if identity_result.is_failure:
+        if identity_result.failure:
             return r[bool].fail(identity_result.error)
         identity = identity_result.value
         if len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:

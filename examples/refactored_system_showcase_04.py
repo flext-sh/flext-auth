@@ -18,7 +18,7 @@ def demonstrate_refactoring_benefits() -> None:
     auth: FlextAuth = FlextAuth()
     auth.register_user("modern_user", "modern@example.com", "ModernPass123!")
     auth_result = auth.authenticate_user("modern_user", "ModernPass123!")
-    if auth_result.is_success:
+    if auth_result.success:
         auth_data = auth_result.value
         user_name = auth_data.name
         print(f"Authenticated user: {user_name}")
@@ -28,7 +28,7 @@ def demonstrate_quickstart_functionality() -> None:
     """Demonstrate FlextAuthQuickstart convenience functionality."""
     quickstart: FlextAuthQuickstart = FlextAuthQuickstart()
     quickstart_result = quickstart.flext_auth_quick_start(create_admin_user=False)
-    if quickstart_result.is_success:
+    if quickstart_result.success:
         admin_credentials = quickstart_result.value
         print(f"Admin credentials created: {admin_credentials}")
     auth_service = FlextAuth()

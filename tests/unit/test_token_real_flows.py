@@ -140,7 +140,7 @@ class TestTokenRealFlows:
         )
         u.Tests.Matchers.ok(issued)
         refresh_result = provider.refresh(str(issued.value))
-        assert refresh_result.is_success
+        assert refresh_result.success
 
     def test_middleware_refresh_rejects_invalid_refresh_source_token(self) -> None:
         provider = self.MiddlewareRefreshProvider()

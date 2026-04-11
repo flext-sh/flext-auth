@@ -72,7 +72,7 @@ class FlextAuthTokenService(s[bool]):
     ) -> r[str]:
         """Railway-oriented JWT token generation with audit logging."""
         user_result = self.user_manager.get_user(user_id)
-        if user_result.is_failure:
+        if user_result.failure:
             error = user_result.error
             FlextLogger(__name__).info(
                 "Token creation",
@@ -91,7 +91,7 @@ class FlextAuthTokenService(s[bool]):
                 expiry_minutes=expires_in_minutes,
             ),
         )
-        if token_result.is_failure:
+        if token_result.failure:
             error = token_result.error
             FlextLogger(__name__).info(
                 "Token creation",
@@ -114,7 +114,7 @@ class FlextAuthTokenService(s[bool]):
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token),
         )
-        if result.is_failure:
+        if result.failure:
             error = result.error
             FlextLogger(__name__).info(
                 "Token refresh",
@@ -160,7 +160,7 @@ class FlextAuthTokenService(s[bool]):
         if self._jwt_provider_cache is not None:
             return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)
         result = self._provider_service.get_jwt_provider()
-        if result.is_failure:
+        if result.failure:
             return result
         self._jwt_provider_cache = result.value
         return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)

@@ -56,7 +56,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         super().__init__(self._to_scalar_config(config))
         self._config = config
         validation_result = self._validate_kerberos_configuration()
-        if validation_result.is_failure:
+        if validation_result.failure:
             msg = f"Kerberos configuration validation failed: {validation_result.error}"
             raise ValueError(msg)
         self.ticket_validator = self._KerberosTicketValidator(self)
@@ -277,7 +277,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         claims: t.ContainerValueMapping,
     ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(claims)
-        if identity_result.is_failure:
+        if identity_result.failure:
             return r[m.Auth.AuthIdentity].fail(
                 identity_result.error or "Kerberos token subject is missing",
             )

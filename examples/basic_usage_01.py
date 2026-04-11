@@ -75,10 +75,10 @@ def example_email_validation() -> None:
 
     valid_count = 0
     for email in test_emails:
-        is_valid = validate_email_manual(email)
-        if is_valid:
+        valid = validate_email_manual(email)
+        if valid:
             valid_count += 1
-        logger.info("Email validation result", email=email, is_valid=is_valid)
+        logger.info("Email validation result", email=email, valid=valid)
     logger.info(
         "Email validation completed",
         valid_emails=valid_count,
@@ -99,7 +99,7 @@ def example_user_lifecycle() -> None:
         full_name="Lifecycle User",
         roles=["user"],
     )
-    if register_result.is_success:
+    if register_result.success:
         user_data = register_result.value
         logger.info(
             "User registered successfully",
@@ -110,7 +110,7 @@ def example_user_lifecycle() -> None:
         )
         logger.info("Authenticating registered user")
         auth_result = auth.authenticate_user("lifecycleuser", password)
-        if auth_result.is_success:
+        if auth_result.success:
             logger.info("User authentication successful")
             auth_token = auth_result.value
             jwt_token_str = auth_token.token
@@ -122,8 +122,8 @@ def example_user_lifecycle() -> None:
             )
             logger.info("Validating JWT token")
             token_result = auth.validate_token(jwt_token_str)
-            if token_result.is_success:
-                logger.info("Token validation successful", is_valid=token_result.value)
+            if token_result.success:
+                logger.info("Token validation successful", valid=token_result.value)
             else:
                 logger.error("Token validation failed", error=token_result.error)
         else:
@@ -140,10 +140,10 @@ def example_direct_auth() -> None:
     email = "direct@example.com"
     password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
     reg_result = auth.register_user(username, email, password)
-    if reg_result.is_success:
+    if reg_result.success:
         logger.info("User registered successfully", username=username)
         auth_result = auth.authenticate_user(username, password)
-        if auth_result.is_success:
+        if auth_result.success:
             logger.info("User authenticated successfully", username=username)
             auth_token = auth_result.value
             access_token = auth_token.token
@@ -169,7 +169,7 @@ def example_advanced_registration() -> None:
         full_name="Administrator",
         roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
     )
-    if register_result.is_success:
+    if register_result.success:
         user_data = register_result.value
         logger.info(
             "Admin user registered successfully",
@@ -188,7 +188,7 @@ def example_advanced_registration() -> None:
         full_name="Regular User",
         roles=["user"],
     )
-    if user_result.is_success:
+    if user_result.success:
         user_data = user_result.value
         logger.info(
             "Regular user registered successfully",
@@ -213,14 +213,14 @@ def example_complete_workflow() -> None:
         password=password,
         full_name="Workflow User",
     )
-    if reg_result.is_failure:
+    if reg_result.failure:
         logger.error("Registration failed", error=reg_result.error)
         return
     user = reg_result.value
     logger.info("User registered successfully", name=user.name)
     logger.info("Step 2: User authentication")
     auth_result = auth.authenticate_user("workflowuser", password)
-    if auth_result.is_failure:
+    if auth_result.failure:
         logger.error("Authentication failed", error=auth_result.error)
         return
     auth_token = auth_result.value
@@ -228,14 +228,14 @@ def example_complete_workflow() -> None:
     logger.info("Step 3: Token operations")
     jwt_token_str = auth_token.token
     token_validation = auth.validate_token(jwt_token_str)
-    if token_validation.is_success:
-        logger.info("Token validation successful", is_valid=token_validation.value)
+    if token_validation.success:
+        logger.info("Token validation successful", valid=token_validation.value)
     else:
         logger.error("Token validation failed", error=token_validation.error)
     logger.info("Step 4: Get user information")
     identity_id: str = user.name
     user_info = auth.get_user(identity_id)
-    if user_info.is_success:
+    if user_info.success:
         retrieved_user = user_info.value
         logger.info("User information retrieved", name=retrieved_user.name)
     else:

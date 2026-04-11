@@ -73,7 +73,7 @@ class FlextAuth:
         self._provider_service = FlextAuthProviderService(config=self._config)
         for provider_name in self._provider_service.list_providers():
             provider_result = self._provider_service.get_provider(provider_name)
-            if provider_result.is_success:
+            if provider_result.success:
                 self._registry.register_provider(provider_name, provider_result.value)
         self._identity_service = FlextAuthIdentityService(
             config=self._config,
@@ -162,7 +162,7 @@ class FlextAuth:
                 "AdminPass123!",
                 roles=["ADMIN"],
             )
-            if result.is_failure and result.error is not None:
+            if result.failure and result.error is not None:
                 auth.logger.warning(
                     "Quick start admin user provisioning failed: %s",
                     result.error,
@@ -217,10 +217,10 @@ class FlextAuth:
 
         """
         auth_result = self._identity_service.authenticate_identity(username, password)
-        if auth_result.is_success:
+        if auth_result.success:
             identity = auth_result.value
             token_result = self.create_token(identity_id=identity.unique_id)
-            if token_result.is_success:
+            if token_result.success:
                 token = token_result.value
                 session_result = self._session_service.session_manager.create_session(
                     user_id=identity.unique_id,

@@ -228,7 +228,7 @@ class FlextAuthUtilitiesManagers(
         def delete_user(self, user_id: str) -> r[bool]:
             """Delete user."""
             result = self._find_user_by_id(user_id)
-            if result.is_failure:
+            if result.failure:
                 return r[bool].fail(result.error or "Unknown error")
             user_key, _ = result.value
             del self._users[user_key]

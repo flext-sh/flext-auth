@@ -37,11 +37,11 @@ def debug_jwt_operations() -> None:
         email="test@example.com",
         password=os.getenv("TEST_PASSWORD", "TestPassword123!"),
     )
-    if user_result.is_failure:
+    if user_result.failure:
         return
     user = user_result.value
     token_result = auth.create_token(identity_id=user.unique_id)
-    if token_result.is_failure:
+    if token_result.failure:
         return
     token = token_result.value
     auth.validate_token(token)
@@ -58,7 +58,7 @@ def debug_authentication_workflow() -> None:
         password=os.getenv("DEBUG_PASSWORD", "DebugPassword123!"),
         roles=["REDACTED_LDAP_BIND_PASSWORD"],
     )
-    if reg_result.is_failure:
+    if reg_result.failure:
         return
     auth.authenticate_user("debuguser", "DebugPassword123!")
 

@@ -49,7 +49,7 @@ class FlextAuthQuickstart(s[bool]):
 
         for i in range(count):
             result = create_single_user(i)
-            if result.is_failure:
+            if result.failure:
                 return r[t.StrSequence].fail(
                     f"Failed to create demo user {i}: {result.error}",
                 )

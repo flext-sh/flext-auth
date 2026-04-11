@@ -51,31 +51,31 @@ class FlextAuthJwtTokenGenerator:
                 "secret_key",
                 "JWT secret key not configured",
             )
-            if secret_result.is_failure:
+            if secret_result.failure:
                 return r[str].fail(secret_result.error or "Secret key error")
             algorithm_result = self._get_config_str(
                 "algorithm",
                 "JWT algorithm not configured",
             )
-            if algorithm_result.is_failure:
+            if algorithm_result.failure:
                 return r[str].fail(algorithm_result.error or "Algorithm error")
             expiry_config_result = self._get_config_int(
                 "expiry_minutes",
                 "JWT expiry_minutes not configured",
             )
-            if expiry_config_result.is_failure:
+            if expiry_config_result.failure:
                 return r[str].fail(expiry_config_result.error or "Expiry error")
             issuer_result = self._get_config_str("issuer", "JWT issuer not configured")
-            if issuer_result.is_failure:
+            if issuer_result.failure:
                 return r[str].fail(issuer_result.error or "Issuer error")
             expiry_result = self._validate_expiry(
                 expiry_minutes,
                 expiry_config_result.value,
             )
-            if expiry_result.is_failure:
+            if expiry_result.failure:
                 return r[str].fail(expiry_result.error or "Expiry validation error")
             audience_result = self._get_optional_config_str("audience")
-            if audience_result.is_failure:
+            if audience_result.failure:
                 return r[str].fail(audience_result.error or "Audience error")
             audience_value = audience_result.value
             audience: str | None = audience_value or None

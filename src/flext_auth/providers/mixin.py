@@ -148,19 +148,19 @@ class FlextAuthProviderMixin:
         """
         token_text = token
         claims_result = self._decode_token_claims(token_text)
-        if claims_result.is_failure:
+        if claims_result.failure:
             return r[p.Auth.Token].fail(
                 claims_result.error or "Token decode failed during refresh"
             )
         claims = claims_result.value
         identity_result = self._extract_identity_id(claims)
-        if identity_result.is_failure:
+        if identity_result.failure:
             return r[p.Auth.Token].fail(
                 identity_result.error or "Identity extraction failed during refresh"
             )
         identity_id = identity_result.value
         new_token_result = self.generate_token(dict(claims), "access")
-        if new_token_result.is_failure:
+        if new_token_result.failure:
             return r[p.Auth.Token].fail(
                 new_token_result.error or "Token generation failed during refresh"
             )

@@ -17,12 +17,12 @@ def exemplo_flext_auth() -> None:
         "usuario@example.com",
         "MinhaSenh@123!",
     )
-    if register_result.is_success:
+    if register_result.success:
         pass
     else:
         return
     auth_result = auth.authenticate_user("usuario_teste", "MinhaSenh@123!")
-    if auth_result.is_success:
+    if auth_result.success:
         auth_data = auth_result.value
         access_token = str(auth_data.token) if auth_data.token else ""
         session_id = str(auth_data.session_id) if auth_data.session_id else ""

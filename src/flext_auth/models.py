@@ -64,7 +64,7 @@ class FlextAuthModels(FlextApiModels):
         class ValidationResult(FlextApiModels.Value):
             """Generic validation result for any operation (immutable value t.NormalizedValue)."""
 
-            is_valid: Annotated[bool, Field(..., description="Validation outcome")]
+            valid: Annotated[bool, Field(..., description="Validation outcome")]
             data: t.ContainerMapping = Field(
                 default_factory=dict, description="Result data"
             )
@@ -76,7 +76,7 @@ class FlextAuthModels(FlextApiModels):
             @property
             def status(self) -> str:
                 """Human-readable validation status."""
-                if self.is_valid:
+                if self.valid:
                     return "valid"
                 if not self.error:
                     return "invalid"
@@ -163,7 +163,7 @@ class FlextAuthModels(FlextApiModels):
                 return self.identity_id
 
             @property
-            def is_expired(self) -> bool:
+            def expired(self) -> bool:
                 """Check if token is expired."""
                 return datetime.now(UTC) > self.expires_at
 
@@ -258,7 +258,7 @@ class FlextAuthModels(FlextApiModels):
             ] = ""
             session_id: Annotated[str, Field(description="Session ID")] = ""
 
-            def is_locked(self) -> bool:
+            def locked(self) -> bool:
                 """Check if identity is locked."""
                 if self.locked_until == datetime.min.replace(tzinfo=UTC):
                     return False
@@ -285,11 +285,11 @@ class FlextAuthModels(FlextApiModels):
             def verify_credential(self, credential: str) -> r[bool]:
                 """Verify a credential against stored hash using bcrypt."""
                 try:
-                    is_valid = FlextAuthModels.Auth.PasswordUtil.verify_password(
+                    valid = FlextAuthModels.Auth.PasswordUtil.verify_password(
                         credential,
                         self.credential_hash,
                     )
-                    return r[bool].ok(is_valid)
+                    return r[bool].ok(valid)
                 except (
                     ValueError,
                     TypeError,
@@ -330,7 +330,7 @@ class FlextAuthModels(FlextApiModels):
             )
 
             @property
-            def is_expired(self) -> bool:
+            def expired(self) -> bool:
                 """Check if session is expired."""
                 return datetime.now(UTC) > self.expires_at
 
@@ -479,7 +479,7 @@ class FlextAuthModels(FlextApiModels):
                 return key in self.__class__.model_fields
 
             @property
-            def is_configured(self) -> bool:
+            def configured(self) -> bool:
                 """Check if configured."""
                 return bool(self.name and self.type)
 
