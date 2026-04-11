@@ -17,7 +17,7 @@ from tests import u
 
 
 def _require_settings() -> FlextAuthSettings:
-    return FlextAuthSettings.get_global()
+    return FlextAuthSettings.fetch_global()
 
 
 class TestFlextAuthSettingsBasic:

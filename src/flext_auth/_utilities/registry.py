@@ -55,7 +55,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def get(self, data: str) -> r[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name."""
-        result = self.get_plugin(self.PROVIDERS, data)
+        result = self.fetch_plugin(self.PROVIDERS, data)
         if result.failure:
             return r[p.Auth.FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{data}' not registered",
@@ -100,7 +100,7 @@ class FlextAuthRegistry(FlextRegistry):
         """Get provider configuration."""
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
-        config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
+        config_result = self.fetch_plugin(f"{self.PROVIDERS}_config", name)
         if config_result.failure:
             return r[t.ScalarMapping].fail("No config")
         wrapper = config_result.value
@@ -115,7 +115,7 @@ class FlextAuthRegistry(FlextRegistry):
             return r[m.Auth.Providers.Metadata].fail(
                 f"Provider '{name}' not registered",
             )
-        metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
+        metadata_result = self.fetch_plugin(f"{self.PROVIDERS}_metadata", name)
         if metadata_result.failure:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
@@ -148,7 +148,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
-        result = self.get_plugin(self.PROVIDERS, name)
+        result = self.fetch_plugin(self.PROVIDERS, name)
         return result.success
 
     def list_providers(self) -> t.StrSequence:

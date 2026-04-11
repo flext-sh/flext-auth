@@ -20,8 +20,10 @@ from flext_auth import (
     c,
     m,
     p,
+    r,
+    s,
+    u,
 )
-from flext_core import FlextLogger, r, s
 
 
 class FlextAuthTokenService(s[bool]):
@@ -74,7 +76,7 @@ class FlextAuthTokenService(s[bool]):
         user_result = self.user_manager.get_user(user_id)
         if user_result.failure:
             error = user_result.error
-            FlextLogger(__name__).info(
+            u.fetch_logger(__name__).info(
                 "Token creation",
                 user_id=user_id,
                 token_type=token_kind,
@@ -93,7 +95,7 @@ class FlextAuthTokenService(s[bool]):
         )
         if token_result.failure:
             error = token_result.error
-            FlextLogger(__name__).info(
+            u.fetch_logger(__name__).info(
                 "Token creation",
                 user_id=user_id,
                 token_type=token_kind,
@@ -102,7 +104,7 @@ class FlextAuthTokenService(s[bool]):
             )
             return r[str].fail(error or "Token generation failed")
         token_value = token_result.value
-        FlextLogger(__name__).debug(
+        u.fetch_logger(__name__).debug(
             "Token creation successful",
             user_id=user_id,
             token_type=token_kind,
@@ -116,7 +118,7 @@ class FlextAuthTokenService(s[bool]):
         )
         if result.failure:
             error = result.error
-            FlextLogger(__name__).info(
+            u.fetch_logger(__name__).info(
                 "Token refresh",
                 success=False,
                 old_token_id=self._short_token(token),
@@ -130,7 +132,7 @@ class FlextAuthTokenService(s[bool]):
             expires_at=refreshed.expires_at,
             is_revoked=refreshed.is_revoked,
         )
-        FlextLogger(__name__).debug(
+        u.fetch_logger(__name__).debug(
             "Token refresh successful",
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(auth_token.token),
@@ -141,7 +143,7 @@ class FlextAuthTokenService(s[bool]):
         """Railway-oriented token validation with audit logging."""
 
         def _log_token_validation_error(error: str) -> None:
-            FlextLogger(__name__).debug(
+            u.fetch_logger(__name__).debug(
                 "Token validation",
                 success=False,
                 token_id=self._short_token(token),

@@ -201,7 +201,7 @@ class TestFlextAuthConfigurationOverrides:
 
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
-        custom_config = FlextAuthSettings.get_global()
+        custom_config = FlextAuthSettings.fetch_global()
         auth = FlextAuth(config=custom_config)
         u.Tests.Matchers.that(auth.config, eq=custom_config)
 
@@ -336,7 +336,7 @@ class TestFlextAuthModelConfiguration:
 
     def test_model_config_validate_assignment(self) -> None:
         """Test validate_assignment configuration."""
-        config = FlextAuthSettings.get_global()
+        config = FlextAuthSettings.fetch_global()
         u.Tests.Matchers.that(
             config.model_config.get("validate_assignment", False) is True, eq=True
         )

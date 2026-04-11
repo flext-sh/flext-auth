@@ -26,7 +26,7 @@ if _t.TYPE_CHECKING:
     from flext_auth._utilities.registry import FlextAuthRegistry
     from flext_auth._utilities.session_service import FlextAuthSessionService
     from flext_auth._utilities.token_service import FlextAuthTokenService
-    from flext_auth.api import FlextAuth
+    from flext_auth.api import FlextAuth, auth
     from flext_auth.constants import FlextAuthConstants, c
     from flext_auth.models import FlextAuthModels, m
     from flext_auth.protocols import FlextAuthProtocols, p
@@ -67,7 +67,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "__version__",
                 "__version_info__",
             ),
-            ".api": ("FlextAuth",),
+            ".api": (
+                "FlextAuth",
+                "auth",
+            ),
             ".constants": (
                 "FlextAuthConstants",
                 "c",
@@ -156,6 +159,7 @@ __all__ = [
     "__url__",
     "__version__",
     "__version_info__",
+    "auth",
     "c",
     "d",
     "e",

@@ -380,7 +380,7 @@ class AuthenticationService(s):
     def __init__(self):
         super().__init__()
         self._container = FlextContainer.get_global()
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def process(self, request) -> r[Response]:
         # Service implementation

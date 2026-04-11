@@ -24,7 +24,7 @@ from flext_auth import (
     t,
     u,
 )
-from flext_core import FlextContext, FlextLogger, r
+from flext_core import FlextContext, r
 
 
 class FlextAuthUtilitiesManagers(
@@ -85,7 +85,7 @@ class FlextAuthUtilitiesManagers(
             """Initialize user manager with configuration."""
             super().__init__()
             self._config = config
-            self.logger = FlextLogger(__name__)
+            self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()
             self._users: MutableMapping[str, t.Auth.Managers.UserData] = {}
 
@@ -494,7 +494,7 @@ class FlextAuthUtilitiesManagers(
             super().__init__()
             self._config = config
             self._dispatcher = dispatcher
-            self.logger = FlextLogger(__name__)
+            self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()
             self._logs: MutableSequence[t.Auth.Managers.LogEntry] = []
 

@@ -18,7 +18,7 @@ from flext_api import FlextApiClient, FlextApiSettings
 from pydantic import ValidationError
 
 from flext_auth import m, t
-from flext_core import FlextLogger, r
+from flext_core import r
 
 
 class FlextWebTransportAdapter:
@@ -52,7 +52,7 @@ class FlextWebTransportAdapter:
         """
         self._timeout = timeout
         self._max_retries = max_retries
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
         config = FlextApiSettings(timeout=timeout, max_retries=max_retries)
         self._client = FlextApiClient(config)
 

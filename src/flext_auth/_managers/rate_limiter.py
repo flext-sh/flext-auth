@@ -4,7 +4,7 @@ from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 
 from flext_auth import FlextAuthSettings, p, t
-from flext_core import FlextContext, FlextLogger, FlextRegistry, r
+from flext_core import FlextContext, FlextRegistry, r
 
 
 class FlextAuthRateLimiterManagers:
@@ -13,7 +13,7 @@ class FlextAuthRateLimiterManagers:
             super().__init__()
             self._config = config
             self._dispatcher = dispatcher
-            self.logger = FlextLogger(__name__)
+            self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()
             self._registry = FlextRegistry(dispatcher=dispatcher)
             self._attempts: MutableMapping[str, t.Auth.Managers.AttemptData] = {}

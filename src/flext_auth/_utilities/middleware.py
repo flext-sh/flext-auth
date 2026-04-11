@@ -31,7 +31,7 @@ from __future__ import annotations
 from typing import TypeIs, override
 
 from flext_auth import m, p, s, t
-from flext_core import FlextLogger, r
+from flext_core import r
 
 
 class FlextAuthMiddleware(s[bool]):
@@ -109,7 +109,7 @@ class FlextAuthMiddleware(s[bool]):
             """
             super().__init__()
             self._provider = provider
-            self.logger = FlextLogger(f"flext_auth.middleware.http.{provider_name}")
+            self.logger = u.fetch_logger(f"flext_auth.middleware.http.{provider_name}")
             self._current_token: m.Auth.AuthToken | None = None
 
         def process_request(

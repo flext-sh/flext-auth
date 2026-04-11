@@ -15,14 +15,13 @@ import secrets
 import string
 
 from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings
-from flext_core import FlextLogger
 
 
 def example_advanced_configuration() -> None:
     """Demonstrate advanced configuration options."""
     FlextAuthSettings()
     FlextAuth()
-    logger = FlextLogger(__name__)
+    logger = u.fetch_logger(__name__)
     logger.info("FlextAuth created with custom configuration")
 
 

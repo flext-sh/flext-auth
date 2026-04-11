@@ -448,7 +448,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
 
     def __init__(self, config: dict) -> None:
         self._config = config
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def authenticate(self, credentials: dict) -> r[FlextAuthModels.AuthToken]:
         """Authenticate using provider-specific logic."""
@@ -565,7 +565,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 
     def __init__(self, config: t.ContainerMapping | None = None) -> None:
         self._api = FlextApi(config=config)  # MANDATORY: Use flext-api
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
         self,
@@ -615,7 +615,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
     def __init__(self, config: t.ContainerMapping | None = None) -> None:
         self._grpc = FlextGrpc(config=config)  # MANDATORY: Use flext-grpc
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
         self,
@@ -645,7 +645,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
 
     def __init__(self, config: t.ContainerMapping | None = None) -> None:
         self._config = config
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
         self,
@@ -756,7 +756,7 @@ class TokenManager:
         self._provider = provider
         self._cache = cache or TokenCache()
         self._retry = retry_policy or RetryPolicy()
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def get_token(self, credentials: dict, use_cache: bool = True) -> r[AuthToken]:
         """Get token with caching."""
@@ -844,7 +844,7 @@ class TokenCache:
         config: t.ContainerMapping | None = None,
     ) -> None:
         self._backend = self._create_backend(backend, config)
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def get(self, key: dict) -> AuthToken | None:
         """Get token from cache."""
@@ -884,7 +884,7 @@ class CredentialManager:
     def __init__(self, storage: CredentialStore, encryption_key: bytes) -> None:
         self._storage = storage
         self._cipher = self._init_cipher(encryption_key)
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def store_credential(
         self,
@@ -1052,7 +1052,7 @@ class FlextAuthJwtProvider(s[AuthToken]):
     def __init__(self, config: dict) -> None:
         super().__init__()
         self._config = config
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 ```
 
 ______________________________________________________________________

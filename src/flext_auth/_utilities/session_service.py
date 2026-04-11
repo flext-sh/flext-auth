@@ -9,13 +9,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import (
-    FlextAuthSettings,
-    FlextAuthUtilitiesManagers,
-    p,
-    s,
-)
-from flext_core import FlextLogger, r
+from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, p, r, s, u
 
 
 class FlextAuthSessionService(s[bool]):
@@ -33,7 +27,7 @@ class FlextAuthSessionService(s[bool]):
 
     def cleanup_expired_sessions(self) -> r[int]:
         """Railway-oriented cleanup of expired sessions from the system."""
-        FlextLogger(__name__).info("Cleanup of expired sessions requested")
+        u.fetch_logger(__name__).info("Cleanup of expired sessions requested")
         return self.session_manager.cleanup_expired_sessions()
 
     @override

@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from flext_auth import FlextAuthSettings, m, t
-from flext_core import FlextContainer, FlextContext, FlextLogger, r
+from flext_core import FlextContainer, FlextContext, r, u
 
 
 class FlextAuthSessionManagers:
@@ -13,10 +13,10 @@ class FlextAuthSessionManagers:
         def __init__(self, config: FlextAuthSettings) -> None:
             super().__init__()
             self._config = config
-            self.logger = FlextLogger(__name__)
+            self.logger = u.fetch_logger(__name__)
             self._context = FlextContext()
             self._dispatcher: t.RegisterableService = (
-                FlextContainer.get_global().get("command_bus").unwrap()
+                FlextContainer.fetch_global().get("command_bus").unwrap()
             )
             self._sessions: MutableMapping[str, t.Auth.Managers.SessionData] = {}
 

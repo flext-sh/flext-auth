@@ -16,10 +16,9 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthSettings, c
-from flext_core import FlextLogger
+from flext_auth import FlextAuth, FlextAuthSettings, c, u
 
-logger = FlextLogger(__name__)
+logger = u.fetch_logger(__name__)
 
 
 def example_basic_authentication() -> None:
