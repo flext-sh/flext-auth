@@ -14,7 +14,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, u
 
 
 def example_advanced_configuration() -> None:

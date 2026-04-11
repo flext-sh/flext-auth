@@ -21,7 +21,7 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
     Example:
         >>> provider = FlextAuthLdapProvider()
         >>> result = provider.authenticate({"username": "user", "password": "password"})
-        >>> if result.is_success:
+        >>> if result.success:
         ...     token = result.value
         ...     print(f"Authenticated with token: {token.token}")
 

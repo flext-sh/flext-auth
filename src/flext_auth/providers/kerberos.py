@@ -132,7 +132,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             field_value = config.get(field_name)
             if field_value is not None and (
                 not any(
-                    u.is_type(field_value, expected_type)
+                    u.matches_type(field_value, expected_type)
                     for expected_type in expected_types
                 )
             ):

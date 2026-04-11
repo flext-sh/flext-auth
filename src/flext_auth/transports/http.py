@@ -17,7 +17,7 @@ from urllib.parse import urlencode
 from flext_api import FlextApiClient, FlextApiSettings
 from pydantic import ValidationError
 
-from flext_auth import m, t
+from flext_auth import m, t, u
 from flext_core import r
 
 
@@ -37,7 +37,7 @@ class FlextWebTransportAdapter:
         ...     data={"grant_type": "client_credentials"},
         ...     auth=("client_id", "client_secret"),
         ... )
-        >>> if result.is_success:
+        >>> if result.success:
         ...     token_data = result.value
         ...     print(f"Access token: {token_data['access_token']}")
     """
@@ -89,7 +89,7 @@ class FlextWebTransportAdapter:
             ...     url="https://oauth.example.com/userinfo",
             ...     access_token="ya29.a0AfH6...",
             ... )
-            >>> if result.is_success:
+            >>> if result.success:
             ...     userinfo = result.value
             ...     print(f"User ID: {userinfo['sub']}")
 

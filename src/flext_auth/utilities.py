@@ -274,7 +274,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 options={"verify_signature": verify},
                 audience=audience,
             )
-            if not FlextApiUtilities.is_dict_like(payload):
+            if not FlextApiUtilities.dict_like(payload):
                 return r[t.Auth.Tokens.ClaimMap].fail(
                     "Decoded token payload is not a dictionary",
                 )

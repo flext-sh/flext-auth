@@ -383,3 +383,8 @@ class FlextAuth:
     def verify_token(self, token: str) -> r[bool]:
         """Verify token validity - delegated to token service."""
         return self._token_service.validate_token(token)
+
+
+auth = FlextAuth
+
+__all__ = ["FlextAuth", "auth"]

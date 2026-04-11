@@ -19,7 +19,7 @@ Integration Pattern:
     from flext_web import web
 
     app_result = web.create_fastapi_app()
-    if app_result.is_success:
+    if app_result.success:
         app = app_result.value
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from typing import TypeIs, override
 
-from flext_auth import m, p, s, t
+from flext_auth import m, p, s, t, u
 from flext_core import r
 
 

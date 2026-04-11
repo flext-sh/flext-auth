@@ -229,7 +229,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             field_value = self._config.get(field_name)
             if field_value is not None and (
                 not any(
-                    u.is_type(field_value, expected_type)
+                    u.matches_type(field_value, expected_type)
                     for expected_type in expected_types
                 )
             ):
@@ -407,7 +407,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 flow_result.error or "OAuth2 authentication failed",
             )
         flow_data = flow_result.value
-        user_id = flow_data.get(c.KEY_USER_ID, "oauth2_user")
+        user_id = flow_data.get(c.Auth.KEY_USER_ID, "oauth2_user")
         user_id_str = str(user_id) if user_id else "oauth2_user"
         access_token = credential_payload.get("access_token", "")
         access_token_str = str(access_token) if access_token else ""
@@ -466,7 +466,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             refresh_source = refresh_token_value
             identity_candidate = getattr(token, "identity_id", "")
             if not isinstance(identity_candidate, str) or not identity_candidate:
-                user_id_candidate = getattr(token, c.KEY_USER_ID, "")
+                user_id_candidate = getattr(token, c.Auth.KEY_USER_ID, "")
                 if isinstance(user_id_candidate, str) and user_id_candidate:
                     identity_candidate = user_id_candidate
             if isinstance(identity_candidate, str) and identity_candidate:
