@@ -54,7 +54,7 @@ class FlextWebTransportAdapter:
         self._max_retries = max_retries
         self.logger = u.fetch_logger(__name__)
         config = FlextApiSettings(timeout=timeout, max_retries=max_retries)
-        self._client = FlextApiClient(config)
+        self._client = FlextApiClient(config=config)
 
     def get_transport_type(self) -> str:
         """Get the transport type identifier.
