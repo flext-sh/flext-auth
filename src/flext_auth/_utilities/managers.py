@@ -27,50 +27,46 @@ from flext_auth import (
 from flext_core import FlextContext, FlextLogger, r
 
 
-class FlextAuthServiceManagers:
-    """Manager composition helper for auth services.
-
-    Provides centralized manager initialization and access without
-    requiring multiple inheritance. Services use composition pattern
-    instead of mixin inheritance to avoid basedpyright
-    reportUnsafeMultipleInheritance errors.
-
-    Usage:
-        self._managers = FlextAuthServiceManagers(config, dispatcher)
-        user = self._managers.user_manager.get_user(id)
-    """
-
-    __slots__ = (
-        "config",
-        "dispatcher",
-        "rate_limiter",
-        "session_manager",
-        "user_manager",
-    )
-
-    def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
-        """Initialize all standard managers used by services."""
-        self.config = config
-        self.dispatcher = dispatcher
-        self.user_manager = FlextAuthManagers.FlextAuthUserManager(config)
-        self.session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
-        self.rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
-
-
-class FlextAuthManagers(FlextAuthSessionManagers, FlextAuthRateLimiterManagers):
+class FlextAuthUtilitiesManagers(
+    FlextAuthSessionManagers, FlextAuthRateLimiterManagers
+):
     """Namespace class for all authentication managers following FLEXT patterns.
 
     This namespace class contains all manager implementations as nested classes,
     providing a single import point while maintaining clean separation of concerns.
     """
 
+    class ServiceManagers:
+        """Manager composition helper for auth services."""
+
+        __slots__ = (
+            "config",
+            "dispatcher",
+            "rate_limiter",
+            "session_manager",
+            "user_manager",
+        )
+
+        def __init__(self, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
+            """Initialize all standard managers used by services."""
+            self.config = config
+            self.dispatcher = dispatcher
+            self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager(config)
+            self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager(
+                config
+            )
+            self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
+                config,
+                dispatcher,
+            )
+
     def execute(self) -> r[bool]:
         """Execute method for s interface.
 
-        FlextAuthManagers is a namespace class - use specific manager classes instead.
+        FlextAuthUtilitiesManagers is a namespace class - use specific manager classes instead.
         """
         return r[bool].fail(
-            "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager",
+            "FlextAuthUtilitiesManagers is a namespace class - use specific manager classes like FlextAuthUserManager",
         )
 
     class FlextAuthUserManager:

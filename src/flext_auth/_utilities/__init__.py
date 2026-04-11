@@ -8,10 +8,7 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".identity_service": ("FlextAuthIdentityService",),
-        ".managers": (
-            "FlextAuthManagers",
-            "FlextAuthServiceManagers",
-        ),
+        ".managers": ("FlextAuthUtilitiesManagers",),
         ".middleware": ("FlextAuthMiddleware",),
         ".mixins": ("FlextAuthMixins",),
         ".provider_service": ("FlextAuthProviderService",),

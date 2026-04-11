@@ -15,9 +15,8 @@ from typing import override
 from pydantic import ValidationError
 
 from flext_auth import (
-    FlextAuthManagers,
-    FlextAuthServiceManagers,
     FlextAuthSettings,
+    FlextAuthUtilitiesManagers,
     c,
     m,
     p,
@@ -37,10 +36,10 @@ class FlextAuthIdentityService(s[bool]):
     def __init__(self, *, config: FlextAuthSettings, dispatcher: p.Dispatcher) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
-        self._managers = FlextAuthServiceManagers(config, dispatcher)
+        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(config, dispatcher)
 
     @property
-    def identity_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
+    def identity_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
 

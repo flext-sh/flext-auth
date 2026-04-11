@@ -14,10 +14,9 @@ from typing import override
 
 from flext_auth import (
     FlextAuthJwtProvider,
-    FlextAuthManagers,
     FlextAuthProviderService,
-    FlextAuthServiceManagers,
     FlextAuthSettings,
+    FlextAuthUtilitiesManagers,
     c,
     m,
     p,
@@ -41,12 +40,12 @@ class FlextAuthTokenService(s[bool]):
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
-        self._managers = FlextAuthServiceManagers(config, dispatcher)
+        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(config, dispatcher)
         self._provider_service = provider_service
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 
     @property
-    def user_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
+    def user_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 
