@@ -12,76 +12,77 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
-    from flext_auth._managers.auth_managers_session import FlextAuthSessionManagers
-    from flext_auth._managers.rate_limiter import FlextAuthRateLimiterManagers
-    from flext_auth._utilities.identity_service import FlextAuthIdentityService
-    from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
-    from flext_auth._utilities.middleware import FlextAuthMiddleware
-    from flext_auth._utilities.mixins import FlextAuthMixins
-    from flext_auth._utilities.provider_service import FlextAuthProviderService
-    from flext_auth._utilities.quickstart import FlextAuthQuickstart
-    from flext_auth._utilities.registry import FlextAuthRegistry
-    from flext_auth._utilities.session_service import FlextAuthSessionService
-    from flext_auth._utilities.token_service import FlextAuthTokenService
+    from _utilities.identity_service import FlextAuthIdentityService
+    from _utilities.managers import FlextAuthUtilitiesManagers
+    from _utilities.middleware import FlextAuthMiddleware
+    from _utilities.mixins import FlextAuthMixins
+    from _utilities.provider_service import FlextAuthProviderService
+    from _utilities.quickstart import FlextAuthQuickstart
+    from _utilities.registry import FlextAuthRegistry
+    from _utilities.session_service import FlextAuthSessionService
+    from _utilities.token_service import FlextAuthTokenService
+
     from flext_auth.api import FlextAuth
+    from flext_auth.apikey import FlextAuthApiKeyProvider
+    from flext_auth.auth_managers_session import FlextAuthSessionManagers
+    from flext_auth.basic import FlextAuthBasicProvider
+    from flext_auth.certificate import FlextAuthCertificateProvider
     from flext_auth.constants import FlextAuthConstants
+    from flext_auth.http import FlextWebTransportAdapter
+    from flext_auth.jwt import FlextAuthJwtProvider
+    from flext_auth.jwt_password_hasher import FlextAuthPasswordHasher
+    from flext_auth.jwt_token_generator import FlextAuthJwtTokenGenerator
+    from flext_auth.jwt_token_validator import FlextAuthJwtTokenValidator
+    from flext_auth.kerberos import FlextAuthKerberosProvider
+    from flext_auth.ldap import FlextAuthLdapProvider
+    from flext_auth.mixin import FlextAuthProviderMixin
     from flext_auth.models import FlextAuthModels
+    from flext_auth.oauth2 import FlextAuthOAuth2Provider
+    from flext_auth.oidc import FlextAuthOidcProvider
     from flext_auth.protocols import FlextAuthProtocols
-    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
-    from flext_auth.providers.basic import FlextAuthBasicProvider
-    from flext_auth.providers.certificate import FlextAuthCertificateProvider
-    from flext_auth.providers.jwt import FlextAuthJwtProvider
-    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
-    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
-    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
-    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
-    from flext_auth.providers.ldap import FlextAuthLdapProvider
-    from flext_auth.providers.mixin import FlextAuthProviderMixin
-    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-    from flext_auth.providers.oidc import FlextAuthOidcProvider
-    from flext_auth.providers.rfc import FlextAuthRfcProvider
-    from flext_auth.providers.saml import FlextAuthSamlProvider
+    from flext_auth.rate_limiter import FlextAuthRateLimiterManagers
+    from flext_auth.rfc import FlextAuthRfcProvider
+    from flext_auth.saml import FlextAuthSamlProvider
     from flext_auth.settings import FlextAuthSettings
-    from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes
     from flext_auth.utilities import FlextAuthUtilities
 _LAZY_IMPORTS = merge_lazy_imports(
     (".flext_auth",),
     build_lazy_import_map(
         {
-            "._managers.auth_managers_session": ("FlextAuthSessionManagers",),
-            "._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
-            "._utilities.identity_service": ("FlextAuthIdentityService",),
-            "._utilities.managers": ("FlextAuthUtilitiesManagers",),
-            "._utilities.middleware": ("FlextAuthMiddleware",),
-            "._utilities.mixins": ("FlextAuthMixins",),
-            "._utilities.provider_service": ("FlextAuthProviderService",),
-            "._utilities.quickstart": ("FlextAuthQuickstart",),
-            "._utilities.registry": ("FlextAuthRegistry",),
-            "._utilities.session_service": ("FlextAuthSessionService",),
-            "._utilities.token_service": ("FlextAuthTokenService",),
             ".api": ("FlextAuth",),
+            ".apikey": ("FlextAuthApiKeyProvider",),
+            ".auth_managers_session": ("FlextAuthSessionManagers",),
+            ".basic": ("FlextAuthBasicProvider",),
+            ".certificate": ("FlextAuthCertificateProvider",),
             ".constants": ("FlextAuthConstants",),
+            ".http": ("FlextWebTransportAdapter",),
+            ".jwt": ("FlextAuthJwtProvider",),
+            ".jwt_password_hasher": ("FlextAuthPasswordHasher",),
+            ".jwt_token_generator": ("FlextAuthJwtTokenGenerator",),
+            ".jwt_token_validator": ("FlextAuthJwtTokenValidator",),
+            ".kerberos": ("FlextAuthKerberosProvider",),
+            ".ldap": ("FlextAuthLdapProvider",),
+            ".mixin": ("FlextAuthProviderMixin",),
             ".models": ("FlextAuthModels",),
+            ".oauth2": ("FlextAuthOAuth2Provider",),
+            ".oidc": ("FlextAuthOidcProvider",),
             ".protocols": ("FlextAuthProtocols",),
-            ".providers.apikey": ("FlextAuthApiKeyProvider",),
-            ".providers.basic": ("FlextAuthBasicProvider",),
-            ".providers.certificate": ("FlextAuthCertificateProvider",),
-            ".providers.jwt": ("FlextAuthJwtProvider",),
-            ".providers.jwt_password_hasher": ("FlextAuthPasswordHasher",),
-            ".providers.jwt_token_generator": ("FlextAuthJwtTokenGenerator",),
-            ".providers.jwt_token_validator": ("FlextAuthJwtTokenValidator",),
-            ".providers.kerberos": ("FlextAuthKerberosProvider",),
-            ".providers.ldap": ("FlextAuthLdapProvider",),
-            ".providers.mixin": ("FlextAuthProviderMixin",),
-            ".providers.oauth2": ("FlextAuthOAuth2Provider",),
-            ".providers.oidc": ("FlextAuthOidcProvider",),
-            ".providers.rfc": ("FlextAuthRfcProvider",),
-            ".providers.saml": ("FlextAuthSamlProvider",),
+            ".rate_limiter": ("FlextAuthRateLimiterManagers",),
+            ".rfc": ("FlextAuthRfcProvider",),
+            ".saml": ("FlextAuthSamlProvider",),
             ".settings": ("FlextAuthSettings",),
-            ".transports.http": ("FlextWebTransportAdapter",),
             ".typings": ("FlextAuthTypes",),
             ".utilities": ("FlextAuthUtilities",),
+            "_utilities.identity_service": ("FlextAuthIdentityService",),
+            "_utilities.managers": ("FlextAuthUtilitiesManagers",),
+            "_utilities.middleware": ("FlextAuthMiddleware",),
+            "_utilities.mixins": ("FlextAuthMixins",),
+            "_utilities.provider_service": ("FlextAuthProviderService",),
+            "_utilities.quickstart": ("FlextAuthQuickstart",),
+            "_utilities.registry": ("FlextAuthRegistry",),
+            "_utilities.session_service": ("FlextAuthSessionService",),
+            "_utilities.token_service": ("FlextAuthTokenService",),
         },
     ),
     exclude_names=(
