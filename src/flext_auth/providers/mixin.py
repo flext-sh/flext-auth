@@ -370,4 +370,4 @@ class FlextAuthProviderMixin:
         return r[bool].ok(value=True)
 
 
-__all__ = ["FlextAuthProviderMixin"]
+__all__: list[str] = ["FlextAuthProviderMixin"]

@@ -747,4 +747,4 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[m.Auth.AuthIdentity].ok(identity)
 
 
-__all__ = ["FlextAuthOAuth2Provider"]
+__all__: list[str] = ["FlextAuthOAuth2Provider"]

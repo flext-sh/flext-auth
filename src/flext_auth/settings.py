@@ -93,4 +93,4 @@ class FlextAuthSettings(FlextSettings):
         return value
 
 
-__all__ = ["FlextAuthSettings"]
+__all__: list[str] = ["FlextAuthSettings"]

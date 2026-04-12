@@ -57,4 +57,4 @@ class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvide
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthBasicProvider"]
+__all__: list[str] = ["FlextAuthBasicProvider"]

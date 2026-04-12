@@ -45,4 +45,4 @@ class FlextAuthSessionService(s):
         )
 
 
-__all__ = ["FlextAuthSessionService"]
+__all__: list[str] = ["FlextAuthSessionService"]

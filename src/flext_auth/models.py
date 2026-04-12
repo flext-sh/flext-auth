@@ -684,4 +684,4 @@ class FlextAuthModels(FlextApiModels):
 # Short aliases
 m = FlextAuthModels
 
-__all__ = ["FlextAuthModels", "m"]
+__all__: list[str] = ["FlextAuthModels", "m"]

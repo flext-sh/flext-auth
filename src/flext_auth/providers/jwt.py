@@ -73,4 +73,4 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthJwtProvider"]
+__all__: list[str] = ["FlextAuthJwtProvider"]

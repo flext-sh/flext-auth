@@ -337,4 +337,4 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         return None
 
 
-__all__ = ["FlextAuthKerberosProvider"]
+__all__: list[str] = ["FlextAuthKerberosProvider"]

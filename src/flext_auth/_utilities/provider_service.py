@@ -211,4 +211,4 @@ class FlextAuthProviderService(s):
                     )
 
 
-__all__ = ["FlextAuthProviderService"]
+__all__: list[str] = ["FlextAuthProviderService"]

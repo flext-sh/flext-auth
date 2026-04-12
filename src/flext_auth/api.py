@@ -372,4 +372,4 @@ class FlextAuth:
 
 auth = FlextAuth
 
-__all__ = ["FlextAuth", "auth"]
+__all__: list[str] = ["FlextAuth", "auth"]

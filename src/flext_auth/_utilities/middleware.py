@@ -226,4 +226,4 @@ class FlextAuthMiddleware(s):
             return r[m.Auth.AuthToken].ok(refreshed_token)
 
 
-__all__ = ["FlextAuthMiddleware"]
+__all__: list[str] = ["FlextAuthMiddleware"]

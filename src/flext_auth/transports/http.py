@@ -357,4 +357,4 @@ class FlextWebTransportAdapter:
         return r[t.ContainerValueMapping].ok(payload)
 
 
-__all__ = ["FlextWebTransportAdapter"]
+__all__: list[str] = ["FlextWebTransportAdapter"]

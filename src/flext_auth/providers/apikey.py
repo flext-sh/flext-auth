@@ -49,4 +49,4 @@ class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvid
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthApiKeyProvider"]
+__all__: list[str] = ["FlextAuthApiKeyProvider"]

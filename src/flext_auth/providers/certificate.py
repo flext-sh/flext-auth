@@ -71,4 +71,4 @@ class FlextAuthCertificateProvider(
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthCertificateProvider"]
+__all__: list[str] = ["FlextAuthCertificateProvider"]

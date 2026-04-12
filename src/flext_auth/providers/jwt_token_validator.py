@@ -106,4 +106,4 @@ class FlextAuthJwtTokenValidator:
             )
 
 
-__all__ = ["FlextAuthJwtTokenValidator"]
+__all__: list[str] = ["FlextAuthJwtTokenValidator"]

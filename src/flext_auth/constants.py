@@ -586,4 +586,4 @@ class FlextAuthConstants(FlextApiConstants):
 
 
 c = FlextAuthConstants
-__all__ = ["FlextAuthConstants", "c"]
+__all__: list[str] = ["FlextAuthConstants", "c"]

@@ -335,4 +335,4 @@ class FlextAuthUtilities(FlextApiUtilities):
 
 
 u = FlextAuthUtilities
-__all__ = ["FlextAuthUtilities", "u"]
+__all__: list[str] = ["FlextAuthUtilities", "u"]

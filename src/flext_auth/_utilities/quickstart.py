@@ -120,4 +120,4 @@ class FlextAuthQuickstart(s):
         return self._auth.validate_token(token)
 
 
-__all__ = ["FlextAuthQuickstart"]
+__all__: list[str] = ["FlextAuthQuickstart"]

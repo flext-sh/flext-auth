@@ -315,4 +315,4 @@ class FlextAuthRegistry:
         )
 
 
-__all__ = ["FlextAuthRegistry"]
+__all__: list[str] = ["FlextAuthRegistry"]

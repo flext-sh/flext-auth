@@ -63,4 +63,4 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
 
 c = TestsFlextAuthConstants
 
-__all__ = ["TestsFlextAuthConstants", "c"]
+__all__: list[str] = ["TestsFlextAuthConstants", "c"]

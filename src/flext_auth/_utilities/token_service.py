@@ -169,4 +169,4 @@ class FlextAuthTokenService(s):
         return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)
 
 
-__all__ = ["FlextAuthTokenService"]
+__all__: list[str] = ["FlextAuthTokenService"]

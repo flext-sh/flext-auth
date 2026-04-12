@@ -25,4 +25,4 @@ class TestsProtocols(FlextTestsProtocols, FlextAuthProtocols):
 
 
 p = TestsProtocols
-__all__ = ["TestsProtocols", "p"]
+__all__: list[str] = ["TestsProtocols", "p"]

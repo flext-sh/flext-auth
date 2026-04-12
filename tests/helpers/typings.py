@@ -25,4 +25,4 @@ class TestsTypings(FlextTestsTypes, FlextAuthTypes):
 
 
 t = TestsTypings
-__all__ = ["TestsTypings", "t"]
+__all__: list[str] = ["TestsTypings", "t"]

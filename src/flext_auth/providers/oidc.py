@@ -80,4 +80,4 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthOidcProvider"]
+__all__: list[str] = ["FlextAuthOidcProvider"]

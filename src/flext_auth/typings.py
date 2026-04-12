@@ -220,4 +220,4 @@ class FlextAuthTypes(FlextApiTypes):
 
 
 t = FlextAuthTypes
-__all__ = ["FlextAuthTypes", "t"]
+__all__: list[str] = ["FlextAuthTypes", "t"]

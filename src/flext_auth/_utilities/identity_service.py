@@ -250,4 +250,4 @@ class FlextAuthIdentityService(s):
         return True
 
 
-__all__ = ["FlextAuthIdentityService"]
+__all__: list[str] = ["FlextAuthIdentityService"]

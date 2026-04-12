@@ -14,4 +14,4 @@ class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
 
 u = TestsFlextAuthUtilities
 
-__all__ = ["TestsFlextAuthUtilities", "u"]
+__all__: list[str] = ["TestsFlextAuthUtilities", "u"]

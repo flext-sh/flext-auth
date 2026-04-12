@@ -75,4 +75,4 @@ class FlextAuthPasswordHasher:
         )
 
 
-__all__ = ["FlextAuthPasswordHasher"]
+__all__: list[str] = ["FlextAuthPasswordHasher"]

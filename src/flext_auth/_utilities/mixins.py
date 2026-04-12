@@ -77,4 +77,4 @@ class FlextAuthMixins(x):
             return r[str].ok(username)
 
 
-__all__ = ["FlextAuthMixins"]
+__all__: list[str] = ["FlextAuthMixins"]
