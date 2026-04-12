@@ -1,4 +1,4 @@
-"""FLEXT Auth Registry - Provider management using FlextRegistry generic plugin API.
+"""FLEXT Auth registry over the canonical core registry DSL.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,18 +6,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import ClassVar, TypeIs
 
 from pydantic import BaseModel
 
-from flext_auth import m, p, t
-from flext_core import FlextRegistry, r
+from flext_auth import c, m, p, t, u
+from flext_core import r
 
 
-class FlextAuthRegistry(FlextRegistry):
-    """Auth provider registry using FlextRegistry generic plugin API."""
+class FlextAuthRegistry:
+    """Auth provider registry backed by `p.Registry`."""
 
     PROVIDERS: ClassVar[str] = "auth_providers"
+    _registry: p.Registry
 
     @staticmethod
     def _is_auth_provider(
@@ -27,9 +29,14 @@ class FlextAuthRegistry(FlextRegistry):
         required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
         return all(callable(getattr(value, attr, None)) for attr in required)
 
-    def __init__(self) -> None:
-        """Initialize with FlextRegistry infrastructure."""
-        super().__init__(dispatcher=None)
+    def __init__(self, dispatcher: p.Dispatcher | None = None) -> None:
+        """Initialize with the canonical registry DSL."""
+        self._registry = u.build_registry(dispatcher=dispatcher)
+
+    @property
+    def registry(self) -> p.Registry:
+        """Underlying canonical registry instance."""
+        return self._registry
 
     def __len__(self) -> int:
         """Return number of registered providers."""
@@ -148,8 +155,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
-        result = self.fetch_plugin(self.PROVIDERS, name)
-        return result.success
+        return self.fetch_plugin(self.PROVIDERS, name).success
 
     def list_providers(self) -> t.StrSequence:
         """List registered provider names."""
@@ -252,6 +258,61 @@ class FlextAuthRegistry(FlextRegistry):
             except (AttributeError, TypeError, ValueError):
                 return base
         return base
+
+    def fetch_plugin(
+        self,
+        category: str,
+        name: str,
+        *,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[t.RuntimeAtomic | None]:
+        """Delegate plugin lookup to the canonical registry."""
+        return r[t.RuntimeAtomic | None].from_result(
+            self._registry.fetch_plugin(category, name, scope=scope),
+        )
+
+    def list_plugins(
+        self,
+        category: str,
+        *,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[t.StrSequence]:
+        """Delegate plugin listing to the canonical registry."""
+        return r[t.StrSequence].from_result(
+            self._registry.list_plugins(category, scope=scope),
+        )
+
+    def register_plugin(
+        self,
+        category: str,
+        name: str,
+        plugin: t.RegistrablePlugin,
+        *,
+        validate: Callable[[t.RegistrablePlugin], r[bool]] | None = None,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[bool]:
+        """Delegate plugin registration to the canonical registry."""
+        return r[bool].from_result(
+            self._registry.register_plugin(
+                category,
+                name,
+                plugin,
+                validate=validate,
+                scope=scope,
+            ),
+        )
+
+    def unregister_plugin(
+        self,
+        category: str,
+        name: str,
+        *,
+        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
+    ) -> r[bool]:
+        """Delegate plugin removal to the canonical registry."""
+        return r[bool].from_result(
+            self._registry.unregister_plugin(category, name, scope=scope),
+        )
 
 
 __all__ = ["FlextAuthRegistry"]
