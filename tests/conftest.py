@@ -13,8 +13,6 @@ import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings
 
-pytest_plugins = ["flext_tests.conftest_plugin"]
-
 
 class _MockGlobal:
     """Mock for FlextAuthSettings.get_global."""
