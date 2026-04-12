@@ -190,14 +190,8 @@ class TestFlextAuthStorageOperations:
         u.Tests.Matchers.that(sessions_result.success, eq=True)
 
 
-class TestFlextAuthConfigurationOverrides:
-    """Test configuration override capabilities."""
-
-    def test_create_with_config_overrides_method_exists(self) -> None:
-        """Test create_with_config_overrides static method exists."""
-        u.Tests.Matchers.that(
-            hasattr(FlextAuth, "create_with_config_overrides"), eq=True
-        )
+class TestFlextAuthSettingsInitialization:
+    """Test explicit settings bootstrap."""
 
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
@@ -683,11 +677,12 @@ class TestFlextAuthInitializationCoverage:
 
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
-        auth = FlextAuth.create_with_config_overrides(
-            expiry_minutes=120,
-            hash_rounds=10,
-            auth_secret="test-secret-key-with-minimum-32-characters-length",
-        )
+        settings = FlextAuthSettings.model_validate({
+            "expiry_minutes": 120,
+            "hash_rounds": 10,
+            "auth_secret": "test-secret-key-with-minimum-32-characters-length",
+        })
+        auth = FlextAuth(settings=settings)
         u.Tests.Matchers.that(auth._config.expiry_minutes, eq=120)
         u.Tests.Matchers.that(auth._config.hash_rounds, eq=10)
 

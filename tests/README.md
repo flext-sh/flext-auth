@@ -307,7 +307,7 @@ Test-specific environment variables:
 ### Common Issues
 
 1. **Import Errors**: Verify all dependencies are installed
-1. **Database Issues**: Ensure test database is properly settingsured
+1. **Database Issues**: Ensure test database is properly configured
 1. **Issues**: Use proper test patterns
 1. **Mock Issues**: Verify mock configurations match actual interfaces
 

@@ -42,7 +42,7 @@ class FlextAuth:
     - Python 3.13+ type safety throughout
     """
 
-    _instance: ClassVar[object | None] = None
+    _instance: ClassVar[Self | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
     logger: p.Logger
     _config: FlextAuthSettings
@@ -115,21 +115,6 @@ class FlextAuth:
     def token_service(self) -> FlextAuthTokenService:
         """Token service access for usage."""
         return self._token_service
-
-    @classmethod
-    def create_with_config_overrides(cls, **config_overrides: t.Scalar) -> Self:
-        """Factory method to create FlextAuth with configuration overrides.
-
-        Args:
-            **config_overrides: Configuration parameters to override defaults
-
-        Returns:
-            Initialized FlextAuth instance with custom configuration
-
-        """
-        custom_config = FlextAuthSettings.model_validate(config_overrides)
-        instance: Self = cls(settings=custom_config)
-        return instance
 
     @classmethod
     def get_global(cls) -> Self:
