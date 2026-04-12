@@ -294,10 +294,10 @@ class FlextAuthProviderMixin:
         )
 
     def _extract_token_string(self, token: str | p.Auth.Token) -> str:
-        """Extract token string from token or Token t.NormalizedValue.
+        """Extract token string from token or Token t.RecursiveContainer.
 
         Args:
-        token: Token as string or Token t.NormalizedValue
+        token: Token as string or Token t.RecursiveContainer
 
         Returns:
         str: Token string

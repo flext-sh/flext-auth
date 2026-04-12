@@ -47,7 +47,7 @@ def mock_get_global() -> _MockGlobal:
     """Mock for FlextAuthSettings.get_global.
 
     Returns:
-        Mock t.NormalizedValue for global instance
+        Mock t.RecursiveContainer for global instance
 
     """
     return _MockGlobal()

@@ -97,7 +97,7 @@ All ADRs follow a consistent template:
 
 ## Notes
 
-[t.NormalizedValue additional notes or implementation details]
+[t.RecursiveContainer additional notes or implementation details]
 ```
 
 ## Current ADRs

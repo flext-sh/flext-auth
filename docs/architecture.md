@@ -258,7 +258,7 @@ class FlextAuthRegistry:
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-        settings: t.ContainerMapping | None = None
+        settings: t.RecursiveContainerMapping | None = None
     ) -> r[bool]
 
     def unregister(self, name: str) -> r[bool]
@@ -306,7 +306,7 @@ class FlextAuthBaseProvider(Protocol):
         """Return set of supported capabilities."""
         ...
 
-    def get_metadata(self) -> t.ContainerMapping:
+    def get_metadata(self) -> t.RecursiveContainerMapping:
         """Return provider metadata."""
         ...
 ```
@@ -487,7 +487,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         """Return provider capabilities."""
         return {"token", "validate", "refresh"}
 
-    def get_metadata(self) -> t.ContainerMapping:
+    def get_metadata(self) -> t.RecursiveContainerMapping:
         """Return provider metadata."""
         return {
             "name": "example",
@@ -511,7 +511,7 @@ class BaseTransportAdapter(Protocol):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: t.ContainerMapping | None = None,
+        metadata: t.RecursiveContainerMapping | None = None,
     ) -> r[t.Dict]:
         """Send authentication request over transport."""
         ...
@@ -520,12 +520,12 @@ class BaseTransportAdapter(Protocol):
         self,
         endpoint: str,
         token: str,
-        metadata: t.ContainerMapping | None = None,
+        metadata: t.RecursiveContainerMapping | None = None,
     ) -> r[t.Dict]:
         """Send token validation request over transport."""
         ...
 
-    def get_transport_metadata(self) -> t.ContainerMapping:
+    def get_transport_metadata(self) -> t.RecursiveContainerMapping:
         """Return transport metadata."""
         ...
 ```
@@ -560,7 +560,7 @@ from flext_core import u
 class FlextWebTransportAdapter(BaseTransportAdapter):
     """HTTP transport adapter using flext-api."""
 
-    def __init__(self, settings: t.ContainerMapping | None = None) -> None:
+    def __init__(self, settings: t.RecursiveContainerMapping | None = None) -> None:
         self._api = FlextApi(settings=settings)  # MANDATORY: Use flext-api
         self.logger = u.fetch_logger(__name__)
 
@@ -568,7 +568,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: t.ContainerMapping | None = None,
+        metadata: t.RecursiveContainerMapping | None = None,
     ) -> r[t.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(url=endpoint, json=credentials, headers=metadata)
@@ -609,7 +609,7 @@ from flext_core import u
 class GrpcTransportAdapter(BaseTransportAdapter):
     """gRPC transport adapter using flext-grpc."""
 
-    def __init__(self, settings: t.ContainerMapping | None = None) -> None:
+    def __init__(self, settings: t.RecursiveContainerMapping | None = None) -> None:
         self._grpc = FlextGrpc(settings=settings)  # MANDATORY: Use flext-grpc
         self.logger = u.fetch_logger(__name__)
 
@@ -617,7 +617,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: t.ContainerMapping | None = None,
+        metadata: t.RecursiveContainerMapping | None = None,
     ) -> r[t.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
@@ -639,7 +639,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 class WebSocketTransportAdapter(BaseTransportAdapter):
     """WebSocket transport adapter for real-time authentication."""
 
-    def __init__(self, settings: t.ContainerMapping | None = None) -> None:
+    def __init__(self, settings: t.RecursiveContainerMapping | None = None) -> None:
         self._config = settings
         self.logger = u.fetch_logger(__name__)
 
@@ -647,7 +647,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: t.ContainerMapping | None = None,
+        metadata: t.RecursiveContainerMapping | None = None,
     ) -> r[t.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
@@ -665,7 +665,7 @@ class BaseProtocolHandler(Protocol):
     """Base protocol for protocol-specific handlers."""
 
     def format_auth_request(
-        self, credentials: dict, metadata: t.ContainerMapping | None = None
+        self, credentials: dict, metadata: t.RecursiveContainerMapping | None = None
     ) -> r[bytes | str]:
         """Format authentication request for protocol."""
         ...
@@ -682,7 +682,7 @@ class RestProtocolHandler(BaseProtocolHandler):
     """REST/JSON protocol handler (default)."""
 
     def format_auth_request(
-        self, credentials: dict, metadata: t.ContainerMapping | None = None
+        self, credentials: dict, metadata: t.RecursiveContainerMapping | None = None
     ) -> r[str]:
         """Format as JSON REST request."""
         import json
@@ -711,7 +711,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
     """SOAP/XML protocol handler (stub)."""
 
     def format_auth_request(
-        self, credentials: dict, metadata: t.ContainerMapping | None = None
+        self, credentials: dict, metadata: t.RecursiveContainerMapping | None = None
     ) -> r[str]:
         """Format as SOAP XML request."""
         # Implementation for SOAP envelope creation
@@ -837,7 +837,7 @@ class TokenCache:
     def __init__(
         self,
         backend: str = "memory",  # "memory", "redis", "memcached"
-        settings: t.ContainerMapping | None = None,
+        settings: t.RecursiveContainerMapping | None = None,
     ) -> None:
         self._backend = self._create_backend(backend, settings)
         self.logger = u.fetch_logger(__name__)
@@ -886,7 +886,7 @@ class CredentialManager:
         self,
         identifier: str,
         credential: dict,
-        metadata: t.ContainerMapping | None = None,
+        metadata: t.RecursiveContainerMapping | None = None,
     ) -> r[bool]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)

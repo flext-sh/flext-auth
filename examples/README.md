@@ -239,7 +239,7 @@ def login(username: str, password: str):
 
 @app.get("/protected")
 @flext_auth_required(auth_service=auth)
-def protected_endpoint(current_user: t.ContainerMapping = Depends()):
+def protected_endpoint(current_user: t.RecursiveContainerMapping = Depends()):
     return {"user": current_user}
 ```
 

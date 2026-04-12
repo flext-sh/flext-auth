@@ -164,7 +164,7 @@
 
 ## Notes
 
-[t.NormalizedValue additional notes, implementation details, or future considerations]
+[t.RecursiveContainer additional notes, implementation details, or future considerations]
 
 ______________________________________________________________________
 

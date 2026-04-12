@@ -311,7 +311,7 @@ class FlextWebTransportAdapter:
         query: t.Api.WebParams | None,
     ) -> t.Api.WebParams | None:
         if isinstance(data, Mapping) and method.upper() == "GET":
-            data_mapping: t.ContainerMapping = {
+            data_mapping: t.RecursiveContainerMapping = {
                 str(key): value for key, value in data.items()
             }
             query_dict: t.Api.WebParams = query if query is not None else {}
@@ -326,8 +326,8 @@ class FlextWebTransportAdapter:
         return query
 
     @staticmethod
-    def _to_scalar(value: t.NormalizedValue) -> t.Scalar:
-        """Normalize t.NormalizedValue to t.Scalar for response dict values."""
+    def _to_scalar(value: t.RecursiveContainer) -> t.Scalar:
+        """Normalize t.RecursiveContainer to t.Scalar for response dict values."""
         match value:
             case str() as text:
                 return text

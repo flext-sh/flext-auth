@@ -74,7 +74,7 @@ tests/
 ├── conftest.py              # Shared fixtures and test utilities
 ├── unit/                    # Unit tests (fast, isolated)
 │   ├── __init__.py
-│   ├── test_domain/         # Domain entity and value t.NormalizedValue tests
+│   ├── test_domain/         # Domain entity and value t.RecursiveContainer tests
 │   ├── test_application/    # Application service tests
 │   └── test_infrastructure/ # Infrastructure service tests
 ├── integration/             # Integration tests (service interaction)

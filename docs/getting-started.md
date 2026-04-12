@@ -68,7 +68,7 @@ from flext_auth import flext_auth_quick_start, FlextAuthModels
 # Initialize authentication service
 auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-# Create user request t.NormalizedValue
+# Create user request t.RecursiveContainer
 user_request = FlextAuthModels.UserCreationRequest(
     username="alice", email="alice@example.com", password="secure123"
 )

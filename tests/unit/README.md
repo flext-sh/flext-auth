@@ -58,7 +58,7 @@ unit/
 ├── __init__.py                    # Unit test configuration
 ├── test_domain/                   # Domain layer unit tests
 │   ├── test_entities.py          # Entity business logic tests
-│   ├── test_value_objects.py     # Value t.NormalizedValue validation tests
+│   ├── test_value_objects.py     # Value t.RecursiveContainer validation tests
 │   └── test_service.py   # Domain service tests
 ├── test_application/              # Application layer unit tests
 │   ├── test_auth_service.py      # Authentication service tests
