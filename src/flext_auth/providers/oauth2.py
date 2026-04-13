@@ -21,8 +21,7 @@ from urllib.parse import urlencode, urlparse
 
 from pydantic import ValidationError
 
-from flext_auth import FlextAuthRfcProvider, c, m, p, t, u
-from flext_core import e, r
+from flext_auth import FlextAuthRfcProvider, c, e, m, p, r, t, u
 
 _HTTP_BAD_REQUEST: Final[int] = 400
 

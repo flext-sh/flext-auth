@@ -15,8 +15,7 @@ from datetime import UTC, datetime, timedelta
 
 from pydantic import SecretStr
 
-from flext_auth import c, m, p, t, u
-from flext_core import e, r
+from flext_auth import c, e, m, p, r, t, u
 
 
 class FlextAuthProviderMixin:

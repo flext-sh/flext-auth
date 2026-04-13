@@ -20,9 +20,10 @@ from flext_auth import (
     c,
     m,
     p,
+    r,
+    s,
     t,
 )
-from flext_core import p, r, s
 
 
 class FlextAuthIdentityService(s):

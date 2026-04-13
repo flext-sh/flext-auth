@@ -13,8 +13,7 @@ from __future__ import annotations
 import jwt
 from jwt.types import Options
 
-from flext_auth import FlextAuthJwtProvider, t
-from flext_core import p, r
+from flext_auth import FlextAuthJwtProvider, p, r, t
 
 
 class FlextAuthJwtTokenValidator:

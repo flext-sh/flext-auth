@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 
-from flext_auth import FlextAuthSettings, p, t, u
-from flext_core import FlextContext, r
+from flext_auth import FlextAuthSettings, p, r, t, u
+from flext_core import FlextContext
 
 
 class FlextAuthRateLimiterManagers:

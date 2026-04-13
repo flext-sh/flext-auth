@@ -15,51 +15,11 @@ import jwt
 from flext_api import FlextApiUtilities
 from pydantic import BeforeValidator, SecretStr, ValidationError
 
-from flext_auth import c, t
-from flext_core import p, r
+from flext_auth import c, p, r, t
 
 
 class FlextAuthUtilities(FlextApiUtilities):
-    """FlextAuth advanced utilities extending u with domain-specific helpers.
-
-    Architecture: Advanced utilities with ZERO code bloat through:
-    - Unified guard APIs for runtime validation
-    - BeforeValidator factories for Pydantic coercion
-    - @validated decorators eliminating manual validation
-    - Generic parsing utilities for StrEnums
-    """
-
-    @classmethod
-    def is_valid_permission_type(cls, value: str) -> bool:
-        """Validate PermissionTypes membership.
-
-        Uses parent Enum utilities for consistency.
-        """
-        return FlextApiUtilities.is_member(c.Auth.PermissionTypes, value)
-
-    @classmethod
-    def is_valid_provider_type(cls, value: str) -> bool:
-        """Validate ProviderTypes membership.
-
-        Uses parent Enum utilities for consistency.
-        """
-        return FlextApiUtilities.is_member(c.Auth.ProviderTypes, value)
-
-    @classmethod
-    def is_valid_role_type(cls, value: str) -> bool:
-        """Validate RoleTypes membership.
-
-        Uses parent Enum utilities for consistency.
-        """
-        return FlextApiUtilities.is_member(c.Auth.RoleTypes, value)
-
-    @classmethod
-    def is_valid_token_type(cls, value: str) -> bool:
-        """Validate TokenTypes membership.
-
-        Uses parent Enum utilities for consistency.
-        """
-        return FlextApiUtilities.is_member(c.Auth.TokenTypes, value)
+    """FlextAuth advanced utilities extending u with domain-specific helpers."""
 
     class Auth:
         """Auth-specific utility namespace.
