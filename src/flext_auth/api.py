@@ -65,11 +65,7 @@ class FlextAuth:
         else:
             self._config = FlextAuthSettings()
         self._registry = FlextAuthRegistry()
-        command_bus_result = FlextContainer.fetch_global().get("command_bus").unwrap()
-        if not isinstance(command_bus_result, p.Dispatcher):
-            err_msg = "command_bus is not a CommandBus"
-            raise TypeError(err_msg)
-        self._dispatcher = command_bus_result
+        self._dispatcher = FlextContainer.shared().dispatcher().unwrap()
         self._service_name = service_name if service_name is not None else "flext_auth"
         self.logger = u.fetch_logger(__name__)
         self._provider_service = FlextAuthProviderService(settings=self._config)
