@@ -12,7 +12,7 @@ from typing import ClassVar, TypeIs
 from pydantic import BaseModel
 
 from flext_auth import c, m, p, t, u
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthRegistry:
@@ -51,7 +51,7 @@ class FlextAuthRegistry:
         for name in self.list_providers():
             self.unregister(name)
 
-    def find_by_capability(self, capability: str) -> r[t.StrSequence]:
+    def find_by_capability(self, capability: str) -> p.Result[t.StrSequence]:
         """Find providers with specific capability."""
         matching = [
             name
@@ -60,7 +60,7 @@ class FlextAuthRegistry:
         ]
         return r[t.StrSequence].ok(matching)
 
-    def get(self, data: str) -> r[p.Auth.FlextAuthBaseProvider]:
+    def get(self, data: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name."""
         result = self.fetch_plugin(self.PROVIDERS, data)
         if result.failure:
@@ -81,7 +81,7 @@ class FlextAuthRegistry:
             f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider",
         )
 
-    def get_capabilities(self, name: str) -> r[set[str]]:
+    def get_capabilities(self, name: str) -> p.Result[set[str]]:
         """Get provider capabilities."""
         provider_result = self.get(name)
         if provider_result.failure:
@@ -103,7 +103,7 @@ class FlextAuthRegistry:
         ):
             return r[set[str]].ok(set())
 
-    def get_config(self, name: str) -> r[t.ConfigurationMapping]:
+    def get_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
         """Get provider configuration."""
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
@@ -116,7 +116,7 @@ class FlextAuthRegistry:
             return r[t.ScalarMapping].fail("Invalid settings format")
         return r[t.ScalarMapping].ok(settings)
 
-    def get_metadata(self, name: str) -> r[m.Auth.Providers.Metadata]:
+    def get_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
         """Get provider metadata."""
         if not self.has_provider(name):
             return r[m.Auth.Providers.Metadata].fail(
@@ -145,7 +145,7 @@ class FlextAuthRegistry:
             )
         return r[m.Auth.Providers.Metadata].ok(metadata)
 
-    def has_capability(self, name: str, capability: str) -> r[bool]:
+    def has_capability(self, name: str, capability: str) -> p.Result[bool]:
         """Check if provider has capability."""
         caps_result = self.get_capabilities(name)
         if caps_result.failure:
@@ -173,7 +173,7 @@ class FlextAuthRegistry:
         provider: p.Auth.FlextAuthBaseProvider,
         metadata: m.Auth.Providers.Metadata | None = None,
         configuration: t.ConfigurationMapping | None = None,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Register auth provider with optional settings and metadata."""
         provider_wrapper = m.Auth.ProviderWrapper(
             category=self.PROVIDERS,
@@ -211,7 +211,7 @@ class FlextAuthRegistry:
                 return metadata_result
         return r[bool].ok(value=True)
 
-    def unregister(self, name: str) -> r[bool]:
+    def unregister(self, name: str) -> p.Result[bool]:
         """Unregister provider and cleanup auth-specific data."""
         provider_result = self.unregister_plugin(self.PROVIDERS, name)
         if provider_result.failure:
@@ -220,7 +220,9 @@ class FlextAuthRegistry:
         self.unregister_plugin(f"{self.PROVIDERS}_metadata", name)
         return r[bool].ok(value=True)
 
-    def update_config(self, name: str, settings: t.ConfigurationMapping) -> r[bool]:
+    def update_config(
+        self, name: str, settings: t.ConfigurationMapping
+    ) -> p.Result[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
@@ -265,7 +267,7 @@ class FlextAuthRegistry:
         name: str,
         *,
         scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
-    ) -> r[t.RuntimeAtomic | None]:
+    ) -> p.Result[t.RuntimeAtomic | None]:
         """Delegate plugin lookup to the canonical registry."""
         return r[t.RuntimeAtomic | None].from_result(
             self._registry.fetch_plugin(category, name, scope=scope),
@@ -276,7 +278,7 @@ class FlextAuthRegistry:
         category: str,
         *,
         scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
-    ) -> r[t.StrSequence]:
+    ) -> p.Result[t.StrSequence]:
         """Delegate plugin listing to the canonical registry."""
         return r[t.StrSequence].from_result(
             self._registry.list_plugins(category, scope=scope),
@@ -290,7 +292,7 @@ class FlextAuthRegistry:
         *,
         validate: Callable[[t.RegistrablePlugin], r[bool]] | None = None,
         scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Delegate plugin registration to the canonical registry."""
         return r[bool].from_result(
             self._registry.register_plugin(
@@ -308,7 +310,7 @@ class FlextAuthRegistry:
         name: str,
         *,
         scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Delegate plugin removal to the canonical registry."""
         return r[bool].from_result(
             self._registry.unregister_plugin(category, name, scope=scope),

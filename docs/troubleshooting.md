@@ -356,7 +356,7 @@ mypy src/flext_auth/
    from typing import Optional
 
 
-   def find_user(username: str) -> r[Optional[User]]:
+   def find_user(username: str) -> p.Result[Optional[User]]:
        pass
    ```
 

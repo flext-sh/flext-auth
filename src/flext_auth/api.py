@@ -156,7 +156,7 @@ class FlextAuth:
         self,
         credentials: t.StrMapping,
         _provider: str | None = None,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented authentication with chaining."""
         username_value = credentials.get("username")
         match username_value:
@@ -185,7 +185,7 @@ class FlextAuth:
         password: str,
         _ip_address: str | None = None,
         _user_agent: str | None = None,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Authenticate user by username and password with optional metadata.
 
         Args:
@@ -221,7 +221,7 @@ class FlextAuth:
                 session_result.tap_error(_log_session_error)
         return auth_result
 
-    def cleanup_expired_sessions(self) -> r[int]:
+    def cleanup_expired_sessions(self) -> p.Result[int]:
         """Clean up expired sessions.
 
         Returns:
@@ -234,7 +234,7 @@ class FlextAuth:
         self,
         identity_id: str,
         extra_claims: t.ConfigurationMapping | None = None,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Railway-oriented token creation.
 
         Args:
@@ -253,29 +253,29 @@ class FlextAuth:
             expires_in_minutes=self._config.expiry_minutes,
         )
 
-    def delete_user(self, user_id: str) -> r[bool]:
+    def delete_user(self, user_id: str) -> p.Result[bool]:
         """Delete identity - delegation to identity_service."""
         return self._identity_service.identity_manager.delete_user(user_id)
 
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Flexible execute implementation with railway orchestration."""
         return r[bool].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
 
-    def get_provider(self, name: str) -> r[p.Auth.FlextAuthBaseProvider]:
+    def get_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Railway-oriented provider retrieval."""
         return self._registry.get(name)
 
-    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
+    def get_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
 
-    def get_user_by_username(self, username: str) -> r[m.Auth.AuthIdentity]:
+    def get_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
         """Get identity by username - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user_by_username(username)
 
-    def get_user_sessions(self, user_id: str) -> r[Sequence[m.Auth.Session]]:
+    def get_user_sessions(self, user_id: str) -> p.Result[Sequence[m.Auth.Session]]:
         """Get user sessions."""
         return self._session_service.session_manager.get_active_sessions(user_id)
 
@@ -283,7 +283,7 @@ class FlextAuth:
         """Provider listing."""
         return self._registry.list_providers()
 
-    def logout_user(self, session_id: str) -> r[bool]:
+    def logout_user(self, session_id: str) -> p.Result[bool]:
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
@@ -291,7 +291,7 @@ class FlextAuth:
         self,
         name: str,
         provider: p.Auth.FlextAuthBaseProvider,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Railway-oriented provider registration."""
         return self._registry.register_provider(name, provider)
 
@@ -303,7 +303,7 @@ class FlextAuth:
         roles: t.StrSequence | None = None,
         role: str | None = None,
         **kwargs: t.Scalar | t.StrSequence | None,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Register a new user.
 
         Args:
@@ -337,7 +337,7 @@ class FlextAuth:
         username: str,
         email: str,
         password: str,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented user registration via identity service."""
         return self._identity_service.create_identity(
             name=username,
@@ -345,7 +345,7 @@ class FlextAuth:
             credential=password,
         )
 
-    def revoke_session(self, session_id: str) -> r[bool]:
+    def revoke_session(self, session_id: str) -> p.Result[bool]:
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
@@ -353,15 +353,15 @@ class FlextAuth:
         self,
         user_id: str,
         **updates: t.Scalar | t.StrSequence | None,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
 
-    def validate_token(self, token: str) -> r[bool]:
+    def validate_token(self, token: str) -> p.Result[bool]:
         """Flexible token validation with railway pattern."""
         return self._token_service.validate_token(token).map(lambda _result: True)
 
-    def verify_token(self, token: str) -> r[bool]:
+    def verify_token(self, token: str) -> p.Result[bool]:
         """Verify token validity - delegated to token service."""
         return self._token_service.validate_token(token)
 

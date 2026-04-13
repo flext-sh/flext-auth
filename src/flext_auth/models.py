@@ -17,7 +17,7 @@ from flext_api import FlextApiModels
 from pydantic import ConfigDict, Field
 
 from flext_auth import c, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthModels(FlextApiModels):
@@ -263,7 +263,7 @@ class FlextAuthModels(FlextApiModels):
                     return False
                 return datetime.now(UTC) < self.locked_until
 
-            def set_credential(self, credential: str) -> r[bool]:
+            def set_credential(self, credential: str) -> p.Result[bool]:
                 """Set a new credential with bcrypt hashing."""
                 try:
                     self.credential_hash = (
@@ -281,7 +281,7 @@ class FlextAuthModels(FlextApiModels):
                 ) as exc:
                     return r[bool].fail(f"Failed to hash credential: {exc}")
 
-            def verify_credential(self, credential: str) -> r[bool]:
+            def verify_credential(self, credential: str) -> p.Result[bool]:
                 """Verify a credential against stored hash using bcrypt."""
                 try:
                     valid = FlextAuthModels.Auth.PasswordUtil.verify_password(

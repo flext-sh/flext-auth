@@ -82,7 +82,7 @@ def register_user(
     username: str,
     email: str,
     password: str
-) -> r[User]:
+) -> p.Result[User]:
 ```
 
 **Parameters**:
@@ -111,7 +111,7 @@ def authenticate_user(
     self,
     username: str,
     password: str
-) -> r[t.Dict]:
+) -> p.Result[t.Dict]:
 ```
 
 **Parameters**:
@@ -136,7 +136,7 @@ if auth_result.is_success:
 Validate JWT token and extract user information.
 
 ```python
-def validate_token(self, token: str) -> r[t.Dict]:
+def validate_token(self, token: str) -> p.Result[t.Dict]:
 ```
 
 **Parameters**:
@@ -177,7 +177,7 @@ class User(FlextModels.Entity):
 #### set_password()
 
 ```python
-def set_password(self, password: str) -> r[bool]:
+def set_password(self, password: str) -> p.Result[bool]:
 ```
 
 Hash and set user password using bcrypt.
@@ -185,7 +185,7 @@ Hash and set user password using bcrypt.
 #### verify_password()
 
 ```python
-def verify_password(self, password: str) -> r[bool]:
+def verify_password(self, password: str) -> p.Result[bool]:
 ```
 
 Verify password against stored hash.
@@ -240,7 +240,7 @@ class FlextAuthSettings(FlextSettings):
 
 ```python
 @classmethod
-def create_for_environment(cls, env: str) -> r[FlextAuthSettings]:
+def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]:
 ```
 
 Create configuration for specific environment.
@@ -324,14 +324,14 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
 from flext_core import u
 
 
-def complete_auth_flow(username: str, password: str) -> r[t.Dict]:
+def complete_auth_flow(username: str, password: str) -> p.Result[t.Dict]:
     return (
         auth
         .authenticate_user(username, password)
@@ -367,7 +367,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t

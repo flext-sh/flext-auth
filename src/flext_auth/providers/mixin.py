@@ -54,7 +54,7 @@ class FlextAuthProviderMixin:
         payload: t.ContainerValueMapping,
         token_kind: str = "access",
         expiry_minutes: int | None = None,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Generate a token from the provided payload.
 
         Uses JWT encoding with the provider's configured secret_key and algorithm.
@@ -111,7 +111,7 @@ class FlextAuthProviderMixin:
         token_kind: str = "access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Generate token for a user identity or claims mapping.
 
         Args:
@@ -134,7 +134,7 @@ class FlextAuthProviderMixin:
         payload["token_type"] = effective_token_type
         return self.generate_token(payload, token_kind, expiry_minutes)
 
-    def refresh(self, token: str) -> r[p.Auth.Token]:
+    def refresh(self, token: str) -> p.Result[p.Auth.Token]:
         """Refresh authentication token.
 
         Decodes the existing token, extracts identity, and generates a new token.
@@ -177,7 +177,7 @@ class FlextAuthProviderMixin:
         )
         return r[p.Auth.Token].ok(refreshed)
 
-    def revoke(self, token: str) -> r[bool]:
+    def revoke(self, token: str) -> p.Result[bool]:
         """Revoke authentication token.
 
         Default implementation returns an error indicating revocation is
@@ -201,7 +201,7 @@ class FlextAuthProviderMixin:
         """
         return set()
 
-    def _check_capability_supported(self, capability: str) -> r[bool]:
+    def _check_capability_supported(self, capability: str) -> p.Result[bool]:
         """Check if a capability is supported by this provider.
 
         Args:
@@ -225,7 +225,7 @@ class FlextAuthProviderMixin:
     def _decode_token_claims(
         self,
         token: str,
-    ) -> r[t.Auth.Tokens.ClaimMap]:
+    ) -> p.Result[t.Auth.Tokens.ClaimMap]:
         """Decode JWT token and return claims payload.
 
         Args:
@@ -270,7 +270,7 @@ class FlextAuthProviderMixin:
     def _extract_identity_id(
         self,
         claims: t.ContainerValueMapping,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Extract identity ID from token claims.
 
         Checks common identity fields (sub, identity_id, user_id, username)
@@ -333,7 +333,7 @@ class FlextAuthProviderMixin:
         self,
         credentials: t.ContainerValueMapping,
         required_fields: t.StrSequence,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Validate that credentials contain required fields.
 
         Args:
@@ -353,7 +353,7 @@ class FlextAuthProviderMixin:
             return r[bool].fail(error_msg)
         return r[bool].ok(value=True)
 
-    def _validate_token_string(self, token: str) -> r[bool]:
+    def _validate_token_string(self, token: str) -> p.Result[bool]:
         """Validate token string format.
 
         Args:

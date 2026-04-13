@@ -20,7 +20,7 @@ class FlextAuthSessionManagers:
             )
             self._sessions: MutableMapping[str, t.Auth.Managers.SessionData] = {}
 
-        def cleanup_expired_sessions(self) -> r[int]:
+        def cleanup_expired_sessions(self) -> p.Result[int]:
             cleaned_count = 0
             sessions_to_check = list(self._sessions.keys())
             for session_id in sessions_to_check:
@@ -38,7 +38,7 @@ class FlextAuthSessionManagers:
             expires_in_minutes: int = 60,
             ip_address: str | None = None,
             user_agent: str | None = None,
-        ) -> r[m.Auth.Session]:
+        ) -> p.Result[m.Auth.Session]:
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
             session_data: t.Auth.Managers.SessionData = {
@@ -69,10 +69,10 @@ class FlextAuthSessionManagers:
             )
             return r[m.Auth.Session].ok(session)
 
-        def end_all_sessions(self, user_id: str) -> r[bool]:
+        def end_all_sessions(self, user_id: str) -> p.Result[bool]:
             return self.end_session(user_id)
 
-        def end_session(self, user_id: str) -> r[bool]:
+        def end_session(self, user_id: str) -> p.Result[bool]:
             found = False
             for session_data in self._sessions.values():
                 identity_id_value = session_data.get("identity_id")
@@ -88,13 +88,15 @@ class FlextAuthSessionManagers:
                 return r[bool].ok(value=True)
             return r[bool].fail("No sessions found for user")
 
-        def end_session_by_id(self, session_id: str) -> r[bool]:
+        def end_session_by_id(self, session_id: str) -> p.Result[bool]:
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
                 return r[bool].ok(value=True)
             return r[bool].fail("Session not found")
 
-        def get_active_sessions(self, user_id: str) -> r[Sequence[m.Auth.Session]]:
+        def get_active_sessions(
+            self, user_id: str
+        ) -> p.Result[Sequence[m.Auth.Session]]:
             sessions: MutableSequence[m.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")

@@ -21,7 +21,7 @@ class FlextAuthRateLimiterManagers:
             self._max_attempts = 5
             self._window_minutes = 15
 
-        def check_rate_limit(self, username: str) -> r[bool]:
+        def check_rate_limit(self, username: str) -> p.Result[bool]:
             now = datetime.now(UTC)
             if username not in self._attempts:
                 return r[bool].ok(value=True)

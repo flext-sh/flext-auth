@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthProviderMixin, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -40,7 +40,9 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
     """
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate using SAML 2.0 assertion.
 
         Args:
@@ -85,7 +87,7 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         return {"authenticate", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate SAML assertion token.
 
         Args:

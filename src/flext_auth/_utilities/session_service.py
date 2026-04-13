@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, p, u
-from flext_core import r, s
+from flext_core import p, r, s
 
 
 class FlextAuthSessionService(s):
@@ -28,13 +28,13 @@ class FlextAuthSessionService(s):
         """Direct access to session manager for client orchestration."""
         return self._managers.session_manager
 
-    def cleanup_expired_sessions(self) -> r[int]:
+    def cleanup_expired_sessions(self) -> p.Result[int]:
         """Railway-oriented cleanup of expired sessions from the system."""
         u.fetch_logger(__name__).info("Cleanup of expired sessions requested")
         return self.session_manager.cleanup_expired_sessions()
 
     @override
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Execute method for s interface.
 
         Session service doesn't use generic execute pattern.

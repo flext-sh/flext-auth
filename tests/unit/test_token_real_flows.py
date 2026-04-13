@@ -11,7 +11,7 @@ from flext_auth import (
     FlextAuthRfcProvider,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-from flext_core import r
+from flext_core import p, r
 from tests import m, p, t, u
 
 
@@ -30,12 +30,12 @@ class TestTokenRealFlows:
         def authenticate(
             self,
             credentials: t.ContainerValueMapping,
-        ) -> r[p.Auth.Token]:
+        ) -> p.Result[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
 
         @override
-        def validate(self, token: str) -> r[bool]:
+        def validate(self, token: str) -> p.Result[bool]:
             return self._decode_token_claims(token).map(lambda _claims: True)
 
     class MiddlewareRefreshProvider(FlextAuthRfcProvider):
@@ -57,17 +57,17 @@ class TestTokenRealFlows:
         def authenticate(
             self,
             credentials: t.ContainerValueMapping,
-        ) -> r[p.Auth.Token]:
+        ) -> p.Result[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
 
         @override
-        def validate(self, token: str) -> r[bool]:
+        def validate(self, token: str) -> p.Result[bool]:
             _ = token
             return r[bool].fail("Refresh source token is invalid")
 
         @override
-        def refresh(self, token: str) -> r[p.Auth.Token]:
+        def refresh(self, token: str) -> p.Result[p.Auth.Token]:
             _ = token
             self.refresh_called = True
             refreshed = m.Auth.AuthToken(
@@ -88,12 +88,12 @@ class TestTokenRealFlows:
         def authenticate(
             self,
             credentials: t.ContainerValueMapping,
-        ) -> r[p.Auth.Token]:
+        ) -> p.Result[p.Auth.Token]:
             _ = credentials
             return r[p.Auth.Token].fail("Not used in token tests")
 
         @override
-        def validate(self, token: str) -> r[bool]:
+        def validate(self, token: str) -> p.Result[bool]:
             return self.validate_token(token).map(lambda _identity: True)
 
     def test_base_provider_generate_token_with_real_jwt_claims(self) -> None:
@@ -188,7 +188,7 @@ class TestTokenRealFlows:
         })
         call_count = {"count": 0}
 
-        def _fake_introspect(token: str) -> r[t.FeatureFlagMapping]:
+        def _fake_introspect(token: str) -> p.Result[t.FeatureFlagMapping]:
             call_count["count"] += 1
             u.Tests.Matchers.that(token, eq="opaque-oauth2-token")
             return r[t.FeatureFlagMapping].ok({
@@ -221,7 +221,7 @@ class TestTokenRealFlows:
             "token_endpoint_auth_method": "client_secret_post",
         })
 
-        def _inactive_introspect(_token: str) -> r[t.FeatureFlagMapping]:
+        def _inactive_introspect(_token: str) -> p.Result[t.FeatureFlagMapping]:
             return r[t.FeatureFlagMapping].ok({"active": False})
 
         monkeypatch.setattr(

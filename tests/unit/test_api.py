@@ -27,7 +27,7 @@ from flext_auth import (
     FlextAuthSettings,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-from flext_core import r
+from flext_core import p, r
 from tests import c, m, p, t, u
 
 
@@ -1403,12 +1403,14 @@ class TestAuthModule:
 
 class _BaseTokenProviderForFlowTests(FlextAuthRfcProvider):
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
     @override
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str) -> p.Result[bool]:
         _ = token
         return r[bool].ok(True)
 
@@ -1419,17 +1421,19 @@ class _RefreshCapableProviderForFlowTests(FlextAuthRfcProvider):
         self.last_refresh_input: str | None = None
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
     @override
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str) -> p.Result[bool]:
         _ = token
         return r[bool].ok(True)
 
     @override
-    def refresh(self, token: str) -> r[p.Auth.Token]:
+    def refresh(self, token: str) -> p.Result[p.Auth.Token]:
         self.last_refresh_input = token
         refreshed_token = m.Auth.AuthToken(
             identity_id="middleware-user",
@@ -1445,12 +1449,14 @@ class _RefreshCapableProviderForFlowTests(FlextAuthRfcProvider):
 
 class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         _ = credentials
         return r[p.Auth.Token].fail("Not used in this test")
 
     @override
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str) -> p.Result[bool]:
         return self.validate_token(token).map(lambda _identity: True)
 
 

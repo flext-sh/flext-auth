@@ -201,14 +201,14 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
 from flext_core import u
 
 
-def process_authentication_workflow(username: str, password: str) -> r[t.Dict]:
+def process_authentication_workflow(username: str, password: str) -> p.Result[t.Dict]:
     """Authentication workflow using r error handling."""
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
@@ -252,7 +252,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t

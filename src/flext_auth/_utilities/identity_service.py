@@ -22,7 +22,7 @@ from flext_auth import (
     p,
     t,
 )
-from flext_core import r, s
+from flext_core import p, r, s
 
 
 class FlextAuthIdentityService(s):
@@ -50,7 +50,7 @@ class FlextAuthIdentityService(s):
         self,
         name: str,
         credential: str,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         identity_result = self.identity_manager.get_user_by_username(name)
         if identity_result.failure:
@@ -75,7 +75,7 @@ class FlextAuthIdentityService(s):
         identity_id: str,
         permission: str,
         resource: str | None = None,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
             self.identity_manager
@@ -96,7 +96,7 @@ class FlextAuthIdentityService(s):
         identity_id: str,
         current_credential: str,
         new_credential: str,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Railway-oriented credential change with validation."""
         identity_result = self.identity_manager.get_user(identity_id)
         if identity_result.failure:
@@ -125,7 +125,7 @@ class FlextAuthIdentityService(s):
         contact: str,
         credential: str,
         roles: t.StrSequence | None = None,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: t.StrSequence = []
@@ -174,13 +174,13 @@ class FlextAuthIdentityService(s):
         )
 
     @override
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
 
-    def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
+    def reset_credential(self, identity_id: str, new_credential: str) -> p.Result[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         identity_result = self.identity_manager.get_user(identity_id)
         if identity_result.failure:
@@ -198,7 +198,7 @@ class FlextAuthIdentityService(s):
             ),
         )
 
-    def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> r[bool]:
+    def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
         max_attempts = c.Auth.AuthSecurity.MAX_LOGIN_ATTEMPTS

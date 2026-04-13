@@ -131,7 +131,7 @@ All code must follow FLEXT patterns:
 
 ```python
 # ✅ Correct - Use r for error handling
-def authenticate_user(username: str, password: str) -> r[t.Dict]:
+def authenticate_user(username: str, password: str) -> p.Result[t.Dict]:
     if not username:
         return r[t.Dict].fail("Username required")
 
@@ -165,7 +165,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -176,7 +176,7 @@ class User(FlextModels.Entity):
     username: str
     email: str
 
-    def verify_password(self, password: str) -> r[bool]:
+    def verify_password(self, password: str) -> p.Result[bool]:
         # Business logic returning r
         pass
 
@@ -323,7 +323,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -366,7 +366,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -379,7 +379,7 @@ class AuthenticationService(s):
         self._container = FlextContainer.get_global()
         self.logger = u.fetch_logger(__name__)
 
-    def process(self, request) -> r[Response]:
+    def process(self, request) -> p.Result[Response]:
         # Service implementation
         pass
 ```
@@ -390,7 +390,7 @@ Use r exclusively:
 
 ```python
 # Chain operations with r
-def complete_auth_flow(username: str, password: str) -> r[t.Dict]:
+def complete_auth_flow(username: str, password: str) -> p.Result[t.Dict]:
     return (
         self
         ._validate_input(username, password)

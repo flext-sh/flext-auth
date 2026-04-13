@@ -14,8 +14,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 
-from flext_auth import FlextAuthJwtProvider, t
-from flext_core import r
+from flext_auth import FlextAuthJwtProvider, p, r, t
 
 
 class FlextAuthJwtTokenGenerator:
@@ -34,7 +33,7 @@ class FlextAuthJwtTokenGenerator:
         identity_id: str,
         expiry_minutes: int | None = None,
         extra_claims: t.ContainerValueMapping | None = None,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Generate JWT token with railway-oriented programming.
 
         Args:
@@ -125,7 +124,7 @@ class FlextAuthJwtTokenGenerator:
             payload.update(extra_claims)
         return payload
 
-    def _get_config_int(self, key: str, error_msg: str) -> r[int]:
+    def _get_config_int(self, key: str, error_msg: str) -> p.Result[int]:
         """Get and validate integer configuration value."""
         settings = self._provider.settings
         if not settings:
@@ -137,7 +136,7 @@ class FlextAuthJwtTokenGenerator:
             case _:
                 return r[int].fail(error_msg)
 
-    def _get_config_str(self, key: str, error_msg: str) -> r[str]:
+    def _get_config_str(self, key: str, error_msg: str) -> p.Result[str]:
         """Get and validate string configuration value."""
         settings = self._provider.settings
         if not settings:
@@ -149,7 +148,7 @@ class FlextAuthJwtTokenGenerator:
             case _:
                 return r[str].fail(error_msg)
 
-    def _get_optional_config_str(self, key: str) -> r[str]:
+    def _get_optional_config_str(self, key: str) -> p.Result[str]:
         """Get optional string configuration value.
 
         Returns empty string if not provided (no None in r).
@@ -166,7 +165,9 @@ class FlextAuthJwtTokenGenerator:
             case _:
                 return r[str].fail(f"{key} must be a string if provided")
 
-    def _validate_expiry(self, expiry_minutes: int | None, default: int) -> r[int]:
+    def _validate_expiry(
+        self, expiry_minutes: int | None, default: int
+    ) -> p.Result[int]:
         """Validate and determine expiry time."""
         if expiry_minutes is None:
             return r[int].ok(default)

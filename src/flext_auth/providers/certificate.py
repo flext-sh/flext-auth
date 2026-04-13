@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthProviderMixin, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthCertificateProvider(
@@ -24,7 +24,9 @@ class FlextAuthCertificateProvider(
         super().__init__(settings)
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate using certificate credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")
@@ -40,7 +42,7 @@ class FlextAuthCertificateProvider(
         return {"certificate", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate certificate token.
 
         Args:
@@ -57,7 +59,7 @@ class FlextAuthCertificateProvider(
             token_value = token_protocol.token
         return self.validate_token(str(token_value))
 
-    def validate_token(self, token: str) -> r[bool]:
+    def validate_token(self, token: str) -> p.Result[bool]:
         """Validate authentication token.
 
         Args:

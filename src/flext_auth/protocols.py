@@ -17,7 +17,6 @@ from typing import Protocol, override, runtime_checkable
 from flext_api import FlextApiProtocols
 
 from flext_auth import c, t
-from flext_core import r
 
 
 class FlextAuthProtocols(FlextApiProtocols):
@@ -287,7 +286,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             def authenticate(
                 self,
                 credentials: t.ContainerValueMapping,
-            ) -> r[p.Auth.Token]:
+            ) -> p.Result[p.Auth.Token]:
                 """Authenticate user with provided credentials.
 
                 This is the primary authentication method. It should validate the
@@ -309,7 +308,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 payload: t.ContainerValueMapping,
                 token_kind: str = c.Auth.TokenTypes.ACCESS.value,
                 expiry_minutes: int | None = None,
-            ) -> r[str]:
+            ) -> p.Result[str]:
                 """Generate a signed token from the provided payload."""
                 ...
 
@@ -319,7 +318,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 token_kind: str = c.Auth.TokenTypes.ACCESS.value,
                 token_type: str | None = None,
                 expiry_minutes: int | None = None,
-            ) -> r[str]:
+            ) -> p.Result[str]:
                 """Generate token for a user identity or claims mapping.
 
                 Args:
@@ -334,7 +333,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """
                 ...
 
-            def refresh(self, token: str) -> r[p.Auth.Token]:
+            def refresh(self, token: str) -> p.Result[p.Auth.Token]:
                 """Refresh authentication token.
 
                 Generate a new token based on an existing valid token. This operation
@@ -351,7 +350,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """
                 ...
 
-            def revoke(self, token: str) -> r[bool]:
+            def revoke(self, token: str) -> p.Result[bool]:
                 """Revoke authentication token.
 
                 Invalidate the provided token, preventing further use. This operation
@@ -382,7 +381,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """
                 ...
 
-            def validate(self, token: str) -> r[bool]:
+            def validate(self, token: str) -> p.Result[bool]:
                 """Validate authentication token.
 
                 Check if the provided token is valid and has not expired.
@@ -413,7 +412,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...         method: str = "POST",
                 ...         data: t.ConfigurationMapping | None = None,
                 ...         headers: t.StrMapping | None = None,
-                ...     ) -> r[t.ConfigurationMapping]:
+                ...     ) -> p.Result[t.ConfigurationMapping]:
                 ...         # HTTP-specific implementation
                 ...         pass
 
@@ -435,7 +434,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 data: t.ConfigurationMapping | None = None,
                 headers: t.StrMapping | None = None,
                 **kwargs: t.Scalar,
-            ) -> r[t.ConfigurationMapping]:
+            ) -> p.Result[t.ConfigurationMapping]:
                 """Send a request using this transport.
 
                 Args:

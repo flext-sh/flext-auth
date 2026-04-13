@@ -31,7 +31,7 @@ from __future__ import annotations
 from typing import TypeIs, override
 
 from flext_auth import m, p, t, u
-from flext_core import r, s
+from flext_core import p, r, s
 
 
 class FlextAuthMiddleware(s):
@@ -70,7 +70,7 @@ class FlextAuthMiddleware(s):
             self._enabled = True
 
     @override
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Execute method for s interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
@@ -115,7 +115,7 @@ class FlextAuthMiddleware(s):
         def process_request(
             self,
             request: p.Auth.RequestWithHeaders,
-        ) -> r[p.Auth.RequestWithHeaders]:
+        ) -> p.Result[p.Auth.RequestWithHeaders]:
             """Process HTTP request by adding authentication headers.
 
             Args:
@@ -149,7 +149,7 @@ class FlextAuthMiddleware(s):
                 pass
             return r[p.Auth.RequestWithHeaders].ok(request)
 
-        def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
+        def _authenticate_or_refresh(self) -> p.Result[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""
             if self._is_token_still_valid() and self._current_token is not None:
                 return r[m.Auth.AuthToken].ok(self._current_token)
@@ -168,7 +168,7 @@ class FlextAuthMiddleware(s):
                 on_success=lambda v: v,
             )
 
-        def _refresh_or_reauthenticate(self) -> r[m.Auth.AuthToken]:
+        def _refresh_or_reauthenticate(self) -> p.Result[m.Auth.AuthToken]:
             """Refresh token or re-authenticate if refresh fails."""
             current_token = self._current_token
             if current_token is None:

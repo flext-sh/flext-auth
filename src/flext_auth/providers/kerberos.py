@@ -22,8 +22,7 @@ from typing import override
 
 from pydantic import ValidationError
 
-from flext_auth import FlextAuthRfcProvider, m, t, u
-from flext_core import r
+from flext_auth import FlextAuthRfcProvider, m, p, r, t, u
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -78,7 +77,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         }
         return scalar_config
 
-    def _validate_kerberos_configuration(self) -> r[bool]:
+    def _validate_kerberos_configuration(self) -> p.Result[bool]:
         """Railway-oriented Kerberos configuration validation."""
         if self._config is None:
             return r[bool].fail("Kerberos configuration is required")
@@ -152,7 +151,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def validate_ticket(
             self,
             _ticket_data: m.Auth.KerberosTicketData,
-        ) -> r[m.Auth.KerberosTicketData]:
+        ) -> p.Result[m.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             result = m.Auth.KerberosTicketData(
                 ticket="validated_ticket",
@@ -170,7 +169,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             """Initialize service handler."""
             self.provider = provider
 
-    def handle_service_ticket(self, ticket: str) -> r[m.Auth.KerberosTicketData]:
+    def handle_service_ticket(self, ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
         """Handle Kerberos service ticket."""
         result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
         return r[m.Auth.KerberosTicketData].ok(result)
@@ -188,7 +187,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def authenticate_ticket(
             self,
             ticket_data: m.Auth.KerberosTicketData,
-        ) -> r[m.Auth.KerberosTicketData]:
+        ) -> p.Result[m.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
@@ -199,7 +198,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         token_kind: str = "access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Generate Kerberos token for user."""
         return super().generate_token_for_user(
             user=user,
@@ -221,7 +220,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         """Return Kerberos provider capabilities."""
         return {"kerberos", "sso", "enterprise", "ticket", "validate"}
 
-    def validate_token(self, token: str) -> r[m.Auth.AuthIdentity]:
+    def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Validate Kerberos token and return user."""
         if not token.strip():
             return r[m.Auth.AuthIdentity].fail(
@@ -275,7 +274,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     def _map_identity_payload(
         self,
         claims: t.ContainerValueMapping,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(claims)
         if identity_result.failure:
             return r[m.Auth.AuthIdentity].fail(

@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthProviderMixin, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -26,7 +26,9 @@ class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvide
         super().__init__(settings)
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate using HTTP Basic credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")
@@ -51,7 +53,7 @@ class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvide
         return {"basic", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate authentication token."""
         _ = token
         return r[bool].fail("Not implemented")

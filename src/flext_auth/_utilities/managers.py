@@ -64,7 +64,7 @@ class FlextAuthUtilitiesManagers(
                 dispatcher,
             )
 
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Execute method for s interface.
 
         FlextAuthUtilitiesManagers is a namespace class - use specific manager classes instead.
@@ -93,7 +93,7 @@ class FlextAuthUtilitiesManagers(
             self._context = FlextContext()
             self._users: MutableMapping[str, t.Auth.Managers.UserData] = {}
 
-        def add_user_permission(self, user_id: str, permission: str) -> r[bool]:
+        def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
             """Add permission to user."""
             return self._modify_user_list_field(
                 user_id,
@@ -102,7 +102,7 @@ class FlextAuthUtilitiesManagers(
                 add=True,
             )
 
-        def add_user_role(self, user_id: str, role: str) -> r[bool]:
+        def add_user_role(self, user_id: str, role: str) -> p.Result[bool]:
             """Add role to user."""
             return self._modify_user_list_field(user_id, "roles", role, add=True)
 
@@ -112,7 +112,7 @@ class FlextAuthUtilitiesManagers(
             email: str,
             password_hash: str,
             **extra_fields: t.Scalar | t.StrSequence | datetime | None,
-        ) -> r[m.Auth.AuthIdentity]:
+        ) -> p.Result[m.Auth.AuthIdentity]:
             """Create a new user."""
             if username in self._users:
                 return r[m.Auth.AuthIdentity].fail("Identity already exists")
@@ -229,7 +229,7 @@ class FlextAuthUtilitiesManagers(
             user = m.Auth.AuthIdentity.model_validate(identity_dict)
             return r[m.Auth.AuthIdentity].ok(user)
 
-        def delete_user(self, user_id: str) -> r[bool]:
+        def delete_user(self, user_id: str) -> p.Result[bool]:
             """Delete user."""
             result = self._find_user_by_id(user_id)
             if result.failure:
@@ -238,19 +238,19 @@ class FlextAuthUtilitiesManagers(
             del self._users[user_key]
             return r[bool].ok(value=True)
 
-        def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
+        def get_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
             """Get user by ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
-        def get_user_by_id(self, user_id: str) -> r[m.Auth.AuthIdentity]:
+        def get_user_by_id(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
             """Get a user by their ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
-        def get_user_by_username(self, username: str) -> r[m.Auth.AuthIdentity]:
+        def get_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
             """Get user by username."""
             if username not in self._users:
                 return r[m.Auth.AuthIdentity].fail("User not found")
@@ -258,7 +258,9 @@ class FlextAuthUtilitiesManagers(
             user = self._create_identity_from_storage(storage_data)
             return r[m.Auth.AuthIdentity].ok(user)
 
-        def remove_user_permission(self, user_id: str, permission: str) -> r[bool]:
+        def remove_user_permission(
+            self, user_id: str, permission: str
+        ) -> p.Result[bool]:
             """Remove permission from user."""
             return self._modify_user_list_field(
                 user_id,
@@ -267,7 +269,7 @@ class FlextAuthUtilitiesManagers(
                 add=False,
             )
 
-        def remove_user_role(self, user_id: str, role: str) -> r[bool]:
+        def remove_user_role(self, user_id: str, role: str) -> p.Result[bool]:
             """Remove role from user."""
             return self._modify_user_list_field(user_id, "roles", role, add=False)
 
@@ -275,7 +277,7 @@ class FlextAuthUtilitiesManagers(
             self,
             user_id: str,
             **updates: t.Scalar | t.StrSequence | datetime | None,
-        ) -> r[m.Auth.AuthIdentity]:
+        ) -> p.Result[m.Auth.AuthIdentity]:
             """Update user data."""
             filtered_updates: t.ContainerValueMapping = {
                 k: v for k, v in updates.items() if v is not None
@@ -418,7 +420,7 @@ class FlextAuthUtilitiesManagers(
         def _find_user_by_id(
             self,
             user_id: str,
-        ) -> r[tuple[str, t.Auth.Managers.UserData]]:
+        ) -> p.Result[tuple[str, t.Auth.Managers.UserData]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
@@ -444,7 +446,7 @@ class FlextAuthUtilitiesManagers(
             value: str,
             *,
             add: bool = True,
-        ) -> r[bool]:
+        ) -> p.Result[bool]:
             """Add or remove value from user list field (roles/permissions).
 
             Generic list field modifier - eliminates duplication in 4 methods.
@@ -511,7 +513,7 @@ class FlextAuthUtilitiesManagers(
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> r[Sequence[t.ContainerValueMapping]]:
+        ) -> p.Result[Sequence[t.ContainerValueMapping]]:
             """Get audit logs with optional filtering."""
             filtered_logs: MutableSequence[t.ContainerValueMapping] = []
             for log in self._logs:

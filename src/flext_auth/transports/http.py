@@ -17,8 +17,7 @@ from urllib.parse import urlencode
 from flext_api import FlextApiClient, FlextApiSettings
 from pydantic import ValidationError
 
-from flext_auth import m, t, u
-from flext_core import r
+from flext_auth import m, p, r, t, u
 
 
 class FlextWebTransportAdapter:
@@ -70,7 +69,7 @@ class FlextWebTransportAdapter:
         url: str,
         access_token: str,
         headers: t.StrMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """GET request to OIDC UserInfo endpoint.
 
         Retrieves user information using an OAuth2 access token according
@@ -112,7 +111,7 @@ class FlextWebTransportAdapter:
         data: t.ContainerValueMapping,
         auth: tuple[str, str] | None = None,
         headers: t.StrMapping | None = None,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """POST request to OAuth2 token endpoint.
 
         Specialized method for OAuth2/OIDC token requests with proper
@@ -167,7 +166,7 @@ class FlextWebTransportAdapter:
         headers: t.StrMapping | None = None,
         query: t.Api.WebParams | None = None,
         timeout: float | None = None,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Send HTTP request using flext-api transport.
 
         Implements BaseTransportAdapter protocol for generic HTTP operations.
@@ -213,7 +212,7 @@ class FlextWebTransportAdapter:
 
     def _execute_request(
         self, request: m.Api.HttpRequest
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         response = self._client.request(request)
         if response.failure:
             return r[t.ContainerValueMapping].fail(response.error)
@@ -246,7 +245,7 @@ class FlextWebTransportAdapter:
     def _parse_token_response(
         self,
         response_data: t.ContainerValueMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         """Parse OAuth2 token endpoint response.
 
         Validates token response according to RFC 6749 Section 5.1 (success)
@@ -345,7 +344,7 @@ class FlextWebTransportAdapter:
     def _validate_userinfo_response(
         self,
         payload: t.ContainerValueMapping,
-    ) -> r[t.ContainerValueMapping]:
+    ) -> p.Result[t.ContainerValueMapping]:
         if "sub" not in payload:
             return r[t.ContainerValueMapping].fail(
                 "UserInfo response missing required 'sub' claim",

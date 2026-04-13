@@ -12,8 +12,7 @@ from __future__ import annotations
 
 import bcrypt
 
-from flext_auth import FlextAuthJwtProvider, u
-from flext_core import r
+from flext_auth import FlextAuthJwtProvider, p, u
 
 
 class FlextAuthPasswordHasher:
@@ -27,7 +26,7 @@ class FlextAuthPasswordHasher:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def hash_password(self, password: str) -> r[str]:
+    def hash_password(self, password: str) -> p.Result[str]:
         """Hash password using bcrypt with railway-oriented programming.
 
         Args:
@@ -49,7 +48,7 @@ class FlextAuthPasswordHasher:
             catch=(ValueError, TypeError),
         ).map_error(lambda exc: f"Password hashing failed: {type(exc).__name__}: {exc}")
 
-    def verify_password(self, password: str, hashed_password: str) -> r[bool]:
+    def verify_password(self, password: str, hashed_password: str) -> p.Result[bool]:
         """Verify password against hash using bcrypt.
 
         Args:

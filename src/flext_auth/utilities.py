@@ -16,7 +16,7 @@ from flext_api import FlextApiUtilities
 from pydantic import BeforeValidator, SecretStr, ValidationError
 
 from flext_auth import c, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthUtilities(FlextApiUtilities):
@@ -128,7 +128,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 """Domain-specific validation utilities."""
 
                 @staticmethod
-                def validate_email(email: str) -> r[str]:
+                def validate_email(email: str) -> p.Result[str]:
                     """Validate email format."""
                     if not email or not email.strip():
                         return r[str].fail("Email cannot be empty")
@@ -142,7 +142,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                     return r[str].ok(email)
 
                 @staticmethod
-                def validate_password(password: str) -> r[str]:
+                def validate_password(password: str) -> p.Result[str]:
                     """Validate password strength."""
                     if not password:
                         return r[str].fail("Password cannot be empty")
@@ -157,7 +157,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                     return r[str].ok(password)
 
                 @staticmethod
-                def validate_username(username: str) -> r[str]:
+                def validate_username(username: str) -> p.Result[str]:
                     """Validate username with auth-specific rules."""
                     if not username or not username.strip():
                         return r[str].fail("Username cannot be empty")
@@ -248,7 +248,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         verify: bool = True,
         algorithms: tuple[str, ...] | None = None,
         audience: str | None = None,
-    ) -> r[t.Auth.Tokens.ClaimMap]:
+    ) -> p.Result[t.Auth.Tokens.ClaimMap]:
         """Generic JWT token decoding.
 
         Args:
@@ -304,7 +304,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         payload: t.Auth.Tokens.ClaimMap,
         secret: str,
         algorithm: str = c.Auth.DEFAULT_JWT_ALGORITHM,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Generic JWT token encoding.
 
         Args:

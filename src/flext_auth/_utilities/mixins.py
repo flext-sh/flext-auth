@@ -9,8 +9,7 @@ from __future__ import annotations
 
 import re
 
-from flext_auth import c
-from flext_core import r, x
+from flext_auth import c, p, r, x
 
 MAX_USERNAME_LENGTH = 255
 
@@ -22,7 +21,7 @@ class FlextAuthMixins(x):
         """Validation utilities for Auth domain."""
 
         @staticmethod
-        def validate_password_strength(password: str) -> r[str]:
+        def validate_password_strength(password: str) -> p.Result[str]:
             """Validate password strength.
 
             Args:
@@ -51,7 +50,7 @@ class FlextAuthMixins(x):
             return r[str].ok(password)
 
         @staticmethod
-        def validate_username_format(username: str) -> r[str]:
+        def validate_username_format(username: str) -> p.Result[str]:
             """Validate username format.
 
             Args:

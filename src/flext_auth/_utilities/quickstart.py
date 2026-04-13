@@ -10,8 +10,7 @@ from __future__ import annotations
 from collections.abc import MutableSequence
 from typing import override
 
-from flext_auth import FlextAuth, FlextAuthSettings, m, t
-from flext_core import r, s
+from flext_auth import FlextAuth, FlextAuthSettings, m, p, r, s, t
 
 
 class FlextAuthQuickstart(s):
@@ -33,15 +32,17 @@ class FlextAuthQuickstart(s):
         """Get the underlying FlextAuth instance."""
         return self._auth
 
-    def authenticate_user(self, username: str, password: str) -> r[m.Auth.AuthIdentity]:
+    def authenticate_user(
+        self, username: str, password: str
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Authenticate a user and return identity."""
         return self._auth.authenticate_user(username, password)
 
-    def create_demo_users(self, count: int = 5) -> r[t.StrSequence]:
+    def create_demo_users(self, count: int = 5) -> p.Result[t.StrSequence]:
         """Create demo users for testing."""
         user_ids: MutableSequence[str] = []
 
-        def create_single_user(i: int) -> r[str]:
+        def create_single_user(i: int) -> p.Result[str]:
             username = f"demo_user_{i}"
             email = f"demo{i}@example.com"
             password = f"DemoPass{i}23!"
@@ -57,7 +58,7 @@ class FlextAuthQuickstart(s):
         return r[t.StrSequence].ok(user_ids)
 
     @override
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Execute method for s interface.
 
         Quickstart service doesn't use generic execute pattern.
@@ -71,10 +72,10 @@ class FlextAuthQuickstart(s):
         self,
         *,
         create_admin_user: bool = True,
-    ) -> r[t.StrSequence]:
+    ) -> p.Result[t.StrSequence]:
         """Quick start the auth service with demo users."""
 
-        def create_admin_demo_user(user_ids: t.StrSequence) -> r[t.StrSequence]:
+        def create_admin_demo_user(user_ids: t.StrSequence) -> p.Result[t.StrSequence]:
             if not create_admin_user:
                 return r[t.StrSequence].ok(user_ids)
             return self.register_user(
@@ -93,7 +94,7 @@ class FlextAuthQuickstart(s):
 
         return self.create_demo_users().flat_map(create_admin_demo_user)
 
-    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
+    def get_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
         """Get user by ID."""
         return self._auth.get_user(user_id)
 
@@ -104,7 +105,7 @@ class FlextAuthQuickstart(s):
         password: str,
         roles: t.StrSequence | None = None,
         full_name: str | None = None,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         """Register a new user with default settings."""
         return self._auth.register_user(
             username=username,
@@ -115,7 +116,7 @@ class FlextAuthQuickstart(s):
             full_name=full_name,
         )
 
-    def validate_token(self, token: str) -> r[bool]:
+    def validate_token(self, token: str) -> p.Result[bool]:
         """Validate an authentication token."""
         return self._auth.validate_token(token)
 

@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from typing import override
 
 from flext_auth import FlextAuthProviderMixin, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -66,7 +66,7 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         _ = feature
         return False
 
-    def validate_rfc_compliance(self, operation: str) -> r[bool]:
+    def validate_rfc_compliance(self, operation: str) -> p.Result[bool]:
         """Validate that an operation follows RFC standards.
 
         Args:
@@ -83,7 +83,9 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return r[bool].ok(value=True)
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate user with provided credentials.
 
         This is an abstract method that must be implemented by RFC-specific providers.
@@ -100,7 +102,7 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         )
 
     @override
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str) -> p.Result[bool]:
         """Validate authentication token.
 
         This is an abstract method that must be implemented by RFC-specific providers.

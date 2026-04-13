@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthProviderMixin, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -22,7 +22,9 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         super().__init__(settings)
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate using JWT credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")
@@ -47,7 +49,7 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return {"jwt", "validate", "refresh"}
 
     @override
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str) -> p.Result[bool]:
         """Validate JWT token.
 
         Args:
@@ -59,7 +61,7 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         """
         return self.validate_token(token)
 
-    def validate_token(self, token: str) -> r[bool]:
+    def validate_token(self, token: str) -> p.Result[bool]:
         """Validate JWT token.
 
         Args:

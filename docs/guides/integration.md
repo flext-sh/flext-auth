@@ -89,7 +89,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -110,7 +110,7 @@ class UserService:
         self._container = FlextContainer.get_global()
         self._auth = self._container.get("auth_service").unwrap()
 
-    def create_authenticated_user(self, user_data: dict) -> r[t.Dict]:
+    def create_authenticated_user(self, user_data: dict) -> p.Result[t.Dict]:
         # Use injected auth service
         return self._auth.register_user(**user_data)
 ```
@@ -134,7 +134,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -282,11 +282,11 @@ class AuthenticationProvider:
         self._auth = FlextAuth()
         self._container = FlextContainer.get_global()
 
-    def authenticate_service_request(self, token: str) -> r[t.Dict]:
+    def authenticate_service_request(self, token: str) -> p.Result[t.Dict]:
         """Authenticate requests from other FLEXT services."""
         return self._auth.validate_token(token)
 
-    def create_service_token(self, service_name: str) -> r[str]:
+    def create_service_token(self, service_name: str) -> p.Result[str]:
         """Create token for service-to-service authentication."""
         # Implementation for service tokens
         pass
@@ -303,7 +303,7 @@ class ServiceA:
         self._auth = FlextAuth()
         self._service_token = self._get_service_token()
 
-    def call_service_b(self, data: dict) -> r[t.Dict]:
+    def call_service_b(self, data: dict) -> p.Result[t.Dict]:
         """Call Service B with authentication."""
         headers = {
             "Authorization": f"Bearer {self._service_token}",
@@ -338,12 +338,12 @@ from flext_auth import User
 class UserRepository(OracleRepository[User]):
     """User storage using Oracle database."""
 
-    def find_by_username(self, username: str) -> r[User]:
+    def find_by_username(self, username: str) -> p.Result[User]:
         """Find user by username."""
         # Oracle-specific implementation
         pass
 
-    def create_user(self, user: User) -> r[User]:
+    def create_user(self, user: User) -> p.Result[User]:
         """Create user in database."""
         # Oracle-specific implementation
         pass
@@ -365,7 +365,7 @@ class RedisSessionStorage:
     def __init__(self):
         self._redis = redis.Redis(host="localhost", port=6379, db=0)
 
-    def store_session(self, session: Session) -> r[bool]:
+    def store_session(self, session: Session) -> p.Result[bool]:
         """Store session in Redis."""
         try:
             session_data = session.model_dump_json()
@@ -417,7 +417,7 @@ class FlextAuthWorkspaceSettings(FlextWorkspaceSettings):
         super().__init__()
         self.auth_config = FlextAuthSettings()
 
-    def get_auth_service(self) -> r[FlextAuth]:
+    def get_auth_service(self) -> p.Result[FlextAuth]:
         """Get configured authentication service."""
         if self.auth_config.is_success:
             return r[FlextAuth].ok(FlextAuth(settings=self.auth_config.unwrap()))
@@ -476,12 +476,12 @@ class OAuth2Provider:
     def __init__(self):
         self._auth = FlextAuth()
 
-    def authorize(self, client_id: str, redirect_uri: str) -> r[str]:
+    def authorize(self, client_id: str, redirect_uri: str) -> p.Result[str]:
         """OAuth2 authorization endpoint."""
         # Implementation using flext-auth
         pass
 
-    def token(self, code: str, client_id: str) -> r[t.Dict]:
+    def token(self, code: str, client_id: str) -> p.Result[t.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
         pass
@@ -499,7 +499,7 @@ class SAMLProvider:
     def __init__(self):
         self._auth = FlextAuth()
 
-    def process_saml_response(self, saml_response: str) -> r[User]:
+    def process_saml_response(self, saml_response: str) -> p.Result[User]:
         """Process SAML authentication response."""
         # Implementation using flext-auth
         pass

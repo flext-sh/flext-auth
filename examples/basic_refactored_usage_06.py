@@ -14,8 +14,7 @@ import secrets
 import string
 import sys
 
-from flext_auth import FlextAuth, m
-from flext_core import r
+from flext_auth import FlextAuth, m, p
 
 
 class FlextAuthDemo:
@@ -26,7 +25,7 @@ class FlextAuthDemo:
         super().__init__()
         self.auth = FlextAuth()
 
-    def demo_user_authentication(self) -> r[m.Auth.AuthIdentity]:
+    def demo_user_authentication(self) -> p.Result[m.Auth.AuthIdentity]:
         """Extract Method: User authentication demo.
 
         Returns:
@@ -39,7 +38,7 @@ class FlextAuthDemo:
             self._print_token_info(auth_data)
         return result
 
-    def demo_user_registration(self) -> r[m.Auth.AuthIdentity]:
+    def demo_user_registration(self) -> p.Result[m.Auth.AuthIdentity]:
         """Extract Method: User registration demo.
 
         Returns:

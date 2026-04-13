@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthRfcProvider, p
-from flext_core import r, t
+from flext_core import p, r, t
 
 
 class FlextAuthOidcProvider(FlextAuthRfcProvider):
@@ -32,7 +32,9 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
     """
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate using OIDC credentials.
 
         Args:
@@ -66,7 +68,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
         return {"oidc", "validate", "refresh"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate OIDC token.
 
         Args:

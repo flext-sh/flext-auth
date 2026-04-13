@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthProviderMixin, p, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -28,7 +28,9 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
     """
 
     @override
-    def authenticate(self, credentials: t.ContainerValueMapping) -> r[p.Auth.Token]:
+    def authenticate(
+        self, credentials: t.ContainerValueMapping
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate using LDAP credentials.
 
         Args:
@@ -52,7 +54,7 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         return {"ldap", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate authentication token.
 
         Args:

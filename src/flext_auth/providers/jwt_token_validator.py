@@ -14,7 +14,7 @@ import jwt
 from jwt.types import Options
 
 from flext_auth import FlextAuthJwtProvider, t
-from flext_core import r
+from flext_core import p, r
 
 
 class FlextAuthJwtTokenValidator:
@@ -28,7 +28,7 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> r[t.ContainerValueMapping]:
+    def validate_token(self, token: str) -> p.Result[t.ContainerValueMapping]:
         """Validate JWT token with railway-oriented programming.
 
         Args:

@@ -152,10 +152,10 @@ ______________________________________________________________________
 │              PROVIDER ECOSYSTEM LAYER                        │
 ├─────────────────────────────────────────────────────────────┤
 │  Base Provider Protocol                                      │
-│  ├── authenticate(credentials) -> r[Token]         │
-│  ├── validate(token) -> r[bool]                    │
-│  ├── refresh(token) -> r[Token]                    │
-│  ├── revoke(token) -> r[bool]                      │
+│  ├── authenticate(credentials) -> p.Result[Token]         │
+│  ├── validate(token) -> p.Result[bool]                    │
+│  ├── refresh(token) -> p.Result[Token]                    │
+│  ├── revoke(token) -> p.Result[bool]                      │
 │  └── supports() -> set[str]                                  │
 ├─────────────────────────────────────────────────────────────┤
 │  Concrete Providers:                                         │
@@ -220,18 +220,18 @@ class FlextAuth(s[AuthenticationResponseDict]):
         self,
         credentials: dict,
         provider: str | None = None
-    ) -> r[AuthToken]
+    ) -> p.Result[AuthToken]
 
     def validate_token(
         self,
         token: str,
         provider: str | None = None
-    ) -> r[bool]
+    ) -> p.Result[bool]
 
     # Registry operations
     def list_providers(self) -> t.StringList
-    def get_provider(self, name: str) -> r[FlextAuthBaseProvider]
-    def get_provider_capabilities(self, name: str) -> r[set[str]]
+    def get_provider(self, name: str) -> p.Result[FlextAuthBaseProvider]
+    def get_provider_capabilities(self, name: str) -> p.Result[set[str]]
 
     # Token/Session management
     def get_token_manager(self) -> TokenManager
@@ -259,23 +259,23 @@ class FlextAuthRegistry:
         name: str,
         provider: FlextAuthBaseProvider,
         settings: t.RecursiveContainerMapping | None = None
-    ) -> r[bool]
+    ) -> p.Result[bool]
 
-    def unregister(self, name: str) -> r[bool]
+    def unregister(self, name: str) -> p.Result[bool]
 
-    def get(self, name: str) -> r[FlextAuthBaseProvider]
+    def get(self, name: str) -> p.Result[FlextAuthBaseProvider]
 
     def list_providers(self) -> t.StringList
 
     def discover_providers(self) -> Mapping[str, type[FlextAuthBaseProvider]]
 
-    def get_capabilities(self, name: str) -> r[set[str]]
+    def get_capabilities(self, name: str) -> p.Result[set[str]]
 
     def validate_config(
         self,
         name: str,
         settings: dict
-    ) -> r[bool]
+    ) -> p.Result[bool]
 ```
 
 ### 3. Base Provider Protocol (`providers/base.py`)
@@ -286,19 +286,19 @@ class FlextAuthRegistry:
 class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers."""
 
-    def authenticate(self, credentials: dict) -> r[AuthToken]:
+    def authenticate(self, credentials: dict) -> p.Result[AuthToken]:
         """Authenticate user with provided credentials."""
         ...
 
-    def validate(self, token: str | AuthToken) -> r[bool]:
+    def validate(self, token: str | AuthToken) -> p.Result[bool]:
         """Validate authentication token."""
         ...
 
-    def refresh(self, token: str | AuthToken) -> r[AuthToken]:
+    def refresh(self, token: str | AuthToken) -> p.Result[AuthToken]:
         """Refresh authentication token."""
         ...
 
-    def revoke(self, token: str | AuthToken) -> r[bool]:
+    def revoke(self, token: str | AuthToken) -> p.Result[bool]:
         """Revoke authentication token."""
         ...
 
@@ -412,7 +412,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -432,7 +432,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -448,7 +448,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         self._config = settings
         self.logger = u.fetch_logger(__name__)
 
-    def authenticate(self, credentials: dict) -> r[FlextAuthModels.AuthToken]:
+    def authenticate(self, credentials: dict) -> p.Result[FlextAuthModels.AuthToken]:
         """Authenticate using provider-specific logic."""
         # Validation
         if not credentials.get("username"):
@@ -462,14 +462,14 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         except Exception as e:
             return r[FlextAuthModels.AuthToken].fail(f"Authentication failed: {e}")
 
-    def validate(self, token: str | FlextAuthModels.AuthToken) -> r[bool]:
+    def validate(self, token: str | FlextAuthModels.AuthToken) -> p.Result[bool]:
         """Validate token using provider-specific logic."""
         # Implementation
         ...
 
     def refresh(
         self, token: str | FlextAuthModels.AuthToken
-    ) -> r[FlextAuthModels.AuthToken]:
+    ) -> p.Result[FlextAuthModels.AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self.supports():
             return r[FlextAuthModels.AuthToken].fail(
@@ -478,7 +478,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         # Implementation
         ...
 
-    def revoke(self, token: str | FlextAuthModels.AuthToken) -> r[bool]:
+    def revoke(self, token: str | FlextAuthModels.AuthToken) -> p.Result[bool]:
         """Revoke token if provider supports it."""
         # Implementation
         ...
@@ -512,7 +512,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         credentials: dict,
         metadata: t.RecursiveContainerMapping | None = None,
-    ) -> r[t.Dict]:
+    ) -> p.Result[t.Dict]:
         """Send authentication request over transport."""
         ...
 
@@ -521,7 +521,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         token: str,
         metadata: t.RecursiveContainerMapping | None = None,
-    ) -> r[t.Dict]:
+    ) -> p.Result[t.Dict]:
         """Send token validation request over transport."""
         ...
 
@@ -550,7 +550,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -569,7 +569,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: t.RecursiveContainerMapping | None = None,
-    ) -> r[t.Dict]:
+    ) -> p.Result[t.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(url=endpoint, json=credentials, headers=metadata)
 
@@ -599,7 +599,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -618,7 +618,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: t.RecursiveContainerMapping | None = None,
-    ) -> r[t.Dict]:
+    ) -> p.Result[t.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
             service="AuthService",
@@ -648,7 +648,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: t.RecursiveContainerMapping | None = None,
-    ) -> r[t.Dict]:
+    ) -> p.Result[t.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
         ...
@@ -666,11 +666,11 @@ class BaseProtocolHandler(Protocol):
 
     def format_auth_request(
         self, credentials: dict, metadata: t.RecursiveContainerMapping | None = None
-    ) -> r[bytes | str]:
+    ) -> p.Result[bytes | str]:
         """Format authentication request for protocol."""
         ...
 
-    def parse_auth_response(self, response: bytes | str) -> r[t.Dict]:
+    def parse_auth_response(self, response: bytes | str) -> p.Result[t.Dict]:
         """Parse authentication response from protocol."""
         ...
 ```
@@ -683,7 +683,7 @@ class RestProtocolHandler(BaseProtocolHandler):
 
     def format_auth_request(
         self, credentials: dict, metadata: t.RecursiveContainerMapping | None = None
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Format as JSON REST request."""
         import json
 
@@ -693,7 +693,7 @@ class RestProtocolHandler(BaseProtocolHandler):
         except Exception as e:
             return r[str].fail(f"JSON formatting failed: {e}")
 
-    def parse_auth_response(self, response: str) -> r[t.Dict]:
+    def parse_auth_response(self, response: str) -> p.Result[t.Dict]:
         """Parse JSON REST response."""
         import json
 
@@ -712,12 +712,12 @@ class SoapProtocolHandler(BaseProtocolHandler):
 
     def format_auth_request(
         self, credentials: dict, metadata: t.RecursiveContainerMapping | None = None
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Format as SOAP XML request."""
         # Implementation for SOAP envelope creation
         ...
 
-    def parse_auth_response(self, response: str) -> r[t.Dict]:
+    def parse_auth_response(self, response: str) -> p.Result[t.Dict]:
         """Parse SOAP XML response."""
         # Implementation for SOAP envelope parsing
         ...
@@ -754,7 +754,9 @@ class TokenManager:
         self._retry = retry_policy or RetryPolicy()
         self.logger = u.fetch_logger(__name__)
 
-    def get_token(self, credentials: dict, use_cache: bool = True) -> r[AuthToken]:
+    def get_token(
+        self, credentials: dict, use_cache: bool = True
+    ) -> p.Result[AuthToken]:
         """Get token with caching."""
         if use_cache:
             cached = self._cache.get(credentials)
@@ -774,7 +776,7 @@ class TokenManager:
         max_retries: int = 3,
         backoff_factor: float = 2.0,
         retry_on: Sequence[type[Exception]] | None = None,
-    ) -> r[AuthToken]:
+    ) -> p.Result[AuthToken]:
         """Get token with automatic retry on failure."""
         return self._retry.execute(
             func=self._provider.authenticate,
@@ -784,14 +786,14 @@ class TokenManager:
             retry_on=retry_on or [],
         )
 
-    def refresh_token(self, token: AuthToken) -> r[AuthToken]:
+    def refresh_token(self, token: AuthToken) -> p.Result[AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self._provider.supports():
             return r[AuthToken].fail("Provider does not support token refresh")
 
         return self._provider.refresh(token)
 
-    def validate_token(self, token: AuthToken) -> r[bool]:
+    def validate_token(self, token: AuthToken) -> p.Result[bool]:
         """Validate token."""
         return self._provider.validate(token)
 ```
@@ -809,7 +811,7 @@ class RetryPolicy:
         backoff_factor: float = 2.0,
         retry_on: Sequence[type[Exception]] | None = None,
         **kwargs,
-    ) -> r[T]:
+    ) -> p.Result[T]:
         """Execute function with retry logic."""
         retry_on = retry_on or [ConnectionError, TimeoutError]
 
@@ -887,12 +889,12 @@ class CredentialManager:
         identifier: str,
         credential: dict,
         metadata: t.RecursiveContainerMapping | None = None,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)
         return self._storage.save(identifier, encrypted, metadata)
 
-    def retrieve_credential(self, identifier: str) -> r[t.Dict]:
+    def retrieve_credential(self, identifier: str) -> p.Result[t.Dict]:
         """Retrieve and decrypt credential."""
         result = self._storage.load(identifier)
         if result.is_failure:
@@ -902,7 +904,9 @@ class CredentialManager:
         decrypted = self._cipher.decrypt(encrypted)
         return r[t.Dict].ok(decrypted)
 
-    def rotate_credential(self, identifier: str, new_credential: dict) -> r[bool]:
+    def rotate_credential(
+        self, identifier: str, new_credential: dict
+    ) -> p.Result[bool]:
         """Rotate credential with old credential backup."""
         # Archive old credential
         old_result = self.retrieve_credential(identifier)
@@ -920,20 +924,20 @@ class SecurityValidator:
     """Security validation for authentication operations."""
 
     @staticmethod
-    def validate_token_expiration(token: AuthToken) -> r[bool]:
+    def validate_token_expiration(token: AuthToken) -> p.Result[bool]:
         """Validate token has not expired."""
         if token.expires_at < datetime.now(UTC):
             return r[bool].fail("Token expired")
         return r[bool].ok(True)
 
     @staticmethod
-    def validate_token_signature(token: str, secret: str) -> r[bool]:
+    def validate_token_signature(token: str, secret: str) -> p.Result[bool]:
         """Validate token signature."""
         # Implementation
         ...
 
     @staticmethod
-    def validate_certificate(cert: bytes) -> r[bool]:
+    def validate_certificate(cert: bytes) -> p.Result[bool]:
         """Validate X.509 certificate."""
         # Implementation
         ...
@@ -986,7 +990,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -1000,7 +1004,7 @@ class FlextWebTransportAdapter:
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
-    def send_request(self, url: str, data: dict) -> r[t.Dict]:
+    def send_request(self, url: str, data: dict) -> p.Result[t.Dict]:
         return self._api.post(url=url, json=data)
 
 
@@ -1008,7 +1012,7 @@ class FlextAuthLdapProvider:
     def __init__(self, settings: dict) -> None:
         self._ldap = ldap(settings)  # MANDATORY: Use flext-ldap
 
-    def authenticate(self, credentials: dict) -> r[AuthToken]:
+    def authenticate(self, credentials: dict) -> p.Result[AuthToken]:
         return self._ldap.bind(
             username=credentials["username"], password=credentials["password"]
         )
@@ -1033,7 +1037,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t

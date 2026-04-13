@@ -184,7 +184,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 error_msg = f"OAuth2 'token_endpoint_auth_method' must be str or None, got {type(token_endpoint_auth_method_value).__name__}"
                 raise ValueError(error_msg)
 
-    def _validate_configuration(self) -> r[bool]:
+    def _validate_configuration(self) -> p.Result[bool]:
         """Railway-oriented configuration validation."""
         required_fields = ["client_id", "token_endpoint"]
         missing_fields = u.filter(
@@ -248,7 +248,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             """Initialize flow manager."""
             self.provider = provider
 
-        def generate_pkce_challenge(self) -> r[tuple[str, str]]:
+        def generate_pkce_challenge(self) -> p.Result[tuple[str, str]]:
             """Generate PKCE code challenge and verifier."""
             code_verifier = secrets.token_urlsafe(32)
             code_challenge = (
@@ -264,7 +264,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             code_challenge: str | None = None,
             code_challenge_method: str = "S256",
             **kwargs: t.Scalar,
-        ) -> r[str]:
+        ) -> p.Result[str]:
             """Generate authorization URL for authorization code flow."""
             auth_endpoint = self.provider.get_authorization_endpoint()
             if not auth_endpoint:
@@ -300,7 +300,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         def handle_authorization_code_flow(
             self,
             _credentials: t.ConfigurationMapping,
-        ) -> r[t.ConfigurationMapping]:
+        ) -> p.Result[t.ConfigurationMapping]:
             """Handle OAuth2 authorization code flow."""
             return r[t.ScalarMapping].ok({
                 "user_id": "oauth2_user",
@@ -322,7 +322,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             code: str,
             code_verifier: str | None = None,
             redirect_uri: str | None = None,
-        ) -> r[m.Auth.OAuth2TokenResponse]:
+        ) -> p.Result[m.Auth.OAuth2TokenResponse]:
             """Exchange authorization code for access token."""
             _ = code
             _ = code_verifier
@@ -345,7 +345,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
             return r[m.Auth.OAuth2TokenResponse].ok(token_response)
 
-        def get_client_credentials_token(self) -> r[m.Auth.OAuth2TokenResponse]:
+        def get_client_credentials_token(self) -> p.Result[m.Auth.OAuth2TokenResponse]:
             """Get access token using client credentials flow."""
             token_response = m.Auth.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
@@ -357,7 +357,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         def refresh_access_token(
             self,
             refresh_token: str,
-        ) -> r[m.Auth.OAuth2TokenResponse]:
+        ) -> p.Result[m.Auth.OAuth2TokenResponse]:
             """Refresh access token using refresh token."""
             _ = refresh_token
             token_response = m.Auth.OAuth2TokenResponse(
@@ -394,7 +394,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def authenticate(
         self,
         credentials: t.ContainerValueMapping,
-    ) -> r[p.Auth.Token]:
+    ) -> p.Result[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: t.ConfigurationMapping = {
             str(k): v
@@ -428,7 +428,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         token_kind: str = "oauth2_access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Generate OAuth2 token for user."""
         return super().generate_token_for_user(
             user=user,
@@ -460,7 +460,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return "RFC 6749"
 
     @override
-    def refresh(self, token: str | p.Auth.Token) -> r[p.Auth.Token]:
+    def refresh(self, token: str | p.Auth.Token) -> p.Result[p.Auth.Token]:
         """Refresh OAuth2 token using composition."""
         token_text = self._extract_token_string(token)
         refresh_token_value = getattr(token, "refresh_token", "")
@@ -503,7 +503,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[p.Auth.Token].ok(refreshed_model)
 
     @override
-    def revoke(self, token: str) -> r[bool]:
+    def revoke(self, token: str) -> p.Result[bool]:
         """Revoke an OAuth2 token."""
         return super().revoke(token)
 
@@ -529,7 +529,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return capabilities
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate OAuth2 token using composition."""
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(
@@ -539,7 +539,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             on_success=lambda _: r[bool].ok(value=True),
         )
 
-    def validate_token(self, token: str) -> r[m.Auth.AuthIdentity]:
+    def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user."""
         introspection_endpoint_result = self._introspection_endpoint()
         if introspection_endpoint_result.success:
@@ -561,7 +561,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         return self._map_token_payload_to_identity(claims_result.value)
 
-    def _build_introspection_form_data(self, token: str) -> r[str]:
+    def _build_introspection_form_data(self, token: str) -> p.Result[str]:
         if not token.strip():
             return r[str].fail("OAuth2 token must be a non-empty string")
         form_payload: t.MutableStrMapping = {
@@ -593,7 +593,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
         return r[str].ok(urlencode(form_payload))
 
-    def _build_introspection_headers(self) -> r[t.StrMapping]:
+    def _build_introspection_headers(self) -> p.Result[t.StrMapping]:
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/x-www-form-urlencoded",
@@ -615,7 +615,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         headers["Authorization"] = f"Basic {encoded_auth}"
         return r[t.StrMapping].ok(headers)
 
-    def _introspect_token(self, token: str) -> r[t.ConfigurationMapping]:
+    def _introspect_token(self, token: str) -> p.Result[t.ConfigurationMapping]:
         endpoint_result = self._introspection_endpoint()
         if endpoint_result.failure:
             return r[t.ScalarMapping].fail(
@@ -674,7 +674,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         return r[t.ScalarMapping].ok(parsed_mapping)
 
-    def _introspection_endpoint(self) -> r[str]:
+    def _introspection_endpoint(self) -> p.Result[str]:
         for key in ("introspection_endpoint", "token_introspection_endpoint"):
             endpoint_value = self._config.get(key)
             if isinstance(endpoint_value, str) and endpoint_value:
@@ -684,7 +684,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _map_token_payload_to_identity(
         self,
         payload: t.ContainerValueMapping,
-    ) -> r[m.Auth.AuthIdentity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
         if identity_result.failure:
             username_value = payload.get("username")

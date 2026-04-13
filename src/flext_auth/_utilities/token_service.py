@@ -22,7 +22,7 @@ from flext_auth import (
     p,
     u,
 )
-from flext_core import r, s
+from flext_core import p, r, s
 
 
 class FlextAuthTokenService(s):
@@ -61,7 +61,7 @@ class FlextAuthTokenService(s):
         return f"{token[:length]}..."
 
     @override
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc.",
@@ -72,7 +72,7 @@ class FlextAuthTokenService(s):
         user_id: str,
         expires_in_minutes: int | None = None,
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Railway-oriented JWT token generation with audit logging."""
         user_result = self.user_manager.get_user(user_id)
         if user_result.failure:
@@ -112,7 +112,7 @@ class FlextAuthTokenService(s):
         )
         return r[str].ok(token_value)
 
-    def refresh_token(self, token: str) -> r[m.Auth.AuthToken]:
+    def refresh_token(self, token: str) -> p.Result[m.Auth.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token),
@@ -140,7 +140,7 @@ class FlextAuthTokenService(s):
         )
         return r[m.Auth.AuthToken].ok(auth_token)
 
-    def validate_token(self, token: str) -> r[bool]:
+    def validate_token(self, token: str) -> p.Result[bool]:
         """Railway-oriented token validation with audit logging."""
 
         def _log_token_validation_error(error: str) -> None:
@@ -158,7 +158,7 @@ class FlextAuthTokenService(s):
             .tap_error(_log_token_validation_error)
         )
 
-    def _get_jwt_provider_cached(self) -> r[FlextAuthJwtProvider]:
+    def _get_jwt_provider_cached(self) -> p.Result[FlextAuthJwtProvider]:
         """Get JWT provider with lazy caching to eliminate repeated lookups."""
         if self._jwt_provider_cache is not None:
             return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)

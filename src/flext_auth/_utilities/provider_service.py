@@ -27,7 +27,7 @@ from flext_auth import (
     p,
     t,
 )
-from flext_core import r, s
+from flext_core import p, r, s
 
 
 class FlextAuthProviderService(s):
@@ -61,7 +61,7 @@ class FlextAuthProviderService(s):
         username: str,
         password: str,
         provider: str = "basic",
-    ) -> r[p.Auth.Token]:
+    ) -> p.Result[p.Auth.Token]:
         """Railway-oriented user authentication with provider selection."""
         credentials = m.Auth.CredentialValidation(username=username, password=password)
         return self._providers.get(provider).flat_map(
@@ -71,7 +71,7 @@ class FlextAuthProviderService(s):
         )
 
     @override
-    def execute(self) -> r[bool]:
+    def execute(self) -> p.Result[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc.",
@@ -84,7 +84,7 @@ class FlextAuthProviderService(s):
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
-    ) -> r[str]:
+    ) -> p.Result[str]:
         """Railway-oriented token generation with direct provider access."""
         effective_token_type = token_type if token_type is not None else token_kind
         return self._providers.get(provider).flat_map(
@@ -96,7 +96,7 @@ class FlextAuthProviderService(s):
             ),
         )
 
-    def get_jwt_provider(self) -> r[FlextAuthJwtProvider]:
+    def get_jwt_provider(self) -> p.Result[FlextAuthJwtProvider]:
         """Get registered JWT provider with strict provider type."""
         provider_result = self._providers.get("jwt")
         if provider_result.failure:
@@ -108,7 +108,7 @@ class FlextAuthProviderService(s):
             return r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
         return r[FlextAuthJwtProvider].ok(provider)
 
-    def get_provider(self, name: str) -> r[p.Auth.FlextAuthBaseProvider]:
+    def get_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Get registered provider."""
         return self._providers.get(name)
 
@@ -120,7 +120,7 @@ class FlextAuthProviderService(s):
         self,
         name: str,
         provider: p.Auth.FlextAuthBaseProvider,
-    ) -> r[bool]:
+    ) -> p.Result[bool]:
         """Register custom provider.
 
         Returns:
@@ -129,7 +129,7 @@ class FlextAuthProviderService(s):
         """
         return self._providers.register_provider(name, provider).map(lambda _: True)
 
-    def validate_token(self, token: str, provider: str = "jwt") -> r[bool]:
+    def validate_token(self, token: str, provider: str = "jwt") -> p.Result[bool]:
         """Railway-oriented token validation with direct provider access."""
         return self._providers.get(provider).flat_map(lambda p: p.validate(token))
 
