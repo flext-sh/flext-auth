@@ -16,8 +16,7 @@ import bcrypt
 from flext_api import FlextApiModels
 from pydantic import ConfigDict, Field
 
-from flext_auth import c, p, t
-from flext_core import p, r
+from flext_auth import c, p, r, t
 
 
 class FlextAuthModels(FlextApiModels):

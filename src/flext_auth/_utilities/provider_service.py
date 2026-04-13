@@ -25,9 +25,10 @@ from flext_auth import (
     c,
     m,
     p,
+    r,
     t,
 )
-from flext_core import p, r, s
+from flext_core import s
 
 
 class FlextAuthProviderService(s):

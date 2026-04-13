@@ -30,8 +30,8 @@ from __future__ import annotations
 
 from typing import TypeIs, override
 
-from flext_auth import m, p, t, u
-from flext_core import p, r, s
+from flext_auth import m, p, r, s, t
+from flext_core import u
 
 
 class FlextAuthMiddleware(s):

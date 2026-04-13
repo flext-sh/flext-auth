@@ -11,8 +11,7 @@ from flext_auth import (
     FlextAuthRfcProvider,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-from flext_core import p, r
-from tests import m, p, t, u
+from tests import m, p, r, t, u
 
 
 class TestTokenRealFlows:

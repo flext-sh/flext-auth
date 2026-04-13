@@ -11,8 +11,7 @@ from typing import ClassVar, TypeIs
 
 from pydantic import BaseModel
 
-from flext_auth import c, m, p, t, u
-from flext_core import p, r
+from flext_auth import c, m, p, r, t, u
 
 
 class FlextAuthRegistry:

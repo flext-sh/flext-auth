@@ -12,8 +12,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthProviderMixin, p, t
-from flext_core import p, r
+from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
 class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
