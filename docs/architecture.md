@@ -573,7 +573,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(url=endpoint, json=credentials, headers=metadata)
 
-        if result.is_failure:
+        if result.failure:
             return r[t.Dict].fail(f"HTTP transport failed: {result.error}")
 
         return r[t.Dict].ok(result.unwrap())
@@ -627,7 +627,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
             metadata=metadata,
         )
 
-        if result.is_failure:
+        if result.failure:
             return r[t.Dict].fail(f"gRPC transport failed: {result.error}")
 
         return r[t.Dict].ok(result.unwrap())
@@ -765,7 +765,7 @@ class TokenManager:
 
         result = self._provider.authenticate(credentials)
 
-        if result.is_success and use_cache:
+        if result.success and use_cache:
             self._cache.set(credentials, result.unwrap())
 
         return result
@@ -897,7 +897,7 @@ class CredentialManager:
     def retrieve_credential(self, identifier: str) -> p.Result[t.Dict]:
         """Retrieve and decrypt credential."""
         result = self._storage.load(identifier)
-        if result.is_failure:
+        if result.failure:
             return r[t.Dict].fail(result.error)
 
         encrypted = result.unwrap()
@@ -910,7 +910,7 @@ class CredentialManager:
         """Rotate credential with old credential backup."""
         # Archive old credential
         old_result = self.retrieve_credential(identifier)
-        if old_result.is_success:
+        if old_result.success:
             self._storage.archive(identifier, old_result.unwrap())
 
         # Store new credential

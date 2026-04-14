@@ -26,7 +26,7 @@
   - [Enterprise SSO](#enterprise-sso)
 <!-- TOC END -->
 
-**Version**: 0.9.9 RC | **Updated**: September 17, 2025
+**Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 Integration patterns for flext-auth within the FLEXT ecosystem.
 
@@ -55,7 +55,7 @@ auth = FlextAuth()
 
 # Basic authentication pattern
 auth_result = auth.authenticate_user("username", "password")
-if auth_result.is_success:
+if auth_result.success:
     session_data = auth_result.unwrap()
     print(f"Authentication successful: {session_data['user']['username']}")
 else:
@@ -63,7 +63,7 @@ else:
 
 # Usage
 result = authenticate_user_safely("demo", "password123")
-if result.is_success:
+if result.success:
     auth_info = result.unwrap()
     print(f"Authenticated user: {auth_info['user']}")
 else:
@@ -101,14 +101,14 @@ container = FlextContainer.get_global()
 
 settings = FlextAuthSettings()
 auth_service = FlextAuth(settings=settings)
-container.register("auth_service", auth_service)
+container.bind("auth_service", auth_service)
 
 
 # Use from container in other services
 class UserService:
     def __init__(self):
         self._container = FlextContainer.get_global()
-        self._auth = self._container.get("auth_service").unwrap()
+        self._auth = self._container.resolve("auth_service").unwrap()
 
     def create_authenticated_user(self, user_data: dict) -> p.Result[t.Dict]:
         # Use injected auth service
@@ -146,7 +146,7 @@ user = FlextAuthModels.User(username="demo", email="demo@example.com")
 
 # Business logic returns r
 password_result = user.set_password("secure123")
-if password_result.is_success:
+if password_result.success:
     print("Password set successfully")
 ```
 
@@ -172,7 +172,7 @@ def authenticate_request(token: str = Depends(security)):
     """Authentication middleware for FastAPI."""
     validation_result = auth.validate_token(token.credentials)
 
-    if validation_result.is_failure:
+    if validation_result.failure:
         raise HTTPException(status_code=401, detail=validation_result.error)
 
     return validation_result.unwrap()
@@ -203,7 +203,7 @@ def login():
 
     auth_result = auth.authenticate_user(username, password)
 
-    if auth_result.is_success:
+    if auth_result.success:
         auth_data = auth_result.unwrap()
         session["token"] = auth_data["token"]
         session["user"] = auth_data["user"]["username"]
@@ -222,7 +222,7 @@ def require_auth(f):
             return redirect(url_for("login_page"))
 
         validation_result = auth.validate_token(token)
-        if validation_result.is_failure:
+        if validation_result.failure:
             session.clear()
             return redirect(url_for("login_page"))
 
@@ -258,7 +258,7 @@ def login(ctx, username, password):
     auth = ctx.obj["auth"]
     result = auth.authenticate_user(username, password)
 
-    if result.is_success:
+    if result.success:
         ctx.obj["token"] = result.unwrap()["token"]
         click.echo("Authentication successful")
     else:
@@ -394,7 +394,7 @@ flext_env = os.getenv("FLEXT_ENV", "development")
 
 # Create environment-specific configuration
 config_result = FlextAuthSettings()
-if config_result.is_success:
+if config_result.success:
     auth_config = config_result.unwrap()
     auth = FlextAuth(settings=auth_config)
 else:
@@ -419,7 +419,7 @@ class FlextAuthWorkspaceSettings(FlextWorkspaceSettings):
 
     def get_auth_service(self) -> p.Result[FlextAuth]:
         """Get configured authentication service."""
-        if self.auth_config.is_success:
+        if self.auth_config.success:
             return r[FlextAuth].ok(FlextAuth(settings=self.auth_config.unwrap()))
         else:
             return r[FlextAuth].fail("Auth configuration failed")
@@ -448,16 +448,16 @@ class TestAuthIntegration:
 
         # Act
         result = auth.register_user("test", "test@example.com", "password123")
-        assert result.is_success
+        assert result.success
 
         auth_result = auth.authenticate_user("test", "password123")
-        assert auth_result.is_success
+        assert auth_result.success
 
         token = auth_result.unwrap()["token"]
 
         # Test API service with token
         api_result = api_service.authenticate_request(token)
-        assert api_result.is_success
+        assert api_result.success
 ```
 
 ______________________________________________________________________
@@ -507,4 +507,4 @@ class SAMLProvider:
 
 ______________________________________________________________________
 
-This integration guide reflects the current implementation and planned integrations as of September 17, 2025.
+This integration guide reflects the current implementation and planned integrations as of April 14, 2026.

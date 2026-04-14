@@ -339,7 +339,7 @@ class TestNewFeature:
         result = auth.new_method("test_data")
 
         # Assert
-        assert result.is_success
+        assert result.success
         assert result.unwrap() == expected_result
 ```
 
@@ -424,4 +424,4 @@ print(f"Registration result: {result}")
 
 ______________________________________________________________________
 
-This development guide reflects the current implementation state as of September 17, 2025. For additional FLEXT patterns, see [flext-core documentation](https://github.com/organization/flext/tree/main/flext-core/docs/development.md).
+This development guide reflects the current implementation state as of April 14, 2026. For additional FLEXT patterns, see [flext-core documentation](https://github.com/organization/flext/tree/main/flext-core/docs/development.md).

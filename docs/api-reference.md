@@ -31,7 +31,7 @@
 - [Related Documentation](#related-documentation)
 <!-- TOC END -->
 
-**Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
+**Version**: 1.0.0 Current | **Updated**: October 1, 2025
 
 Complete API documentation for flext-auth enterprise authentication service with s and h architecture.
 
@@ -97,7 +97,7 @@ def register_user(
 
 ```python
 result = auth.register_user("demo", "demo@example.com", "secure123")
-if result.is_success:
+if result.success:
     user = result.unwrap()
     print(f"User created: {user.username}")
 ```
@@ -125,7 +125,7 @@ def authenticate_user(
 
 ```python
 auth_result = auth.authenticate_user("demo", "secure123")
-if auth_result.is_success:
+if auth_result.success:
     session_data = auth_result.unwrap()
     token = session_data["token"]
     session = session_data["session"]
@@ -149,7 +149,7 @@ def validate_token(self, token: str) -> p.Result[t.Dict]:
 
 ```python
 validation_result = auth.validate_token(token)
-if validation_result.is_success:
+if validation_result.success:
     token_data = validation_result.unwrap()
     username = token_data["username"]
 ```
@@ -253,7 +253,7 @@ Create configuration for specific environment.
 
 ```python
 config_result = FlextAuthSettings()
-if config_result.is_success:
+if config_result.success:
     settings = config_result.unwrap()
 ```
 
@@ -300,7 +300,7 @@ All operations return `r[T]` for type-safe error handling.
 
 ```python
 result = auth.register_user("demo", "demo@example.com", "secure123")
-if result.is_success:
+if result.success:
     user = result.unwrap()
     # Use user t.RecursiveContainer
 else:
@@ -374,10 +374,10 @@ from flext_core import t
 from flext_core import u
 
 container = FlextContainer.get_global()
-container.register("auth_service", auth)
+container.bind("auth_service", auth)
 
-auth_result = container.get("auth_service")
-if auth_result.is_success:
+auth_result = container.resolve("auth_service")
+if auth_result.success:
     auth = auth_result.unwrap()
 ```
 
@@ -385,7 +385,7 @@ if auth_result.is_success:
 
 All flext-auth operations follow r pattern from flext-core:
 
-- Use `.is_success` to check success
+- Use `.success` to check success
 - Use `.unwrap()` to extract value on success
 - Use `.error` to get error message on failure
 - Chain operations with `.flat_map()` and `.map()`
@@ -415,7 +415,7 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-This API reference covers the current implementation as of September 17, 2025. For usage examples, see Getting Started.
+This API reference covers the current implementation as of April 14, 2026. For usage examples, see Getting Started.
 
 ## Related Documentation
 

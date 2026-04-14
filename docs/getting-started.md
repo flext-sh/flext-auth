@@ -29,7 +29,7 @@
 - [Related Documentation](#related-documentation)
 <!-- TOC END -->
 
-**Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
+**Version**: 1.0.0 Current | **Updated**: October 1, 2025
 
 Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete s and h integration.
 
@@ -80,7 +80,7 @@ result = auth.register_user(
     password=user_request.password,
 )
 
-if result.is_success:
+if result.success:
     user = result.unwrap()
     print(f"User created: {user.username}")
 else:
@@ -93,7 +93,7 @@ else:
 # Authenticate user
 auth_result = auth.authenticate_user("alice", "secure123")
 
-if auth_result.is_success:
+if auth_result.success:
     session_data = auth_result.unwrap()
     print("Authentication successful")
     print(f"Session: {session_data['session']['id']}")
@@ -109,7 +109,7 @@ else:
 token = "your-jwt-token-here"
 validation_result = auth.validate_token(token)
 
-if validation_result.is_success:
+if validation_result.success:
     token_data = validation_result.unwrap()
     print(f"Token valid for user: {token_data['username']}")
 else:
@@ -128,7 +128,7 @@ from flext_auth import FlextAuthSettings
 # Development configuration
 settings = FlextAuthSettings()
 
-if settings.is_success:
+if settings.success:
     dev_config = settings.unwrap()
     print(f"JWT expiry: {dev_config.jwt_expiry_minutes} minutes")
     print(f"bcrypt rounds: {dev_config.bcrypt_rounds}")
@@ -230,7 +230,7 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[t.
 
 # Usage
 result = process_authentication_workflow("alice", "secure123")
-if result.is_success:
+if result.success:
     data = result.unwrap()
     print(f"User {data['user']} authenticated until {data['expires']}")
 ```
@@ -265,11 +265,11 @@ container = FlextContainer.get_global()
 # Configure and register
 settings = FlextAuthSettings()
 auth_service = FlextAuth(settings=settings)
-container.register("auth_service", auth_service)
+container.bind("auth_service", auth_service)
 
 # Use from container
-auth_result = container.get("auth_service")
-if auth_result.is_success:
+auth_result = container.resolve("auth_service")
+if auth_result.success:
     auth = auth_result.unwrap()
     # Use authentication service
 ```
@@ -292,12 +292,12 @@ user = FlextAuthModels.User(
 
 # Set password (bcrypt hashing)
 password_result = user.set_password("mypassword")
-if password_result.is_success:
+if password_result.success:
     print("Password set successfully")
 
 # Verify password
 verification_result = user.verify_password("mypassword")
-if verification_result.is_success and verification_result.unwrap():
+if verification_result.success and verification_result.unwrap():
     print("Password verification successful")
 ```
 
@@ -338,13 +338,13 @@ def test_authentication_workflow():
         username="testuser", email="test@example.com", password="testpass123"
     )
 
-    assert register_result.is_success
+    assert register_result.success
     user = register_result.unwrap()
     assert user.username == "testuser"
 
     # Authenticate user
     auth_result = auth.authenticate_user("testuser", "testpass123")
-    assert auth_result.is_success
+    assert auth_result.success
 
     session_data = auth_result.unwrap()
     assert "token" in session_data
@@ -352,7 +352,7 @@ def test_authentication_workflow():
 
     # Validate token
     token_result = auth.validate_token(session_data["token"])
-    assert token_result.is_success
+    assert token_result.success
 ```
 
 ______________________________________________________________________

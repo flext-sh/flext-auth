@@ -26,7 +26,7 @@
   - [Community Support](#community-support)
 <!-- TOC END -->
 
-**Version**: 0.9.9 RC | **Updated**: September 17, 2025
+**Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 Common issues and solutions for flext-auth authentication service.
 
@@ -66,7 +66,7 @@ result = auth.register_user("user", "invalid-email", "weak")
    ```python
    # Check if user already exists
    existing_user = auth._find_user("username")  # Internal method
-   if existing_user.is_success:
+   if existing_user.success:
        print("User already exists")
    ```
 
@@ -84,13 +84,13 @@ auth_result = auth.authenticate_user("user", "password")
 ```python
 # Check if user exists
 user_result = auth._find_user("user")
-if user_result.is_failure:
+if user_result.failure:
     print("User not found")
 else:
     user = user_result.unwrap()
     # Check password verification
     verify_result = user.verify_password("password")
-    print(f"Password verification: {verify_result.is_success}")
+    print(f"Password verification: {verify_result.success}")
 ```
 
 **Common Causes**:
@@ -150,7 +150,7 @@ ______________________________________________________________________
 
 ```python
 settings = FlextAuthSettings()
-if settings.is_failure:
+if settings.failure:
     print(f"Config error: {settings.error}")
 ```
 
@@ -455,7 +455,7 @@ Extract detailed error information:
 
 ```python
 result = auth.authenticate_user("user", "wrong_password")
-if result.is_failure:
+if result.failure:
     print(f"Error: {result.error}")
     print(f"Error type: {type(result.error)}")
     # Additional debugging information
@@ -469,4 +469,4 @@ if result.is_failure:
 
 ______________________________________________________________________
 
-This troubleshooting guide reflects common issues as of September 17, 2025. For additional help, see the Development guide.
+This troubleshooting guide reflects common issues as of April 14, 2026. For additional help, see the Development guide.

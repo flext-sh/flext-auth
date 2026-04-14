@@ -42,7 +42,7 @@
 
 **Status**: Accepted
 
-**Date**: 2025-10-10
+**Date**: 2026-04-14
 
 **Deciders**: FLEXT Architecture Team
 

@@ -26,7 +26,7 @@
   - [Environment Detection](#environment-detection)
 <!-- TOC END -->
 
-**Version**: 0.9.9 RC | **Updated**: September 17, 2025
+**Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 Configuration management for flext-auth authentication service.
 
@@ -55,12 +55,12 @@ print(f"Bcrypt Rounds: {settings.bcrypt_rounds}")
 ```python
 # Development configuration
 dev_config = FlextAuthSettings()
-if dev_config.is_success:
+if dev_config.success:
     settings = dev_config.unwrap()
 
 # Production configuration
 prod_config = FlextAuthSettings()
-if prod_config.is_success:
+if prod_config.success:
     settings = prod_config.unwrap()
 ```
 
@@ -133,7 +133,7 @@ ______________________________________________________________________
 
 ```python
 config_result = FlextAuthSettings()
-if config_result.is_failure:
+if config_result.failure:
     print(f"Configuration error: {config_result.error}")
 ```
 
@@ -212,7 +212,7 @@ ______________________________________________________________________
 
 - `"development"`: Development settings with logging
 - `"testing"`: Test-specific settings
-- `"staging"`: Pre-production settings
+- `"staging"`: Current settings
 - `"production"`: Production security settings
 
 ### Environment Detection
@@ -226,4 +226,4 @@ settings = FlextAuthSettings()
 
 ______________________________________________________________________
 
-This configuration guide covers the current implementation as of September 17, 2025. For usage examples, see Getting Started.
+This configuration guide covers the current implementation as of April 14, 2026. For usage examples, see Getting Started.

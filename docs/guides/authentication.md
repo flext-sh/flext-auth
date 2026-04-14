@@ -25,7 +25,7 @@
   - [Priority 3: Advanced Security](#priority-3-advanced-security)
 <!-- TOC END -->
 
-**Version**: 0.9.9 RC | **Updated**: September 17, 2025
+**Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 This guide covers authentication-specific implementation details for the FLEXT-AUTH library, focusing on security practices and integration patterns specific to authentication workflows.
 
@@ -183,7 +183,7 @@ auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
 # Handle authentication requests
 auth_result = auth.authenticate_user(username, password)
-if auth_result.is_success:
+if auth_result.success:
     session_data = auth_result.value
     # Return authentication success
 ```
