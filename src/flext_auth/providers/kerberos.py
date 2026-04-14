@@ -265,7 +265,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             return self._map_identity_payload(identity_map)
         claims_result = self._decode_token_claims(token)
         return claims_result.fold(
-            on_failure=lambda _: r[m.Auth.AuthIdentity].fail(
+            on_failure=lambda _: p.Result[m.Auth.AuthIdentity].fail(
                 "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
             ),
             on_success=lambda v: self._map_identity_payload(v),

@@ -364,7 +364,7 @@ mypy src/flext_auth/
 
    ```python
    # Specify generic type for r
-   result: r[User] = auth.register_user(...)
+   result: p.Result[User] = auth.register_user(...)
    ```
 
 ### Import Issues

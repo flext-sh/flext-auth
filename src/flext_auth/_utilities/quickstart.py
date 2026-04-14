@@ -84,10 +84,10 @@ class FlextAuthQuickstart(s):
                 "AdminPass123!",
                 ["ADMIN"],
             ).fold(
-                on_failure=lambda exc: r[t.StrSequence].fail(
+                on_failure=lambda exc: p.Result[t.StrSequence].fail(
                     f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {exc}",
                 ),
-                on_success=lambda _: r[t.StrSequence].ok(
+                on_success=lambda _: p.Result[t.StrSequence].ok(
                     [*user_ids, "REDACTED_LDAP_BIND_PASSWORD"],
                 ),
             )

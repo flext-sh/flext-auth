@@ -264,7 +264,7 @@ Response ← FlextWebTransportAdapter
 ### Railway-Oriented Programming
 
 - **Context**: Error handling across complex authentication flows
-- **Railway**: r[T] for composable error handling
+- **Railway**: p.Result[T] for composable error handling
 - **Benefits**: Explicit error handling, composability, type safety
 
 ## Component Boundaries
