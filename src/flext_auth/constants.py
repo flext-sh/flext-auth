@@ -250,13 +250,13 @@ class FlextAuthConstants(FlextApiConstants):
         })
         "Validation limits mapping."
         SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
-            "status": "success",
+            "status": FlextApiConstants.Api.Status.SUCCESS.value,
             "message": "Authentication successful",
             "token_type": None,
         })
         "Template for successful authentication responses."
         ERROR_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
-            "status": "error",
+            "status": FlextApiConstants.Api.Status.ERROR.value,
             "message": None,
             "error_code": None,
         })

@@ -17,7 +17,7 @@ from urllib.parse import urlencode
 from flext_api import FlextApiClient, FlextApiSettings
 from pydantic import ValidationError
 
-from flext_auth import m, p, r, t, u
+from flext_auth import c, m, p, r, t, u
 
 
 class FlextWebTransportAdapter:
@@ -309,7 +309,7 @@ class FlextWebTransportAdapter:
         data: t.Api.RequestBody | None,
         query: t.Api.WebParams | None,
     ) -> t.Api.WebParams | None:
-        if isinstance(data, Mapping) and method.upper() == "GET":
+        if isinstance(data, Mapping) and method.upper() == c.Api.Method.GET.value:
             data_mapping: t.RecursiveContainerMapping = {
                 str(key): value for key, value in data.items()
             }
