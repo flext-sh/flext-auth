@@ -13,12 +13,13 @@ from typing import Annotated
 import bcrypt
 import jwt
 from flext_api import FlextApiUtilities
+from flext_auth_utilities_managers import FlextAuthUtilitiesManagers
 from pydantic import BeforeValidator, SecretStr, ValidationError
 
 from flext_auth import c, p, r, t
 
 
-class FlextAuthUtilities(FlextApiUtilities):
+class FlextAuthUtilities(FlextApiUtilities, FlextAuthUtilitiesManagers):
     """FlextAuth advanced utilities extending u with domain-specific helpers."""
 
     class Auth:
