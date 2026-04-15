@@ -19,6 +19,16 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "TestsUtilities",
             "u",
         ),
+        "flext_auth": (
+            "c",
+            "d",
+            "e",
+            "h",
+            "m",
+            "r",
+            "s",
+            "x",
+        ),
     },
 )
 

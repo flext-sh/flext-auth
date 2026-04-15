@@ -12,6 +12,19 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".test_constants": ("test_constants",),
         ".test_token_real_flows": ("test_token_real_flows",),
         ".test_typings": ("test_typings",),
+        "flext_auth": (
+            "c",
+            "d",
+            "e",
+            "h",
+            "m",
+            "p",
+            "r",
+            "s",
+            "t",
+            "u",
+            "x",
+        ),
     },
 )
 
