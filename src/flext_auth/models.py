@@ -60,7 +60,7 @@ class FlextAuthModels(FlextApiModels):
         # =========================================================================
 
         class ValidationResult(FlextApiModels.Value):
-            """Generic validation result for any operation (immutable value t.RecursiveContainer)."""
+            """Generic validation result for any operation (immutable value object)."""
 
             valid: Annotated[bool, Field(..., description="Validation outcome")]
             data: t.RecursiveContainerMapping = Field(
@@ -85,7 +85,7 @@ class FlextAuthModels(FlextApiModels):
         # =========================================================================
 
         class TokenPayload(FlextApiModels.Value):
-            """Generic JWT token payload (immutable value t.RecursiveContainer)."""
+            """Generic JWT token payload (immutable value object)."""
 
             sub: Annotated[str, Field(..., description="Subject (identity ID)")]
             exp: Annotated[int, Field(..., description="Expiration timestamp (UNIX)")]
@@ -108,7 +108,7 @@ class FlextAuthModels(FlextApiModels):
             session_id: Annotated[str, Field(default="", description="Session ID")]
 
         class TokenRequest(FlextApiModels.Value):
-            """Generic token generation request (immutable value t.RecursiveContainer)."""
+            """Generic token generation request (immutable value object)."""
 
             identity_id: Annotated[str, Field(..., description="Identity ID")]
             token_type: Annotated[
@@ -170,7 +170,7 @@ class FlextAuthModels(FlextApiModels):
         # =========================================================================
 
         class AuthIdentityRequest(FlextApiModels.Value):
-            """Generic identity creation request (immutable value t.RecursiveContainer)."""
+            """Generic identity creation request (immutable value object)."""
 
             name: Annotated[
                 str,
@@ -386,7 +386,7 @@ class FlextAuthModels(FlextApiModels):
         # =========================================================================
 
         class ProviderConfig(FlextApiModels.FlexibleModel):
-            """Generic provider configuration (immutable value t.RecursiveContainer)."""
+            """Generic provider configuration (immutable value object)."""
 
             name: Annotated[str, Field(..., description="Provider name")]
             type: Annotated[str, Field(..., description="Provider type")]
@@ -493,7 +493,7 @@ class FlextAuthModels(FlextApiModels):
             )
 
         class ApiKeyValidation(FlextApiModels.Value):
-            """API key validation request (immutable value t.RecursiveContainer)."""
+            """API key validation request (immutable value object)."""
 
             api_key: Annotated[str, Field(..., description="API key to validate")]
             metadata: t.RecursiveContainerMapping = Field(
@@ -501,7 +501,7 @@ class FlextAuthModels(FlextApiModels):
             )
 
         class ApiKeyData(FlextApiModels.Value):
-            """API key data structure (immutable value t.RecursiveContainer)."""
+            """API key data structure (immutable value object)."""
 
             key_hash: Annotated[str, Field(..., description="Hashed API key")]
             name: Annotated[str, Field(..., description="Key name")]
@@ -522,7 +522,7 @@ class FlextAuthModels(FlextApiModels):
             )
 
         class CredentialValidation(FlextApiModels.Value):
-            """Credential validation request (immutable value t.RecursiveContainer)."""
+            """Credential validation request (immutable value object)."""
 
             username: Annotated[str, Field(..., description="Username")]
             password: Annotated[str, Field(..., description="Password", exclude=True)]
@@ -535,7 +535,7 @@ class FlextAuthModels(FlextApiModels):
         # =========================================================================
 
         class Credential(FlextApiModels.Value):
-            """Generic credential container (immutable value t.RecursiveContainer)."""
+            """Generic credential container (immutable value object)."""
 
             credential_type: Annotated[str, Field(..., description="Credential type")]
             value: Annotated[
@@ -551,7 +551,7 @@ class FlextAuthModels(FlextApiModels):
         # =========================================================================
 
         class AuthResponse(FlextApiModels.Value):
-            """Generic authentication response (immutable value t.RecursiveContainer)."""
+            """Generic authentication response (immutable value object)."""
 
             success: Annotated[bool, Field(..., description="Authentication success")]
             identity: t.RecursiveContainerMapping = Field(
@@ -670,7 +670,7 @@ class FlextAuthModels(FlextApiModels):
                 )
 
             class Registration(FlextApiModels.Value):
-                """Provider registration payload (immutable value t.RecursiveContainer)."""
+                """Provider registration payload (immutable value object)."""
 
                 name: Annotated[str, Field(..., description="Provider name")]
                 provider_type: Annotated[

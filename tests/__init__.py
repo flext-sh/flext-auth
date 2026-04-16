@@ -35,6 +35,9 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextAuthConstants",
                 "c",
             ),
+            ".helpers.protocols": ("TestsProtocols",),
+            ".helpers.typings": ("TestsTypings",),
+            ".helpers.utilities": ("TestsUtilities",),
             ".models": (
                 "TestsFlextAuthModels",
                 "m",
