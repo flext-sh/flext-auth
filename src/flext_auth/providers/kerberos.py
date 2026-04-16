@@ -20,9 +20,7 @@ from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import override
 
-from pydantic import ValidationError
-
-from flext_auth import FlextAuthRfcProvider, m, p, r, t, u
+from flext_auth import FlextAuthRfcProvider, c, m, p, r, t, u
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -249,7 +247,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                     parsed_claims = t.CONTAINER_VALUE_MAPPING_ADAPTER.validate_python(
                         validator_result,
                     )
-                except ValidationError as exc:
+                except c.ValidationError as exc:
                     return r[m.Auth.AuthIdentity].fail(
                         f"Kerberos ticket validator mapping payload is invalid: {exc}",
                     )
@@ -297,7 +295,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             parsed_roles: list[str]
             try:
                 parsed_roles = list(t.STR_SEQUENCE_ADAPTER.validate_python(roles_value))
-            except ValidationError:
+            except c.ValidationError:
                 parsed_roles = []
             roles = [role for role in parsed_roles if role]
         else:

@@ -207,12 +207,12 @@ class Session(FlextModels.Entity):
 Request model for user registration.
 
 ```python
-class UserCreationRequest(BaseModel):
+class UserCreationRequest(m.BaseModel):
     username: str
     email: str
     password: str
     full_name: str | None = None
-    roles: t.StringList = Field(default_factory=list)
+    roles: t.StringList = m.Field(default_factory=list)
 ```
 
 ______________________________________________________________________

@@ -11,18 +11,18 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_auth import c, t
-from flext_core import FlextSettings
+from flext_core import FlextSettings, m, u
 
 
 @FlextSettings.auto_register("auth")
 class FlextAuthSettings(FlextSettings):
     """Validated settings used by auth providers and token services."""
 
-    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
+    model_config: ClassVar[SettingsConfigDict] = m.SettingsConfigDict(
         env_prefix="FLEXT_AUTH_",
         extra="ignore",
         validate_assignment=True,
@@ -31,49 +31,49 @@ class FlextAuthSettings(FlextSettings):
 
     secret_key: Annotated[
         str,
-        Field(
+        m.Field(
             alias="auth_secret",
             min_length=c.Auth.SECRET_MIN_LENGTH,
             description="Signing secret",
         ),
-    ] = "change-me-in-production-minimum-32-characters"
+    ] = u.generate_prefixed_id(prefix="auth", length=32)
     algorithm: Annotated[
         str,
-        Field(
+        m.Field(
             description="JWT signing algorithm",
         ),
     ] = c.Auth.DEFAULT_JWT_ALGORITHM
     issuer: Annotated[
         str,
-        Field(description="Token issuer"),
+        m.Field(description="Token issuer"),
     ] = c.Auth.DEFAULT_ISSUER
     audience: Annotated[
         str,
-        Field(
+        m.Field(
             description="Token audience",
         ),
     ] = c.Auth.DEFAULT_AUDIENCE
     expiry_minutes: Annotated[
         t.PositiveInt,
-        Field(
+        m.Field(
             description="Access token expiry in minutes",
         ),
     ] = c.Auth.DEFAULT_JWT_EXPIRY_MINUTES
     session_expiry_minutes: Annotated[
         t.PositiveInt,
-        Field(
+        m.Field(
             description="Session expiry in minutes",
         ),
     ] = c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES
     max_sessions_per_user: Annotated[
         t.PositiveInt,
-        Field(
+        m.Field(
             description="Max parallel sessions per user",
         ),
     ] = c.Auth.DEFAULT_MAX_SESSIONS_PER_USER
     hash_rounds: Annotated[
         int,
-        Field(
+        m.Field(
             ge=c.Auth.HASH_ROUNDS_MIN,
             le=c.Auth.HASH_ROUNDS_MAX,
             description="Password hash rounds",

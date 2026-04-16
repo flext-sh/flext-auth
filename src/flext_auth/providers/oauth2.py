@@ -722,7 +722,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             typed_roles: t.StrSequence
             try:
                 typed_roles = t.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
-            except ValidationError:
+            except c.ValidationError:
                 typed_roles = list[str]()
             roles = [role for role in typed_roles if role]
         else:

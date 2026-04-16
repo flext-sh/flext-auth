@@ -14,7 +14,7 @@ import bcrypt
 import jwt
 from flext_api import FlextApiUtilities
 from flext_auth_utilities_managers import FlextAuthUtilitiesManagers
-from pydantic import BeforeValidator, SecretStr, ValidationError
+from pydantic import BeforeValidator, SecretStr
 
 from flext_auth import c, p, r, t
 
@@ -245,7 +245,7 @@ class FlextAuthUtilities(FlextApiUtilities, FlextAuthUtilitiesManagers):
             return r[t.Auth.Tokens.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as exc:
             return r[t.Auth.Tokens.ClaimMap].fail(f"Invalid token: {exc}")
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             return r[t.Auth.Tokens.ClaimMap].fail(
                 f"Decoded token payload validation failed: {exc}",
             )

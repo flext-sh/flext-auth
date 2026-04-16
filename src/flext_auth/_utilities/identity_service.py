@@ -12,8 +12,6 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import override
 
-from pydantic import ValidationError
-
 from flext_auth import (
     FlextAuthSettings,
     FlextAuthUtilitiesManagers,
@@ -140,7 +138,7 @@ class FlextAuthIdentityService(s):
                 credential=credential,
                 roles=user_roles,
             )
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             error_messages: t.StrSequence = [
                 f"{error.get('loc', ('unknown',))[0] if error.get('loc') else 'unknown'}: {error.get('msg', 'Validation error')}"
                 for error in exc.errors()

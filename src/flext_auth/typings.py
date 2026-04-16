@@ -10,26 +10,27 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import MutableMapping
-from typing import Annotated, Literal, override
+from typing import TYPE_CHECKING, Annotated, Literal, override
 
-from flext_api import FlextApiTypes
-from pydantic import BeforeValidator, Field, SecretStr, TypeAdapter
+from flext_api import t
+from pydantic import BeforeValidator, SecretStr, TypeAdapter
 
 from flext_auth import c
 
+if TYPE_CHECKING:
+    from flext_auth import m
 
-class FlextAuthTypes(FlextApiTypes):
+
+class FlextAuthTypes(t):
     """Authentication-specific type definitions extending t with composition."""
 
-    CONFIGURATION_MAPPING_ADAPTER: TypeAdapter[FlextApiTypes.ConfigurationMapping] = (
-        TypeAdapter(FlextApiTypes.ConfigurationMapping)
+    CONFIGURATION_MAPPING_ADAPTER: m.TypeAdapter[t.ConfigurationMapping] = TypeAdapter(
+        t.ConfigurationMapping
     )
-    STR_SEQUENCE_ADAPTER: TypeAdapter[FlextApiTypes.StrSequence] = TypeAdapter(
-        FlextApiTypes.StrSequence
+    STR_SEQUENCE_ADAPTER: m.TypeAdapter[t.StrSequence] = TypeAdapter(t.StrSequence)
+    CONTAINER_VALUE_MAPPING_ADAPTER: m.TypeAdapter[t.ContainerValueMapping] = (
+        TypeAdapter(t.ContainerValueMapping)
     )
-    CONTAINER_VALUE_MAPPING_ADAPTER: TypeAdapter[
-        FlextApiTypes.ContainerValueMapping
-    ] = TypeAdapter(FlextApiTypes.ContainerValueMapping)
 
     class Auth:
         """Authentication-related type definitions."""
@@ -84,7 +85,7 @@ class FlextAuthTypes(FlextApiTypes):
 
             type Key = Annotated[
                 str,
-                Field(
+                m.Field(
                     min_length=1,
                     max_length=c.Auth.Validation.SHORT_NAME_MAX,
                     pattern="^[a-z0-9](?:[a-z0-9\\-_.]{0,62}[a-z0-9])?$",
@@ -93,7 +94,7 @@ class FlextAuthTypes(FlextApiTypes):
             ]
             type Capability = Annotated[
                 str,
-                Field(
+                m.Field(
                     min_length=1,
                     max_length=c.Auth.Validation.SHORT_NAME_MAX,
                     pattern="^[a-z][a-z0-9_:-]*$",
@@ -102,7 +103,7 @@ class FlextAuthTypes(FlextApiTypes):
             ]
             type CapabilitySet = Annotated[
                 frozenset[Capability],
-                Field(min_length=1, description="Declared capabilities"),
+                m.Field(min_length=1, description="Declared capabilities"),
             ]
 
         class Credentials:
@@ -110,7 +111,7 @@ class FlextAuthTypes(FlextApiTypes):
 
             type Username = Annotated[
                 str,
-                Field(
+                m.Field(
                     min_length=1,
                     max_length=c.Auth.Validation.LONG_NAME_MAX,
                     description="Identity username",
@@ -118,7 +119,7 @@ class FlextAuthTypes(FlextApiTypes):
             ]
             type Password = Annotated[
                 str,
-                Field(
+                m.Field(
                     min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
                     max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
                     description="Raw credential string",
@@ -126,7 +127,7 @@ class FlextAuthTypes(FlextApiTypes):
             ]
             type Secret = Annotated[
                 SecretStr,
-                Field(
+                m.Field(
                     min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
                     max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
                     description="Protected credential value",
@@ -140,31 +141,31 @@ class FlextAuthTypes(FlextApiTypes):
             """Token-related type definitions."""
 
             type TokenType = c.Auth.TokenTypes
-            type ClaimMap = MutableMapping[str, FlextApiTypes.ContainerValue]
-            type Claims = MutableMapping[str, FlextApiTypes.ContainerValue]
-            type Introspection = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type ClaimMap = MutableMapping[str, t.ContainerValue]
+            type Claims = MutableMapping[str, t.ContainerValue]
+            type Introspection = MutableMapping[str, t.ContainerValue]
 
         class Sessions:
             """Session-related type definitions."""
 
-            type Activity = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type Activity = MutableMapping[str, t.ContainerValue]
 
         class Responses:
             """Response payload abstractions."""
 
             type AuthenticationPayload = MutableMapping[
                 str,
-                FlextApiTypes.ContainerValue,
+                t.ContainerValue,
             ]
 
         class Managers:
             """Manager-specific supporting types."""
 
-            type UserData = MutableMapping[str, FlextApiTypes.ContainerValue]
-            type SessionData = MutableMapping[str, FlextApiTypes.ContainerValue]
-            type LogEntry = MutableMapping[str, FlextApiTypes.ContainerValue]
-            type AuditEntry = MutableMapping[str, FlextApiTypes.ContainerValue]
-            type AttemptData = MutableMapping[str, FlextApiTypes.ContainerValue]
+            type UserData = MutableMapping[str, t.ContainerValue]
+            type SessionData = MutableMapping[str, t.ContainerValue]
+            type LogEntry = MutableMapping[str, t.ContainerValue]
+            type AuditEntry = MutableMapping[str, t.ContainerValue]
+            type AttemptData = MutableMapping[str, t.ContainerValue]
             type AttemptWindow = tuple[int, int]
 
         class Domain:
