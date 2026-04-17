@@ -953,13 +953,13 @@ ______________________________________________________________________
 
 #### Integration Matrix
 
-| Domain               | FLEXT Library       | Status    | Usage in flext-auth                      |
-| -------------------- | ------------------- | --------- | ---------------------------------------- |
-| HTTP Operations      | **flext-api**       | MANDATORY | HTTP transport adapter                   |
-| gRPC Operations      | **flext-grpc**      | MANDATORY | gRPC transport adapter                   |
-| LDAP Authentication  | **flext-ldap**      | MANDATORY | LDAP provider                            |
-| Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence                 |
-| Foundation Patterns  | **flext-core**      | MANDATORY | r, s, FlextRegistry                      |
+| Domain               | FLEXT Library       | Status    | Usage in flext-auth      |
+| -------------------- | ------------------- | --------- | ------------------------ |
+| HTTP Operations      | **flext-api**       | MANDATORY | HTTP transport adapter   |
+| gRPC Operations      | **flext-grpc**      | MANDATORY | gRPC transport adapter   |
+| LDAP Authentication  | **flext-ldap**      | MANDATORY | LDAP provider            |
+| Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence |
+| Foundation Patterns  | **flext-core**      | MANDATORY | r, s, FlextRegistry      |
 
 #### FORBIDDEN Direct Imports
 

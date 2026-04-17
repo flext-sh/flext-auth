@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from pydantic import SecretStr, field_validator
+from pydantic import SecretStr
 from pydantic_settings import SettingsConfigDict
 
 from flext_auth import c, t
@@ -31,7 +31,7 @@ class FlextAuthSettings(FlextSettings):
 
     secret_key: Annotated[
         str,
-        m.Field(
+        u.Field(
             alias="auth_secret",
             min_length=c.Auth.SECRET_MIN_LENGTH,
             description="Signing secret",
@@ -39,41 +39,41 @@ class FlextAuthSettings(FlextSettings):
     ] = u.generate_prefixed_id(prefix="auth", length=32)
     algorithm: Annotated[
         str,
-        m.Field(
+        u.Field(
             description="JWT signing algorithm",
         ),
     ] = c.Auth.DEFAULT_JWT_ALGORITHM
     issuer: Annotated[
         str,
-        m.Field(description="Token issuer"),
+        u.Field(description="Token issuer"),
     ] = c.Auth.DEFAULT_ISSUER
     audience: Annotated[
         str,
-        m.Field(
+        u.Field(
             description="Token audience",
         ),
     ] = c.Auth.DEFAULT_AUDIENCE
     expiry_minutes: Annotated[
         t.PositiveInt,
-        m.Field(
+        u.Field(
             description="Access token expiry in minutes",
         ),
     ] = c.Auth.DEFAULT_JWT_EXPIRY_MINUTES
     session_expiry_minutes: Annotated[
         t.PositiveInt,
-        m.Field(
+        u.Field(
             description="Session expiry in minutes",
         ),
     ] = c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES
     max_sessions_per_user: Annotated[
         t.PositiveInt,
-        m.Field(
+        u.Field(
             description="Max parallel sessions per user",
         ),
     ] = c.Auth.DEFAULT_MAX_SESSIONS_PER_USER
     hash_rounds: Annotated[
         int,
-        m.Field(
+        u.Field(
             ge=c.Auth.HASH_ROUNDS_MIN,
             le=c.Auth.HASH_ROUNDS_MAX,
             description="Password hash rounds",
@@ -85,7 +85,7 @@ class FlextAuthSettings(FlextSettings):
         """Expose secret as SecretStr for compatibility."""
         return SecretStr(self.secret_key)
 
-    @field_validator("secret_key", mode="before")
+    @u.field_validator("secret_key", mode="before")
     @classmethod
     def _normalize_secret_key(cls, value: str | SecretStr) -> str:
         if isinstance(value, SecretStr):

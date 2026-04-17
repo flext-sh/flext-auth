@@ -12,11 +12,10 @@ from typing import Annotated
 
 import bcrypt
 import jwt
-from flext_api import FlextApiUtilities
-from flext_auth_utilities_managers import FlextAuthUtilitiesManagers
-from pydantic import BeforeValidator, SecretStr
+from flext_api import FlextApiUtilities, m
+from pydantic import SecretStr
 
-from flext_auth import c, p, r, t
+from flext_auth import FlextAuthUtilitiesManagers, c, p, r, t
 
 
 class FlextAuthUtilities(FlextApiUtilities, FlextAuthUtilitiesManagers):
@@ -59,28 +58,28 @@ class FlextAuthUtilities(FlextApiUtilities, FlextAuthUtilitiesManagers):
             class Pydantic:
                 """Annotated type factories for Pydantic models.
 
-                These return Annotated type forms for Pydantic BeforeValidator usage.
+                These return Annotated type forms for Pydantic m.BeforeValidator usage.
                 The coerce functions are typed as returning the enum type for downstream
                 compatibility, since Annotated[X, ...] acts as type X at validation time.
                 """
 
                 COERCED_PROVIDER_TYPE = Annotated[
                     c.Auth.ProviderTypes,
-                    BeforeValidator(
+                    m.BeforeValidator(
                         FlextApiUtilities.coerce_validator(c.Auth.ProviderTypes),
                     ),
                 ]
 
                 COERCED_ROLE_TYPE = Annotated[
                     c.Auth.RoleTypes,
-                    BeforeValidator(
+                    m.BeforeValidator(
                         FlextApiUtilities.coerce_validator(c.Auth.RoleTypes),
                     ),
                 ]
 
                 COERCED_TOKEN_TYPE = Annotated[
                     c.Auth.TokenTypes,
-                    BeforeValidator(
+                    m.BeforeValidator(
                         FlextApiUtilities.coerce_validator(c.Auth.TokenTypes),
                     ),
                 ]

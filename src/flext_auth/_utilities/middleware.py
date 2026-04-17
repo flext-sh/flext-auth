@@ -34,7 +34,7 @@ from flext_auth import m, p, r, s, t
 from flext_core import u
 
 
-class FlextAuthMiddleware(s):
+class FlextAuthMiddleware(s[bool]):
     """Authentication middleware adapters following FLEXT standards.
 
     This class provides middleware that adapts p.Auth.FlextAuthBaseProvider implementations

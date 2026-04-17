@@ -26,7 +26,7 @@ from flext_auth import (
 )
 
 
-class FlextAuthTokenService(s):
+class FlextAuthTokenService(s[bool]):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.

@@ -24,7 +24,7 @@ from flext_auth import (
 )
 
 
-class FlextAuthIdentityService(s):
+class FlextAuthIdentityService(s[bool]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.

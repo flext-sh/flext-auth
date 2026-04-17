@@ -12,8 +12,8 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from typing import TYPE_CHECKING, Annotated, Literal, override
 
-from flext_api import t
-from pydantic import BeforeValidator, SecretStr, TypeAdapter
+from flext_api import t, u
+from pydantic import SecretStr, TypeAdapter
 
 from flext_auth import c
 
@@ -39,15 +39,15 @@ class FlextAuthTypes(t):
         type AuthStatus = c.Auth.AuthStatus
         type CoercedTokenTypes = Annotated[
             c.Auth.TokenTypes,
-            BeforeValidator(lambda x: x),
+            m.BeforeValidator(lambda x: x),
         ]
         type CoercedProviderTypes = Annotated[
             c.Auth.ProviderTypes,
-            BeforeValidator(lambda x: x),
+            m.BeforeValidator(lambda x: x),
         ]
         type CoercedRoleTypes = Annotated[
             c.Auth.RoleTypes,
-            BeforeValidator(lambda x: x),
+            m.BeforeValidator(lambda x: x),
         ]
 
         class UserManagement:
@@ -85,7 +85,7 @@ class FlextAuthTypes(t):
 
             type Key = Annotated[
                 str,
-                m.Field(
+                u.Field(
                     min_length=1,
                     max_length=c.Auth.Validation.SHORT_NAME_MAX,
                     pattern="^[a-z0-9](?:[a-z0-9\\-_.]{0,62}[a-z0-9])?$",
@@ -94,7 +94,7 @@ class FlextAuthTypes(t):
             ]
             type Capability = Annotated[
                 str,
-                m.Field(
+                u.Field(
                     min_length=1,
                     max_length=c.Auth.Validation.SHORT_NAME_MAX,
                     pattern="^[a-z][a-z0-9_:-]*$",
@@ -103,7 +103,7 @@ class FlextAuthTypes(t):
             ]
             type CapabilitySet = Annotated[
                 frozenset[Capability],
-                m.Field(min_length=1, description="Declared capabilities"),
+                u.Field(min_length=1, description="Declared capabilities"),
             ]
 
         class Credentials:
@@ -111,7 +111,7 @@ class FlextAuthTypes(t):
 
             type Username = Annotated[
                 str,
-                m.Field(
+                u.Field(
                     min_length=1,
                     max_length=c.Auth.Validation.LONG_NAME_MAX,
                     description="Identity username",
@@ -119,7 +119,7 @@ class FlextAuthTypes(t):
             ]
             type Password = Annotated[
                 str,
-                m.Field(
+                u.Field(
                     min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
                     max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
                     description="Raw credential string",
@@ -127,7 +127,7 @@ class FlextAuthTypes(t):
             ]
             type Secret = Annotated[
                 SecretStr,
-                m.Field(
+                u.Field(
                     min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
                     max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
                     description="Protected credential value",

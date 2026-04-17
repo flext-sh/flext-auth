@@ -102,12 +102,12 @@ All ADRs follow a consistent template:
 
 ## Current ADRs
 
-| ADR | Title                                            | Status   | Date       |
-| --- | ------------------------------------------------ | -------- | ---------- |
-| 001 | Multi-Provider Authentication Architecture       | Accepted | 2026-04-14 |
-| 002 | Provider Registry Pattern Implementation         | Accepted | 2026-04-14 |
-| 003 | Railway-Oriented Error Handling with r | Accepted | 2026-04-14 |
-| 004 | JWT Provider as Production-Ready Reference       | Accepted | 2026-04-14 |
+| ADR | Title                                      | Status   | Date       |
+| --- | ------------------------------------------ | -------- | ---------- |
+| 001 | Multi-Provider Authentication Architecture | Accepted | 2026-04-14 |
+| 002 | Provider Registry Pattern Implementation   | Accepted | 2026-04-14 |
+| 003 | Railway-Oriented Error Handling with r     | Accepted | 2026-04-14 |
+| 004 | JWT Provider as Production-Ready Reference | Accepted | 2026-04-14 |
 
 ## ADR Categories
 

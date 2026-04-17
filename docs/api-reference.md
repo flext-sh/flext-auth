@@ -212,7 +212,7 @@ class UserCreationRequest(m.BaseModel):
     email: str
     password: str
     full_name: str | None = None
-    roles: t.StringList = m.Field(default_factory=list)
+    roles: t.StringList = u.Field(default_factory=list)
 ```
 
 ______________________________________________________________________

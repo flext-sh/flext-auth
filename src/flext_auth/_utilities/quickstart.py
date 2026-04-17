@@ -13,7 +13,7 @@ from typing import override
 from flext_auth import FlextAuth, FlextAuthSettings, m, p, r, s, t
 
 
-class FlextAuthQuickstart(s):
+class FlextAuthQuickstart(s[bool]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
     This class provides a simplified interface for common authentication operations

@@ -303,7 +303,7 @@ class FlextAuthUtilitiesManagers(
             """Apply list modification atomically."""
             field_list_value = user_data.get(field)
             if not isinstance(field_list_value, list):
-                msg = f"Field '{field}' must be a list for modification"
+                msg = f"u.Field '{field}' must be a list for modification"
                 raise TypeError(msg)
             if add and value not in field_list_value:
                 field_list_value.append(value)

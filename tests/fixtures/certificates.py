@@ -11,18 +11,18 @@ from typing import Annotated, ClassVar
 
 from pydantic import ConfigDict
 
-from tests import m
+from tests import m, u
 
 
 class CertificateFixture(m.BaseModel):
     """Certificate fixture data."""
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
+    model_config: ClassVar[m.ConfigDict] = ConfigDict(frozen=True)
 
-    cert_pem: Annotated[str, m.Field(description="PEM-encoded certificate")]
-    key_pem: Annotated[str, m.Field(description="PEM-encoded private key")]
-    fingerprint: Annotated[str, m.Field(description="Certificate fingerprint hash")]
-    subject_cn: Annotated[str, m.Field(description="Certificate subject common name")]
+    cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
+    key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]
+    fingerprint: Annotated[str, u.Field(description="Certificate fingerprint hash")]
+    subject_cn: Annotated[str, u.Field(description="Certificate subject common name")]
 
 
 def generate_self_signed_cert(
