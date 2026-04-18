@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
+from flext_auth import c, m, p, r, t
 
-    from flext_auth import m, p, r, t
+if TYPE_CHECKING:
+    from flext_auth.services.identity_service import FlextAuthIdentityService
+    from flext_auth.services.session_service import FlextAuthSessionService
+    from flext_auth.services.token_service import FlextAuthTokenService
 
 
 class FlextAuthIdentityMixin:
@@ -17,9 +19,9 @@ class FlextAuthIdentityMixin:
     update, delete, authenticate. Delegates to FlextAuthIdentityService.
     """
 
-    _identity_service: p.Service
-    _token_service: p.Service
-    _session_service: p.Service
+    _identity_service: FlextAuthIdentityService
+    _token_service: FlextAuthTokenService
+    _session_service: FlextAuthSessionService
     _config: p.Configurable
     logger: p.Logger
 
@@ -34,9 +36,7 @@ class FlextAuthIdentityMixin:
             case str() as username if username:
                 username_value = username
             case _:
-                import flext_auth
-
-                return flext_auth.r[m.Auth.AuthIdentity].fail(
+                return r[m.Auth.AuthIdentity].fail(
                     "Invalid credentials: username required",
                 )
         password_value = credentials.get("password")
@@ -44,9 +44,7 @@ class FlextAuthIdentityMixin:
             case str() as password if password:
                 password_value = password
             case _:
-                import flext_auth
-
-                return flext_auth.r[m.Auth.AuthIdentity].fail(
+                return r[m.Auth.AuthIdentity].fail(
                     "Invalid credentials: password required",
                 )
         return self._identity_service.authenticate_identity(
@@ -106,14 +104,12 @@ class FlextAuthIdentityMixin:
         **kwargs: t.Scalar | t.StrSequence | None,
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Register new user with roles."""
-        import flext_auth
-
         if roles is not None:
             user_roles = roles
         elif role is not None:
             user_roles = [role]
         else:
-            user_roles = [flext_auth.c.Auth.RoleTypes.USER.value]
+            user_roles = [c.Auth.RoleTypes.USER.value]
         return self._identity_service.create_identity(
             name=username,
             contact=email,

@@ -21,7 +21,6 @@ from flext_auth import (
     FlextAuthSettings,
     FlextAuthTokenService,
     FlextAuthUtilitiesManagers,
-    c,
     m,
     p,
     r,
@@ -160,75 +159,6 @@ class FlextAuth(FlextAuthProviderConcernMixin, FlextAuthIdentityMixin):
                 )
         return auth
 
-    def authenticate(
-        self,
-        credentials: t.StrMapping,
-        _provider: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
-        """Railway-oriented authentication with chaining."""
-        username_value = credentials.get("username")
-        match username_value:
-            case str() as username if username:
-                username_value = username
-            case _:
-                return r[m.Auth.AuthIdentity].fail(
-                    "Invalid credentials: username is required and must be a non-empty string",
-                )
-        password_value = credentials.get("password")
-        match password_value:
-            case str() as password if password:
-                password_value = password
-            case _:
-                return r[m.Auth.AuthIdentity].fail(
-                    "Invalid credentials: password is required and must be a non-empty string",
-                )
-        return self._identity_service.authenticate_identity(
-            username_value,
-            password_value,
-        )
-
-    def authenticate_user(
-        self,
-        username: str,
-        password: str,
-        _ip_address: str | None = None,
-        _user_agent: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
-        """Authenticate user by username and password with optional metadata.
-
-        Args:
-        username: User username
-        password: User password
-
-        Returns:
-        Authentication result with user identity
-
-        Note:
-        ip_address and user_agent are reserved for future audit trail implementation
-
-        """
-        auth_result = self._identity_service.authenticate_identity(username, password)
-        if auth_result.success:
-            identity = auth_result.value
-            token_result = self.create_token(identity_id=identity.unique_id)
-            if token_result.success:
-                token = token_result.value
-                session_result = self._session_service.session_manager.create_session(
-                    user_id=identity.unique_id,
-                    token=token,
-                    expires_in_minutes=self._config.session_expiry_minutes,
-                    ip_address=_ip_address or "",
-                    user_agent=_user_agent or "",
-                )
-
-                def _log_session_error(err: str) -> None:
-                    self.logger.warning(
-                        f"Failed to create session for user {identity.name}: {err}",
-                    )
-
-                session_result.tap_error(_log_session_error)
-        return auth_result
-
     def cleanup_expired_sessions(self) -> p.Result[int]:
         """Clean up expired sessions.
 
@@ -261,23 +191,11 @@ class FlextAuth(FlextAuthProviderConcernMixin, FlextAuthIdentityMixin):
             expires_in_minutes=self._config.expiry_minutes,
         )
 
-    def delete_user(self, user_id: str) -> p.Result[bool]:
-        """Delete identity - delegation to identity_service."""
-        return self._identity_service.identity_manager.delete_user(user_id)
-
     def execute(self) -> p.Result[bool]:
         """Flexible execute implementation with railway orchestration."""
         return r[bool].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
-
-    def get_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Get identity by ID - delegation to identity_service."""
-        return self._identity_service.identity_manager.get_user(user_id)
-
-    def get_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Get identity by username - delegation to identity_service."""
-        return self._identity_service.identity_manager.get_user_by_username(username)
 
     def get_user_sessions(self, user_id: str) -> p.Result[Sequence[m.Auth.Session]]:
         """Get user sessions."""
@@ -287,67 +205,9 @@ class FlextAuth(FlextAuthProviderConcernMixin, FlextAuthIdentityMixin):
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def register_user(
-        self,
-        username: str,
-        email: str,
-        password: str,
-        roles: t.StrSequence | None = None,
-        role: str | None = None,
-        **kwargs: t.Scalar | t.StrSequence | None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
-        """Register a new user.
-
-        Args:
-        username: User username
-        email: User email address
-        password: User password
-        roles: Optional list of user roles
-        role: Optional user role (defaults to 'user') - for backward compatibility
-        **kwargs: Additional user data
-
-        Returns:
-        Registration result with user identity
-
-        """
-        if roles is not None:
-            user_roles = roles
-        elif role is not None:
-            user_roles = [role]
-        else:
-            user_roles = [c.Auth.RoleTypes.USER.value]
-        return self._identity_service.create_identity(
-            name=username,
-            contact=email,
-            credential=password,
-            roles=user_roles,
-            **kwargs,
-        )
-
-    def register_user_simple(
-        self,
-        username: str,
-        email: str,
-        password: str,
-    ) -> p.Result[m.Auth.AuthIdentity]:
-        """Railway-oriented user registration via identity service."""
-        return self._identity_service.create_identity(
-            name=username,
-            contact=email,
-            credential=password,
-        )
-
     def revoke_session(self, session_id: str) -> p.Result[bool]:
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
-
-    def update_user(
-        self,
-        user_id: str,
-        **updates: t.Scalar | t.StrSequence | None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
-        """Update identity - delegation to identity_service."""
-        return self._identity_service.identity_manager.update_user(user_id, **updates)
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Flexible token validation with railway pattern."""
