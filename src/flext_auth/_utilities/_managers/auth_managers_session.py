@@ -4,7 +4,9 @@ from collections.abc import MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from flext_auth import FlextAuthSettings, m, p, r, t, u
+from flext_api import r, u
+
+from flext_auth import FlextAuthSettings, m, p, t
 from flext_core import FlextContainer, FlextContext
 
 
@@ -83,7 +85,7 @@ class FlextAuthSessionManagers:
                         session_data["is_active"] = False
                         found = True
                     case _:
-                        pass
+                        continue
             if found:
                 return r[bool].ok(value=True)
             return r[bool].fail("No sessions found for user")
@@ -124,7 +126,7 @@ class FlextAuthSessionManagers:
                         session.unique_id = session_id
                         sessions.append(session)
                     case _:
-                        pass
+                        continue
             return r[Sequence[m.Auth.Session]].ok(sessions)
 
         def get_total_active_sessions(self) -> int:

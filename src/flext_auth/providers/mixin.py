@@ -100,7 +100,7 @@ class FlextAuthProviderMixin:
         audience_value = settings.get("audience")
         if isinstance(audience_value, str) and audience_value:
             claims["aud"] = audience_value
-        return u.encode_token(claims, secret_key_value, algorithm)
+        return self._encode_token_payload(claims, secret_key_value, algorithm)
 
     def generate_token_for_user(
         self,
@@ -256,13 +256,25 @@ class FlextAuthProviderMixin:
             if isinstance(audience_value, str) and audience_value
             else None
         )
-
-        return u.decode_token(
+        algorithms_list = (algorithm,) if algorithm else (c.Auth.DEFAULT_JWT_ALGORITHM,)
+        return u.Auth.decode_token(
             token,
             secret_key_obj,
-            algorithms=(algorithm,) if algorithm else None,
+            algorithms=algorithms_list,
             audience=audience,
         )
+
+    @staticmethod
+    def _encode_token_payload(
+        payload: t.ContainerValueMapping,
+        secret: str,
+        algorithm: str,
+    ) -> p.Result[str]:
+        """Encode token payload using JWT with canonical result flow."""
+        normalized_payload: t.Auth.Tokens.ClaimMap = {
+            str(key): value for key, value in payload.items()
+        }
+        return u.Auth.encode_token(normalized_payload, secret, algorithm)
 
     def _extract_identity_id(
         self,

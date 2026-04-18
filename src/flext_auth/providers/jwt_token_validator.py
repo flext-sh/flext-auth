@@ -10,10 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import jwt
-from jwt.types import Options
-
-from flext_auth import FlextAuthJwtProvider, p, r, t
+from flext_auth import p, r, t, u
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
 class FlextAuthJwtTokenValidator:
@@ -23,7 +21,7 @@ class FlextAuthJwtTokenValidator:
     Uses composition and delegates to flext-core for consistent patterns.
     """
 
-    def __init__(self, provider: FlextAuthJwtProvider) -> None:
+    def __init__(self, provider: FlextAuthProviderMixin) -> None:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
@@ -70,27 +68,17 @@ class FlextAuthJwtTokenValidator:
                         )
             else:
                 audience = None
-            decode_options = Options(verify_exp=True, verify_iat=True)
-            if audience is not None:
-                payload = jwt.decode(
-                    token,
-                    secret_key,
-                    algorithms=[algorithm],
-                    audience=audience,
-                    options=decode_options,
+            decode_result = u.Auth.decode_token(
+                token,
+                t.SecretStr(secret_key),
+                algorithms=(algorithm,),
+                audience=audience,
+            )
+            if decode_result.failure:
+                return r[t.ContainerValueMapping].fail(
+                    decode_result.error or "Invalid token",
                 )
-            else:
-                payload = jwt.decode(
-                    token,
-                    secret_key,
-                    algorithms=[algorithm],
-                    options=decode_options,
-                )
-            return r[t.ContainerValueMapping].ok(payload)
-        except jwt.ExpiredSignatureError:
-            return r[t.ContainerValueMapping].fail("Token has expired")
-        except jwt.InvalidTokenError as exc:
-            return r[t.ContainerValueMapping].fail(f"Invalid token: {exc}")
+            return r[t.ContainerValueMapping].ok(decode_result.value)
         except (
             ValueError,
             TypeError,

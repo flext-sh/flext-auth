@@ -95,13 +95,13 @@ class FlextAuthModels(m):
                 u.Field(
                     description="Issuer",
                 ),
-            ] = "flext-auth"
+            ] = c.Auth.DEFAULT_ISSUER
             aud: Annotated[
                 str,
                 u.Field(
                     description="Audience",
                 ),
-            ] = "flext-api"
+            ] = c.Auth.DEFAULT_AUDIENCE
             session_id: Annotated[str, u.Field(description="Session ID")] = ""
 
         class TokenRequest(m.Value):
@@ -113,7 +113,7 @@ class FlextAuthModels(m):
                 u.Field(
                     description="Token type",
                 ),
-            ] = "access"
+            ] = c.Auth.TokenTypes.ACCESS.value
             expiry_minutes: Annotated[
                 t.PositiveInt,
                 u.Field(
@@ -136,7 +136,7 @@ class FlextAuthModels(m):
                 u.Field(
                     description="Token type",
                 ),
-            ] = "bearer"
+            ] = c.Auth.TokenTypes.BEARER.value
             session_id: Annotated[str, u.Field(description="Session ID")] = ""
             is_revoked: Annotated[
                 bool,
@@ -195,7 +195,8 @@ class FlextAuthModels(m):
             ]
             full_name: Annotated[str, u.Field(description="Full name")] = ""
             roles: t.StrSequence = u.Field(
-                default_factory=lambda: ["user"], description="Roles"
+                default_factory=lambda: [c.Auth.RoleTypes.USER.value],
+                description="Roles",
             )
 
         class AuthIdentity(m.Entity):
@@ -226,7 +227,8 @@ class FlextAuthModels(m):
             full_name: Annotated[str, u.Field(description="Full name")] = ""
             is_active: Annotated[bool, u.Field(description="Active status")] = True
             roles: t.StrSequence = u.Field(
-                default_factory=lambda: ["user"], description="Roles"
+                default_factory=lambda: [c.Auth.RoleTypes.USER.value],
+                description="Roles",
             )
             permissions: t.StrSequence = u.Field(
                 default_factory=list, description="Permissions"
@@ -257,8 +259,8 @@ class FlextAuthModels(m):
                     return False
                 return datetime.now(UTC) < self.locked_until
 
-            def set_credential(self, credential: str) -> p.Result[bool]:
-                """Set a new credential with bcrypt hashing."""
+            def update_credential(self, credential: str) -> p.Result[bool]:
+                """Update credential with bcrypt hashing via domain verb."""
                 try:
                     self.credential_hash = (
                         FlextAuthModels.Auth.PasswordUtil.hash_password(credential)
@@ -566,7 +568,7 @@ class FlextAuthModels(m):
             token_type: Annotated[
                 str,
                 u.Field(description="Token type"),
-            ] = "Bearer"
+            ] = c.Auth.Jwt.DEFAULT_TOKEN_TYPE
             expires_in: Annotated[
                 t.NonNegativeInt,
                 u.Field(description="Expiry seconds"),

@@ -20,7 +20,9 @@ from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import override
 
-from flext_auth import FlextAuthRfcProvider, c, m, p, r, t, u
+from flext_api import u
+
+from flext_auth import FlextAuthRfcProvider, c, m, p, r, t
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -244,8 +246,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 return r[m.Auth.AuthIdentity].ok(validator_result)
             if isinstance(validator_result, Mapping):
                 try:
-                    parsed_claims = t.CONTAINER_VALUE_MAPPING_ADAPTER.validate_python(
-                        validator_result,
+                    parsed_claims = (
+                        t.Auth.CONTAINER_VALUE_MAPPING_ADAPTER.validate_python(
+                            validator_result,
+                        )
                     )
                 except c.ValidationError as exc:
                     return r[m.Auth.AuthIdentity].fail(
@@ -294,8 +298,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         if isinstance(roles_value, list):
             parsed_roles: list[str]
             try:
-                parsed_roles = list(t.STR_SEQUENCE_ADAPTER.validate_python(roles_value))
-            except c.ValidationError:
+                parsed_roles = list(
+                    t.Auth.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
+                )
+            except c.ValidationError as exc:
+                u.fetch_logger(__name__).warning(
+                    f"Failed to validate roles from Kerberos payload: {exc}, using empty list",
+                )
                 parsed_roles = []
             roles = [role for role in parsed_roles if role]
         else:

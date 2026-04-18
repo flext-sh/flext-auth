@@ -14,7 +14,7 @@ from collections.abc import MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from flext_web import u
+from flext_api import r
 
 from flext_auth import (
     FlextAuthRateLimiterManagers,
@@ -23,10 +23,9 @@ from flext_auth import (
     c,
     m,
     p,
-    r,
     t,
 )
-from flext_core import FlextContext
+from flext_core import FlextContext, u
 
 
 class FlextAuthUtilitiesManagers(
@@ -127,7 +126,7 @@ class FlextAuthUtilitiesManagers(
                     ):
                         return r[m.Auth.AuthIdentity].fail("Identity already exists")
                     case _:
-                        pass
+                        continue
             user_id = str(uuid4())
             unique_id: str = str(user_id)
             name: str = str(username)
@@ -171,7 +170,10 @@ class FlextAuthUtilitiesManagers(
                                     locked_until = datetime.fromisoformat(
                                         locked_until_str,
                                     )
-                                except ValueError:
+                                except ValueError as exc:
+                                    u.fetch_logger(__name__).debug(
+                                        f"Failed to parse locked_until datetime '{locked_until_str}': {exc}, using minimum datetime",
+                                    )
                                     locked_until = datetime.min.replace(tzinfo=UTC)
                             case _:
                                 locked_until = datetime.min.replace(tzinfo=UTC)
@@ -185,7 +187,10 @@ class FlextAuthUtilitiesManagers(
                                     last_access = datetime.fromisoformat(
                                         last_access_str,
                                     )
-                                except ValueError:
+                                except ValueError as exc:
+                                    u.fetch_logger(__name__).debug(
+                                        f"Failed to parse last_access datetime '{last_access_str}': {exc}, using minimum datetime",
+                                    )
                                     last_access = datetime.min.replace(tzinfo=UTC)
                             case _:
                                 last_access = datetime.min.replace(tzinfo=UTC)
@@ -415,7 +420,7 @@ class FlextAuthUtilitiesManagers(
                     case str() as identity_id if identity_id:
                         return identity_id
                     case _:
-                        pass
+                        continue
             msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
             raise ValueError(msg)
 
@@ -538,9 +543,11 @@ class FlextAuthUtilitiesManagers(
                     log_event_type = log.get("event_type")
                     match log_event_type:
                         case str() as log_event if log_event == event_type:
-                            pass
+                            filtered_event_matches = True
                         case _:
-                            continue
+                            filtered_event_matches = False
+                    if not filtered_event_matches:
+                        continue
                 if start_date is not None:
                     log_timestamp = log.get("timestamp")
                     if (

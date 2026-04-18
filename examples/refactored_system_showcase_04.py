@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings
+from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import r
 
 
@@ -25,18 +25,16 @@ def demonstrate_refactoring_benefits() -> None:
 
 
 def demonstrate_quickstart_functionality() -> None:
-    """Demonstrate FlextAuthQuickstart convenience functionality."""
-    quickstart: FlextAuthQuickstart = FlextAuthQuickstart()
-    quickstart_result = quickstart.flext_auth_quick_start(create_admin_user=False)
-    if quickstart_result.success:
-        admin_credentials = quickstart_result.value
-        print(f"Admin credentials created: {admin_credentials}")
-    auth_service = FlextAuth()
-    auth_service.register_user(
+    """Demonstrate quick start behavior via FlextAuth public API."""
+    auth_service = FlextAuth.quick_start(create_admin_user=False)
+    quickstart_result = auth_service.register_user(
         "quickstart_user",
         "quickstart@example.com",
         "QuickstartPassword123!",
     )
+    if quickstart_result.success:
+        created_identity = quickstart_result.value
+        print(f"Quickstart identity created: {created_identity.name}")
 
 
 def demonstrate_flext_result_integration() -> None:

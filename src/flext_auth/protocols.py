@@ -14,12 +14,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol, override, runtime_checkable
 
-from flext_api import FlextApiProtocols
+from flext_api import p
 
 from flext_auth import c, t
 
 
-class FlextAuthProtocols(FlextApiProtocols):
+class FlextAuthProtocols(p):
     """Unified authentication protocols following FLEXT domain extension pattern.
 
     This class consolidates authentication-specific protocols while explicitly
@@ -49,10 +49,8 @@ class FlextAuthProtocols(FlextApiProtocols):
         structural typing - no model imports required.
         """
 
-        type AuthValue = t.ContainerValue
-
         @runtime_checkable
-        class Identity(FlextApiProtocols.Service[bool], Protocol):
+        class Identity(p.Service[bool], Protocol):
             """Protocol for identity/user-like objects in authentication.
 
             Structural typing interface for identity objects. Models implement
@@ -88,14 +86,14 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """Check if identity is locked."""
                 ...
 
-            def set_credential(self, credential: str) -> FlextApiProtocols.Result[bool]:
+            def update_credential(self, credential: str) -> p.Result[bool]:
                 """Set credential with secure hashing."""
                 ...
 
             def verify_credential(
                 self,
                 credential: str,
-            ) -> FlextApiProtocols.Result[bool]:
+            ) -> p.Result[bool]:
                 """Verify credential against stored hash."""
                 ...
 
@@ -121,7 +119,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
         @runtime_checkable
-        class Session(FlextApiProtocols.Service[bool], Protocol):
+        class Session(p.Service[bool], Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -132,7 +130,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             ip_address: str | None
             user_agent: str | None
 
-            def extend_session(self, hours: int = 1) -> FlextApiProtocols.Result[bool]:
+            def extend_session(self, hours: int = 1) -> p.Result[bool]:
                 """Extend session expiration time."""
                 ...
 
@@ -145,7 +143,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """Check if session is valid (active and not expired)."""
                 ...
 
-            def revoke(self) -> FlextApiProtocols.Result[bool]:
+            def revoke(self) -> p.Result[bool]:
                 """Revoke this session."""
                 ...
 
@@ -217,7 +215,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             "Operation success status."
 
         @runtime_checkable
-        class Service(FlextApiProtocols.Service[bool], Protocol):
+        class Service(p.Service[bool], Protocol):
             """Protocol for authentication service-like objects."""
 
             def authenticate_user(
@@ -226,14 +224,14 @@ class FlextAuthProtocols(FlextApiProtocols):
                 password: str,
                 client_ip: str | None = None,
                 user_agent: str | None = None,
-            ) -> FlextApiProtocols.Result[FlextAuthProtocols.Auth.Identity]:
+            ) -> p.Result[FlextAuthProtocols.Auth.Identity]:
                 """Authenticate user and return identity.
 
                 Returns Identity-compatible identity through structural typing.
                 """
                 ...
 
-            def logout_user(self, session_id: str) -> FlextApiProtocols.Result[bool]:
+            def logout_user(self, session_id: str) -> p.Result[bool]:
                 """Logout user by session ID.
 
                 Returns:
@@ -249,7 +247,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 password: str,
                 full_name: str | None = None,
                 roles: t.StrSequence | None = None,
-            ) -> FlextApiProtocols.Result[FlextAuthProtocols.Auth.Identity]:
+            ) -> p.Result[FlextAuthProtocols.Auth.Identity]:
                 """Register new user.
 
                 Returns Identity-compatible identity through structural typing.
@@ -286,7 +284,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             def authenticate(
                 self,
                 credentials: t.ContainerValueMapping,
-            ) -> p.Result[p.Auth.Token]:
+            ) -> p.Result[FlextAuthProtocols.Auth.Token]:
                 """Authenticate user with provided credentials.
 
                 This is the primary authentication method. It should validate the
@@ -333,7 +331,10 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """
                 ...
 
-            def refresh(self, token: str) -> p.Result[p.Auth.Token]:
+            def refresh(
+                self,
+                token: str,
+            ) -> p.Result[FlextAuthProtocols.Auth.Token]:
                 """Refresh authentication token.
 
                 Generate a new token based on an existing valid token. This operation
@@ -344,7 +345,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                     token: Existing token to refresh
 
                 Returns:
-                    r[p.Auth.Token]: New token on success,
+                    r[FlextAuthProtocols.Auth.Token]: New token on success,
                                         error if refresh not supported or failed
 
                 """
@@ -395,6 +396,7 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """
                 ...
 
+        @runtime_checkable
         class BaseTransportAdapter(Protocol):
             """Protocol for transport adapters.
 

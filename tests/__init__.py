@@ -53,7 +53,7 @@ if _t.TYPE_CHECKING:
         TestFlextAuthTokenMethods,
         TestFlextAuthTokenOperations,
         TestFlextAuthUserMethods,
-        TestProviderTokenFlows,
+        TestPublicApiTokenFlows,
     )
     from tests.unit.test_config import TestFlextAuthSettingsBasic, TestJwtTokenGenerator
     from tests.unit.test_constants import TestFlextAuthConstants
@@ -118,7 +118,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestFlextAuthTokenMethods",
                 "TestFlextAuthTokenOperations",
                 "TestFlextAuthUserMethods",
-                "TestProviderTokenFlows",
+                "TestPublicApiTokenFlows",
             ),
             ".unit.test_config": (
                 "TestFlextAuthSettingsBasic",
@@ -198,7 +198,7 @@ __all__: list[str] = [
     "TestFlextAuthTypes",
     "TestFlextAuthUserMethods",
     "TestJwtTokenGenerator",
-    "TestProviderTokenFlows",
+    "TestPublicApiTokenFlows",
     "TestTokenRealFlows",
     "TestsFlextAuthConstants",
     "TestsFlextAuthModels",

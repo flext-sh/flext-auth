@@ -13,7 +13,7 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
-    from flext_api import d, e, h, r, s, x
+    from flext_api import d, e, h, r, x
 
     from flext_auth._utilities._managers.auth_managers_session import (
         FlextAuthSessionManagers,
@@ -23,6 +23,7 @@ if _t.TYPE_CHECKING:
     )
     from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
     from flext_auth.api import FlextAuth, auth
+    from flext_auth.base import FlextAuthServiceBase, s
     from flext_auth.constants import FlextAuthConstants, c
     from flext_auth.mixins import FlextAuthMixins
     from flext_auth.models import FlextAuthModels, m
@@ -80,6 +81,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextAuth",
                 "auth",
             ),
+            ".base": (
+                "FlextAuthServiceBase",
+                "s",
+            ),
             ".constants": (
                 "FlextAuthConstants",
                 "c",
@@ -129,7 +134,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "e",
                 "h",
                 "r",
-                "s",
                 "x",
             ),
         },
@@ -175,6 +179,7 @@ __all__: list[str] = [
     "FlextAuthRegistry",
     "FlextAuthRfcProvider",
     "FlextAuthSamlProvider",
+    "FlextAuthServiceBase",
     "FlextAuthSessionManagers",
     "FlextAuthSessionService",
     "FlextAuthSettings",

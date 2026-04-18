@@ -12,9 +12,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-import jwt
+from flext_api import r
 
-from flext_auth import FlextAuthJwtProvider, p, r, t
+from flext_auth import FlextAuthJwtProvider, p, t, u
 
 
 class FlextAuthJwtTokenGenerator:
@@ -85,12 +85,17 @@ class FlextAuthJwtTokenGenerator:
                 audience,
                 extra_claims,
             )
-            token_result = jwt.encode(
-                dict(payload),
+            payload_for_encoding: t.Auth.Tokens.ClaimMap = dict(payload)
+            token_result = u.Auth.encode_token(
+                payload_for_encoding,
                 secret_result.value,
-                algorithm=algorithm_result.value,
+                algorithm_result.value,
             )
-            return r[str].ok(token_result)
+            if token_result.failure:
+                return r[str].fail(
+                    token_result.error or "Token encoding failed",
+                )
+            return r[str].ok(token_result.value)
         except (
             ValueError,
             TypeError,

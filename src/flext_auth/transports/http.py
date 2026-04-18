@@ -234,7 +234,7 @@ class FlextWebTransportAdapter:
                     f"Unsupported response body type: {type(body)}",
                 )
         try:
-            parsed = t.CONFIGURATION_MAPPING_ADAPTER.validate_json(decoded)
+            parsed = t.Auth.CONFIGURATION_MAPPING_ADAPTER.validate_json(decoded)
             return r[t.ContainerValueMapping].ok(parsed)
         except (ValueError, c.ValidationError):
             return r[t.ContainerValueMapping].fail(

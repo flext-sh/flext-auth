@@ -37,7 +37,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "TestFlextAuthTokenMethods",
             "TestFlextAuthTokenOperations",
             "TestFlextAuthUserMethods",
-            "TestProviderTokenFlows",
+            "TestPublicApiTokenFlows",
         ),
         ".test_config": (
             "TestFlextAuthSettingsBasic",

@@ -20,13 +20,13 @@ from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from flext_api import FlextApiConstants
+from flext_api import c
 
 if TYPE_CHECKING:
     from flext_auth import t
 
 
-class FlextAuthConstants(FlextApiConstants):
+class FlextAuthConstants(c):
     """FlextAuth domain constants extending FlextConstants.
 
     Architecture: Layer 1 (Domain Constants - Extends Core)
@@ -181,9 +181,9 @@ class FlextAuthConstants(FlextApiConstants):
         "Write permission types for validation."
         KEY_USER_ID: Final[str] = "user_id"
         "User identifier payload key."
-        DEFAULT_TIMEOUT: Final[float] = float(FlextApiConstants.DEFAULT_TIMEOUT_SECONDS)
+        DEFAULT_TIMEOUT: Final[float] = float(c.DEFAULT_TIMEOUT_SECONDS)
         "Default request timeout in seconds."
-        DEFAULT_MAX_RETRIES: Final[int] = FlextApiConstants.DEFAULT_MAX_RETRY_ATTEMPTS
+        DEFAULT_MAX_RETRIES: Final[int] = c.DEFAULT_MAX_RETRY_ATTEMPTS
         "Default maximum retry attempts."
         DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440
         "Default JWT token expiry in minutes."
@@ -250,13 +250,13 @@ class FlextAuthConstants(FlextApiConstants):
         })
         "Validation limits mapping."
         SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
-            "status": FlextApiConstants.Api.Status.SUCCESS.value,
+            "status": c.Api.Status.SUCCESS.value,
             "message": "Authentication successful",
             "token_type": None,
         })
         "Template for successful authentication responses."
         ERROR_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
-            "status": FlextApiConstants.Api.Status.ERROR.value,
+            "status": c.Api.Status.ERROR.value,
             "message": None,
             "error_code": None,
         })

@@ -3,7 +3,9 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from datetime import UTC, datetime, timedelta
 
-from flext_auth import FlextAuthSettings, p, r, t, u
+from flext_api import r, u
+
+from flext_auth import FlextAuthSettings, p, t
 from flext_core import FlextContext
 
 

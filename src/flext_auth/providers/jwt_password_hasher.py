@@ -10,8 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import bcrypt
-
 from flext_auth import FlextAuthJwtProvider, p, u
 
 
@@ -38,10 +36,7 @@ class FlextAuthPasswordHasher:
         """
 
         def _hash() -> str:
-            salt_rounds = 12
-            salt = bcrypt.gensalt(rounds=salt_rounds)
-            hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-            return hashed.decode("utf-8")
+            return u.Auth.hash_password(password)
 
         return u.try_(
             _hash,
@@ -61,10 +56,7 @@ class FlextAuthPasswordHasher:
         """
 
         def _verify() -> bool:
-            return bcrypt.checkpw(
-                password.encode("utf-8"),
-                hashed_password.encode("utf-8"),
-            )
+            return u.Auth.verify_password(password, hashed_password)
 
         return u.try_(
             _verify,

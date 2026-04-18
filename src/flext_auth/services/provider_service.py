@@ -11,13 +11,14 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from typing import override
 
+from flext_api import r
+
 from flext_auth import (
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
     FlextAuthCertificateProvider,
     FlextAuthJwtProvider,
     FlextAuthLdapProvider,
-    FlextAuthOAuth2Provider,
     FlextAuthOidcProvider,
     FlextAuthRegistry,
     FlextAuthSamlProvider,
@@ -25,10 +26,10 @@ from flext_auth import (
     c,
     m,
     p,
-    r,
+    s,
     t,
 )
-from flext_core import s
+from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 
 
 class FlextAuthProviderService(s):
@@ -38,11 +39,16 @@ class FlextAuthProviderService(s):
     Flexible composition with dependency injection and error handling.
     """
 
-    def __init__(self, *, settings: FlextAuthSettings | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        settings: FlextAuthSettings | None = None,
+        registry: FlextAuthRegistry | None = None,
+    ) -> None:
         """Flexible initialization with automatic provider registration."""
         super().__init__()
         self._auth_config = settings if settings is not None else FlextAuthSettings()
-        self._providers = FlextAuthRegistry()
+        self._providers = registry if registry is not None else FlextAuthRegistry()
         self._register_builtin_providers()
 
     @staticmethod
@@ -97,8 +103,8 @@ class FlextAuthProviderService(s):
             ),
         )
 
-    def get_jwt_provider(self) -> p.Result[FlextAuthJwtProvider]:
-        """Get registered JWT provider with strict provider type."""
+    def fetch_jwt_provider(self) -> p.Result[FlextAuthJwtProvider]:
+        """Fetch registered JWT provider with strict provider type."""
         provider_result = self._providers.get("jwt")
         if provider_result.failure:
             return r[FlextAuthJwtProvider].fail(
@@ -109,8 +115,8 @@ class FlextAuthProviderService(s):
             return r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
         return r[FlextAuthJwtProvider].ok(provider)
 
-    def get_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
-        """Get registered provider."""
+    def fetch_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
+        """Fetch registered provider."""
         return self._providers.get(name)
 
     def list_providers(self) -> t.StrSequence:

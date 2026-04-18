@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import FlextAuthProviderMixin, p, r, t
+from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
 
 
 class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -70,8 +71,8 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        _ = token
-        return r[bool].fail("Not implemented")
+        validator = FlextAuthJwtTokenValidator(self)
+        return validator.validate_token(token).map(lambda _payload: True)
 
 
 __all__: list[str] = ["FlextAuthJwtProvider"]

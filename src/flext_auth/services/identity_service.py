@@ -12,19 +12,12 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import override
 
-from flext_auth import (
-    FlextAuthSettings,
-    FlextAuthUtilitiesManagers,
-    c,
-    m,
-    p,
-    r,
-    s,
-    t,
-)
+from flext_api import r
+
+from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, c, m, p, s, t
 
 
-class FlextAuthIdentityService(s[bool]):
+class FlextAuthIdentityService(s):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -32,12 +25,18 @@ class FlextAuthIdentityService(s[bool]):
     """
 
     def __init__(
-        self, *, settings: FlextAuthSettings, dispatcher: p.Dispatcher
+        self,
+        *,
+        settings: FlextAuthSettings,
+        dispatcher: p.Dispatcher,
+        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
     ) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
-        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(
-            settings, dispatcher
+        self._managers = (
+            managers
+            if managers is not None
+            else FlextAuthUtilitiesManagers.ServiceManagers(settings, dispatcher)
         )
 
     @property
@@ -110,7 +109,7 @@ class FlextAuthIdentityService(s[bool]):
             return r[bool].fail(
                 f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
             )
-        set_result = identity.set_credential(new_credential)
+        set_result = identity.update_credential(new_credential)
         return set_result.fold(
             on_failure=lambda exc: p.Result[bool].fail(exc),
             on_success=lambda _: p.Result[bool].ok(
@@ -189,7 +188,7 @@ class FlextAuthIdentityService(s[bool]):
             return r[bool].fail(
                 f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
             )
-        set_result = identity.set_credential(new_credential)
+        set_result = identity.update_credential(new_credential)
         return set_result.fold(
             on_failure=lambda exc: p.Result[bool].fail(exc),
             on_success=lambda _: p.Result[bool].ok(

@@ -19,7 +19,9 @@ from datetime import UTC, datetime, timedelta
 from typing import Final, override
 from urllib.parse import urlencode, urlparse
 
-from flext_auth import FlextAuthRfcProvider, c, e, m, p, r, t, u
+from flext_api import u
+
+from flext_auth import FlextAuthRfcProvider, c, e, m, p, r, t
 
 _HTTP_BAD_REQUEST: Final[int] = 400
 
@@ -291,7 +293,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     case str() as text:
                         params[str(key)] = text
                     case _:
-                        pass
+                        continue
             return r[str].ok(f"{auth_endpoint}?{urlencode(params)}")
 
         def handle_authorization_code_flow(
@@ -518,11 +520,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         if self._use_pkce:
             capabilities.add("pkce")
         authorization_endpoint_value = self._config.get("authorization_endpoint")
-        match authorization_endpoint_value:
-            case str() as authorization_endpoint if authorization_endpoint:
-                capabilities.add("authorization_url")
-            case _:
-                pass
+        if (
+            isinstance(authorization_endpoint_value, str)
+            and authorization_endpoint_value
+        ):
+            capabilities.add("authorization_url")
         return capabilities
 
     @override
@@ -583,7 +585,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 if client_id:
                     form_payload["client_id"] = client_id
             case "client_secret_basic":
-                pass
+                return r[str].ok(urlencode(form_payload))
             case _:
                 return r[str].fail(
                     f"Unsupported token endpoint auth method: {auth_method}",
@@ -663,7 +665,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[t.ScalarMapping].fail(error_message)
         try:
             parsed_mapping: t.ConfigurationMapping = (
-                t.CONFIGURATION_MAPPING_ADAPTER.validate_json(response_payload)
+                t.Auth.CONFIGURATION_MAPPING_ADAPTER.validate_json(response_payload)
             )
         except (ValueError, c.ValidationError) as exc:
             return r[t.ScalarMapping].fail(
@@ -719,8 +721,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         if isinstance(roles_value, list):
             typed_roles: t.StrSequence
             try:
-                typed_roles = t.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
-            except c.ValidationError:
+                typed_roles = t.Auth.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
+            except c.ValidationError as exc:
+                u.fetch_logger(__name__).warning(
+                    f"Failed to validate roles from OAuth2 payload: {exc}, using empty list",
+                )
                 typed_roles = list[str]()
             roles = [role for role in typed_roles if role]
         else:

@@ -9,8 +9,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth import (
-    FlextAuthJwtProvider,
-    FlextAuthJwtTokenGenerator,
+    FlextAuth,
     FlextAuthSettings,
 )
 from tests import u
@@ -52,28 +51,26 @@ class TestFlextAuthSettingsBasic:
 
 
 class TestJwtTokenGenerator:
-    """Test JWT token generator functionality."""
+    """Test public token operations through FlextAuth API."""
 
     def test_generate_token_missing_config(self) -> None:
-        """Test token generation with missing configuration."""
-        provider = FlextAuthJwtProvider(settings=None)
-        generator = FlextAuthJwtTokenGenerator(provider)
-        result = generator.generate_token(identity_id="user-123")
+        """Token generation fails for unknown identity via public API."""
+        auth = FlextAuth(settings=_require_settings())
+        result = auth.create_token(identity_id="missing-user")
         assert result.failure
         assert result.error is not None
-        assert "not configured" in result.error
+        assert "user" in result.error.lower()
 
     def test_generate_token_success(self) -> None:
-        """Test successful token generation."""
-        settings: dict[str, str | int] = {
-            "secret_key": "test-secret-key-for-jwt-minimum-32-chars",
-            "algorithm": "HS256",
-            "expiry_minutes": 30,
-            "issuer": "flext-auth-test",
-        }
-        provider = FlextAuthJwtProvider(settings=settings)
-        generator = FlextAuthJwtTokenGenerator(provider)
-        result = generator.generate_token(identity_id="user-456")
+        """Generate token through public API after registering identity."""
+        auth = FlextAuth(settings=_require_settings())
+        register_result = auth.register_user(
+            "config-token-user",
+            "config-token-user@example.com",
+            "ConfigTokenPass123!",
+        )
+        assert register_result.success
+        result = auth.create_token(identity_id=register_result.value.unique_id)
         assert result.success
         assert result.value is not None
         u.Tests.Matchers.that(result.value, is_=str)

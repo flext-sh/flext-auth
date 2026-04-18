@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from typing import override
 
+from flext_api import r
+
 from flext_auth import (
     FlextAuthJwtProvider,
     FlextAuthProviderService,
@@ -20,13 +22,12 @@ from flext_auth import (
     c,
     m,
     p,
-    r,
     s,
     u,
 )
 
 
-class FlextAuthTokenService(s[bool]):
+class FlextAuthTokenService(s):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -39,11 +40,14 @@ class FlextAuthTokenService(s[bool]):
         settings: FlextAuthSettings,
         provider_service: FlextAuthProviderService,
         dispatcher: p.Dispatcher,
+        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
-        self._managers = FlextAuthUtilitiesManagers.ServiceManagers(
-            settings, dispatcher
+        self._managers = (
+            managers
+            if managers is not None
+            else FlextAuthUtilitiesManagers.ServiceManagers(settings, dispatcher)
         )
         self._provider_service = provider_service
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
@@ -163,7 +167,7 @@ class FlextAuthTokenService(s[bool]):
         """Get JWT provider with lazy caching to eliminate repeated lookups."""
         if self._jwt_provider_cache is not None:
             return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)
-        result = self._provider_service.get_jwt_provider()
+        result = self._provider_service.fetch_jwt_provider()
         if result.failure:
             return result
         self._jwt_provider_cache = result.value

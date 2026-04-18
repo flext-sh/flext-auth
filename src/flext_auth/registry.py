@@ -245,7 +245,10 @@ class FlextAuthRegistry:
         """Build metadata from provider and provided data."""
         try:
             caps = tuple(str(c) for c in service.supports())
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError) as exc:
+            u.fetch_logger(__name__).warning(
+                f"Provider {name} does not support capabilities introspection: {exc}",
+            )
             caps = ()
         base = m.Auth.Providers.Metadata(
             name=name,
@@ -260,7 +263,10 @@ class FlextAuthRegistry:
             try:
                 raw = get_metadata_fn()
                 return m.Auth.Providers.Metadata.model_validate(raw)
-            except (AttributeError, TypeError, ValueError):
+            except (AttributeError, TypeError, ValueError) as exc:
+                u.fetch_logger(__name__).debug(
+                    f"Provider {name} metadata extraction failed, using base: {exc}",
+                )
                 return base
         return base
 

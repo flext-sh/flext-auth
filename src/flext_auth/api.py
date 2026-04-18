@@ -20,6 +20,7 @@ from flext_auth import (
     FlextAuthSessionService,
     FlextAuthSettings,
     FlextAuthTokenService,
+    FlextAuthUtilitiesManagers,
     c,
     m,
     p,
@@ -59,7 +60,6 @@ class FlextAuth:
         service_name: str | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
-        super().__init__()
         if settings is not None:
             self._config = settings
         else:
@@ -68,23 +68,29 @@ class FlextAuth:
         self._dispatcher = FlextContainer.shared().dispatcher().unwrap()
         self._service_name = service_name if service_name is not None else "flext_auth"
         self.logger = u.fetch_logger(__name__)
-        self._provider_service = FlextAuthProviderService(settings=self._config)
-        for provider_name in self._provider_service.list_providers():
-            provider_result = self._provider_service.get_provider(provider_name)
-            if provider_result.success:
-                self._registry.register_provider(provider_name, provider_result.value)
+        shared_managers = FlextAuthUtilitiesManagers.ServiceManagers(
+            self._config,
+            self._dispatcher,
+        )
+        self._provider_service = FlextAuthProviderService(
+            settings=self._config,
+            registry=self._registry,
+        )
         self._identity_service = FlextAuthIdentityService(
             settings=self._config,
             dispatcher=self._dispatcher,
+            managers=shared_managers,
         )
         self._token_service = FlextAuthTokenService(
             settings=self._config,
             provider_service=self._provider_service,
             dispatcher=self._dispatcher,
+            managers=shared_managers,
         )
         self._session_service = FlextAuthSessionService(
             settings=self._config,
             dispatcher=self._dispatcher,
+            managers=shared_managers,
         )
 
     @property
@@ -263,7 +269,7 @@ class FlextAuth:
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
 
-    def get_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
+    def fetch_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Railway-oriented provider retrieval."""
         return self._registry.get(name)
 

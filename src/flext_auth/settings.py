@@ -13,8 +13,8 @@ from typing import Annotated, ClassVar
 
 from pydantic_settings import SettingsConfigDict
 
-from flext_auth import c, t
-from flext_core import FlextSettings, m, u
+from flext_auth import c, m, t, u
+from flext_core import FlextSettings
 
 
 @FlextSettings.auto_register("auth")

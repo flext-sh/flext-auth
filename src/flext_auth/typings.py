@@ -20,14 +20,6 @@ from flext_auth import c
 class FlextAuthTypes(t):
     """Authentication-specific type definitions extending t with composition."""
 
-    CONFIGURATION_MAPPING_ADAPTER: m.TypeAdapter[t.ConfigurationMapping] = (
-        m.TypeAdapter(t.ConfigurationMapping)
-    )
-    STR_SEQUENCE_ADAPTER: m.TypeAdapter[t.StrSequence] = m.TypeAdapter(t.StrSequence)
-    CONTAINER_VALUE_MAPPING_ADAPTER: m.TypeAdapter[t.ContainerValueMapping] = (
-        m.TypeAdapter(t.ContainerValueMapping)
-    )
-
     class Auth:
         """Authentication-related type definitions."""
 
@@ -215,6 +207,32 @@ class FlextAuthTypes(t):
 
             type ProjectType = c.Auth.ProjectType
 
+        CONFIGURATION_MAPPING_ADAPTER: u.TypeAdapter[t.ConfigurationMapping] = (
+            u.TypeAdapter(t.ConfigurationMapping)
+        )
+        STR_SEQUENCE_ADAPTER: u.TypeAdapter[t.StrSequence] = u.TypeAdapter(
+            t.StrSequence
+        )
+        CONTAINER_VALUE_MAPPING_ADAPTER: u.TypeAdapter[t.ContainerValueMapping] = (
+            u.TypeAdapter(t.ContainerValueMapping)
+        )
+
+        COERCED_PROVIDER_TYPE = Annotated[
+            c.Auth.ProviderTypes,
+            u.Api.Pydantic.coerced_enum_validator(c.Auth.ProviderTypes),
+        ]
+
+        COERCED_ROLE_TYPE = Annotated[
+            c.Auth.RoleTypes,
+            u.Api.Pydantic.coerced_enum_validator(c.Auth.RoleTypes),
+        ]
+
+        COERCED_TOKEN_TYPE = Annotated[
+            c.Auth.TokenTypes,
+            u.Api.Pydantic.coerced_enum_validator(c.Auth.TokenTypes),
+        ]
+
 
 t = FlextAuthTypes
+
 __all__: list[str] = ["FlextAuthTypes", "t"]
