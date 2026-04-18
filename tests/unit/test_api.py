@@ -1328,7 +1328,6 @@ class TestAuthModule:
             "authenticate_user",
             "authenticate",
             "create_token",
-            "execute",
         ]
         for method_name in expected_methods:
             u.Tests.Matchers.that(hasattr(auth, method_name), eq=True)

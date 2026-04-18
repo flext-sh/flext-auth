@@ -127,8 +127,8 @@ class FlextAuth:
         auth: Self = cls()
         if create_admin_user:
             result = auth.register_user(
-                "REDACTED_LDAP_BIND_PASSWORD",
-                "REDACTED_LDAP_BIND_PASSWORD@example.com",
+                c.Auth.DEFAULT_ADMIN_USERNAME,
+                c.Auth.DEFAULT_ADMIN_EMAIL,
                 "AdminPass123!",
                 roles=["ADMIN"],
             )
@@ -144,26 +144,13 @@ class FlextAuth:
         credentials: t.StrMapping,
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Validate credentials mapping and dispatch to the identity service."""
-        username_value = credentials.get("username")
-        match username_value:
-            case str() as username if username:
-                username_value = username
-            case _:
-                return r[m.Auth.AuthIdentity].fail(
-                    "Invalid credentials: username required",
-                )
-        password_value = credentials.get("password")
-        match password_value:
-            case str() as password if password:
-                password_value = password
-            case _:
-                return r[m.Auth.AuthIdentity].fail(
-                    "Invalid credentials: password required",
-                )
-        return self._identity_service.authenticate_identity(
-            username_value,
-            password_value,
-        )
+        username = credentials.get("username") or ""
+        password = credentials.get("password") or ""
+        if not username or not password:
+            return r[m.Auth.AuthIdentity].fail(
+                "Invalid credentials: username and password required",
+            )
+        return self._identity_service.authenticate_identity(username, password)
 
     def authenticate_user(
         self,
@@ -189,12 +176,11 @@ class FlextAuth:
                     user_agent=user_agent or "",
                 )
 
-                def _log_session_error(err: str) -> None:
-                    self.logger.warning(
-                        f"Failed to create session for user {identity.name}: {err}",
-                    )
-
-                session_result.tap_error(_log_session_error)
+                session_result.tap_error(
+                    lambda err: (self.logger.warning(
+                        "Failed to create session for user %s: %s", identity.name, err
+                    ), None)[-1]
+                )
         return auth_result
 
     def register_user(
@@ -229,12 +215,6 @@ class FlextAuth:
         return self._token_service.generate_jwt_token(
             user_id=identity_id,
             expires_in_minutes=self._config.expiry_minutes,
-        )
-
-    def execute(self) -> p.Result[bool]:
-        """Facade marker method - use authenticate_user / register_user instead."""
-        return r[bool].fail(
-            "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
 
 

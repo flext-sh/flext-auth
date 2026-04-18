@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from flext_auth import FlextAuth
-from tests import p, u
+from tests import u
 
 
 class TestTokenRealFlows:
@@ -58,8 +58,3 @@ class TestTokenRealFlows:
 
         token_result = auth.create_token(identity_id=authenticated.value.unique_id)
         u.Tests.Matchers.ok(token_result)
-
-    def test_execute_returns_failure_for_generic_call(self) -> None:
-        auth = FlextAuth.quick_start(create_admin_user=False)
-        execute_result: p.Result[bool] = auth.execute()
-        u.Tests.Matchers.fail(execute_result)

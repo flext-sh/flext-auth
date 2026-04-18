@@ -18,7 +18,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Set as AbstractSet
 from enum import StrEnum, unique
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, ClassVar, Final
 
 from flext_api import c
 
@@ -67,6 +67,9 @@ class FlextAuthConstants(c):
         All Auth-specific constants are organized here for better namespace
         organization and to enable composition with other domain constants.
         """
+
+        DEFAULT_ADMIN_USERNAME: ClassVar[str] = "admin"
+        DEFAULT_ADMIN_EMAIL: ClassVar[str] = "admin@localhost"
 
         @unique
         class TokenTypes(StrEnum):

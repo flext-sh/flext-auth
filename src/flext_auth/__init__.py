@@ -22,7 +22,7 @@ if _t.TYPE_CHECKING:
         FlextAuthRateLimiterManagers,
     )
     from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
-    from flext_auth.api import FlextAuth, auth
+    from flext_auth.api import FlextAuth
     from flext_auth.base import FlextAuthServiceBase, s
     from flext_auth.constants import FlextAuthConstants, c
     from flext_auth.models import FlextAuthModels, m
@@ -77,7 +77,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             "._utilities.managers": ("FlextAuthUtilitiesManagers",),
             ".api": (
                 "FlextAuth",
-                "auth",
             ),
             ".base": (
                 "FlextAuthServiceBase",
@@ -190,7 +189,6 @@ __all__: list[str] = [
     "__url__",
     "__version__",
     "__version_info__",
-    "auth",
     "c",
     "d",
     "e",

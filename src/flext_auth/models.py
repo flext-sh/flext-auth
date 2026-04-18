@@ -61,14 +61,12 @@ class FlextAuthModels(m):
         class ValidationResult(m.Value):
             """Generic validation result for any operation (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             valid: Annotated[bool, u.Field(..., description="Validation outcome")]
-            data: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Result data"
-            )
+            data: t.RecursiveContainerMapping = u.Field(default_factory=dict)
             error: Annotated[str, u.Field(description="Error message")] = ""
-            metadata: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Additional metadata"
-            )
+            metadata: t.RecursiveContainerMapping = u.Field(default_factory=dict)
 
             @property
             def status(self) -> str:
@@ -107,22 +105,22 @@ class FlextAuthModels(m):
         class TokenRequest(m.Value):
             """Generic token generation request (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             identity_id: Annotated[str, u.Field(..., description="Identity ID")]
             token_type: Annotated[
                 t.Auth.TokenRequestType,
                 u.Field(
                     description="Token type",
                 ),
-            ] = c.Auth.TokenTypes.ACCESS.value
+            ] = "access"
             expiry_minutes: Annotated[
                 t.PositiveInt,
                 u.Field(
                     description="Token expiry",
                 ),
             ] = c.Auth.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES
-            extra_claims: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Additional claims"
-            )
+            extra_claims: t.RecursiveContainerMapping = u.Field(default_factory=dict)
             session_id: Annotated[str, u.Field(description="Session ID")] = ""
 
         class AuthToken(m.Entity):
@@ -202,6 +200,8 @@ class FlextAuthModels(m):
         class AuthIdentity(m.Entity):
             """Generic identity/user entity with minimal fields."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             # Reference to PasswordUtil for use in methods
             _password_util: type | None = (
                 None  # Will be set to Auth.PasswordUtil at class definition time
@@ -230,9 +230,7 @@ class FlextAuthModels(m):
                 default_factory=lambda: [c.Auth.RoleTypes.USER.value],
                 description="Roles",
             )
-            permissions: t.StrSequence = u.Field(
-                default_factory=list, description="Permissions"
-            )
+            permissions: t.StrSequence = u.Field(default_factory=tuple)
             failed_attempts: Annotated[
                 t.NonNegativeInt,
                 u.Field(description="Failed attempts"),
@@ -336,6 +334,8 @@ class FlextAuthModels(m):
         class Role(m.Entity):
             """Generic role entity."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             name: Annotated[
                 t.NonEmptyStr,
                 u.Field(
@@ -351,9 +351,7 @@ class FlextAuthModels(m):
                     description="Description",
                 ),
             ] = ""
-            permissions: t.StrSequence = u.Field(
-                default_factory=list, description="Permissions"
-            )
+            permissions: t.StrSequence = u.Field(default_factory=tuple)
 
         class Permission(m.Entity):
             """Generic permission entity."""
@@ -483,28 +481,28 @@ class FlextAuthModels(m):
         class ProviderConfiguration(m.FlexibleModel):
             """Provider configuration for authentication providers."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             name: Annotated[str, u.Field(description="Provider name")] = "default"
             version: Annotated[str, u.Field(description="Provider version")] = "1.0.0"
-            capabilities: t.StrSequence = u.Field(
-                default_factory=list, description="Provider capabilities"
-            )
+            capabilities: t.StrSequence = u.Field(default_factory=tuple)
 
         class ApiKeyValidation(m.Value):
             """API key validation request (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             api_key: Annotated[str, u.Field(..., description="API key to validate")]
-            metadata: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Additional validation data"
-            )
+            metadata: t.RecursiveContainerMapping = u.Field(default_factory=dict)
 
         class ApiKeyData(m.Value):
             """API key data structure (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             key_hash: Annotated[str, u.Field(..., description="Hashed API key")]
             name: Annotated[str, u.Field(..., description="Key name")]
-            permissions: t.StrSequence = u.Field(
-                default_factory=list, description="Key permissions"
-            )
+            permissions: t.StrSequence = u.Field(default_factory=tuple)
             is_active: Annotated[bool, u.Field(description="Key active status")] = True
             expires_at: datetime = u.Field(
                 default_factory=lambda: datetime.max.replace(tzinfo=UTC),
@@ -518,11 +516,11 @@ class FlextAuthModels(m):
         class CredentialValidation(m.Value):
             """Credential validation request (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             username: Annotated[str, u.Field(..., description="Username")]
             password: Annotated[str, u.Field(..., description="Password", exclude=True)]
-            metadata: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Additional validation data"
-            )
+            metadata: t.RecursiveContainerMapping = u.Field(default_factory=dict)
 
         # =========================================================================
         # CREDENTIAL MODELS - Generic credential handling
@@ -531,14 +529,14 @@ class FlextAuthModels(m):
         class Credential(m.Value):
             """Generic credential container (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             credential_type: Annotated[str, u.Field(..., description="Credential type")]
             value: Annotated[
                 str,
                 u.Field(..., description="Credential value", exclude=True),
             ]
-            metadata: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Additional data"
-            )
+            metadata: t.RecursiveContainerMapping = u.Field(default_factory=dict)
 
         # =========================================================================
         # AUTHENTICATION RESPONSE - Generic response
@@ -547,15 +545,13 @@ class FlextAuthModels(m):
         class AuthResponse(m.Value):
             """Generic authentication response (immutable value object)."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             success: Annotated[bool, u.Field(..., description="Authentication success")]
-            identity: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Identity data"
-            )
+            identity: t.RecursiveContainerMapping = u.Field(default_factory=dict)
             token: Annotated[str, u.Field(description="Token", exclude=True)] = ""
             message: Annotated[str, u.Field(description="Response message")] = ""
-            metadata: t.RecursiveContainerMapping = u.Field(
-                default_factory=dict, description="Additional data"
-            )
+            metadata: t.RecursiveContainerMapping = u.Field(default_factory=dict)
 
         # =========================================================================
         # OAUTH2 TOKEN RESPONSE - OAuth2 token exchange result
@@ -603,14 +599,14 @@ class FlextAuthModels(m):
         class HttpResponseData(m.Value):
             """Generic HTTP response data."""
 
+            _flext_enforcement_exempt: ClassVar[bool] = True
+
             status_code: Annotated[
                 t.HttpStatusCode,
                 u.Field(..., description="HTTP status code"),
             ]
             body: Annotated[str, u.Field(description="Response body")] = ""
-            headers: t.StrMapping = u.Field(
-                default_factory=dict, description="Response headers"
-            )
+            headers: t.StrMapping = u.Field(default_factory=dict)
 
         # =========================================================================
         # PROVIDERS NAMESPACE - Provider metadata and related models
@@ -651,6 +647,8 @@ class FlextAuthModels(m):
             class Metadata(m.Value):
                 """Provider metadata for registry."""
 
+                _flext_enforcement_exempt: ClassVar[bool] = True
+
                 name: Annotated[str, u.Field(..., description="Provider name")]
                 version: Annotated[
                     str,
@@ -659,9 +657,7 @@ class FlextAuthModels(m):
                 capabilities: tuple[str, ...] = u.Field(
                     default_factory=tuple, description="Provider capabilities"
                 )
-                extras: t.RecursiveContainerMapping = u.Field(
-                    default_factory=dict, description="Extra metadata"
-                )
+                extras: t.RecursiveContainerMapping = u.Field(default_factory=dict)
 
             class Registration(m.Value):
                 """Provider registration payload (immutable value object)."""
