@@ -28,10 +28,11 @@ from flext_auth import (
     t,
     u,
 )
+from flext_auth._service_mixins import FlextAuthProviderConcernMixin
 from flext_core import FlextContainer
 
 
-class FlextAuth:
+class FlextAuth(FlextAuthProviderConcernMixin):
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
@@ -269,10 +270,6 @@ class FlextAuth:
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
 
-    def fetch_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
-        """Railway-oriented provider retrieval."""
-        return self._registry.get(name)
-
     def get_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
@@ -285,21 +282,9 @@ class FlextAuth:
         """Get user sessions."""
         return self._session_service.session_manager.get_active_sessions(user_id)
 
-    def list_providers(self) -> t.StrSequence:
-        """Provider listing."""
-        return self._registry.list_providers()
-
     def logout_user(self, session_id: str) -> p.Result[bool]:
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
-
-    def register_provider(
-        self,
-        name: str,
-        provider: p.Auth.FlextAuthBaseProvider,
-    ) -> p.Result[bool]:
-        """Railway-oriented provider registration."""
-        return self._registry.register_provider(name, provider)
 
     def register_user(
         self,
