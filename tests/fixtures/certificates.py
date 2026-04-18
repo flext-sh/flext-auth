@@ -9,15 +9,13 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from pydantic import ConfigDict
-
 from tests import m, u
 
 
 class CertificateFixture(m.BaseModel):
     """Certificate fixture data."""
 
-    model_config: ClassVar[m.ConfigDict] = ConfigDict(frozen=True)
+    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(frozen=True)
 
     cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
     key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]

@@ -3,20 +3,31 @@
 
 from __future__ import annotations
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core.lazy import (
+    build_lazy_import_map,
+    install_lazy_exports,
+    merge_lazy_imports,
+)
 
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        ".identity_service": ("FlextAuthIdentityService",),
-        ".managers": ("FlextAuthUtilitiesManagers",),
-        ".middleware": ("FlextAuthMiddleware",),
-        ".mixins": ("FlextAuthMixins",),
-        ".provider_service": ("FlextAuthProviderService",),
-        ".quickstart": ("FlextAuthQuickstart",),
-        ".registry": ("FlextAuthRegistry",),
-        ".session_service": ("FlextAuthSessionService",),
-        ".token_service": ("FlextAuthTokenService",),
-    },
+_LAZY_IMPORTS = merge_lazy_imports(
+    ("._managers",),
+    build_lazy_import_map(
+        {
+            "._managers.auth_managers_session": ("FlextAuthSessionManagers",),
+            "._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
+            ".managers": ("FlextAuthUtilitiesManagers",),
+        },
+    ),
+    exclude_names=(
+        "cleanup_submodule_namespace",
+        "install_lazy_exports",
+        "lazy_getattr",
+        "logger",
+        "merge_lazy_imports",
+        "output",
+        "output_reporting",
+    ),
+    module_name=__name__,
 )
 
 

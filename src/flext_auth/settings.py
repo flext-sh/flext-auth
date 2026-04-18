@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from pydantic import SecretStr
 from pydantic_settings import SettingsConfigDict
 
 from flext_auth import c, t
@@ -81,14 +80,14 @@ class FlextAuthSettings(FlextSettings):
     ] = c.Auth.DEFAULT_HASH_ROUNDS
 
     @property
-    def auth_secret(self) -> SecretStr:
+    def auth_secret(self) -> t.SecretStr:
         """Expose secret as SecretStr for compatibility."""
-        return SecretStr(self.secret_key)
+        return t.SecretStr(self.secret_key)
 
     @u.field_validator("secret_key", mode="before")
     @classmethod
-    def _normalize_secret_key(cls, value: str | SecretStr) -> str:
-        if isinstance(value, SecretStr):
+    def _normalize_secret_key(cls, value: str | t.SecretStr) -> str:
+        if isinstance(value, t.SecretStr):
             return value.get_secret_value()
         return value
 

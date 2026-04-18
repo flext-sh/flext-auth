@@ -12,8 +12,7 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from typing import Annotated, Literal, override
 
-from flext_cli import m, t, u
-from pydantic import SecretStr
+from flext_api import m, t, u
 
 from flext_auth import c
 
@@ -123,7 +122,7 @@ class FlextAuthTypes(t):
                 ),
             ]
             type Secret = Annotated[
-                SecretStr,
+                t.SecretStr,
                 u.Field(
                     min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
                     max_length=c.Auth.CREDENTIAL_MAX_LENGTH,

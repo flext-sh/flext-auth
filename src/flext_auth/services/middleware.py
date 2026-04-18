@@ -145,8 +145,10 @@ class FlextAuthMiddleware(s[bool]):
                 }
                 mutable_headers["Authorization"] = f"Bearer {self._current_token.token}"
                 request.headers = mutable_headers
-            except (AttributeError, TypeError):
-                pass
+            except (AttributeError, TypeError) as exc:
+                return r[p.Auth.RequestWithHeaders].fail(
+                    f"Unable to attach authorization header: {exc}",
+                )
             return r[p.Auth.RequestWithHeaders].ok(request)
 
         def _authenticate_or_refresh(self) -> p.Result[m.Auth.AuthToken]:

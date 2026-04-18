@@ -12,16 +12,15 @@ from typing import Annotated
 
 import bcrypt
 import jwt
-from flext_api import FlextApiUtilities, m
-from pydantic import SecretStr
+from flext_api import FlextApiUtilities
 
-from flext_auth import FlextAuthUtilitiesManagers, c, p, r, t
+from flext_auth import FlextAuthUtilitiesManagers, c, m, p, r, t
 
 
-class FlextAuthUtilities(FlextApiUtilities, FlextAuthUtilitiesManagers):
+class FlextAuthUtilities(FlextApiUtilities):
     """FlextAuth advanced utilities extending u with domain-specific helpers."""
 
-    class Auth:
+    class Auth(FlextAuthUtilitiesManagers):
         """Auth-specific utility namespace.
 
         This namespace groups all auth-specific utilities for better organization
@@ -203,7 +202,7 @@ class FlextAuthUtilities(FlextApiUtilities, FlextAuthUtilitiesManagers):
     @staticmethod
     def decode_token(
         token: str,
-        secret: SecretStr,
+        secret: t.SecretStr,
         *,
         verify: bool = True,
         algorithms: tuple[str, ...] | None = None,

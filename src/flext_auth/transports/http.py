@@ -15,7 +15,6 @@ from collections.abc import Mapping, MutableMapping
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings
-from pydantic import ValidationError
 
 from flext_auth import c, m, p, r, t, u
 
@@ -237,7 +236,7 @@ class FlextWebTransportAdapter:
         try:
             parsed = t.CONFIGURATION_MAPPING_ADAPTER.validate_json(decoded)
             return r[t.ContainerValueMapping].ok(parsed)
-        except (ValueError, ValidationError):
+        except (ValueError, c.ValidationError):
             return r[t.ContainerValueMapping].fail(
                 "Unable to parse response body as JSON"
             )

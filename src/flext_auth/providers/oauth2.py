@@ -19,8 +19,6 @@ from datetime import UTC, datetime, timedelta
 from typing import Final, override
 from urllib.parse import urlencode, urlparse
 
-from pydantic import ValidationError
-
 from flext_auth import FlextAuthRfcProvider, c, e, m, p, r, t, u
 
 _HTTP_BAD_REQUEST: Final[int] = 400
@@ -667,7 +665,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             parsed_mapping: t.ConfigurationMapping = (
                 t.CONFIGURATION_MAPPING_ADAPTER.validate_json(response_payload)
             )
-        except (ValueError, ValidationError) as exc:
+        except (ValueError, c.ValidationError) as exc:
             return r[t.ScalarMapping].fail(
                 f"OAuth2 introspection payload is not valid JSON: {exc}",
             )

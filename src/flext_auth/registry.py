@@ -9,8 +9,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import ClassVar, TypeIs
 
-from pydantic import BaseModel
-
 from flext_auth import c, m, p, r, t, u
 
 
@@ -86,8 +84,12 @@ class FlextAuthRegistry:
         if provider_result.failure:
             return r[set[str]].fail(str(provider_result.error))
         provider = provider_result.unwrap()
-        if not isinstance(provider, BaseModel) or not self._is_auth_provider(provider):
-            return r[set[str]].ok(set())
+        if not isinstance(provider, m.BaseModel) or not self._is_auth_provider(
+            provider
+        ):
+            return r[set[str]].fail(
+                f"Provider '{name}' does not expose canonical provider capabilities",
+            )
         try:
             caps = provider.supports()
             return r[set[str]].ok({str(c) for c in caps})
@@ -99,8 +101,10 @@ class FlextAuthRegistry:
             OSError,
             RuntimeError,
             ImportError,
-        ):
-            return r[set[str]].ok(set())
+        ) as exc:
+            return r[set[str]].fail(
+                f"Provider '{name}' capabilities resolution failed: {exc}",
+            )
 
     def get_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
         """Get provider configuration."""

@@ -13,9 +13,9 @@ from datetime import UTC, datetime
 from typing import Annotated, ClassVar, Self
 
 import bcrypt
-from flext_cli import m
+from flext_api import m, u
 
-from flext_auth import c, p, r, t, u
+from flext_auth import c, p, r, t
 
 
 class FlextAuthModels(m):

@@ -13,8 +13,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 
-from pydantic import SecretStr
-
 from flext_auth import c, e, m, p, r, t, u
 
 
@@ -240,14 +238,14 @@ class FlextAuthProviderMixin:
                 "Provider configuration required for token decoding"
             )
         secret_key_value = settings.get("secret_key")
-        if not isinstance(secret_key_value, (str, SecretStr)):
+        if not isinstance(secret_key_value, (str, t.SecretStr)):
             return r[t.Auth.Tokens.ClaimMap].fail("JWT secret_key not configured")
         secret_key = (
             secret_key_value.get_secret_value()
-            if isinstance(secret_key_value, SecretStr)
+            if isinstance(secret_key_value, t.SecretStr)
             else secret_key_value
         )
-        secret_key_obj = SecretStr(secret_key)
+        secret_key_obj = t.SecretStr(secret_key)
 
         algorithm_value = settings.get("algorithm")
         algorithm = algorithm_value if isinstance(algorithm_value, str) else "HS256"
