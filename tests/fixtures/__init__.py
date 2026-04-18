@@ -7,20 +7,7 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        ".certificates": ("certificates",),
-        "flext_auth": (
-            "c",
-            "d",
-            "e",
-            "h",
-            "m",
-            "p",
-            "r",
-            "s",
-            "t",
-            "u",
-            "x",
-        ),
+        ".certificates": ("CertificateFixture",),
     },
 )
 
