@@ -1,0 +1,72 @@
+src/flext_auth/_utilities/_managers/auth_managers_session.py
+  h_9db9d35f50cf33 7-9,88,129
+src/flext_auth/_utilities/_managers/rate_limiter.py
+  h_9db9d35f50cf33 6-8
+src/flext_auth/providers/kerberos.py
+  h_9db9d35f50cf33 23-25,249-250,252,302,304-307
+examples/refactored_system_showcase_04.py
+  h_9db9d35f50cf33 12,28-30,35-37
+src/flext_auth/constants.py
+  h_9db9d35f50cf33 23,29,184,186,253,259
+src/flext_auth/transports/http.py
+  h_9db9d35f50cf33 237
+src/flext_auth/services/session_service.py
+  h_9db9d35f50cf33 12-13,22-23,27-30
+src/flext_auth/providers/jwt_token_validator.py
+  h_9db9d35f50cf33 13-14,24,71,73-74,77-79,81
+src/flext_auth/services/token_service.py
+  h_9db9d35f50cf33 15,43,47-50,170
+src/flext_auth/typings.py
+  h_9db9d35f50cf33 210-234,237
+src/flext_auth/api.py
+  h_9db9d35f50cf33 23,71-75,77-78,82,88,93,272
+src/flext_auth/settings.py
+  h_9db9d35f50cf33 16-17
+src/flext_auth/utilities.py
+  h_9db9d35f50cf33 14,16-18,21,24,38-43,45,47-50,52-67,81,86,91,96,102,107,130,165,176-178,187,204,218-220
+src/flext_auth/protocols.py
+  h_9db9d35f50cf33 17,22,53,89,96,122,133,146,218,227,234,250,287,334-337,348,399
+src/flext_auth/_utilities/middleware.py
+  h_9db9d35f50cf33 1-232
+src/flext_auth/_utilities/managers.py
+  h_9db9d35f50cf33 17,28,129,173-176,190-193,423,546,548-549
+src/flext_auth/providers/mixin.py
+  h_9db9d35f50cf33 103,259-260,267-278
+src/flext_auth/services/identity_service.py
+  h_9db9d35f50cf33 15-17,31-32,36-39,112,191
+tests/unit/test_token_real_flows.py
+  h_9db9d35f50cf33 3-4,8,10-15,17,19-30,32,34-35,37-53,55,57-58,60-61,63-66
+src/flext_auth/base.py
+  h_9db9d35f50cf33 1-28
+tests/unit/test_api.py
+  h_9db9d35f50cf33 15,24,746,770,1397-1398,1400-1405,1407,1409-1411,1413-1418,1420,1422-1423,1425-1427,1429-1432
+src/flext_auth/services/middleware.py
+  h_9db9d35f50cf33 33-35
+src/flext_auth/providers/jwt_password_hasher.py
+  h_9db9d35f50cf33 39,59
+src/flext_auth/registry.py
+  h_9db9d35f50cf33 248-251,266-269
+src/flext_auth/services/provider_service.py
+  h_9db9d35f50cf33 14-15,29,32,45-46,51,106-107,118-119
+tests/unit/test_config.py
+  h_9db9d35f50cf33 12,54,57-59,62,65-70,72-73
+src/flext_auth/providers/oauth2.py
+  h_9db9d35f50cf33 22-24,296,523-526,588,668,724-728
+src/flext_auth/providers/jwt_token_generator.py
+  h_9db9d35f50cf33 15,17,92,97-98
+src/flext_auth/providers/jwt.py
+  h_9db9d35f50cf33 14,74-75
+src/flext_auth/models.py
+  h_9db9d35f50cf33 98,104,116,139,198-199,230-231,262-263,571
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "84091b5ed10984655210260f7166dce85f55024b",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
