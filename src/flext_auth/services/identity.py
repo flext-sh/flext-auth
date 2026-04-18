@@ -1,4 +1,4 @@
-"""FlextAuth Identity Concern Mixin - User authentication and registration."""
+"""Identity concern mixin for the FlextAuth service facade."""
 
 from __future__ import annotations
 
@@ -14,11 +14,7 @@ if TYPE_CHECKING:
 
 
 class FlextAuthIdentityMixin:
-    """Identity lifecycle concern: authentication, registration, CRUD.
-
-    Manages user identities through lifecycle operations: create, read,
-    update, delete, authenticate. Delegates to FlextAuthIdentityService.
-    """
+    """Identity lifecycle concern: authentication, registration, and CRUD."""
 
     _identity_service: FlextAuthIdentityService
     _token_service: FlextAuthTokenService

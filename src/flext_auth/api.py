@@ -24,10 +24,10 @@ from flext_auth import (
     r,
     u,
 )
-from flext_auth._service_mixins import FlextAuthProviderConcernMixin
-from flext_auth._service_mixins_identity import FlextAuthIdentityMixin
-from flext_auth._service_mixins_session import FlextAuthSessionMixin
-from flext_auth._service_mixins_token import FlextAuthTokenMixin
+from flext_auth.services.identity import FlextAuthIdentityMixin
+from flext_auth.services.provider import FlextAuthProviderConcernMixin
+from flext_auth.services.session import FlextAuthSessionMixin
+from flext_auth.services.token import FlextAuthTokenMixin
 from flext_core import FlextContainer
 
 

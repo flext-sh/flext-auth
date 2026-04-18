@@ -1,36 +1,28 @@
-"""Token service mixin concern for FlextAuth.
-
-Handles JWT token creation, validation, and verification.
-"""
+"""Token concern mixin for the FlextAuth service facade."""
 
 from __future__ import annotations
 
-from flext_cli import p, r, t
+from typing import TYPE_CHECKING
+
+from flext_auth import p, r, t
+
+if TYPE_CHECKING:
+    from flext_auth.services.token_service import FlextAuthTokenService
+    from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthTokenMixin:
-    """Token operations mixin.
+    """Token operations concern: creation, validation, and verification."""
 
-    Provides JWT token lifecycle (creation, validation, verification).
-    Methods inherited by FlextAuth via MRO.
-    """
-    """Token operations mixin.
-
-    Provides JWT token lifecycle (creation, validation, verification).
-    """
+    _token_service: FlextAuthTokenService
+    _config: FlextAuthSettings
 
     def create_token(
         self,
         identity_id: str,
         extra_claims: t.ConfigurationMapping | None = None,
     ) -> p.Result[str]:
-        """Railway-oriented token creation.
-
-        Args:
-            identity_id: Identity ID for token subject
-            extra_claims: Reserved for future extra claims support
-
-        """
+        """Railway-oriented token creation."""
         match identity_id:
             case str() as identity if identity:
                 identity_id = identity
@@ -47,5 +39,5 @@ class FlextAuthTokenMixin:
         return self._token_service.validate_token(token).map(lambda _result: True)
 
     def verify_token(self, token: str) -> p.Result[bool]:
-        """Verify token validity - delegated to token service."""
+        """Verify token validity delegated to token service."""
         return self._token_service.validate_token(token)
