@@ -13,8 +13,7 @@ from datetime import UTC, datetime
 from typing import Annotated, ClassVar, Self
 
 import bcrypt
-from flext_api import m
-from pydantic import ConfigDict
+from flext_cli import m
 
 from flext_auth import c, p, r, t, u
 
@@ -622,7 +621,7 @@ class FlextAuthModels(m):
         class ProviderWrapper(m.Value):
             """Wrapper for auth provider instances."""
 
-            model_config: ClassVar[m.ConfigDict] = ConfigDict(
+            model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
                 arbitrary_types_allowed=True,
             )
 

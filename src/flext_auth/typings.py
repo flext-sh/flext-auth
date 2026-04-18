@@ -10,26 +10,23 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import MutableMapping
-from typing import TYPE_CHECKING, Annotated, Literal, override
+from typing import Annotated, Literal, override
 
-from flext_api import t, u
-from pydantic import SecretStr, TypeAdapter
+from flext_cli import m, t, u
+from pydantic import SecretStr
 
 from flext_auth import c
-
-if TYPE_CHECKING:
-    from flext_auth import m
 
 
 class FlextAuthTypes(t):
     """Authentication-specific type definitions extending t with composition."""
 
-    CONFIGURATION_MAPPING_ADAPTER: m.TypeAdapter[t.ConfigurationMapping] = TypeAdapter(
-        t.ConfigurationMapping
+    CONFIGURATION_MAPPING_ADAPTER: m.TypeAdapter[t.ConfigurationMapping] = (
+        m.TypeAdapter(t.ConfigurationMapping)
     )
-    STR_SEQUENCE_ADAPTER: m.TypeAdapter[t.StrSequence] = TypeAdapter(t.StrSequence)
+    STR_SEQUENCE_ADAPTER: m.TypeAdapter[t.StrSequence] = m.TypeAdapter(t.StrSequence)
     CONTAINER_VALUE_MAPPING_ADAPTER: m.TypeAdapter[t.ContainerValueMapping] = (
-        TypeAdapter(t.ContainerValueMapping)
+        m.TypeAdapter(t.ContainerValueMapping)
     )
 
     class Auth:

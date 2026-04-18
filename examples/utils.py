@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import contextlib
 from collections.abc import Callable, Sequence
 
 
@@ -19,12 +18,7 @@ def basic_example_runner(
 ) -> None:
     """Run all examples using the shared runner (DRY principle)."""
     for example in sync_examples:
-        with contextlib.suppress(Exception):
-            example()
+        example()
 
-    def run_examples() -> None:
-        for example in examples:
-            with contextlib.suppress(Exception):
-                example()
-
-    run_examples()
+    for example in examples:
+        example()
