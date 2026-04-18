@@ -1,0 +1,45 @@
+tests/unit/test_api.py
+  5a9ee2601b038dd3 87-89,122-124,167-169,176-178,190-192,215-217,220-222,232-234,238-240,251-253,257-258,271,300-302,335,463-464,484-485,502-504,520-522,527-529,535,644-646,667-670,844-845,862,880,894-896,910-911,924-926,931-933,943-945,951-953,959,1019-1020,1026,1030-1032,1036-1038,1053-1055,1059,1141-1143,1158,1179-1180,1199,1221-1222,1243-1245,1250-1252,1257,1277-1278,1289-1291,1389,1407
+src/flext_auth/__version__.py
+  h_9db9d35f50cf33 14,22
+src/flext_auth/__init__.py
+  h_9db9d35f50cf33 25
+tests/unit/test_token_real_flows.py
+  5a9ee2601b038dd3 37,42
+  h_9db9d35f50cf33 38,43
+src/flext_auth/api.py
+  5a9ee2601b038dd3 3-8,27-28,31,37-38,56,92,102,107,112,120,126,142-235,237
+src/flext_auth/providers/jwt_password_hasher.py
+  h_9db9d35f50cf33 13,37-40,53-56
+examples/README.md
+  h_9db9d35f50cf33 1,3,5,7,9-19,21,23,26,28,30-33,36-40,43,46-49
+examples/comprehensive_demo_03.py
+  h_9db9d35f50cf33 42-44,46,73,77,100,118,145
+examples/basic_usage_01.py
+  h_9db9d35f50cf33 123,229,236
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "f30ce16ffd123c8a4cc50617e23efc59b8795833",
+  "prompts": {
+    "5a9ee2601b038dd3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d118b1bd-b287-442f-8fd1-063a2f34be88",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 283,
+      "total_deletions": 211,
+      "accepted_lines": 230,
+      "overriden_lines": 10
+    }
+  },
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
