@@ -1,7 +1,11 @@
 """FLEXT Auth API - Generic authentication with flext-core integration.
 
-Uses Python 3.13+ syntax, railway-oriented programming, and consolidated generic patterns
-for maximum maintainability. Single FlextAuth class with SOLID principles.
+Single FlextAuth class exposing underlying service instances directly.
+Trivial CRUD/delegation methods were intentionally removed (YAGNI): use
+``auth.identity_service``, ``auth.token_service``, ``auth.session_service``,
+and ``auth.registry`` accessors for direct CRUD access. Orchestration
+helpers (authenticate, authenticate_user, register_user, create_token)
+live on the facade because they compose multiple services.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -20,33 +24,18 @@ from flext_auth import (
     FlextAuthSettings,
     FlextAuthTokenService,
     FlextAuthUtilitiesManagers,
+    c,
+    m,
     p,
     r,
+    t,
     u,
 )
-from flext_auth.services.identity import FlextAuthIdentityMixin
-from flext_auth.services.provider import FlextAuthProviderConcernMixin
-from flext_auth.services.session import FlextAuthSessionMixin
-from flext_auth.services.token import FlextAuthTokenMixin
 from flext_core import FlextContainer
 
 
-class FlextAuth(
-    FlextAuthProviderConcernMixin,
-    FlextAuthIdentityMixin,
-    FlextAuthTokenMixin,
-    FlextAuthSessionMixin,
-):
-    """Flexible authentication service using flext-core patterns.
-
-    Thread-safe singleton service with:
-    - Railway-oriented programming via r[T]
-    - Flexible DI with FlextContainer
-    - Event-driven architecture with FlextDispatcher
-    - Complete provider ecosystem with registry
-    - Flexible token lifecycle management
-    - Python 3.13+ type safety throughout
-    """
+class FlextAuth:
+    """Authentication facade composing identity, token, session, and provider services."""
 
     _instance: ClassVar[Self | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
@@ -62,16 +51,11 @@ class FlextAuth(
     def __init__(
         self,
         settings: FlextAuthSettings | None = None,
-        service_name: str | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
-        if settings is not None:
-            self._config = settings
-        else:
-            self._config = FlextAuthSettings()
+        self._config = settings if settings is not None else FlextAuthSettings()
         self._registry = FlextAuthRegistry()
         self._dispatcher = FlextContainer.shared().dispatcher().unwrap()
-        self._service_name = service_name if service_name is not None else "flext_auth"
         self.logger = u.fetch_logger(__name__)
         shared_managers = FlextAuthUtilitiesManagers.ServiceManagers(
             self._config,
@@ -105,7 +89,7 @@ class FlextAuth(
 
     @property
     def identity_service(self) -> FlextAuthIdentityService:
-        """Identity service access for usage."""
+        """Identity service access."""
         return self._identity_service
 
     @property
@@ -115,17 +99,17 @@ class FlextAuth(
 
     @property
     def session_service(self) -> FlextAuthSessionService:
-        """Session service access for usage."""
+        """Session service access."""
         return self._session_service
 
     @property
     def token_service(self) -> FlextAuthTokenService:
-        """Token service access for usage."""
+        """Token service access."""
         return self._token_service
 
     @classmethod
     def get_global(cls) -> Self:
-        """Thread-safe singleton pattern with configuration."""
+        """Thread-safe singleton accessor."""
         instance = cls._instance
         if isinstance(instance, cls):
             return instance
@@ -133,21 +117,13 @@ class FlextAuth(
             locked_instance = cls._instance
             if isinstance(locked_instance, cls):
                 return locked_instance
-            instance = cls(service_name="flext_auth")
+            instance = cls()
             cls._instance = instance
             return instance
 
     @classmethod
     def quick_start(cls, *, create_admin_user: bool = True) -> Self:
-        """Quick start factory with default configuration.
-
-        Args:
-        create_admin_user: Whether to provision the demo admin user
-
-        Returns:
-        Initialized FlextAuth instance
-
-        """
+        """Quick start factory with default configuration."""
         auth: Self = cls()
         if create_admin_user:
             result = auth.register_user(
@@ -163,13 +139,105 @@ class FlextAuth(
                 )
         return auth
 
+    def authenticate(
+        self,
+        credentials: t.StrMapping,
+    ) -> p.Result[m.Auth.AuthIdentity]:
+        """Validate credentials mapping and dispatch to the identity service."""
+        username_value = credentials.get("username")
+        match username_value:
+            case str() as username if username:
+                username_value = username
+            case _:
+                return r[m.Auth.AuthIdentity].fail(
+                    "Invalid credentials: username required",
+                )
+        password_value = credentials.get("password")
+        match password_value:
+            case str() as password if password:
+                password_value = password
+            case _:
+                return r[m.Auth.AuthIdentity].fail(
+                    "Invalid credentials: password required",
+                )
+        return self._identity_service.authenticate_identity(
+            username_value,
+            password_value,
+        )
+
+    def authenticate_user(
+        self,
+        username: str,
+        password: str,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> p.Result[m.Auth.AuthIdentity]:
+        """Authenticate and provision token + session for the user."""
+        auth_result = self._identity_service.authenticate_identity(username, password)
+        if auth_result.success:
+            identity = auth_result.value
+            token_result = self._token_service.generate_jwt_token(
+                user_id=identity.unique_id,
+                expires_in_minutes=self._config.expiry_minutes,
+            )
+            if token_result.success:
+                session_result = self._session_service.session_manager.create_session(
+                    user_id=identity.unique_id,
+                    token=token_result.value,
+                    expires_in_minutes=self._config.session_expiry_minutes,
+                    ip_address=ip_address or "",
+                    user_agent=user_agent or "",
+                )
+
+                def _log_session_error(err: str) -> None:
+                    self.logger.warning(
+                        f"Failed to create session for user {identity.name}: {err}",
+                    )
+
+                session_result.tap_error(_log_session_error)
+        return auth_result
+
+    def register_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        roles: t.StrSequence | None = None,
+        role: str | None = None,
+        **kwargs: t.Scalar | t.StrSequence | None,
+    ) -> p.Result[m.Auth.AuthIdentity]:
+        """Register user with default USER role if none provided."""
+        if roles is not None:
+            user_roles = roles
+        elif role is not None:
+            user_roles = [role]
+        else:
+            user_roles = [c.Auth.RoleTypes.USER.value]
+        return self._identity_service.create_identity(
+            name=username,
+            contact=email,
+            credential=password,
+            roles=user_roles,
+            **kwargs,
+        )
+
+    def create_token(self, identity_id: str) -> p.Result[str]:
+        """Create a token applying the configured default expiry."""
+        match identity_id:
+            case str() as identity if identity:
+                identity_id = identity
+            case _:
+                return r[str].fail("Identity ID must be a non-empty string")
+        return self._token_service.generate_jwt_token(
+            user_id=identity_id,
+            expires_in_minutes=self._config.expiry_minutes,
+        )
+
     def execute(self) -> p.Result[bool]:
-        """Flexible execute implementation with railway orchestration."""
+        """Facade marker method - use authenticate_user / register_user instead."""
         return r[bool].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
 
 
-auth = FlextAuth
-
-__all__: list[str] = ["FlextAuth", "auth"]
+__all__: list[str] = ["FlextAuth"]

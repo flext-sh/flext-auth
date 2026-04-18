@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from flext_auth import FlextAuth, p
-from tests import u
+from flext_auth import FlextAuth
+from tests import p, u
 
 
 class TestTokenRealFlows:
@@ -34,14 +34,13 @@ class TestTokenRealFlows:
         token_result = auth.create_token(identity_id=registered.value.unique_id)
         u.Tests.Matchers.ok(token_result)
 
-        validation_result = auth.validate_token(token_result.value)
-        u.Tests.Matchers.ok(validation_result)
-        u.Tests.Matchers.that(validation_result.value, eq=True)
+        validation_result = auth.token_service.validate_token(token_result.value)
+        u.Tests.Matchers.that(validation_result.success, eq=True)
 
     def test_validate_token_rejects_invalid_token(self) -> None:
         auth = FlextAuth.quick_start(create_admin_user=False)
-        invalid_result = auth.validate_token("invalid.jwt.token")
-        u.Tests.Matchers.fail(invalid_result)
+        invalid_result = auth.token_service.validate_token("invalid.jwt.token")
+        u.Tests.Matchers.that(invalid_result.success, eq=False)
 
     def test_authenticate_user_and_create_token_sequence(self) -> None:
         auth = FlextAuth.quick_start(create_admin_user=False)

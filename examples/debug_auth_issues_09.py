@@ -44,9 +44,9 @@ def debug_jwt_operations() -> None:
     if token_result.failure:
         return
     token = token_result.value
-    auth.validate_token(token)
+    auth.token_service.validate_token(token)
     bearer_token = f"Bearer {token}"
-    auth.validate_token(bearer_token)
+    auth.token_service.validate_token(bearer_token)
 
 
 def debug_authentication_workflow() -> None:

@@ -120,7 +120,7 @@ def example_user_lifecycle() -> None:
                 session_id=session_id,
             )
             logger.info("Validating JWT token")
-            token_result = auth.validate_token(jwt_token_str)
+            token_result = auth.token_service.validate_token(jwt_token_str)
             if token_result.success:
                 logger.info("Token validation successful", valid=token_result.value)
             else:
@@ -226,14 +226,14 @@ def example_complete_workflow() -> None:
     logger.info("Authentication successful")
     logger.info("Step 3: Token operations")
     jwt_token_str = auth_token.token
-    token_validation = auth.validate_token(jwt_token_str)
+    token_validation = auth.token_service.validate_token(jwt_token_str)
     if token_validation.success:
         logger.info("Token validation successful", valid=token_validation.value)
     else:
         logger.error("Token validation failed", error=token_validation.error)
     logger.info("Step 4: Get user information")
     identity_id: str = user.name
-    user_info = auth.get_user(identity_id)
+    user_info = auth.identity_service.identity_manager.get_user(identity_id)
     if user_info.success:
         retrieved_user = user_info.value
         logger.info("User information retrieved", name=retrieved_user.name)

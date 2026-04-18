@@ -22,10 +22,9 @@ if _t.TYPE_CHECKING:
         FlextAuthRateLimiterManagers,
     )
     from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
-    from flext_auth.api import FlextAuth, auth
+    from flext_auth.api import FlextAuth
     from flext_auth.base import FlextAuthServiceBase, s
     from flext_auth.constants import FlextAuthConstants, c
-    from flext_auth.mixins import FlextAuthMixins
     from flext_auth.models import FlextAuthModels, m
     from flext_auth.protocols import FlextAuthProtocols, p
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
@@ -46,7 +45,6 @@ if _t.TYPE_CHECKING:
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.middleware import FlextAuthMiddleware
     from flext_auth.services.provider_service import FlextAuthProviderService
-    from flext_auth.services.quickstart import FlextAuthQuickstart
     from flext_auth.services.session_service import FlextAuthSessionService
     from flext_auth.services.token_service import FlextAuthTokenService
     from flext_auth.settings import FlextAuthSettings
@@ -77,10 +75,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ),
             "._utilities._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
             "._utilities.managers": ("FlextAuthUtilitiesManagers",),
-            ".api": (
-                "FlextAuth",
-                "auth",
-            ),
+            ".api": ("FlextAuth",),
             ".base": (
                 "FlextAuthServiceBase",
                 "s",
@@ -89,7 +84,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextAuthConstants",
                 "c",
             ),
-            ".mixins": ("FlextAuthMixins",),
             ".models": (
                 "FlextAuthModels",
                 "m",
@@ -116,7 +110,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".services.identity_service": ("FlextAuthIdentityService",),
             ".services.middleware": ("FlextAuthMiddleware",),
             ".services.provider_service": ("FlextAuthProviderService",),
-            ".services.quickstart": ("FlextAuthQuickstart",),
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
             ".settings": ("FlextAuthSettings",),
@@ -166,7 +159,6 @@ __all__: list[str] = [
     "FlextAuthKerberosProvider",
     "FlextAuthLdapProvider",
     "FlextAuthMiddleware",
-    "FlextAuthMixins",
     "FlextAuthModels",
     "FlextAuthOAuth2Provider",
     "FlextAuthOidcProvider",
@@ -174,7 +166,6 @@ __all__: list[str] = [
     "FlextAuthProtocols",
     "FlextAuthProviderMixin",
     "FlextAuthProviderService",
-    "FlextAuthQuickstart",
     "FlextAuthRateLimiterManagers",
     "FlextAuthRegistry",
     "FlextAuthRfcProvider",
@@ -196,7 +187,6 @@ __all__: list[str] = [
     "__url__",
     "__version__",
     "__version_info__",
-    "auth",
     "c",
     "d",
     "e",

@@ -42,7 +42,7 @@ def example_jwt_operations() -> None:
     )
     if token_result.success:
         auth_token = token_result.value
-        auth.validate_token(auth_token.token)
+        auth.token_service.validate_token(auth_token.token)
 
 
 def example_role_based_access() -> None:
@@ -125,7 +125,7 @@ def example_token_validation() -> None:
         ("Malformed JWT", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.invalid"),
     ]
     for _desc, test_token in test_tokens:
-        auth.validate_token(test_token)
+        auth.token_service.validate_token(test_token)
 
 
 def generate_secure_password(length: int = 16) -> str:

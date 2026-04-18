@@ -29,7 +29,7 @@ def main() -> None:
     if token_result.failure:
         print(f"token generation failed: {token_result.error}")
         return
-    validation_result = auth.validate_token(token_result.value)
+    validation_result = auth.token_service.validate_token(token_result.value)
     print(f"token valid: {validation_result.success and validation_result.value}")
 
 

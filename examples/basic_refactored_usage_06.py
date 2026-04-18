@@ -130,7 +130,7 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
         token_result = demo.auth.create_token(identity_id=identity_id)
         if token_result.success:
             token_string = token_result.value
-            demo.auth.validate_token(token_string)
+            demo.auth.token_service.validate_token(token_string)
 
 
 def main() -> None:
@@ -150,7 +150,7 @@ def main() -> None:
         return
     auth_data = auth_result.value
     access_token = str(auth_data.token) if auth_data.token else ""
-    demo.auth.validate_token(access_token)
+    demo.auth.token_service.validate_token(access_token)
     _demo_password_utilities()
     _demo_secure_password_generation()
     _demo_email_validation()

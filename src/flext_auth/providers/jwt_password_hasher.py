@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthJwtProvider, p, u
+from flext_auth import FlextAuthJwtProvider, p, r, u
 
 
 class FlextAuthPasswordHasher:
@@ -34,14 +34,10 @@ class FlextAuthPasswordHasher:
         r containing hashed password or error
 
         """
-
-        def _hash() -> str:
-            return u.Auth.hash_password(password)
-
-        return u.try_(
-            _hash,
-            catch=(ValueError, TypeError),
-        ).map_error(lambda exc: f"Password hashing failed: {type(exc).__name__}: {exc}")
+        try:
+            return r[str].ok(u.Auth.hash_password(password))
+        except (TypeError, ValueError) as exc:
+            return r[str].fail_op("hash password", exc)
 
     def verify_password(self, password: str, hashed_password: str) -> p.Result[bool]:
         """Verify password against hash using bcrypt.
@@ -54,16 +50,10 @@ class FlextAuthPasswordHasher:
         r containing verification result or error
 
         """
-
-        def _verify() -> bool:
-            return u.Auth.verify_password(password, hashed_password)
-
-        return u.try_(
-            _verify,
-            catch=(ValueError, TypeError),
-        ).map_error(
-            lambda exc: f"Password verification failed: {type(exc).__name__}: {exc}"
-        )
+        try:
+            return r[bool].ok(u.Auth.verify_password(password, hashed_password))
+        except (TypeError, ValueError) as exc:
+            return r[bool].fail_op("verify password", exc)
 
 
 __all__: list[str] = ["FlextAuthPasswordHasher"]

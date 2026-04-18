@@ -17,7 +17,6 @@ import string
 from flext_auth import (
     FlextAuth,
     FlextAuthModels,
-    FlextAuthQuickstart,
     FlextAuthSettings,
     m,
 )
@@ -40,11 +39,11 @@ def demo_complete_auth_workflow() -> None:
         session_id = auth_data.session_id
         jwt_token = auth_data.token
         if jwt_token:
-            auth.validate_token(str(jwt_token))
-        identity_id: str = user.name
-        auth.get_user_sessions(identity_id)
+            auth.token_service.validate_token(str(jwt_token))
+        identity_id: str = user.unique_id
+        auth.session_service.session_manager.get_active_sessions(identity_id)
         if session_id:
-            auth.logout_user(str(session_id))
+            auth.session_service.session_manager.end_session_by_id(str(session_id))
 
 
 def demo_password_operations() -> None:
@@ -71,11 +70,11 @@ def demo_jwt_operations() -> None:
     if user_result.failure:
         return
     user = user_result.value
-    identity_id: str = user.name
+    identity_id: str = user.unique_id
     token_result = auth.create_token(identity_id=identity_id)
     if token_result.success:
         token_string = token_result.value
-        auth.validate_token(token_string)
+        auth.token_service.validate_token(token_string)
 
 
 def demo_user_management() -> None:
@@ -98,7 +97,7 @@ def demo_user_management() -> None:
             user = result.value
             registered_users.append(user)
     for user in registered_users:
-        auth.get_user_by_username(user.name)
+        auth.identity_service.identity_manager.get_user_by_username(user.name)
 
 
 def demo_security_features() -> None:
@@ -116,7 +115,7 @@ def demo_error_handling() -> None:
     auth.register_user("duplicate", "dup@example.com", "DupPass123!")
     auth.register_user("duplicate", "dup2@example.com", "DupPass123!")
     auth.authenticate_user("nonexistent", "password")
-    auth.validate_token("invalid.jwt.token")
+    auth.token_service.validate_token("invalid.jwt.token")
 
 
 def generate_secure_password(length: int = 16) -> str:
@@ -143,8 +142,7 @@ def main() -> None:
     demo_user_management()
     demo_security_features()
     demo_error_handling()
-    quickstart = FlextAuthQuickstart()
-    quickstart.flext_auth_quick_start(create_admin_user=False)
+    FlextAuth.quick_start(create_admin_user=False)
 
 
 if __name__ == "__main__":
