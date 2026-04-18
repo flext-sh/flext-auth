@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
-from collections.abc import Sequence
 from typing import ClassVar, Self
 
 from flext_auth import (
@@ -21,18 +20,23 @@ from flext_auth import (
     FlextAuthSettings,
     FlextAuthTokenService,
     FlextAuthUtilitiesManagers,
-    m,
     p,
     r,
-    t,
     u,
 )
 from flext_auth._service_mixins import FlextAuthProviderConcernMixin
 from flext_auth._service_mixins_identity import FlextAuthIdentityMixin
+from flext_auth._service_mixins_session import FlextAuthSessionMixin
+from flext_auth._service_mixins_token import FlextAuthTokenMixin
 from flext_core import FlextContainer
 
 
-class FlextAuth(FlextAuthProviderConcernMixin, FlextAuthIdentityMixin):
+class FlextAuth(
+    FlextAuthProviderConcernMixin,
+    FlextAuthIdentityMixin,
+    FlextAuthTokenMixin,
+    FlextAuthSessionMixin,
+):
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
@@ -159,63 +163,11 @@ class FlextAuth(FlextAuthProviderConcernMixin, FlextAuthIdentityMixin):
                 )
         return auth
 
-    def cleanup_expired_sessions(self) -> p.Result[int]:
-        """Clean up expired sessions.
-
-        Returns:
-        Number of sessions cleaned up
-
-        """
-        return self._session_service.cleanup_expired_sessions()
-
-    def create_token(
-        self,
-        identity_id: str,
-        extra_claims: t.ConfigurationMapping | None = None,
-    ) -> p.Result[str]:
-        """Railway-oriented token creation.
-
-        Args:
-            identity_id: Identity ID for token subject
-            extra_claims: Reserved for future extra claims support
-
-        """
-        match identity_id:
-            case str() as identity if identity:
-                identity_id = identity
-            case _:
-                return r[str].fail("Identity ID must be a non-empty string")
-        _ = extra_claims
-        return self._token_service.generate_jwt_token(
-            user_id=identity_id,
-            expires_in_minutes=self._config.expiry_minutes,
-        )
-
     def execute(self) -> p.Result[bool]:
         """Flexible execute implementation with railway orchestration."""
         return r[bool].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )
-
-    def get_user_sessions(self, user_id: str) -> p.Result[Sequence[m.Auth.Session]]:
-        """Get user sessions."""
-        return self._session_service.session_manager.get_active_sessions(user_id)
-
-    def logout_user(self, session_id: str) -> p.Result[bool]:
-        """Logout user by session ID."""
-        return self._session_service.session_manager.end_session_by_id(session_id)
-
-    def revoke_session(self, session_id: str) -> p.Result[bool]:
-        """Revoke a session."""
-        return self._session_service.session_manager.end_session_by_id(session_id)
-
-    def validate_token(self, token: str) -> p.Result[bool]:
-        """Flexible token validation with railway pattern."""
-        return self._token_service.validate_token(token).map(lambda _result: True)
-
-    def verify_token(self, token: str) -> p.Result[bool]:
-        """Verify token validity - delegated to token service."""
-        return self._token_service.validate_token(token)
 
 
 auth = FlextAuth

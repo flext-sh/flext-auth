@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.session_service import FlextAuthSessionService
     from flext_auth.services.token_service import FlextAuthTokenService
+    from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthIdentityMixin:
@@ -22,8 +23,16 @@ class FlextAuthIdentityMixin:
     _identity_service: FlextAuthIdentityService
     _token_service: FlextAuthTokenService
     _session_service: FlextAuthSessionService
-    _config: p.Configurable
+    _config: FlextAuthSettings
     logger: p.Logger
+
+    def create_token(
+        self,
+        identity_id: str,
+        extra_claims: t.ConfigurationMapping | None = None,
+    ) -> p.Result[str]:
+        """Token creation hook implemented by the composing class."""
+        ...
 
     def authenticate(
         self,
