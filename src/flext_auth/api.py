@@ -29,10 +29,11 @@ from flext_auth import (
     u,
 )
 from flext_auth._service_mixins import FlextAuthProviderConcernMixin
+from flext_auth._service_mixins_identity import FlextAuthIdentityMixin
 from flext_core import FlextContainer
 
 
-class FlextAuth(FlextAuthProviderConcernMixin):
+class FlextAuth(FlextAuthProviderConcernMixin, FlextAuthIdentityMixin):
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
