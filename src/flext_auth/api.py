@@ -204,7 +204,6 @@ class FlextAuth:
         password: str,
         roles: t.StrSequence | None = None,
         role: str | None = None,
-        **kwargs: t.Scalar | t.StrSequence | None,
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Register user with default USER role if none provided."""
         if roles is not None:
@@ -218,7 +217,6 @@ class FlextAuth:
             contact=email,
             credential=password,
             roles=user_roles,
-            **kwargs,
         )
 
     def create_token(self, identity_id: str) -> p.Result[str]:

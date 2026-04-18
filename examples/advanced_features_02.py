@@ -112,7 +112,7 @@ def example_token_validation() -> None:
     if user_result.failure:
         return
     user = user_result.value
-    identity_id: str = user.name
+    identity_id: str = user.unique_id
     token_result = auth.create_token(identity_id=identity_id)
     if token_result.failure:
         return

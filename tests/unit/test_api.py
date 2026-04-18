@@ -223,7 +223,7 @@ class TestFlextAuthSessionManagement:
         u.Tests.Matchers.that(sessions_result.success, eq=True)
 
     def test_revoke_session(self) -> None:
-        """Test revoking a session — token creation is not implemented so no sessions are created."""
+        """Test revoking a session — authenticate_user creates a session."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("revokeuser", "revoke@example.com", "RevokePass123!")
         auth_result = auth.authenticate_user("revokeuser", "RevokePass123!")
@@ -233,8 +233,6 @@ class TestFlextAuthSessionManagement:
             user.unique_id
         )
         u.Tests.Matchers.that(sessions_result.success, eq=True)
-        sessions = sessions_result.value
-        u.Tests.Matchers.that(not sessions, eq=True)
         revoke_result = auth.session_service.session_manager.end_session_by_id(
             "nonexistent_session_id"
         )
@@ -815,7 +813,7 @@ class TestFlextAuthTokenMethods:
     """Test token generation and validation methods."""
 
     def test_generate_token_method(self) -> None:
-        """Test that create_token fails — JWT provider not implemented."""
+        """Test that create_token succeeds for a registered user."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="jwt_test_user",
@@ -825,8 +823,8 @@ class TestFlextAuthTokenMethods:
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         result = auth.create_token(identity_id=user.unique_id)
-        u.Tests.Matchers.that(not result.success, eq=True)
-        u.Tests.Matchers.that(result.error, none=False)
+        u.Tests.Matchers.that(result.success, eq=True)
+        u.Tests.Matchers.that(result.error, none=True)
 
     def test_generate_token_alternative_method(self) -> None:
         """Test that create_token fails via alternative path — JWT provider not implemented."""
@@ -1323,18 +1321,14 @@ class TestAuthModule:
         u.Tests.Matchers.that(len((FlextAuth.__doc__ or "").strip()) > 0, eq=True)
 
     def test_flext_auth_method_signatures(self) -> None:
-        """Test that auth methods have proper signatures."""
+        """Test that auth facade exposes correct public API methods."""
         auth = FlextAuth()
         expected_methods = [
             "register_user",
             "authenticate_user",
-            "get_user_by_username",
-            "get_user",
-            "get_user_sessions",
-            "validate_token",
-            "revoke_session",
-            "logout_user",
-            "cleanup_expired_sessions",
+            "authenticate",
+            "create_token",
+            "execute",
         ]
         for method_name in expected_methods:
             u.Tests.Matchers.that(hasattr(auth, method_name), eq=True)

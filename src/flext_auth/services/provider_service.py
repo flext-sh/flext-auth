@@ -199,7 +199,7 @@ class FlextAuthProviderService(s):
                     self._providers.register_provider(
                         name,
                         provider,
-                        configuration=provider_config,
+                        configuration=provider_init_config,
                     )
                 except (
                     ValueError,

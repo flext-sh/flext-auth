@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Final, Literal
+from typing import Final
 
 from flext_tests import FlextTestsConstants
 
@@ -35,30 +35,6 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
         TEST_INPUT_DIR: Final[str] = "tests/fixtures/data/input"
         TEST_OUTPUT_DIR: Final[str] = "tests/fixtures/data/output"
         TEST_TEMP_PREFIX: Final[str] = "flext_auth_test_"
-
-        type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
-        type ProviderTypeLiteral = Literal[
-            "basic",
-            "jwt",
-            "oauth2",
-            "saml",
-            "ldap",
-            "certificate",
-            "kerberos",
-            "apikey",
-        ]
-        type RoleTypeLiteral = Literal[
-            "REDACTED_LDAP_BIND_PASSWORD",
-            "user",
-            "moderator",
-            "guest",
-        ]
-        type PermissionTypeLiteral = Literal[
-            "read",
-            "write",
-            "delete",
-            "REDACTED_LDAP_BIND_PASSWORD",
-        ]
 
 
 c = TestsFlextAuthConstants

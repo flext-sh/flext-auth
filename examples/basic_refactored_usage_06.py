@@ -126,7 +126,7 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
     )
     if jwt_user_result.success:
         user = jwt_user_result.value
-        identity_id: str = user.name
+        identity_id: str = user.unique_id
         token_result = demo.auth.create_token(identity_id=identity_id)
         if token_result.success:
             token_string = token_result.value

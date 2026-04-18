@@ -95,7 +95,6 @@ def example_user_lifecycle() -> None:
         username="lifecycleuser",
         email="lifecycle@example.com",
         password=password,
-        full_name="Lifecycle User",
         roles=["user"],
     )
     if register_result.success:
@@ -165,7 +164,6 @@ def example_advanced_registration() -> None:
         username="REDACTED_LDAP_BIND_PASSWORD",
         email="REDACTED_LDAP_BIND_PASSWORD@company.com",
         password=password,
-        full_name="Administrator",
         roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
     )
     if register_result.success:
@@ -184,7 +182,6 @@ def example_advanced_registration() -> None:
         username="regularuser",
         email="user@company.com",
         password=password,
-        full_name="Regular User",
         roles=["user"],
     )
     if user_result.success:
@@ -210,7 +207,6 @@ def example_complete_workflow() -> None:
         username="workflowuser",
         email="workflow@example.com",
         password=password,
-        full_name="Workflow User",
     )
     if reg_result.failure:
         logger.error("Registration failed", error=reg_result.error)
