@@ -131,16 +131,16 @@ All code must follow FLEXT patterns:
 
 ```python
 # ✅ Correct - Use r for error handling
-def authenticate_user(username: str, password: str) -> p.Result[t.Dict]:
+def authenticate_user(username: str, password: str) -> p.Result[m.Dict]:
     if not username:
-        return r[t.Dict].fail("Username required")
+        return r[m.Dict].fail("Username required")
 
     # Authentication logic
-    return r[t.Dict].ok(result)
+    return r[m.Dict].ok(result)
 
 
 # ❌ Incorrect - Don't use exceptions for business logic
-def authenticate_user(username: str, password: str) -> t.RecursiveContainerMapping:
+def authenticate_user(username: str, password: str) -> Mapping[str, t.Container]:
     if not username:
         raise ValueError("Username required")
 
@@ -390,7 +390,7 @@ Use r exclusively:
 
 ```python
 # Chain operations with r
-def complete_auth_flow(username: str, password: str) -> p.Result[t.Dict]:
+def complete_auth_flow(username: str, password: str) -> p.Result[m.Dict]:
     return (
         self
         ._validate_input(username, password)

@@ -111,7 +111,7 @@ def authenticate_user(
     self,
     username: str,
     password: str
-) -> p.Result[t.Dict]:
+) -> p.Result[m.Dict]:
 ```
 
 **Parameters**:
@@ -119,7 +119,7 @@ def authenticate_user(
 - `username` (str): Username to authenticate
 - `password` (str): User password
 
-**Returns**: `r[t.Dict]` with session and token data
+**Returns**: `r[m.Dict]` with session and token data
 
 **Example**:
 
@@ -136,14 +136,14 @@ if auth_result.success:
 Validate JWT token and extract user information.
 
 ```python
-def validate_token(self, token: str) -> p.Result[t.Dict]:
+def validate_token(self, token: str) -> p.Result[m.Dict]:
 ```
 
 **Parameters**:
 
 - `token` (str): JWT token (with or without Bearer prefix)
 
-**Returns**: `r[t.Dict]` with token payload or error
+**Returns**: `r[m.Dict]` with token payload or error
 
 **Example**:
 
@@ -302,7 +302,7 @@ All operations return `r[T]` for type-safe error handling.
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
-    # Use user t.RecursiveContainer
+    # Use user t.Container
 else:
     print(f"Error: {result.error}")
 ```
@@ -331,7 +331,7 @@ from flext_core import t
 from flext_core import u
 
 
-def complete_auth_flow(username: str, password: str) -> p.Result[t.Dict]:
+def complete_auth_flow(username: str, password: str) -> p.Result[m.Dict]:
     return (
         auth
         .authenticate_user(username, password)

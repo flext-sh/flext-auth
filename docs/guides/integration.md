@@ -110,7 +110,7 @@ class UserService:
         self._container = FlextContainer.get_global()
         self._auth = self._container.resolve("auth_service").unwrap()
 
-    def create_authenticated_user(self, user_data: dict) -> p.Result[t.Dict]:
+    def create_authenticated_user(self, user_data: dict) -> p.Result[m.Dict]:
         # Use injected auth service
         return self._auth.register_user(**user_data)
 ```
@@ -282,7 +282,7 @@ class AuthenticationProvider:
         self._auth = FlextAuth()
         self._container = FlextContainer.get_global()
 
-    def authenticate_service_request(self, token: str) -> p.Result[t.Dict]:
+    def authenticate_service_request(self, token: str) -> p.Result[m.Dict]:
         """Authenticate requests from other FLEXT services."""
         return self._auth.validate_token(token)
 
@@ -303,7 +303,7 @@ class ServiceA:
         self._auth = FlextAuth()
         self._service_token = self._get_service_token()
 
-    def call_service_b(self, data: dict) -> p.Result[t.Dict]:
+    def call_service_b(self, data: dict) -> p.Result[m.Dict]:
         """Call Service B with authentication."""
         headers = {
             "Authorization": f"Bearer {self._service_token}",
@@ -316,9 +316,9 @@ class ServiceA:
         )
 
         if response.status_code == 200:
-            return r[t.Dict].ok(response.json())
+            return r[m.Dict].ok(response.json())
         else:
-            return r[t.Dict].fail(f"Service call failed: {response.text}")
+            return r[m.Dict].fail(f"Service call failed: {response.text}")
 ```
 
 ______________________________________________________________________
@@ -481,7 +481,7 @@ class OAuth2Provider:
         # Implementation using flext-auth
         pass
 
-    def token(self, code: str, client_id: str) -> p.Result[t.Dict]:
+    def token(self, code: str, client_id: str) -> p.Result[m.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
         pass

@@ -186,7 +186,7 @@ Duration: 85.27s
 
 - Configuration override methods missing
 - quick_start method removed but tests expect it
-- User t.RecursiveContainer instantiation issues
+- User t.Container instantiation issues
 - Session cleanup functionality broken
 
 **Provider Integration Issues**

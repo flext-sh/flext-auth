@@ -1072,7 +1072,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> t.RecursiveContainerMapping:
+        def create_test_user_data() -> Mapping[str, t.Container]:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1082,7 +1082,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> t.RecursiveContainerMapping:
+        def create_test_auth_data() -> Mapping[str, t.Container]:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1091,7 +1091,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> t.RecursiveContainerMapping:
+        def create_test_session_data() -> Mapping[str, t.Container]:
             """Create test session data."""
             return {
                 "user_id": "user_123",
