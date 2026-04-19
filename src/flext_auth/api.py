@@ -223,4 +223,7 @@ class FlextAuth:
         )
 
 
-__all__: list[str] = ["FlextAuth"]
+auth = FlextAuth.get_global()
+
+
+__all__: list[str] = ["FlextAuth", "auth"]

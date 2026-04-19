@@ -11,8 +11,6 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from pydantic_settings import SettingsConfigDict
-
 from flext_auth import c, m, t, u
 from flext_core import FlextSettings
 
@@ -21,7 +19,7 @@ from flext_core import FlextSettings
 class FlextAuthSettings(FlextSettings):
     """Validated settings used by auth providers and token services."""
 
-    model_config: ClassVar[SettingsConfigDict] = m.SettingsConfigDict(
+    model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
         env_prefix="FLEXT_AUTH_",
         extra="ignore",
         validate_assignment=True,
