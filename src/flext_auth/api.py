@@ -177,9 +177,14 @@ class FlextAuth:
                 )
 
                 session_result.tap_error(
-                    lambda err: (self.logger.warning(
-                        "Failed to create session for user %s: %s", identity.name, err
-                    ), None)[-1]
+                    lambda err: (
+                        self.logger.warning(
+                            "Failed to create session for user %s: %s",
+                            identity.name,
+                            err,
+                        ),
+                        None,
+                    )[-1]
                 )
         return auth_result
 

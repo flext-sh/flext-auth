@@ -75,9 +75,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ),
             "._utilities._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
             "._utilities.managers": ("FlextAuthUtilitiesManagers",),
-            ".api": (
-                "FlextAuth",
-            ),
+            ".api": ("FlextAuth",),
             ".base": (
                 "FlextAuthServiceBase",
                 "s",
