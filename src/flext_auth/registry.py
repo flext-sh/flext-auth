@@ -6,7 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import (
+    Callable,
+)
 from typing import ClassVar, TypeIs
 
 from flext_auth import c, m, p, r, t, u

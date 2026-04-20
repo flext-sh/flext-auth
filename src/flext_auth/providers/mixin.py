@@ -10,7 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import (
+    Mapping,
+)
 from datetime import UTC, datetime, timedelta
 
 from flext_auth import c, e, m, p, r, t, u

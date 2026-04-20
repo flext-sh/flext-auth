@@ -14,7 +14,10 @@ import hashlib
 import http.client
 import secrets
 from base64 import b64encode, urlsafe_b64encode
-from collections.abc import Mapping, Sequence
+from collections.abc import (
+    Mapping,
+    Sequence,
+)
 from datetime import UTC, datetime, timedelta
 from typing import Final, override
 from urllib.parse import urlencode, urlparse

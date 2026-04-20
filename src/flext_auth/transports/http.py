@@ -11,7 +11,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import base64
-from collections.abc import Mapping, MutableMapping
+from collections.abc import (
+    Mapping,
+    MutableMapping,
+)
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings

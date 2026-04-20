@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import MutableMapping, MutableSequence, Sequence
+from collections.abc import (
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 

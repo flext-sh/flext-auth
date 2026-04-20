@@ -6,6 +6,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 """
 
 from __future__ import annotations
+from collections.abc import Calling , Generator, Iterable, Mapping, MutableMapping, MutableSequence, Sequence
 
 from typing import Annotated, ClassVar
 
