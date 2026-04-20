@@ -131,31 +131,31 @@ class FlextAuthTypes(t):
             """Token-related type definitions."""
 
             type TokenType = c.Auth.TokenTypes
-            type ClaimMap = MutableMapping[str, t.ContainerValue]
-            type Claims = MutableMapping[str, t.ContainerValue]
-            type Introspection = MutableMapping[str, t.ContainerValue]
+            type ClaimMap = MutableMapping[str, t.Container]
+            type Claims = MutableMapping[str, t.Container]
+            type Introspection = MutableMapping[str, t.Container]
 
         class Sessions:
             """Session-related type definitions."""
 
-            type Activity = MutableMapping[str, t.ContainerValue]
+            type Activity = MutableMapping[str, t.Container]
 
         class Responses:
             """Response payload abstractions."""
 
             type AuthenticationPayload = MutableMapping[
                 str,
-                t.ContainerValue,
+                t.Container,
             ]
 
         class Managers:
             """Manager-specific supporting types."""
 
-            type UserData = MutableMapping[str, t.ContainerValue]
-            type SessionData = MutableMapping[str, t.ContainerValue]
-            type LogEntry = MutableMapping[str, t.ContainerValue]
-            type AuditEntry = MutableMapping[str, t.ContainerValue]
-            type AttemptData = MutableMapping[str, t.ContainerValue]
+            type UserData = MutableMapping[str, t.Container]
+            type SessionData = MutableMapping[str, t.Container]
+            type LogEntry = MutableMapping[str, t.Container]
+            type AuditEntry = MutableMapping[str, t.Container]
+            type AttemptData = MutableMapping[str, t.Container]
             type AttemptWindow = tuple[int, int]
 
         class Domain:
