@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import (
     MutableMapping,
+    Sequence,
 )
 from typing import Annotated, Literal, override
 
@@ -155,7 +156,7 @@ class FlextAuthTypes(t):
             type SessionData = MutableMapping[str, t.Container]
             type LogEntry = MutableMapping[str, t.Container]
             type AuditEntry = MutableMapping[str, t.Container]
-            type AttemptData = MutableMapping[str, t.Container]
+            type AttemptData = MutableMapping[str, Sequence[t.Container]]
             type AttemptWindow = tuple[int, int]
 
         class Domain:
