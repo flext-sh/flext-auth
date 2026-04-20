@@ -146,7 +146,16 @@ omit = [ "*/dependency_injector/providers.pyx" ]
 
 # [MANAGED] deptry
 [tool.deptry]
-known_first_party = [ "flext_auth", "flext_core" ]
+known_first_party = [
+  "bcrypt",
+  "cryptography",
+  "flext-core",
+  "flext_auth",
+  "pydantic",
+  "pydantic-core",
+  "pydantic-settings",
+  "pyjwt",
+]
 pep621_dev_dependency_groups = [ "dev" ]
 
 [tool.flext.docs]
@@ -476,7 +485,16 @@ select = [ "ALL" ]
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
-known-first-party = [ "flext_auth", "flext_core" ]
+known-first-party = [
+  "bcrypt",
+  "cryptography",
+  "flext-core",
+  "flext_auth",
+  "pydantic",
+  "pydantic-core",
+  "pydantic-settings",
+  "pyjwt",
+]
 split-on-trailing-comma = true
 
 [tool.ruff.lint.per-file-ignores]

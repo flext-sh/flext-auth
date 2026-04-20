@@ -9,8 +9,9 @@ from __future__ import annotations
 from abc import ABC
 from typing import override
 
-from flext_auth import FlextAuthSettings
 from flext_core import FlextSettings, s
+
+from flext_auth import FlextAuthSettings
 
 
 class FlextAuthServiceBase(s[bool], ABC):

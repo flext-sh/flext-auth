@@ -19,6 +19,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from flext_api import r
+from flext_core import FlextContext, u
 
 from flext_auth import (
     FlextAuthRateLimiterManagers,
@@ -29,7 +30,6 @@ from flext_auth import (
     p,
     t,
 )
-from flext_core import FlextContext, u
 
 
 class FlextAuthUtilitiesManagers(

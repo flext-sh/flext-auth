@@ -16,6 +16,8 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self
 
+from flext_core import FlextContainer
+
 from flext_auth import (
     FlextAuthIdentityService,
     FlextAuthProviderService,
@@ -31,7 +33,6 @@ from flext_auth import (
     t,
     u,
 )
-from flext_core import FlextContainer
 
 
 class FlextAuth:

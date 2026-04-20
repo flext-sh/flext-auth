@@ -15,9 +15,9 @@ from collections.abc import (
 from datetime import UTC, datetime
 from typing import Annotated, ClassVar, Self
 
-import bcrypt
 from flext_api import m, u
 
+import bcrypt
 from flext_auth import c, p, r, t
 
 

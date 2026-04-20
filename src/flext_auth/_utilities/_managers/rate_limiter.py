@@ -9,9 +9,9 @@ from collections.abc import (
 from datetime import UTC, datetime, timedelta
 
 from flext_api import r, u
+from flext_core import FlextContext
 
 from flext_auth import FlextAuthSettings, p, t
-from flext_core import FlextContext
 
 
 class FlextAuthRateLimiterManagers:
