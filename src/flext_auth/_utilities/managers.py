@@ -290,7 +290,7 @@ class FlextAuthUtilitiesManagers(
             **updates: t.Scalar | t.StrSequence | datetime | None,
         ) -> p.Result[m.Auth.AuthIdentity]:
             """Update user data."""
-            filtered_updates: t.ContainerValueMapping = {
+            filtered_updates: t.Auth.Managers.UserData = {
                 k: v for k, v in updates.items() if v is not None
             }
             return self._find_user_by_id(user_id).map(
@@ -333,7 +333,7 @@ class FlextAuthUtilitiesManagers(
 
         def _create_identity_from_storage(
             self,
-            storage_data: t.ContainerValueMapping,
+            storage_data: t.Auth.Managers.UserData,
         ) -> m.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
@@ -415,7 +415,7 @@ class FlextAuthUtilitiesManagers(
 
         def _extract_identity_id(
             self,
-            storage_data: t.ContainerValueMapping,
+            storage_data: t.Auth.Managers.UserData,
         ) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
@@ -442,11 +442,11 @@ class FlextAuthUtilitiesManagers(
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, t.MutableContainerValueMapping]].ok((
+                    return r[tuple[str, t.Auth.Managers.UserData]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, t.MutableContainerValueMapping]].fail(
+            return r[tuple[str, t.Auth.Managers.UserData]].fail(
                 "User not found",
             )
 
@@ -473,7 +473,7 @@ class FlextAuthUtilitiesManagers(
 
         def _validate_required_field[T](
             self,
-            storage_data: t.ContainerValueMapping,
+            storage_data: t.Auth.Managers.UserData,
             field: str,
             field_type: type[T],
         ) -> T:
@@ -524,9 +524,9 @@ class FlextAuthUtilitiesManagers(
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> p.Result[Sequence[t.ContainerValueMapping]]:
+        ) -> p.Result[Sequence[t.Auth.Managers.LogEntry]]:
             """Get audit logs with optional filtering."""
-            filtered_logs: MutableSequence[t.ContainerValueMapping] = []
+            filtered_logs: MutableSequence[t.Auth.Managers.LogEntry] = []
             for log in self._logs:
                 if user_id is not None:
                     username_value = log.get("username")
@@ -567,7 +567,7 @@ class FlextAuthUtilitiesManagers(
                     ):
                         continue
                 filtered_logs.append(log)
-            return r[Sequence[t.ContainerValueMapping]].ok(filtered_logs[-limit:])
+            return r[Sequence[t.Auth.Managers.LogEntry]].ok(filtered_logs[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""
@@ -733,7 +733,7 @@ class FlextAuthUtilitiesManagers(
             **data: t.Scalar | t.StrSequence | datetime | None,
         ) -> None:
             """Log an audit event."""
-            filtered_data: t.ContainerValueMapping = {
+            filtered_data: t.Auth.Managers.LogEntry = {
                 k: v for k, v in data.items() if v is not None
             }
             log_entry: t.Auth.Managers.LogEntry = {

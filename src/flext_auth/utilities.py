@@ -13,9 +13,7 @@ import jwt
 from flext_api import r, u
 
 import bcrypt
-from flext_auth.constants import c
-from flext_auth.protocols import p
-from flext_auth.typings import t
+from flext_auth import c, p, t
 
 
 class FlextAuthUtilities(u):

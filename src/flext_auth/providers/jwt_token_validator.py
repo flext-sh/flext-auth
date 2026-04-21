@@ -10,8 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import p, r, t, u
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth import FlextAuthProviderMixin, p, r, t, u
 
 
 class FlextAuthJwtTokenValidator:

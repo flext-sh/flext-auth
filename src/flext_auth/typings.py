@@ -152,9 +152,9 @@ class FlextAuthTypes(t):
         class Managers:
             """Manager-specific supporting types."""
 
-            type UserData = MutableMapping[str, t.Container]
+            type UserData = MutableMapping[str, t.Container | t.StrSequence]
             type SessionData = MutableMapping[str, t.Container]
-            type LogEntry = MutableMapping[str, t.Container]
+            type LogEntry = MutableMapping[str, t.Container | t.StrSequence]
             type AuditEntry = MutableMapping[str, t.Container]
             type AttemptData = MutableMapping[str, Sequence[t.Container]]
             type AttemptWindow = tuple[int, int]
