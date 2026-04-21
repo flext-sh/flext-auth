@@ -64,8 +64,6 @@ class FlextAuthModels(m):
         class ValidationResult(m.Value):
             """Generic validation result for any operation (immutable value object)."""
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             valid: Annotated[bool, u.Field(..., description="Validation outcome")]
             data: Mapping[str, t.Container] = u.Field(default_factory=dict)
             error: Annotated[str, u.Field(description="Error message")] = ""
@@ -107,8 +105,6 @@ class FlextAuthModels(m):
 
         class TokenRequest(m.Value):
             """Generic token generation request (immutable value object)."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             identity_id: Annotated[str, u.Field(..., description="Identity ID")]
             token_type: Annotated[
@@ -202,8 +198,6 @@ class FlextAuthModels(m):
 
         class AuthIdentity(m.Entity):
             """Generic identity/user entity with minimal fields."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             # Reference to PasswordUtil for use in methods
             _password_util: type | None = (
@@ -336,8 +330,6 @@ class FlextAuthModels(m):
 
         class Role(m.Entity):
             """Generic role entity."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             name: Annotated[
                 t.NonEmptyStr,
@@ -484,8 +476,6 @@ class FlextAuthModels(m):
         class ProviderConfiguration(m.FlexibleModel):
             """Provider configuration for authentication providers."""
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             name: Annotated[str, u.Field(description="Provider name")] = "default"
             version: Annotated[str, u.Field(description="Provider version")] = "1.0.0"
             capabilities: t.StrSequence = u.Field(default_factory=tuple)
@@ -493,15 +483,11 @@ class FlextAuthModels(m):
         class ApiKeyValidation(m.Value):
             """API key validation request (immutable value object)."""
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             api_key: Annotated[str, u.Field(..., description="API key to validate")]
             metadata: Mapping[str, t.Container] = u.Field(default_factory=dict)
 
         class ApiKeyData(m.Value):
             """API key data structure (immutable value object)."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             key_hash: Annotated[str, u.Field(..., description="Hashed API key")]
             name: Annotated[str, u.Field(..., description="Key name")]
@@ -519,8 +505,6 @@ class FlextAuthModels(m):
         class CredentialValidation(m.Value):
             """Credential validation request (immutable value object)."""
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             username: Annotated[str, u.Field(..., description="Username")]
             password: Annotated[str, u.Field(..., description="Password", exclude=True)]
             metadata: Mapping[str, t.Container] = u.Field(default_factory=dict)
@@ -531,8 +515,6 @@ class FlextAuthModels(m):
 
         class Credential(m.Value):
             """Generic credential container (immutable value object)."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             credential_type: Annotated[str, u.Field(..., description="Credential type")]
             value: Annotated[
@@ -547,8 +529,6 @@ class FlextAuthModels(m):
 
         class AuthResponse(m.Value):
             """Generic authentication response (immutable value object)."""
-
-            _flext_enforcement_exempt: ClassVar[bool] = True
 
             success: Annotated[bool, u.Field(..., description="Authentication success")]
             identity: Mapping[str, t.Container] = u.Field(default_factory=dict)
@@ -602,8 +582,6 @@ class FlextAuthModels(m):
         class HttpResponseData(m.Value):
             """Generic HTTP response data."""
 
-            _flext_enforcement_exempt: ClassVar[bool] = True
-
             status_code: Annotated[
                 t.HttpStatusCode,
                 u.Field(..., description="HTTP status code"),
@@ -649,8 +627,6 @@ class FlextAuthModels(m):
 
             class Metadata(m.Value):
                 """Provider metadata for registry."""
-
-                _flext_enforcement_exempt: ClassVar[bool] = True
 
                 name: Annotated[str, u.Field(..., description="Provider name")]
                 version: Annotated[
