@@ -9,10 +9,10 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime, timedelta
 
+import bcrypt
 import jwt
 from flext_api import r, u
 
-import bcrypt
 from flext_auth import c, p, t
 
 
