@@ -11,7 +11,9 @@ from __future__ import annotations
 
 from collections.abc import (
     MutableMapping,
+    MutableSequence,
 )
+from datetime import datetime
 from typing import Annotated, Literal, override
 
 from flext_api import m, t, u
@@ -153,10 +155,11 @@ class FlextAuthTypes(t):
 
             type ManagerValue = t.JsonValue | t.Scalar | t.StrSequence
             type UserData = MutableMapping[str, ManagerValue]
-            type SessionData = t.MutableJsonMapping
+            type SessionData = t.MutableMetadataMapping
             type LogEntry = MutableMapping[str, ManagerValue]
             type AuditEntry = t.MutableJsonMapping
-            type AttemptData = MutableMapping[str, t.JsonList]
+            type AttemptEvents = MutableSequence[datetime]
+            type AttemptData = MutableMapping[str, AttemptEvents]
             type AttemptWindow = tuple[int, int]
 
         class Domain:

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import (
-    Mapping,
     MutableMapping,
-    MutableSequence,
 )
 from datetime import UTC, datetime, timedelta
 
@@ -47,14 +45,11 @@ class FlextAuthRateLimiterManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
-            attempts_list: MutableSequence[t.JsonValue]
-            if isinstance(attempts_raw, list):
-                attempts_list = [
-                    attempt for attempt in attempts_raw if isinstance(attempt, datetime)
-                ]
-            else:
-                attempts_list = list[t.JsonValue]()
+            if attempts_raw is None:
+                attempts_list = []
                 self._attempts[username]["attempts"] = attempts_list
+            else:
+                attempts_list = attempts_raw
             attempts_list.append(now)
             recent_attempts = self._cleanup_window(username, now)
             self._attempts[username]["attempts"] = recent_attempts
@@ -63,17 +58,15 @@ class FlextAuthRateLimiterManagers:
             self,
             username: str,
             now: datetime,
-        ) -> t.JsonList:
+        ) -> t.Auth.Managers.AttemptEvents:
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)
-            if not isinstance(attempt_data, Mapping):
+            if attempt_data is None:
                 return []
             attempts_value = attempt_data.get("attempts")
-            if not isinstance(attempts_value, list):
+            if attempts_value is None:
                 return []
-            recent_attempts: t.JsonList = [
-                attempt
-                for attempt in attempts_value
-                if isinstance(attempt, datetime) and attempt > window_start
+            recent_attempts: t.Auth.Managers.AttemptEvents = [
+                attempt for attempt in attempts_value if attempt > window_start
             ]
             return recent_attempts

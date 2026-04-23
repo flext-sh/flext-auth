@@ -43,6 +43,7 @@ if _t.TYPE_CHECKING:
     from flext_auth.providers.rfc import FlextAuthRfcProvider
     from flext_auth.providers.saml import FlextAuthSamlProvider
     from flext_auth.registry import FlextAuthRegistry
+    from flext_auth.services.auth_service import FlextAuthApplicationService
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.middleware import FlextAuthMiddleware
     from flext_auth.services.provider_service import FlextAuthProviderService
@@ -111,6 +112,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".providers.rfc": ("FlextAuthRfcProvider",),
             ".providers.saml": ("FlextAuthSamlProvider",),
             ".registry": ("FlextAuthRegistry",),
+            ".services.auth_service": ("FlextAuthApplicationService",),
             ".services.identity_service": ("FlextAuthIdentityService",),
             ".services.middleware": ("FlextAuthMiddleware",),
             ".services.provider_service": ("FlextAuthProviderService",),
@@ -153,6 +155,7 @@ install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 __all__: list[str] = [
     "FlextAuth",
     "FlextAuthApiKeyProvider",
+    "FlextAuthApplicationService",
     "FlextAuthBasicProvider",
     "FlextAuthCertificateProvider",
     "FlextAuthConstants",

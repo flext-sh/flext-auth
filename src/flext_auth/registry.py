@@ -22,7 +22,7 @@ class FlextAuthRegistry:
 
     @staticmethod
     def _is_auth_provider(
-        value: t.RuntimeData | p.Auth.FlextAuthBaseProvider,
+        value: t.JsonPayload | p.Auth.FlextAuthBaseProvider,
     ) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
         """Check if value implements FlextAuthBaseProvider protocol."""
         required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
@@ -272,9 +272,9 @@ class FlextAuthRegistry:
         name: str,
         *,
         scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
-    ) -> p.Result[t.RuntimeData | None]:
+    ) -> p.Result[t.JsonPayload | None]:
         """Delegate plugin lookup to the canonical registry."""
-        return r[t.RuntimeData | None].from_result(
+        return r[t.JsonPayload | None].from_result(
             self._registry.fetch_plugin(category, name, scope=scope),
         )
 

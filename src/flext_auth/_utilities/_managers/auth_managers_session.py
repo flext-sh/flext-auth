@@ -142,7 +142,7 @@ class FlextAuthSessionManagers:
 
         def _is_session_active(
             self,
-            session_data: t.JsonMapping,
+            session_data: t.Auth.Managers.SessionData,
         ) -> bool:
             expires_at_value = session_data.get("expires_at")
             if not isinstance(expires_at_value, datetime):
