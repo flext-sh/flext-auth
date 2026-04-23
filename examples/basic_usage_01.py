@@ -16,7 +16,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthSettings, c, u
+from flext_auth import FlextAuth, FlextAuthSettings, c, t, u
 
 logger = u.fetch_logger(__name__)
 
@@ -99,11 +99,12 @@ def example_user_lifecycle() -> None:
     )
     if register_result.success:
         user_data = register_result.value
+        roles_payload: list[t.JsonValue] = list(user_data.roles)
         logger.info(
             "User registered successfully",
             name=user_data.name,
             contact=user_data.contact,
-            roles=list(user_data.roles),
+            roles=roles_payload,
             active=user_data.is_active,
         )
         logger.info("Authenticating registered user")
@@ -168,10 +169,11 @@ def example_advanced_registration() -> None:
     )
     if register_result.success:
         user_data = register_result.value
+        admin_roles_payload: list[t.JsonValue] = list(user_data.roles)
         logger.info(
             "Admin user registered successfully",
             name=user_data.name,
-            roles=list(user_data.roles),
+            roles=admin_roles_payload,
             has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
             in user_data.roles,
             is_active=user_data.is_active,
@@ -186,10 +188,11 @@ def example_advanced_registration() -> None:
     )
     if user_result.success:
         user_data = user_result.value
+        user_roles_payload: list[t.JsonValue] = list(user_data.roles)
         logger.info(
             "Regular user registered successfully",
             name=user_data.name,
-            roles=list(user_data.roles),
+            roles=user_roles_payload,
             has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
             in user_data.roles,
         )

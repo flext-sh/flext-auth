@@ -335,10 +335,12 @@ class FlextAuthProviderMixin:
             >>> print(f"Capabilities: {', '.join(metadata['capabilities'])}")
 
         """
-        return {
-            "capabilities": list(self.supports()),
+        capabilities: list[t.JsonValue] = list(self.supports())
+        metadata: dict[str, t.JsonValue] = {
+            "capabilities": capabilities,
             "provider_type": self.__class__.__name__,
         }
+        return metadata
 
     def _validate_credentials_dict(
         self,
