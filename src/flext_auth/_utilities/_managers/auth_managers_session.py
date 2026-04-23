@@ -18,9 +18,9 @@ class FlextAuthSessionManagers:
     class FlextAuthSessionManager:
         def __init__(self, settings: FlextAuthSettings) -> None:
             super().__init__()
-            self._config = settings
+            self.config = settings
             self.logger = u.fetch_logger(__name__)
-            self._context = FlextContext()
+            self.context = FlextContext()
             self._dispatcher: p.Dispatcher = (
                 FlextContainer.shared().dispatcher().unwrap()
             )

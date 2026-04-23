@@ -33,7 +33,7 @@ class FlextAuthApplicationService:
     _instance: ClassVar[Self | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
     logger: p.Logger
-    _config: FlextAuthSettings
+    config: FlextAuthSettings
     _registry: FlextAuthRegistry
     _dispatcher: p.Dispatcher
     _provider_service: FlextAuthProviderService
@@ -46,31 +46,31 @@ class FlextAuthApplicationService:
         settings: FlextAuthSettings | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
-        self._config = settings if settings is not None else FlextAuthSettings()
+        self.config = settings if settings is not None else FlextAuthSettings()
         self._registry = FlextAuthRegistry()
         self._dispatcher = FlextContainer.shared().dispatcher().unwrap()
         self.logger = u.fetch_logger(__name__)
         shared_managers = FlextAuthUtilitiesManagers.ServiceManagers(
-            self._config,
+            self.config,
             self._dispatcher,
         )
         self._provider_service = FlextAuthProviderService(
-            settings=self._config,
+            settings=self.config,
             registry=self._registry,
         )
         self._identity_service = FlextAuthIdentityService(
-            settings=self._config,
+            settings=self.config,
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
         self._token_service = FlextAuthTokenService(
-            settings=self._config,
+            settings=self.config,
             provider_service=self._provider_service,
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
         self._session_service = FlextAuthSessionService(
-            settings=self._config,
+            settings=self.config,
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
@@ -78,7 +78,7 @@ class FlextAuthApplicationService:
     @property
     def settings(self) -> FlextAuthSettings:
         """Configuration access."""
-        return self._config
+        return self.config
 
     @property
     def identity_service(self) -> FlextAuthIdentityService:
@@ -158,13 +158,13 @@ class FlextAuthApplicationService:
             identity = auth_result.value
             token_result = self._token_service.generate_jwt_token(
                 user_id=identity.unique_id,
-                expires_in_minutes=self._config.expiry_minutes,
+                expires_in_minutes=self.config.expiry_minutes,
             )
             if token_result.success:
                 session_result = self._session_service.session_manager.create_session(
                     user_id=identity.unique_id,
                     token=token_result.value,
-                    expires_in_minutes=self._config.session_expiry_minutes,
+                    expires_in_minutes=self.config.session_expiry_minutes,
                     ip_address=ip_address or "",
                     user_agent=user_agent or "",
                 )
@@ -212,7 +212,7 @@ class FlextAuthApplicationService:
                 return r[str].fail("Identity ID must be a non-empty string")
         return self._token_service.generate_jwt_token(
             user_id=identity_id,
-            expires_in_minutes=self._config.expiry_minutes,
+            expires_in_minutes=self.config.expiry_minutes,
         )
 
 

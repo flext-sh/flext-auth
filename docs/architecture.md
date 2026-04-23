@@ -445,7 +445,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
     """Example authentication provider implementation."""
 
     def __init__(self, settings: dict) -> None:
-        self._config = settings
+        self.config = settings
         self.logger = u.fetch_logger(__name__)
 
     def authenticate(self, credentials: dict) -> p.Result[FlextAuthModels.AuthToken]:
@@ -640,7 +640,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
     """WebSocket transport adapter for real-time authentication."""
 
     def __init__(self, settings: t.JsonMapping | None = None) -> None:
-        self._config = settings
+        self.config = settings
         self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
@@ -1049,7 +1049,7 @@ class FlextAuthJwtProvider(s[AuthToken]):
 
     def __init__(self, settings: dict) -> None:
         super().__init__()
-        self._config = settings
+        self.config = settings
         self.logger = u.fetch_logger(__name__)
 ```
 

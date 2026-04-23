@@ -106,7 +106,7 @@ class FlextAuthRegistry:
         """Get provider configuration."""
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
-        config_result = self.fetch_plugin(f"{self.PROVIDERS}_config", name)
+        config_result = self.fetch_plugin(f"{self.PROVIDERS}config", name)
         if config_result.failure:
             return r[t.ScalarMapping].fail("No settings")
         wrapper = config_result.value
@@ -183,11 +183,11 @@ class FlextAuthRegistry:
             return provider_result
         if configuration:
             config_wrapper = m.Auth.ConfigWrapper(
-                category=f"{self.PROVIDERS}_config",
+                category=f"{self.PROVIDERS}config",
                 data=dict(configuration),
             )
             config_result = self.register_plugin(
-                f"{self.PROVIDERS}_config",
+                f"{self.PROVIDERS}config",
                 name,
                 config_wrapper,
             )
@@ -206,7 +206,7 @@ class FlextAuthRegistry:
             )
             if metadata_result.failure:
                 self.unregister_plugin(self.PROVIDERS, name)
-                self.unregister_plugin(f"{self.PROVIDERS}_config", name)
+                self.unregister_plugin(f"{self.PROVIDERS}config", name)
                 return metadata_result
         return r[bool].ok(value=True)
 
@@ -215,7 +215,7 @@ class FlextAuthRegistry:
         provider_result = self.unregister_plugin(self.PROVIDERS, name)
         if provider_result.failure:
             return r[bool].fail(f"Provider '{name}' not registered")
-        self.unregister_plugin(f"{self.PROVIDERS}_config", name)
+        self.unregister_plugin(f"{self.PROVIDERS}config", name)
         self.unregister_plugin(f"{self.PROVIDERS}_metadata", name)
         return r[bool].ok(value=True)
 
@@ -225,12 +225,12 @@ class FlextAuthRegistry:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
-        self.unregister_plugin(f"{self.PROVIDERS}_config", name)
+        self.unregister_plugin(f"{self.PROVIDERS}config", name)
         config_wrapper = m.Auth.ConfigWrapper(
-            category=f"{self.PROVIDERS}_config",
+            category=f"{self.PROVIDERS}config",
             data=dict(settings),
         )
-        return self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
+        return self.register_plugin(f"{self.PROVIDERS}config", name, config_wrapper)
 
     def _build_metadata(
         self,

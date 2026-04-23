@@ -356,10 +356,10 @@ class TestFlextAuth:
         """Test FlextAuth initialization with different parameters."""
         FlextAuthSettings._reset_instance()
         auth: FlextAuth = FlextAuth()
-        u.Tests.Matchers.that(auth._config.auth_secret, none=False)
-        u.Tests.Matchers.that(len(auth._config.auth_secret.get_secret_value()), gt=20)
-        u.Tests.Matchers.that(auth._config.hash_rounds, eq=12)
-        u.Tests.Matchers.that(auth._config.expiry_minutes, eq=1440)
+        u.Tests.Matchers.that(auth.config.auth_secret, none=False)
+        u.Tests.Matchers.that(len(auth.config.auth_secret.get_secret_value()), gt=20)
+        u.Tests.Matchers.that(auth.config.hash_rounds, eq=12)
+        u.Tests.Matchers.that(auth.config.expiry_minutes, eq=1440)
         custom_secret = "test-secret-key-with-minimum-32-characters-length"
         custom_rounds = 10
         custom_expiry = 60
@@ -375,10 +375,10 @@ class TestFlextAuth:
         )
         auth_custom: FlextAuth = FlextAuth(settings=custom_config)
         u.Tests.Matchers.that(
-            auth_custom._config.auth_secret.get_secret_value(), eq=custom_secret
+            auth_custom.config.auth_secret.get_secret_value(), eq=custom_secret
         )
-        u.Tests.Matchers.that(auth_custom._config.hash_rounds, eq=custom_rounds)
-        u.Tests.Matchers.that(auth_custom._config.expiry_minutes, eq=custom_expiry)
+        u.Tests.Matchers.that(auth_custom.config.hash_rounds, eq=custom_rounds)
+        u.Tests.Matchers.that(auth_custom.config.expiry_minutes, eq=custom_expiry)
 
     def test_user_registration_success(self) -> None:
         """Test successful user registration."""
@@ -683,7 +683,7 @@ class TestFlextAuthInitializationCoverage:
         """Test FlextAuth initialization when settings creation fails - lines 228-229."""
         try:
             auth = FlextAuth()
-            u.Tests.Matchers.that(auth._config, none=False)
+            u.Tests.Matchers.that(auth.config, none=False)
         except RuntimeError as e:
             pytest.fail(f"FlextAuth creation failed with RuntimeError: {e}")
         except Exception as e:
@@ -708,8 +708,8 @@ class TestFlextAuthInitializationCoverage:
             "auth_secret": "test-secret-key-with-minimum-32-characters-length",
         })
         auth = FlextAuth(settings=settings)
-        u.Tests.Matchers.that(auth._config.expiry_minutes, eq=120)
-        u.Tests.Matchers.that(auth._config.hash_rounds, eq=10)
+        u.Tests.Matchers.that(auth.config.expiry_minutes, eq=120)
+        u.Tests.Matchers.that(auth.config.hash_rounds, eq=10)
 
 
 class TestFlextAuthErrorPaths:

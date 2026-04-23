@@ -47,7 +47,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         else:
             normalized_config = dict(settings.model_dump(exclude_none=True))
         super().__init__(self._to_scalar_config(normalized_config))
-        self._config = normalized_config
+        self.config = normalized_config
         validation_result = self._validate_configuration()
         if validation_result.failure:
             msg = f"OAuth2 configuration validation failed: {validation_result.error}"
@@ -60,7 +60,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._flow_manager = self._OAuth2FlowManager(self)
         self._token_manager = self._OAuth2TokenManager(self)
         self._pkce_manager = self._OAuth2PKCEManager()
-        redirect_uri_value = self._config.get("redirect_uri")
+        redirect_uri_value = self.config.get("redirect_uri")
         match redirect_uri_value:
             case None:
                 self._redirect_uri: str | None = None
@@ -95,7 +95,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def get_authorization_endpoint(self) -> str | None:
         """Get authorization endpoint from configuration."""
-        value = self._config.get("authorization_endpoint")
+        value = self.config.get("authorization_endpoint")
         match value:
             case str() as endpoint:
                 return endpoint
@@ -104,7 +104,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def get_client_id(self) -> str | None:
         """Get client ID from configuration."""
-        value = self._config.get("client_id")
+        value = self.config.get("client_id")
         match value:
             case str() as client_id:
                 return client_id
@@ -117,7 +117,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def get_scope(self) -> str | None:
         """Get scope from configuration."""
-        value = self._config.get("scope")
+        value = self.config.get("scope")
         match value:
             case str() as scope:
                 return scope
@@ -130,7 +130,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _init_flow(self) -> str:
         """Initialize flow configuration."""
-        flow_value = self._config.get("flow")
+        flow_value = self.config.get("flow")
         match flow_value:
             case None | "":
                 return c.Auth.OAuth2.FLOW_DEFAULT
@@ -145,7 +145,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _init_pkce(self) -> bool:
         """Initialize PKCE configuration."""
-        use_pkce_value = self._config.get("use_pkce")
+        use_pkce_value = self.config.get("use_pkce")
         match use_pkce_value:
             case None:
                 return c.Auth.OAuth2.USE_PKCE_DEFAULT
@@ -157,7 +157,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _init_scope(self) -> str:
         """Initialize scope configuration."""
-        scope_value = self._config.get("scope")
+        scope_value = self.config.get("scope")
         match scope_value:
             case None:
                 return c.Auth.OAuth2.SCOPE_DEFAULT
@@ -171,7 +171,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _init_token_endpoint_auth_method(self) -> str:
         """Initialize token endpoint auth method configuration."""
-        token_endpoint_auth_method_value = self._config.get(
+        token_endpoint_auth_method_value = self.config.get(
             "token_endpoint_auth_method",
         )
         match token_endpoint_auth_method_value:
@@ -191,7 +191,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         required_fields = ["client_id", "token_endpoint"]
         missing_fields = u.filter(
             required_fields,
-            lambda field: field not in self._config,
+            lambda field: field not in self.config,
         )
         if missing_fields:
             fields_str = ", ".join(missing_fields)
@@ -230,7 +230,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             ),
         ]
         for field_name, expected_types, error_msg in validations:
-            field_value = self._config.get(field_name)
+            field_value = self.config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
         return r[bool].ok(value=True)
@@ -517,7 +517,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         }
         if self._use_pkce:
             capabilities.add("pkce")
-        authorization_endpoint_value = self._config.get("authorization_endpoint")
+        authorization_endpoint_value = self.config.get("authorization_endpoint")
         if (
             isinstance(authorization_endpoint_value, str)
             and authorization_endpoint_value
@@ -567,7 +567,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         }
         auth_method = self._token_endpoint_auth_method
         client_id = self.get_client_id()
-        client_secret_value = self._config.get("client_secret")
+        client_secret_value = self.config.get("client_secret")
         client_secret = (
             client_secret_value if isinstance(client_secret_value, str) else ""
         )
@@ -599,7 +599,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         if auth_method != "client_secret_basic":
             return r[t.StrMapping].ok(headers)
         client_id = self.get_client_id()
-        client_secret_value = self._config.get("client_secret")
+        client_secret_value = self.config.get("client_secret")
         client_secret = (
             client_secret_value if isinstance(client_secret_value, str) else ""
         )
@@ -673,7 +673,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _introspection_endpoint(self) -> p.Result[str]:
         for key in ("introspection_endpoint", "token_introspection_endpoint"):
-            endpoint_value = self._config.get(key)
+            endpoint_value = self.config.get(key)
             if isinstance(endpoint_value, str) and endpoint_value:
                 return r[str].ok(endpoint_value)
         return r[str].fail("OAuth2 introspection endpoint is not configured")

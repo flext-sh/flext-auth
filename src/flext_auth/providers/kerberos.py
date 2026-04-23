@@ -57,7 +57,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         and authentication. Railway-oriented initialization with proper error handling.
         """
         super().__init__(self._to_scalar_config(settings))
-        self._config = settings
+        self.config = settings
         validation_result = self._validate_kerberos_configuration()
         if validation_result.failure:
             msg = f"Kerberos configuration validation failed: {validation_result.error}"
@@ -83,9 +83,9 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     def _validate_kerberos_configuration(self) -> p.Result[bool]:
         """Railway-oriented Kerberos configuration validation."""
-        if self._config is None:
+        if self.config is None:
             return r[bool].fail("Kerberos configuration is required")
-        settings = self._config
+        settings = self.config
         required_fields = ["realm", "kdc", "service_principal"]
         missing_fields = u.filter(required_fields, lambda field: field not in settings)
         if missing_fields:
@@ -339,7 +339,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ]
         | None
     ):
-        settings = self._config
+        settings = self.config
         if settings is None:
             return None
         validator_candidate = settings.get("ticket_validator")

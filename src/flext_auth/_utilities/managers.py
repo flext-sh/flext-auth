@@ -85,17 +85,17 @@ class FlextAuthUtilitiesManagers(
         Uses newer FlextSettings features for complete integration.
         """
 
-        _config: FlextAuthSettings
+        config: FlextAuthSettings
         logger: p.Logger
-        _context: p.Context
+        context: p.Context
         _users: MutableMapping[str, t.Auth.Managers.UserData]
 
         def __init__(self, settings: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
             super().__init__()
-            self._config = settings
+            self.config = settings
             self.logger = u.fetch_logger(__name__)
-            self._context = FlextContext()
+            self.context = FlextContext()
             self._users: MutableMapping[str, t.Auth.Managers.UserData] = {}
 
         def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
@@ -517,10 +517,10 @@ class FlextAuthUtilitiesManagers(
         ) -> None:
             """Initialize audit logger with configuration."""
             super().__init__()
-            self._config = settings
+            self.config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
-            self._context = FlextContext()
+            self.context = FlextContext()
             self._logs: MutableSequence[t.Auth.Managers.LogEntry] = []
 
         def get_logs(

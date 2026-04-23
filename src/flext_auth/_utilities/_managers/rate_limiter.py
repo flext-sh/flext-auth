@@ -17,10 +17,10 @@ class FlextAuthRateLimiterManagers:
             self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
         ) -> None:
             super().__init__()
-            self._config = settings
+            self.config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
-            self._context = FlextContext()
+            self.context = FlextContext()
             self._attempts: MutableMapping[str, t.Auth.Managers.AttemptData] = {}
             self._max_attempts = 5
             self._window_minutes = 15
