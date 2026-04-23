@@ -10,8 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
-
 from flext_api import r
 
 from flext_auth import (
@@ -65,7 +63,6 @@ class FlextAuthTokenService(s):
             return token
         return f"{token[:length]}..."
 
-    @override
     def execute(self) -> p.Result[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(

@@ -28,7 +28,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypeIs, override
+from typing import TypeIs
 
 from flext_api import r
 from flext_core import u
@@ -71,7 +71,6 @@ class FlextAuthMiddleware(s):
             """Enable middleware processing."""
             self._enabled = True
 
-    @override
     def execute(self) -> p.Result[bool]:
         """Execute method for s interface.
 
