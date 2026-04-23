@@ -1,0 +1,62 @@
+examples/basic_usage_01.py
+  h_9db9d35f50cf33 106,174,192
+src/flext_auth/models.py
+  h_9db9d35f50cf33 534
+tests/conftest.py
+  h_9db9d35f50cf33 50
+src/flext_auth/providers/jwt_token_generator.py
+  h_9db9d35f50cf33 35,116-117,120
+docs/getting-started.md
+  h_9db9d35f50cf33 71,373
+docs/architecture/adrs/README.md
+  h_9db9d35f50cf33 100
+docs/architecture/adrs/templates/adr-template.md
+  h_9db9d35f50cf33 167
+docs/guides/development.md
+  h_9db9d35f50cf33 84,137,154,193,196,202,295,353,356,405
+src/flext_auth/transports/http.py
+  h_9db9d35f50cf33 74,113,116,171,215,218,222,224-225,233,237-238,240,244-245,275,277,281,290,324-325,327,334
+src/flext_auth/typings.py
+  h_9db9d35f50cf33 134-136,141,148,154-159,219-220
+docs/guides/troubleshooting.md
+  h_9db9d35f50cf33 52,61-63,141,155,675,678
+src/flext_auth/providers/mixin.py
+  h_9db9d35f50cf33 53,92,109,127,234,271,283,308,311,327,331,345
+src/flext_auth/providers/oauth2.py
+  h_9db9d35f50cf33 234,393,424,533,536,615,618,623,628,633,651,663,665-666,669,672,683
+src/flext_auth/_utilities/managers.py
+  h_9db9d35f50cf33 358-360,363-365,409
+docs/architecture/c4-model/components/README.md
+  h_9db9d35f50cf33 188
+docs/development.md
+  h_9db9d35f50cf33 75,143,246,266
+src/flext_auth/providers/kerberos.py
+  h_9db9d35f50cf33 136,196,260,269,277,279-286,288-289,338
+docs/guides/testing.md
+  h_9db9d35f50cf33 528
+docs/architecture.md
+  h_9db9d35f50cf33 261,309,490,514,523,528,563,571,612,620,642,650,668,685,714,842,891,1219,1255
+docs/guides/implementation-status.md
+  h_9db9d35f50cf33 189
+src/flext_auth/protocols.py
+  h_9db9d35f50cf33 206,208,286,306,315
+src/flext_auth/services/identity_service.py
+  h_9db9d35f50cf33 114-115,193-194
+src/flext_auth/_utilities/_managers/auth_managers_session.py
+  h_9db9d35f50cf33 145
+src/flext_auth/providers/jwt_token_validator.py
+  h_9db9d35f50cf33 27,40,48,56,65,77,80,90
+docs/api-reference.md
+  h_9db9d35f50cf33 305
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "d13c9e54c11cc032efbeb291cb635c45f32836d1",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
