@@ -705,7 +705,7 @@ class TestFlextAuthInitializationCoverage:
         settings = FlextAuthSettings.model_validate({
             "expiry_minutes": 120,
             "hash_rounds": 10,
-            "auth_secret": "test-secret-key-with-minimum-32-characters-length",
+            "secret_key": "test-secret-key-with-minimum-32-characters-length",
         })
         auth = FlextAuth(settings=settings)
         u.Tests.Matchers.that(auth.config.expiry_minutes, eq=120)
