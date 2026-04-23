@@ -50,7 +50,7 @@ class FlextAuthProviderMixin:
 
     def generate_token(
         self,
-        payload: t.ContainerValueMapping,
+        payload: t.JsonMapping,
         token_kind: str = "access",
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
@@ -89,7 +89,7 @@ class FlextAuthProviderMixin:
             expiry_minutes if expiry_minutes is not None else default_expiry
         )
         now = datetime.now(UTC)
-        claims: t.MutableContainerValueMapping = {
+        claims: t.MutableJsonMapping = {
             k: int(v.timestamp()) if isinstance(v, datetime) else v
             for k, v in payload.items()
         }
@@ -106,7 +106,7 @@ class FlextAuthProviderMixin:
 
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | t.ContainerValueMapping,
+        user: m.Auth.AuthIdentity | t.JsonMapping,
         token_kind: str = "access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
@@ -124,7 +124,7 @@ class FlextAuthProviderMixin:
 
         """
         if isinstance(user, Mapping):
-            payload: t.MutableContainerValueMapping = dict(user)
+            payload: t.MutableJsonMapping = dict(user)
         else:
             payload = user.model_dump()
         if "sub" not in payload and "unique_id" in payload:
@@ -231,7 +231,7 @@ class FlextAuthProviderMixin:
             token: JWT token string to decode.
 
         Returns:
-            r[t.ContainerValueMapping]: Decoded claims on success, error on failure.
+            r[t.JsonMapping]: Decoded claims on success, error on failure.
 
         """
         settings = self._provider_config
@@ -268,7 +268,7 @@ class FlextAuthProviderMixin:
 
     @staticmethod
     def _encode_token_payload(
-        payload: t.ContainerValueMapping,
+        payload: t.JsonMapping,
         secret: str,
         algorithm: str,
     ) -> p.Result[str]:
@@ -280,7 +280,7 @@ class FlextAuthProviderMixin:
 
     def _extract_identity_id(
         self,
-        claims: t.ContainerValueMapping,
+        claims: t.JsonMapping,
     ) -> p.Result[str]:
         """Extract identity ID from token claims.
 
@@ -305,10 +305,10 @@ class FlextAuthProviderMixin:
         )
 
     def _extract_token_string(self, token: str | p.Auth.Token) -> str:
-        """Extract token string from token or Token t.Container.
+        """Extract token string from token or Token t.JsonValue.
 
         Args:
-        token: Token as string or Token t.Container
+        token: Token as string or Token t.JsonValue
 
         Returns:
         str: Token string
@@ -324,11 +324,11 @@ class FlextAuthProviderMixin:
         error_msg = f"Invalid token type: expected str or Token, got {type(token)}"
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
-    def _get_capability_metadata(self) -> t.ContainerValueMapping:
+    def _get_capability_metadata(self) -> t.JsonMapping:
         """Get metadata about provider capabilities.
 
         Returns:
-            t.ContainerValueMapping: Metadata including supported capabilities
+            t.JsonMapping: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()
@@ -342,7 +342,7 @@ class FlextAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: t.ContainerValueMapping,
+        credentials: t.JsonMapping,
         required_fields: t.StrSequence,
     ) -> p.Result[bool]:
         """Validate that credentials contain required fields.

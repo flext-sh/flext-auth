@@ -302,7 +302,7 @@ All operations return `r[T]` for type-safe error handling.
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
-    # Use user t.Container
+    # Use user t.JsonValue
 else:
     print(f"Error: {result.error}")
 ```

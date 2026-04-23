@@ -9,9 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-)
 from datetime import UTC, datetime
 from typing import Annotated, ClassVar, Self
 
@@ -65,9 +62,9 @@ class FlextAuthModels(m):
             """Generic validation result for any operation (immutable value object)."""
 
             valid: Annotated[bool, u.Field(..., description="Validation outcome")]
-            data: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            data: t.JsonMapping = u.Field(default_factory=dict)
             error: Annotated[str, u.Field(description="Error message")] = ""
-            metadata: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(default_factory=dict)
 
             @property
             def status(self) -> str:
@@ -119,7 +116,7 @@ class FlextAuthModels(m):
                     description="Token expiry",
                 ),
             ] = c.Auth.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES
-            extra_claims: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            extra_claims: t.JsonMapping = u.Field(default_factory=dict)
             session_id: Annotated[str, u.Field(description="Session ID")] = ""
 
         class AuthToken(m.Entity):
@@ -484,7 +481,7 @@ class FlextAuthModels(m):
             """API key validation request (immutable value object)."""
 
             api_key: Annotated[str, u.Field(..., description="API key to validate")]
-            metadata: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(default_factory=dict)
 
         class ApiKeyData(m.Value):
             """API key data structure (immutable value object)."""
@@ -507,7 +504,7 @@ class FlextAuthModels(m):
 
             username: Annotated[str, u.Field(..., description="Username")]
             password: Annotated[str, u.Field(..., description="Password", exclude=True)]
-            metadata: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(default_factory=dict)
 
         # =========================================================================
         # CREDENTIAL MODELS - Generic credential handling
@@ -521,7 +518,7 @@ class FlextAuthModels(m):
                 str,
                 u.Field(..., description="Credential value", exclude=True),
             ]
-            metadata: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(default_factory=dict)
 
         # =========================================================================
         # AUTHENTICATION RESPONSE - Generic response
@@ -531,10 +528,10 @@ class FlextAuthModels(m):
             """Generic authentication response (immutable value object)."""
 
             success: Annotated[bool, u.Field(..., description="Authentication success")]
-            identity: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            identity: t.JsonMapping = u.Field(default_factory=dict)
             token: Annotated[str, u.Field(description="Token", exclude=True)] = ""
             message: Annotated[str, u.Field(description="Response message")] = ""
-            metadata: Mapping[str, t.Container] = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(default_factory=dict)
 
         # =========================================================================
         # OAUTH2 TOKEN RESPONSE - OAuth2 token exchange result
@@ -636,7 +633,7 @@ class FlextAuthModels(m):
                 capabilities: tuple[str, ...] = u.Field(
                     default_factory=tuple, description="Provider capabilities"
                 )
-                extras: Mapping[str, t.Container] = u.Field(default_factory=dict)
+                extras: t.JsonMapping = u.Field(default_factory=dict)
 
             class Registration(m.Value):
                 """Provider registration payload (immutable value object)."""

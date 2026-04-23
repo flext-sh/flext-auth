@@ -203,9 +203,9 @@ class FlextAuthProtocols(p):
             Supports both TypedDict and model implementations.
             """
 
-            user: t.ContainerValueMapping
+            user: t.JsonMapping
             "User/identity data."
-            session: t.ContainerValueMapping
+            session: t.JsonMapping
             "Session data."
             jwt_token: str
             "JWT token string."
@@ -283,7 +283,7 @@ class FlextAuthProtocols(p):
 
             def authenticate(
                 self,
-                credentials: t.ContainerValueMapping,
+                credentials: t.JsonMapping,
             ) -> p.Result[FlextAuthProtocols.Auth.Token]:
                 """Authenticate user with provided credentials.
 
@@ -303,7 +303,7 @@ class FlextAuthProtocols(p):
 
             def generate_token(
                 self,
-                payload: t.ContainerValueMapping,
+                payload: t.JsonMapping,
                 token_kind: str = c.Auth.TokenTypes.ACCESS.value,
                 expiry_minutes: int | None = None,
             ) -> p.Result[str]:
@@ -312,7 +312,7 @@ class FlextAuthProtocols(p):
 
             def generate_token_for_user(
                 self,
-                user: t.ContainerValueMapping,
+                user: t.JsonMapping,
                 token_kind: str = c.Auth.TokenTypes.ACCESS.value,
                 token_type: str | None = None,
                 expiry_minutes: int | None = None,

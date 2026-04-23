@@ -103,7 +103,7 @@ def example_user_lifecycle() -> None:
             "User registered successfully",
             name=user_data.name,
             contact=user_data.contact,
-            roles=user_data.roles,
+            roles=list(user_data.roles),
             active=user_data.is_active,
         )
         logger.info("Authenticating registered user")
@@ -171,7 +171,7 @@ def example_advanced_registration() -> None:
         logger.info(
             "Admin user registered successfully",
             name=user_data.name,
-            roles=user_data.roles,
+            roles=list(user_data.roles),
             has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
             in user_data.roles,
             is_active=user_data.is_active,
@@ -189,7 +189,7 @@ def example_advanced_registration() -> None:
         logger.info(
             "Regular user registered successfully",
             name=user_data.name,
-            roles=user_data.roles,
+            roles=list(user_data.roles),
             has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
             in user_data.roles,
         )

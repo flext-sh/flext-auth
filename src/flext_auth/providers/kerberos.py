@@ -133,12 +133,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ]
         for field_name, expected_types, error_msg in validations:
             field_value = settings.get(field_name)
-            if field_value is not None and (
-                not any(
-                    u.matches_type(field_value, expected_type)
-                    for expected_type in expected_types
-                )
-            ):
+            if field_value is not None and not isinstance(field_value, expected_types):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
         return r[bool].ok(value=True)
 
@@ -198,7 +193,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | t.ContainerValueMapping,
+        user: m.Auth.AuthIdentity | t.JsonMapping,
         token_kind: str = "access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
@@ -262,7 +257,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 return self._map_identity_payload(parsed_claims)
             principal_value = validator_result.principal
             principal = principal_value or "kerberos-user"
-            identity_map: t.ContainerValueMapping = {
+            identity_map: t.JsonMapping = {
                 "identity_id": principal,
                 "name": principal,
                 "contact": f"{principal}@kerberos.local",
@@ -271,7 +266,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             return self._map_identity_payload(identity_map)
         claims_result = self._decode_token_claims(token)
         return claims_result.fold(
-            on_failure=lambda _: p.Result[m.Auth.AuthIdentity].fail(
+            on_failure=lambda _: r[m.Auth.AuthIdentity].fail(
                 "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
             ),
             on_success=lambda v: self._map_identity_payload(v),
@@ -279,14 +274,20 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     def _map_identity_payload(
         self,
-        claims: t.ContainerValueMapping,
+        claims: t.JsonMapping,
     ) -> p.Result[m.Auth.AuthIdentity]:
-        identity_result = self._extract_identity_id(claims)
-        if identity_result.failure:
+        identity_fields = ("sub", "identity_id", "user_id", "username")
+        identity_id: str | None = None
+        for field in identity_fields:
+            value = claims.get(field)
+            if isinstance(value, str) and value:
+                identity_id = value
+                break
+        if identity_id is None:
             return r[m.Auth.AuthIdentity].fail(
-                identity_result.error or "Kerberos token subject is missing",
+                "No identity field found in token claims "
+                f"(checked: {', '.join(identity_fields)})",
             )
-        identity_id = identity_result.value
         name_value = claims.get("name")
         name = name_value if isinstance(name_value, str) and name_value else identity_id
         contact_value = claims.get("contact")
@@ -334,7 +335,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     ) -> (
         Callable[
             [str],
-            m.Auth.AuthIdentity | t.ContainerValueMapping | m.Auth.KerberosTicketData,
+            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
         ]
         | None
     ):

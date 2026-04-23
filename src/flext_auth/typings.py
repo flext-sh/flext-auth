@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from collections.abc import (
     MutableMapping,
-    Sequence,
 )
 from typing import Annotated, Literal, override
 
@@ -132,31 +131,32 @@ class FlextAuthTypes(t):
             """Token-related type definitions."""
 
             type TokenType = c.Auth.TokenTypes
-            type ClaimMap = MutableMapping[str, t.Container]
-            type Claims = MutableMapping[str, t.Container]
-            type Introspection = MutableMapping[str, t.Container]
+            type ClaimMap = t.MutableJsonMapping
+            type Claims = t.MutableJsonMapping
+            type Introspection = t.MutableJsonMapping
 
         class Sessions:
             """Session-related type definitions."""
 
-            type Activity = MutableMapping[str, t.Container]
+            type Activity = t.MutableJsonMapping
 
         class Responses:
             """Response payload abstractions."""
 
             type AuthenticationPayload = MutableMapping[
                 str,
-                t.Container,
+                t.JsonValue,
             ]
 
         class Managers:
             """Manager-specific supporting types."""
 
-            type UserData = MutableMapping[str, t.Container | t.StrSequence]
-            type SessionData = MutableMapping[str, t.Container]
-            type LogEntry = MutableMapping[str, t.Container | t.StrSequence]
-            type AuditEntry = MutableMapping[str, t.Container]
-            type AttemptData = MutableMapping[str, Sequence[t.Container]]
+            type ManagerValue = t.JsonValue | t.Scalar | t.StrSequence
+            type UserData = MutableMapping[str, ManagerValue]
+            type SessionData = t.MutableJsonMapping
+            type LogEntry = MutableMapping[str, ManagerValue]
+            type AuditEntry = t.MutableJsonMapping
+            type AttemptData = MutableMapping[str, t.JsonList]
             type AttemptWindow = tuple[int, int]
 
         class Domain:
@@ -216,8 +216,8 @@ class FlextAuthTypes(t):
         STR_SEQUENCE_ADAPTER: u.TypeAdapter[t.StrSequence] = u.TypeAdapter(
             t.StrSequence
         )
-        CONTAINER_VALUE_MAPPING_ADAPTER: u.TypeAdapter[t.ContainerValueMapping] = (
-            u.TypeAdapter(t.ContainerValueMapping)
+        CONTAINER_VALUE_MAPPING_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
+            t.JsonMapping
         )
 
         COERCED_PROVIDER_TYPE = Annotated[

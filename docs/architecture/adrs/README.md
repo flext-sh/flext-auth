@@ -97,7 +97,7 @@ All ADRs follow a consistent template:
 
 ## Notes
 
-[t.Container additional notes or implementation details]
+[t.JsonValue additional notes or implementation details]
 ```
 
 ## Current ADRs

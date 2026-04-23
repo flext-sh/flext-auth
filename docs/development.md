@@ -72,7 +72,7 @@ ______________________________________________________________________
 
 ```bash
 # Complete validation pipeline
-make validate        # lint + type + test
+make val        # lint + type + test
 
 # Individual quality checks
 make lint           # Ruff code linting
@@ -140,7 +140,7 @@ def authenticate_user(username: str, password: str) -> p.Result[m.Dict]:
 
 
 # ❌ Incorrect - Don't use exceptions for business logic
-def authenticate_user(username: str, password: str) -> Mapping[str, t.Container]:
+def authenticate_user(username: str, password: str) -> t.JsonMapping:
     if not username:
         raise ValueError("Username required")
 
@@ -243,7 +243,7 @@ ______________________________________________________________________
 git checkout -b feature/your-feature-name
 
 # Ensure clean starting state
-make validate
+make val
 ```
 
 ### 2. Development Process
@@ -263,7 +263,7 @@ make type-check
 
 ```bash
 # Complete validation
-make validate
+make val
 
 # Ensure all tests pass (or at least don't add new failures)
 make test

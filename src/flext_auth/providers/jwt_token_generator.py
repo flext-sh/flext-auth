@@ -32,7 +32,7 @@ class FlextAuthJwtTokenGenerator:
         self,
         identity_id: str,
         expiry_minutes: int | None = None,
-        extra_claims: t.ContainerValueMapping | None = None,
+        extra_claims: t.JsonMapping | None = None,
     ) -> p.Result[str]:
         """Generate JWT token with railway-oriented programming.
 
@@ -113,11 +113,11 @@ class FlextAuthJwtTokenGenerator:
         expiry_minutes: int,
         issuer: str,
         audience: str | None,
-        extra_claims: t.ContainerValueMapping | None,
-    ) -> t.ContainerValueMapping:
+        extra_claims: t.JsonMapping | None,
+    ) -> t.JsonMapping:
         """Build JWT token payload."""
         now = datetime.now(UTC)
-        payload: t.MutableContainerValueMapping = {
+        payload: t.MutableJsonMapping = {
             "sub": identity_id,
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(minutes=expiry_minutes)).timestamp()),

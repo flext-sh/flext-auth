@@ -26,9 +26,7 @@ class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvid
         super().__init__(settings)
 
     @override
-    def authenticate(
-        self, credentials: t.ContainerValueMapping
-    ) -> p.Result[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using API key credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")

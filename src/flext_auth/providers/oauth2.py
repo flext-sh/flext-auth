@@ -231,12 +231,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         ]
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
-            if field_value is not None and (
-                not any(
-                    u.matches_type(field_value, expected_type)
-                    for expected_type in expected_types
-                )
-            ):
+            if field_value is not None and not isinstance(field_value, expected_types):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
         return r[bool].ok(value=True)
 
@@ -395,7 +390,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def authenticate(
         self,
-        credentials: t.ContainerValueMapping,
+        credentials: t.JsonMapping,
     ) -> p.Result[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: t.ConfigurationMapping = {
@@ -426,7 +421,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | t.ContainerValueMapping,
+        user: m.Auth.AuthIdentity | t.JsonMapping,
         token_kind: str = "oauth2_access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,
@@ -535,10 +530,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Validate OAuth2 token using composition."""
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(
-            on_failure=lambda exc: p.Result[bool].fail(
+            on_failure=lambda exc: r[bool].fail(
                 exc or "OAuth2 token validation failed"
             ),
-            on_success=lambda _: p.Result[bool].ok(value=True),
+            on_success=lambda _: r[bool].ok(value=True),
         )
 
     def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
@@ -617,25 +612,25 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         headers["Authorization"] = f"Basic {encoded_auth}"
         return r[t.StrMapping].ok(headers)
 
-    def _introspect_token(self, token: str) -> p.Result[t.ConfigurationMapping]:
+    def _introspect_token(self, token: str) -> p.Result[t.JsonMapping]:
         endpoint_result = self._introspection_endpoint()
         if endpoint_result.failure:
-            return r[t.ScalarMapping].fail(
+            return r[t.JsonMapping].fail(
                 endpoint_result.error or "OAuth2 introspection endpoint is required",
             )
         headers_result = self._build_introspection_headers()
         if headers_result.failure:
-            return r[t.ScalarMapping].fail(
+            return r[t.JsonMapping].fail(
                 headers_result.error or "OAuth2 introspection headers are invalid",
             )
         body_result = self._build_introspection_form_data(token)
         if body_result.failure:
-            return r[t.ScalarMapping].fail(
+            return r[t.JsonMapping].fail(
                 body_result.error or "OAuth2 introspection payload is invalid",
             )
         parsed = urlparse(endpoint_result.value)
         if parsed.scheme != "https":
-            return r[t.ScalarMapping].fail(
+            return r[t.JsonMapping].fail(
                 f"Unsupported URL scheme: {parsed.scheme}",
             )
         request_path = parsed.path or "/"
@@ -653,7 +648,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             status_code = response.status
             response_payload = response.read().decode("utf-8")
         except (http.client.HTTPException, OSError, ValueError, TypeError) as exc:
-            return r[t.ScalarMapping].fail(
+            return r[t.JsonMapping].fail(
                 f"OAuth2 introspection request failed: {exc}",
             )
         finally:
@@ -665,16 +660,16 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 if error_body
                 else f"OAuth2 introspection request failed with status {status_code}"
             )
-            return r[t.ScalarMapping].fail(error_message)
+            return r[t.JsonMapping].fail(error_message)
         try:
-            parsed_mapping: t.ConfigurationMapping = (
-                t.Auth.CONFIGURATION_MAPPING_ADAPTER.validate_json(response_payload)
+            parsed_mapping = t.json_mapping_adapter().validate_json(
+                response_payload,
             )
         except (ValueError, c.ValidationError) as exc:
-            return r[t.ScalarMapping].fail(
+            return r[t.JsonMapping].fail(
                 f"OAuth2 introspection payload is not valid JSON: {exc}",
             )
-        return r[t.ScalarMapping].ok(parsed_mapping)
+        return r[t.JsonMapping].ok(parsed_mapping)
 
     def _introspection_endpoint(self) -> p.Result[str]:
         for key in ("introspection_endpoint", "token_introspection_endpoint"):
@@ -685,7 +680,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _map_token_payload_to_identity(
         self,
-        payload: t.ContainerValueMapping,
+        payload: t.JsonMapping,
     ) -> p.Result[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
         if identity_result.failure:

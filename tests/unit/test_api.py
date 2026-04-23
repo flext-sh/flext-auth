@@ -12,9 +12,6 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import (
-    Mapping,
-)
 from datetime import UTC, datetime
 from threading import Thread
 
@@ -1075,7 +1072,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> Mapping[str, t.Container]:
+        def create_test_user_data() -> t.JsonMapping:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1085,7 +1082,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> Mapping[str, t.Container]:
+        def create_test_auth_data() -> t.JsonMapping:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1094,7 +1091,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> Mapping[str, t.Container]:
+        def create_test_session_data() -> t.JsonMapping:
             """Create test session data."""
             return {
                 "user_id": "user_123",

@@ -71,7 +71,7 @@ class FlextWebTransportAdapter:
         url: str,
         access_token: str,
         headers: t.StrMapping,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[t.JsonMapping]:
         """GET request to OIDC UserInfo endpoint.
 
         Retrieves user information using an OAuth2 access token according
@@ -110,10 +110,10 @@ class FlextWebTransportAdapter:
     def post_token_request(
         self,
         url: str,
-        data: t.ContainerValueMapping,
+        data: t.JsonMapping,
         auth: tuple[str, str] | None = None,
         headers: t.StrMapping | None = None,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[t.JsonMapping]:
         """POST request to OAuth2 token endpoint.
 
         Specialized method for OAuth2/OIDC token requests with proper
@@ -168,7 +168,7 @@ class FlextWebTransportAdapter:
         headers: t.StrMapping | None = None,
         query: t.Api.WebParams | None = None,
         timeout: float | None = None,
-    ) -> p.Result[t.ContainerValueMapping]:
+    ) -> p.Result[t.JsonMapping]:
         """Send HTTP request using flext-api transport.
 
         Implements BaseTransportAdapter protocol for generic HTTP operations.
@@ -212,42 +212,37 @@ class FlextWebTransportAdapter:
             )
         return self._execute_request(request)
 
-    def _execute_request(
-        self, request: m.Api.HttpRequest
-    ) -> p.Result[t.ContainerValueMapping]:
+    def _execute_request(self, request: m.Api.HttpRequest) -> p.Result[t.JsonMapping]:
         response = self._client.request(request)
         if response.failure:
-            return r[t.ContainerValueMapping].fail(response.error)
+            return r[t.JsonMapping].fail(response.error)
         http_response = response.value
         body = http_response.body
         if body is None:
-            return r[t.ContainerValueMapping].ok({})
+            return r[t.JsonMapping].ok(t.json_mapping_adapter().validate_python({}))
         if isinstance(body, Mapping):
-            normalized_body: t.ContainerValueMapping = {
-                str(key): self._to_scalar(value) for key, value in body.items()
-            }
-            return r[t.ContainerValueMapping].ok(normalized_body)
+            return r[t.JsonMapping].ok(
+                t.json_mapping_adapter().validate_python(body),
+            )
         match body:
             case bytes() as body_bytes:
                 decoded = body_bytes.decode("utf-8", errors="replace")
             case str() as body_text:
                 decoded = body_text
             case _:
-                return r[t.ContainerValueMapping].fail(
+                return r[t.JsonMapping].fail(
                     f"Unsupported response body type: {type(body)}",
                 )
         try:
-            parsed = t.Auth.CONFIGURATION_MAPPING_ADAPTER.validate_json(decoded)
-            return r[t.ContainerValueMapping].ok(parsed)
+            parsed = t.json_mapping_adapter().validate_json(decoded)
+            return r[t.JsonMapping].ok(parsed)
         except (ValueError, c.ValidationError):
-            return r[t.ContainerValueMapping].fail(
-                "Unable to parse response body as JSON"
-            )
+            return r[t.JsonMapping].fail("Unable to parse response body as JSON")
 
     def _parse_token_response(
         self,
-        response_data: t.ContainerValueMapping,
-    ) -> p.Result[t.ContainerValueMapping]:
+        response_data: t.JsonMapping,
+    ) -> p.Result[t.JsonMapping]:
         """Parse OAuth2 token endpoint response.
 
         Validates token response according to RFC 6749 Section 5.1 (success)
@@ -277,13 +272,13 @@ class FlextWebTransportAdapter:
             error_msg = f"OAuth2 error: {error_code} - {error_description}"
             if error_uri:
                 error_msg += f" (see {error_uri})"
-            return r[t.ContainerValueMapping].fail(error_msg)
+            return r[t.JsonMapping].fail(error_msg)
         if "access_token" not in response_data:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.JsonMapping].fail(
                 "Token response missing required 'access_token' field",
             )
         if "token_type" not in response_data:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.JsonMapping].fail(
                 "Token response missing required 'token_type' field",
             )
         self.logger.info(
@@ -292,7 +287,7 @@ class FlextWebTransportAdapter:
             has_refresh_token="refresh_token" in response_data,
             expires_in=str(response_data.get("expires_in", "")),
         )
-        return r[t.ContainerValueMapping].ok(response_data)
+        return r[t.JsonMapping].ok(response_data)
 
     def _resolve_body(
         self,
@@ -312,9 +307,7 @@ class FlextWebTransportAdapter:
         query: t.Api.WebParams | None,
     ) -> t.Api.WebParams | None:
         if isinstance(data, Mapping) and method.upper() == c.Api.Method.GET.value:
-            data_mapping: Mapping[str, t.Container] = {
-                str(key): value for key, value in data.items()
-            }
+            data_mapping = {str(key): value for key, value in data.items()}
             query_dict: t.Api.WebParams = query if query is not None else {}
             merged_query = {
                 **query_dict,
@@ -326,36 +319,19 @@ class FlextWebTransportAdapter:
             return normalized
         return query
 
-    @staticmethod
-    def _to_scalar(value: t.Container) -> t.Scalar:
-        """Normalize t.Container to t.Scalar for response dict values."""
-        match value:
-            case str() as text:
-                return text
-            case bool() as boolean:
-                return boolean
-            case int() as integer:
-                return integer
-            case float() as decimal:
-                return decimal
-            case None:
-                return ""
-            case _:
-                return str(value)
-
     def _validate_userinfo_response(
         self,
-        payload: t.ContainerValueMapping,
-    ) -> p.Result[t.ContainerValueMapping]:
+        payload: t.JsonMapping,
+    ) -> p.Result[t.JsonMapping]:
         if "sub" not in payload:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.JsonMapping].fail(
                 "UserInfo response missing required 'sub' claim",
             )
         self.logger.info(
             "UserInfo retrieved successfully",
             subject=str(payload.get("sub", "")),
         )
-        return r[t.ContainerValueMapping].ok(payload)
+        return r[t.JsonMapping].ok(payload)
 
 
 __all__: list[str] = ["FlextWebTransportAdapter"]

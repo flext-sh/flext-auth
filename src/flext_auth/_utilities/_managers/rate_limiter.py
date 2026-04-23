@@ -4,7 +4,6 @@ from collections.abc import (
     Mapping,
     MutableMapping,
     MutableSequence,
-    Sequence,
 )
 from datetime import UTC, datetime, timedelta
 
@@ -48,13 +47,13 @@ class FlextAuthRateLimiterManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
-            attempts_list: MutableSequence[t.Container]
+            attempts_list: MutableSequence[t.JsonValue]
             if isinstance(attempts_raw, list):
                 attempts_list = [
                     attempt for attempt in attempts_raw if isinstance(attempt, datetime)
                 ]
             else:
-                attempts_list = list[t.Container]()
+                attempts_list = list[t.JsonValue]()
                 self._attempts[username]["attempts"] = attempts_list
             attempts_list.append(now)
             recent_attempts = self._cleanup_window(username, now)
@@ -64,7 +63,7 @@ class FlextAuthRateLimiterManagers:
             self,
             username: str,
             now: datetime,
-        ) -> Sequence[t.Container]:
+        ) -> t.JsonList:
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)
             if not isinstance(attempt_data, Mapping):
@@ -72,7 +71,7 @@ class FlextAuthRateLimiterManagers:
             attempts_value = attempt_data.get("attempts")
             if not isinstance(attempts_value, list):
                 return []
-            recent_attempts: Sequence[t.Container] = [
+            recent_attempts: t.JsonList = [
                 attempt
                 for attempt in attempts_value
                 if isinstance(attempt, datetime) and attempt > window_start

@@ -24,7 +24,7 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> p.Result[t.ContainerValueMapping]:
+    def validate_token(self, token: str) -> p.Result[t.JsonMapping]:
         """Validate JWT token with railway-oriented programming.
 
         Args:
@@ -37,7 +37,7 @@ class FlextAuthJwtTokenValidator:
         try:
             settings = self._provider.settings
             if not settings:
-                return r[t.ContainerValueMapping].fail(
+                return r[t.JsonMapping].fail(
                     "JWT configuration not provided",
                 )
             secret_key_value = settings.get("secret_key")
@@ -45,7 +45,7 @@ class FlextAuthJwtTokenValidator:
                 case str() as secret if secret:
                     secret_key = secret
                 case _:
-                    return r[t.ContainerValueMapping].fail(
+                    return r[t.JsonMapping].fail(
                         "JWT secret key not configured",
                     )
             algorithm_value = settings.get("algorithm")
@@ -53,7 +53,7 @@ class FlextAuthJwtTokenValidator:
                 case str() as algorithm_str:
                     algorithm = algorithm_str
                 case _:
-                    return r[t.ContainerValueMapping].fail(
+                    return r[t.JsonMapping].fail(
                         "JWT algorithm not configured",
                     )
             audience_value = settings.get("audience")
@@ -62,7 +62,7 @@ class FlextAuthJwtTokenValidator:
                     case str() as audience_str:
                         audience = audience_str
                     case _:
-                        return r[t.ContainerValueMapping].fail(
+                        return r[t.JsonMapping].fail(
                             "JWT audience must be a string if provided",
                         )
             else:
@@ -74,10 +74,10 @@ class FlextAuthJwtTokenValidator:
                 audience=audience,
             )
             if decode_result.failure:
-                return r[t.ContainerValueMapping].fail(
+                return r[t.JsonMapping].fail(
                     decode_result.error or "Invalid token",
                 )
-            return r[t.ContainerValueMapping].ok(decode_result.value)
+            return r[t.JsonMapping].ok(decode_result.value)
         except (
             ValueError,
             TypeError,
@@ -87,7 +87,7 @@ class FlextAuthJwtTokenValidator:
             RuntimeError,
             ImportError,
         ) as exc:
-            return r[t.ContainerValueMapping].fail(
+            return r[t.JsonMapping].fail(
                 f"Token validation failed: {exc}",
             )
 

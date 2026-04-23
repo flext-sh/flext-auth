@@ -27,9 +27,7 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
     """
 
     @override
-    def authenticate(
-        self, credentials: t.ContainerValueMapping
-    ) -> p.Result[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using LDAP credentials.
 
         Args:

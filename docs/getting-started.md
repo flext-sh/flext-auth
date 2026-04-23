@@ -68,7 +68,7 @@ from flext_auth import flext_auth_quick_start, FlextAuthModels
 # Initialize authentication service
 auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-# Create user request t.Container
+# Create user request t.JsonValue
 user_request = FlextAuthModels.UserCreationRequest(
     username="alice", email="alice@example.com", password="secure123"
 )
@@ -370,7 +370,7 @@ make lint
 make type-check
 
 # Complete validation
-make validate
+make val
 ```
 
 ### Documentation

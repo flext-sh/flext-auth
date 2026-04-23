@@ -355,9 +355,15 @@ class FlextAuthUtilitiesManagers(
             permissions_raw = storage_data.get("permissions", [])
             roles: t.StrSequence = []
             permissions: t.StrSequence = []
-            if u.list_value(roles_raw):
+            if isinstance(roles_raw, Sequence) and not isinstance(
+                roles_raw,
+                (str, bytes, bytearray),
+            ):
                 roles = [role for role in roles_raw if isinstance(role, str)]
-            if u.list_value(permissions_raw):
+            if isinstance(permissions_raw, Sequence) and not isinstance(
+                permissions_raw,
+                (str, bytes, bytearray),
+            ):
                 permissions = [
                     permission
                     for permission in permissions_raw
@@ -400,7 +406,7 @@ class FlextAuthUtilitiesManagers(
                         else datetime
                     )
                     field_value = storage_data.get(field)
-                    if u.matches_type(field_value, field_type):
+                    if isinstance(field_value, field_type):
                         if field in {"locked_until", "last_access"}:
                             if field_value is None:
                                 identity_data[field] = datetime.min.replace(tzinfo=UTC)

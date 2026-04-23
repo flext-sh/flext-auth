@@ -84,9 +84,7 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return r[bool].ok(value=True)
 
     @override
-    def authenticate(
-        self, credentials: t.ContainerValueMapping
-    ) -> p.Result[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate user with provided credentials.
 
         This is an abstract method that must be implemented by RFC-specific providers.
