@@ -1,0 +1,26 @@
+tests/README.md
+  02db55bf620bbdf2 194,218
+tests/unit/README.md
+  02db55bf620bbdf2 127,145,166,256,273,290
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "e57490bbd293eb7f1dc4517b55e92bc3366b1d64",
+  "prompts": {
+    "02db55bf620bbdf2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd88b7e6-5715-4a2d-af33-58b483877723",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 14,
+      "total_deletions": 14,
+      "accepted_lines": 8,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/69d1d1fd4c8ab775ae44c930493bd9ee57ca74786d4ca1681d4e45fd0d836bb6"
+    }
+  }
+}
