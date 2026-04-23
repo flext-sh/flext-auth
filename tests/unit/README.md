@@ -124,7 +124,7 @@ unit/
 
 ### Test Structure (Given-When-Then)
 
-```python
+```text
 def test_user_authentication_with_valid_credentials():
     """Test user authentication succeeds with valid credentials."""
     # Given: A registered user with valid credentials
@@ -142,7 +142,7 @@ def test_user_authentication_with_valid_credentials():
 
 ### Mock Strategy
 
-```python
+```text
 @pytest.fixture
 def mock_password_service():
     """Mock password service for isolated testing."""
@@ -163,7 +163,7 @@ def mock_user_repository():
 
 ### Test Data Factories
 
-```python
+```text
 class UserFactory:
     """Factory for creating test user data."""
 
@@ -253,7 +253,7 @@ pytest tests/unit/ -k "test_authentication" -v
 
 ### Testing r Patterns
 
-```python
+```text
 def test_authentication_failure_returns_error():
     """Test authentication failure returns proper error result."""
     # Given: Invalid credentials
@@ -270,7 +270,7 @@ def test_authentication_failure_returns_error():
 
 ### Testing Domain Invariants
 
-```python
+```text
 def test_user_cannot_exceed_max_failed_attempts():
     """Test user gets locked after exceeding max failed attempts."""
     # Given: User with 4 failed attempts (max is 5)
@@ -287,7 +287,7 @@ def test_user_cannot_exceed_max_failed_attempts():
 
 ### Testing Error Handling
 
-```python
+```text
 def test_jwt_service_handles_expired_tokens():
     """Test JWT service properly handles expired token validation."""
     # Given: An expired JWT token

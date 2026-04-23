@@ -191,7 +191,7 @@ def test_user_authentication_with_valid_credentials():
 
 ### Factory Pattern for Test Data
 
-```python
+```text
 class TestUserFactory:
     """Factory for creating test user data."""
 
@@ -215,7 +215,7 @@ class TestUserFactory:
 
 ### Mock Strategy for External Dependencies
 
-```python
+```text
 @pytest.fixture
 def mock_password_service():
     """Mock password service for isolated testing."""
