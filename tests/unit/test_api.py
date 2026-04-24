@@ -33,9 +33,7 @@ class HttpRequest:
         self.headers: t.StrMapping = headers
 
 
-class TestFlextAuthServiceInitialization:
-    """Test FlextAuth service initialization."""
-
+class TestsFlextAuthApi:
     def test_auth_service_initialization(self) -> None:
         """Test FlextAuth services are properly initialized."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -51,10 +49,6 @@ class TestFlextAuthServiceInitialization:
         u.Tests.Matchers.that(auth._registry, none=False)
         u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
         u.Tests.Matchers.that(auth._dispatcher, none=False)
-
-
-class TestFlextAuthProcessorRegistration:
-    """Test authentication processor registration."""
 
     def test_services_registered_on_initialization(self) -> None:
         """Test that services are registered during initialization."""
@@ -103,10 +97,6 @@ class TestFlextAuthProcessorRegistration:
             eq=True,
         )
 
-
-class TestFlextAuthHandlerRegistration:
-    """Test FlextBus handler registration."""
-
     def test_identity_service_operations(self) -> None:
         """Test that identity service operations work correctly."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -132,10 +122,6 @@ class TestFlextAuthHandlerRegistration:
         providers = auth._registry.list_providers()
         u.Tests.Matchers.that(providers, is_=list)
 
-
-class TestFlextAuthAdvancedPatterns:
-    """Test advanced flext-core pattern integration."""
-
     def test_flext_container_integration(self) -> None:
         """Test FlextAuth service initialization."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -155,10 +141,6 @@ class TestFlextAuthAdvancedPatterns:
         auth = FlextAuth.quick_start(create_admin_user=False)
         u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
         u.Tests.Matchers.that(auth._dispatcher, none=False)
-
-
-class TestFlextAuthStorageOperations:
-    """Test internal storage operations."""
 
     def test_username_index_management(self) -> None:
         """Test username index is maintained correctly."""
@@ -192,19 +174,11 @@ class TestFlextAuthStorageOperations:
         )
         u.Tests.Matchers.that(sessions_result.success, eq=True)
 
-
-class TestFlextAuthSettingsInitialization:
-    """Test explicit settings bootstrap."""
-
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
         custom_config = FlextAuthSettings.fetch_global()
         auth = FlextAuth(settings=custom_config)
         u.Tests.Matchers.that(auth.settings, eq=custom_config)
-
-
-class TestFlextAuthSessionManagement:
-    """Test session management operations."""
 
     def test_get_user_sessions(self) -> None:
         """Test retrieving all sessions for a user."""
@@ -238,10 +212,6 @@ class TestFlextAuthSessionManagement:
         )
         u.Tests.Matchers.that(not revoke_result.success, eq=True)
 
-
-class TestFlextAuthTokenOperations:
-    """Test JWT token operations."""
-
     def test_create_token_for_user(self) -> None:
         """Test that token creation fails — JWT provider not implemented."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -269,10 +239,6 @@ class TestFlextAuthTokenOperations:
         u.Tests.Matchers.that(token_result.success, eq=True)
         validate_result = auth.token_service.validate_token("any.fake.token")
         u.Tests.Matchers.that(not validate_result.success, eq=True)
-
-
-class TestFlextAuthErrorHandling:
-    """Test error handling and edge cases."""
 
     def test_duplicate_user_registration(self) -> None:
         """Test handling duplicate user registration."""
@@ -302,10 +268,6 @@ class TestFlextAuthErrorHandling:
         u.Tests.Matchers.that(result.error, none=False)
         u.Tests.Matchers.that((result.error or "").lower(), has="not found")
 
-
-class TestFlextAuthLogging:
-    """Test structured logging integration."""
-
     def test_initialization_logging(self) -> None:
         """Test that initialization is logged."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -316,10 +278,6 @@ class TestFlextAuthLogging:
         """Test that handler registration is logged."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         assert auth is not None
-
-
-class TestFlextAuthProviderRegistry:
-    """Test multi-provider registry (v2.0.0 feature)."""
 
     def test_provider_registry_initialization(self) -> None:
         """Test provider registry is initialized."""
@@ -333,10 +291,6 @@ class TestFlextAuthProviderRegistry:
         providers = auth.registry.list_providers()
         u.Tests.Matchers.that(providers, has="jwt")
 
-
-class TestFlextAuthModelConfiguration:
-    """Test Pydantic model configuration."""
-
     def test_model_config_arbitrary_types_allowed(self) -> None:
         """Test that arbitrary types are allowed in model settings."""
         u.Tests.Matchers.that(hasattr(m.Auth.AuthIdentity, "model_config"), eq=True)
@@ -347,10 +301,6 @@ class TestFlextAuthModelConfiguration:
         u.Tests.Matchers.that(
             settings.model_config.get("validate_assignment", False) is True, eq=True
         )
-
-
-class TestFlextAuth:
-    """Unit tests for FlextAuth class."""
 
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
@@ -546,10 +496,6 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user(username, password)
         u.Tests.Matchers.that(auth_result.success, eq=True)
 
-
-class TestFlextAuthQuickStart:
-    """Unit tests for FlextAuth.quick_start class method."""
-
     def test_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start with default parameters."""
         auth = FlextAuth.quick_start()
@@ -569,10 +515,6 @@ class TestFlextAuthQuickStart:
         """Test FlextAuth.quick_start without REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         assert isinstance(auth, FlextAuth)
-
-
-class TestFlextAuthSecurity:
-    """Unit tests for security features."""
 
     def test_account_lockout_on_failed_attempts(self) -> None:
         """Test account lockout after multiple failed login attempts."""
@@ -599,10 +541,6 @@ class TestFlextAuthSecurity:
         result = auth.register_user("weakuser", "weak@example.com", "weak")
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
-
-
-class TestFlextAuthErrorHandlingSecond:
-    """Unit tests for error handling scenarios."""
 
     def test_empty_username_registration(self) -> None:
         """Test registration with empty username."""
@@ -646,10 +584,6 @@ class TestFlextAuthErrorHandlingSecond:
         u.Tests.Matchers.that(not logout_result.success, eq=True)
         u.Tests.Matchers.that((logout_result.error or ""), has="Session not found")
 
-
-class TestFlextAuthQuickStartFunction:
-    """Unit tests for FlextAuth.quick_start() classmethod."""
-
     def test_flext_auth_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start() with default parameters."""
         auth = FlextAuth.quick_start()
@@ -674,10 +608,6 @@ class TestFlextAuthQuickStartFunction:
         """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         assert isinstance(auth, FlextAuth)
-
-
-class TestFlextAuthInitializationCoverage:
-    """Test FlextAuth initialization edge cases - covering lines 228-229."""
 
     def test_flext_auth_config_creation_failure(self) -> None:
         """Test FlextAuth initialization when settings creation fails - lines 228-229."""
@@ -710,10 +640,6 @@ class TestFlextAuthInitializationCoverage:
         auth = FlextAuth(settings=settings)
         u.Tests.Matchers.that(auth.config.expiry_minutes, eq=120)
         u.Tests.Matchers.that(auth.config.hash_rounds, eq=10)
-
-
-class TestFlextAuthErrorPaths:
-    """Test error handling paths in FlextAuth methods."""
 
     def test_register_user_edge_cases(self) -> None:
         """Test register_user method error paths."""
@@ -753,10 +679,6 @@ class TestFlextAuthErrorPaths:
         u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.token_service.validate_token("invalid.token.format")
         u.Tests.Matchers.that(not result.success, eq=True)
-
-
-class TestFlextAuthPasswordMethods:
-    """Test password-related methods to cover uncovered lines."""
 
     def test_hash_password_method(self) -> None:
         """Test hash_password method functionality."""
@@ -808,10 +730,6 @@ class TestFlextAuthPasswordMethods:
         u.Tests.Matchers.that(wrong_result.success, eq=True)
         u.Tests.Matchers.that(wrong_result.value is False, eq=True)
 
-
-class TestFlextAuthTokenMethods:
-    """Test token generation and validation methods."""
-
     def test_generate_token_method(self) -> None:
         """Test that create_token succeeds for a registered user."""
         auth = FlextAuth()
@@ -860,10 +778,6 @@ class TestFlextAuthTokenMethods:
         u.Tests.Matchers.that(token_result.success, eq=True)
         val_result = auth.token_service.validate_token("any.fake.token")
         u.Tests.Matchers.that(not val_result.success, eq=True)
-
-
-class TestFlextAuthUserMethods:
-    """Test user management methods available in FlextAuth."""
 
     def test_get_user_method(self) -> None:
         """Test get_user method functionality."""
@@ -931,10 +845,6 @@ class TestFlextAuthUserMethods:
                 )
                 u.Tests.Matchers.that(logout_result.success, is_=bool)
 
-
-class TestFlextAuthSessionMethods:
-    """Test session management methods."""
-
     def test_revoke_session_method(self) -> None:
         """Test revoke_session method functionality."""
         auth = FlextAuth()
@@ -957,35 +867,17 @@ class TestFlextAuthSessionMethods:
         cleanup_result = auth.session_service.cleanup_expired_sessions()
         u.Tests.Matchers.that(cleanup_result.success, is_=bool)
 
-
-class TestFlextAuthQuickStartMethod:
-    """Test FlextAuth.quick_start class method."""
-
-    def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
-        """Test quick_start class method with REDACTED_LDAP_BIND_PASSWORD creation."""
-        auth = FlextAuth.quick_start(create_admin_user=True)
-        assert isinstance(auth, FlextAuth)
-        u.Tests.Matchers.that(auth.settings, none=False)
-
     def test_quick_start_without_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method without REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         assert isinstance(auth, FlextAuth)
         u.Tests.Matchers.that(auth.settings, none=False)
 
-
-class TestFlextAuthConfigurationMethods:
-    """Test configuration and utility methods."""
-
     def test_get_config_method(self) -> None:
         """Test settings property functionality."""
         auth = FlextAuth()
         settings = auth.settings
         u.Tests.Matchers.that(settings, none=False)
-
-
-class TestFlextAuthErrorHandlingPaths:
-    """Test error handling and edge cases in FlextAuth methods."""
 
     def test_authenticate_with_locked_account(self) -> None:
         """Test authentication with locked user account."""
@@ -1036,10 +928,6 @@ class TestFlextAuthErrorHandlingPaths:
         )
         u.Tests.Matchers.that(not logout_result.success, eq=True)
 
-
-class TestFlextAuthAdditionalCoverage:
-    """Test additional coverage for missing lines in auth.py."""
-
     def test_cleanup_expired_sessions_with_user_sessions_index(self) -> None:
         """Test cleanup_expired_sessions method with user sessions index - lines 662-667."""
         auth = FlextAuth()
@@ -1063,10 +951,6 @@ class TestFlextAuthAdditionalCoverage:
         result = auth.token_service.validate_token("invalid_token")
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
-
-
-class TestAuthModule:
-    """Unified test class for auth module functionality."""
 
     class _TestDataHelper:
         """Nested helper class for test data creation."""
@@ -1098,11 +982,6 @@ class TestAuthModule:
                 "session_id": "session_123",
                 "expires_at": "2025-12-31T23:59:59Z",
             }
-
-    def test_flext_auth_initialization(self) -> None:
-        """Test FlextAuth initializes correctly."""
-        auth = FlextAuth()
-        assert auth is not None
 
     def test_flext_auth_register_user(self) -> None:
         """Test FlextAuth register_user functionality."""
@@ -1443,10 +1322,6 @@ class TestAuthModule:
             thread.start()
         for thread in auth_threads:
             thread.join()
-
-
-class TestPublicApiTokenFlows:
-    """Test token flows through FlextAuth public API only."""
 
     def test_public_api_create_token_for_registered_user(self) -> None:
         auth = FlextAuth.quick_start(create_admin_user=False)

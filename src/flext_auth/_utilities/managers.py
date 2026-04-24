@@ -16,20 +16,20 @@ from collections.abc import (
     Sequence,
 )
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from flext_api import r
 from flext_core import FlextContext, u
 
-from flext_auth import (
-    FlextAuthRateLimiterManagers,
+from flext_auth import c, m, p, t
+from flext_auth._utilities._managers.auth_managers_session import (
     FlextAuthSessionManagers,
-    FlextAuthSettings,
-    c,
-    m,
-    p,
-    t,
 )
+from flext_auth._utilities._managers.rate_limiter import FlextAuthRateLimiterManagers
+
+if TYPE_CHECKING:
+    from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthUtilitiesManagers(

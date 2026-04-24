@@ -7,7 +7,7 @@ from flext_api import FlextApiTypes
 from tests import t, u
 
 
-class TestFlextAuthTypes:
+class TestsFlextAuthTypesUnit:
     """Test FlextAuthTypes MRO inheritance."""
 
     def test_inherits_from_flext_api_types(self) -> None:

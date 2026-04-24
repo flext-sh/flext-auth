@@ -19,7 +19,7 @@ def _require_settings() -> FlextAuthSettings:
     return FlextAuthSettings.fetch_global()
 
 
-class TestFlextAuthSettingsBasic:
+class TestsFlextAuthConfig:
     """Basic tests for FlextAuthSettings functionality."""
 
     def test_config_creation(self) -> None:
@@ -48,10 +48,6 @@ class TestFlextAuthSettingsBasic:
         """Test global instance functionality."""
         settings = _require_settings()
         u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
-
-
-class TestJwtTokenGenerator:
-    """Test public token operations through FlextAuth API."""
 
     def test_generate_token_missing_config(self) -> None:
         """Token generation fails for unknown identity via public API."""

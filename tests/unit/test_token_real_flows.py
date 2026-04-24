@@ -4,7 +4,7 @@ from flext_auth import FlextAuth
 from tests import u
 
 
-class TestTokenRealFlows:
+class TestsFlextAuthTokenRealFlows:
     """Token flow tests using only FlextAuth public API."""
 
     def test_create_token_for_registered_user(self) -> None:

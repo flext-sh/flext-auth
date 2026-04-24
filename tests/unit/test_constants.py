@@ -7,7 +7,7 @@ from flext_core import FlextConstants
 from tests import c, u
 
 
-class TestFlextAuthConstants:
+class TestsFlextAuthConstantsUnit:
     """Test FlextAuthConstants class and its nested constant classes."""
 
     def test_inherits_from_flext_constants(self) -> None:

@@ -4,11 +4,13 @@ from collections.abc import (
     MutableMapping,
 )
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 from flext_api import r, u
-from flext_core import FlextContext
+from flext_core import FlextContext, p, t
 
-from flext_auth import FlextAuthSettings, p, t
+if TYPE_CHECKING:
+    from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthRateLimiterManagers:
