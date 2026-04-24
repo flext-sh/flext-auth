@@ -261,12 +261,6 @@ class FlextAuthConstants(c):
             "token_type": None,
         })
         "Template for successful authentication responses."
-        ERROR_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
-            "status": c.Status.ERROR.value,
-            "message": None,
-            "error_code": None,
-        })
-        "Template for authentication error responses."
 
         class Jwt:
             """JWT-specific constants for token generation and validation."""

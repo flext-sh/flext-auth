@@ -163,5 +163,3 @@ class TestFlextAuthConstants:
         success = c.Auth.SUCCESS_AUTH_RESPONSE
         u.Tests.Matchers.that(success["status"], eq="success")
         u.Tests.Matchers.that(success["message"], eq="Authentication successful")
-        error = c.Auth.ERROR_AUTH_RESPONSE
-        u.Tests.Matchers.that(error["status"], eq="error")
