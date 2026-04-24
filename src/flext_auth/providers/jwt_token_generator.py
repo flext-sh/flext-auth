@@ -183,4 +183,4 @@ class FlextAuthJwtTokenGenerator:
                 return r[int].fail("expiry_minutes must be a positive integer")
 
 
-__all__: list[str] = ["FlextAuthJwtTokenGenerator"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthJwtTokenGenerator"]

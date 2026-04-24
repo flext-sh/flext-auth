@@ -11,7 +11,7 @@ from typing import override
 
 from flext_core import FlextSettings, s
 
-from flext_auth import FlextAuthSettings
+from flext_auth import FlextAuthSettings, t
 
 
 class FlextAuthServiceBase(s[bool], ABC):
@@ -26,4 +26,4 @@ class FlextAuthServiceBase(s[bool], ABC):
 
 s = FlextAuthServiceBase
 
-__all__: list[str] = ["FlextAuthServiceBase", "s"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthServiceBase", "s"]

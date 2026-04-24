@@ -91,4 +91,4 @@ class FlextAuthSettings(FlextSettings):
         return value
 
 
-__all__: list[str] = ["FlextAuthSettings"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthSettings"]

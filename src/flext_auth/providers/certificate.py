@@ -70,4 +70,4 @@ class FlextAuthCertificateProvider(
         return r[bool].fail("Not implemented")
 
 
-__all__: list[str] = ["FlextAuthCertificateProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthCertificateProvider"]

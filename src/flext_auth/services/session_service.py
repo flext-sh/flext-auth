@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from flext_core import u
 
-from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, p, r, s
+from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, p, r, s, t
 
 
 class FlextAuthSessionService(s):
@@ -50,4 +50,4 @@ class FlextAuthSessionService(s):
         )
 
 
-__all__: list[str] = ["FlextAuthSessionService"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthSessionService"]

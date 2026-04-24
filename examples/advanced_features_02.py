@@ -14,6 +14,7 @@ import os
 import secrets
 import string
 
+from examples import t
 from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, u
 
 
@@ -58,7 +59,7 @@ def example_role_based_access() -> None:
         ("manager", "manager@company.com", "ManagerPass123!", ["manager", "user"]),
         ("employee", "employee@company.com", "EmployeePass123!", ["user"]),
     ]
-    registered_users: list[FlextAuthModels.Auth.AuthIdentity] = []
+    registered_users: t.MutableSequenceOf[FlextAuthModels.Auth.AuthIdentity] = []
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
         if result.success:
@@ -75,7 +76,7 @@ def example_session_management() -> None:
     )
     if user_result.failure:
         return
-    tokens: list[str] = []
+    tokens: t.MutableSequenceOf[str] = []
     for _i in range(3):
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
         if auth_result.success:

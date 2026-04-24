@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthJwtProvider, p, r, u
+from flext_auth import FlextAuthJwtProvider, p, r, t, u
 
 
 class FlextAuthPasswordHasher:
@@ -56,4 +56,4 @@ class FlextAuthPasswordHasher:
             return r[bool].fail_op("verify password", exc)
 
 
-__all__: list[str] = ["FlextAuthPasswordHasher"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthPasswordHasher"]

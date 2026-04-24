@@ -5,6 +5,7 @@ Public entrypoint kept as a strict facade over service classes.
 
 from __future__ import annotations
 
+from flext_auth import t
 from flext_auth.services.auth_service import FlextAuthApplicationService
 
 
@@ -17,4 +18,4 @@ class FlextAuth(FlextAuthApplicationService):
 auth = FlextAuth.get_global()
 
 
-__all__: list[str] = ["FlextAuth", "auth"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuth", "auth"]

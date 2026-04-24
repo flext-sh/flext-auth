@@ -116,4 +116,4 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return r[bool].fail("RFC provider validate() must be implemented by subclass")
 
 
-__all__: list[str] = ["FlextAuthRfcProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthRfcProvider"]

@@ -230,4 +230,4 @@ class FlextAuthMiddleware(s):
             return r[m.Auth.AuthToken].ok(refreshed_token)
 
 
-__all__: list[str] = ["FlextAuthMiddleware"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthMiddleware"]

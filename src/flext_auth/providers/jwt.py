@@ -72,4 +72,4 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return validator.validate_token(token).map(lambda _payload: True)
 
 
-__all__: list[str] = ["FlextAuthJwtProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthJwtProvider"]

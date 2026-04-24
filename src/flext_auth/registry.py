@@ -322,4 +322,4 @@ class FlextAuthRegistry:
         )
 
 
-__all__: list[str] = ["FlextAuthRegistry"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthRegistry"]

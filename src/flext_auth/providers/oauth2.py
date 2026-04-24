@@ -78,7 +78,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._flow = self._init_flow()
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
-        self._pkce_verifiers: dict[str, str] = {}
+        self._pkce_verifiers: Mapping[str, str] = {}
         self._http_client: http.client.HTTPSConnection | None = None
 
     @staticmethod
@@ -198,7 +198,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required OAuth2 configuration fields: {fields_str}",
             )
-        validations: Sequence[tuple[str, tuple[type, ...], str]] = [
+        validations: Sequence[t.Triple[str, t.VariadicTuple[type], str]] = [
             ("client_id", (str,), "OAuth2 client_id must be a string"),
             (
                 "client_secret",
@@ -245,7 +245,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             """Initialize flow manager."""
             self.provider = provider
 
-        def generate_pkce_challenge(self) -> p.Result[tuple[str, str]]:
+        def generate_pkce_challenge(self) -> p.Result[t.Pair[str, str]]:
             """Generate PKCE code challenge and verifier."""
             code_verifier = secrets.token_urlsafe(32)
             code_challenge = (
@@ -744,4 +744,4 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[m.Auth.AuthIdentity].ok(identity)
 
 
-__all__: list[str] = ["FlextAuthOAuth2Provider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthOAuth2Provider"]

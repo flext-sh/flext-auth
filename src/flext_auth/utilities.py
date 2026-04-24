@@ -1,5 +1,6 @@
 """FlextAuth utilities - Advanced type-safe utilities using u patterns.
 
+from flext_auth import u
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -14,9 +15,10 @@ import jwt
 from flext_api import r, u
 
 from flext_auth import c, p, t
+from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
-class FlextAuthUtilities(u):
+class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
     """FlextAuth advanced utilities extending u with domain-specific helpers."""
 
     class Auth:
@@ -26,7 +28,6 @@ class FlextAuthUtilities(u):
         and cross-project access. Access via u.Auth.* pattern.
 
         Example:
-            from flext_auth import u
             result = u.Auth.Collection.parse_sequence(Status, ["active", "pending"])
             validator = u.Auth.Collection.coerce_list_validator(Status)
 
@@ -142,7 +143,7 @@ class FlextAuthUtilities(u):
             secret: t.SecretStr,
             *,
             verify: bool = True,
-            algorithms: tuple[str, ...] | None = None,
+            algorithms: t.VariadicTuple[str] | None = None,
             audience: str | None = None,
         ) -> p.Result[t.Auth.TokensClaimMap]:
             """Generic JWT token decoding.
@@ -228,4 +229,4 @@ class FlextAuthUtilities(u):
 
 
 u = FlextAuthUtilities
-__all__: list[str] = ["FlextAuthUtilities", "u"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthUtilities", "u"]

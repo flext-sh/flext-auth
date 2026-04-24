@@ -138,8 +138,8 @@ class FlextAuthUtilitiesManagers(
             credential_hash: str = str(password_hash)
             full_name: str = ""
             is_active: bool = True
-            roles: list[str] = []
-            permissions: list[str] = []
+            roles: t.MutableSequenceOf[str] = []
+            permissions: t.MutableSequenceOf[str] = []
             failed_attempts: int = 0
             locked_until: datetime = datetime.min.replace(tzinfo=UTC)
             last_access: datetime = datetime.min.replace(tzinfo=UTC)
@@ -431,7 +431,7 @@ class FlextAuthUtilitiesManagers(
         def _find_user_by_id(
             self,
             user_id: str,
-        ) -> p.Result[tuple[str, t.Auth.ManagersUserData]]:
+        ) -> p.Result[t.Pair[str, t.Auth.ManagersUserData]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.

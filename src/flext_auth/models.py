@@ -630,7 +630,7 @@ class FlextAuthModels(m):
                     str,
                     u.Field(description="Provider version"),
                 ] = "1.0.0"
-                capabilities: tuple[str, ...] = u.Field(
+                capabilities: t.VariadicTuple[str] = u.Field(
                     default_factory=tuple, description="Provider capabilities"
                 )
                 extras: t.JsonMapping = u.Field(default_factory=dict)

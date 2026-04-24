@@ -92,4 +92,4 @@ class FlextAuthJwtTokenValidator:
             )
 
 
-__all__: list[str] = ["FlextAuthJwtTokenValidator"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthJwtTokenValidator"]

@@ -92,7 +92,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
             )
-        validations: Sequence[tuple[str, tuple[type, ...], str]] = [
+        validations: Sequence[t.Triple[str, t.VariadicTuple[type], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
             ("kdc", (str,), "Kerberos kdc must be a string"),
             (
@@ -301,7 +301,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = f"{identity_id}@kerberos.local"
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
-            parsed_roles: list[str]
+            parsed_roles: t.MutableSequenceOf[str]
             try:
                 parsed_roles = list(
                     t.Auth.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
@@ -352,4 +352,4 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         return validated
 
 
-__all__: list[str] = ["FlextAuthKerberosProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthKerberosProvider"]

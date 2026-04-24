@@ -1,5 +1,7 @@
 """FlextAuth constants - Pure constants using StrEnum + Pydantic 2 patterns.
 
+from flext_core import FlextConstants as Constants
+
 FLEXT-AUTH domain constants with FlextCore integration. Uses advanced Python 3.13+ features:
 - StrEnum for type-safe enumerations with Pydantic 2 validation
 - PEP 695 type aliases for strict Literal types
@@ -24,6 +26,8 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, ClassVar, Final
 
 from flext_api import c
+
+from flext_auth import t
 
 if TYPE_CHECKING:
     from flext_auth import t
@@ -586,4 +590,4 @@ class FlextAuthConstants(c):
 
 
 c = FlextAuthConstants
-__all__: list[str] = ["FlextAuthConstants", "c"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthConstants", "c"]

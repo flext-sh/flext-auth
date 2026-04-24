@@ -48,4 +48,4 @@ class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvid
         return r[bool].fail("Not implemented")
 
 
-__all__: list[str] = ["FlextAuthApiKeyProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthApiKeyProvider"]

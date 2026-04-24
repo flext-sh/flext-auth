@@ -246,4 +246,4 @@ class FlextAuthIdentityService(s):
         return True
 
 
-__all__: list[str] = ["FlextAuthIdentityService"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityService"]

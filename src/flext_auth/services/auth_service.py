@@ -216,4 +216,4 @@ class FlextAuthApplicationService:
         )
 
 
-__all__: list[str] = ["FlextAuthApplicationService"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthApplicationService"]

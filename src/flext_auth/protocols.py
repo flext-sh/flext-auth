@@ -1,5 +1,6 @@
 """FLEXT Auth Protocols - Authentication domain protocols.
 
+from flext_auth import p
 Protocol interfaces for authentication and authorization operations.
 All protocols organized under single FlextAuthProtocols class per
 FLEXT standardization. Uses structural typing only - no model imports.
@@ -32,7 +33,6 @@ class FlextAuthProtocols(p):
     - STRUCTURAL TYPING: No model imports - protocols define structural contracts
 
     Usage:
-    from flext_auth import p
 
     # Foundation access (inherited)
     p.Result

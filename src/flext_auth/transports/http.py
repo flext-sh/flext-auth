@@ -111,7 +111,7 @@ class FlextWebTransportAdapter:
         self,
         url: str,
         data: t.JsonMapping,
-        auth: tuple[str, str] | None = None,
+        auth: t.Pair[str, str] | None = None,
         headers: t.StrMapping | None = None,
     ) -> p.Result[t.JsonMapping]:
         """POST request to OAuth2 token endpoint.
@@ -334,4 +334,4 @@ class FlextWebTransportAdapter:
         return r[t.JsonMapping].ok(payload)
 
 
-__all__: list[str] = ["FlextWebTransportAdapter"]
+__all__: t.MutableSequenceOf[str] = ["FlextWebTransportAdapter"]
