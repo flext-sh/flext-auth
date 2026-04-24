@@ -166,10 +166,11 @@ class FlextAuthMiddleware(s):
             if token.expired or token.is_revoked:
                 return False
             validation_result = self._provider.validate(token.token)
-            return validation_result.fold(
+            folded: bool = validation_result.fold(
                 on_failure=lambda _: False,
-                on_success=lambda v: v,
+                on_success=lambda v: bool(v),
             )
+            return folded
 
         def _refresh_or_reauthenticate(self) -> p.Result[m.Auth.AuthToken]:
             """Refresh token or re-authenticate if refresh fails."""

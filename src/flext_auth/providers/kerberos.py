@@ -343,9 +343,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         if settings is None:
             return None
         validator_candidate = settings.get("ticket_validator")
-        if callable(validator_candidate):
-            return validator_candidate
-        return None
+        if not callable(validator_candidate):
+            return None
+        validated: Callable[
+            [str],
+            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
+        ] = validator_candidate
+        return validated
 
 
 __all__: list[str] = ["FlextAuthKerberosProvider"]

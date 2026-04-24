@@ -45,11 +45,11 @@ class FlextAuthRateLimiterManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
+            attempts_list: list[datetime] = (
+                [] if attempts_raw is None else list(attempts_raw)
+            )
             if attempts_raw is None:
-                attempts_list = []
                 self._attempts[username]["attempts"] = attempts_list
-            else:
-                attempts_list = attempts_raw
             attempts_list.append(now)
             recent_attempts = self._cleanup_window(username, now)
             self._attempts[username]["attempts"] = recent_attempts

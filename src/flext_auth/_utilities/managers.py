@@ -407,13 +407,7 @@ class FlextAuthUtilitiesManagers(
                     )
                     field_value = storage_data.get(field)
                     if isinstance(field_value, field_type):
-                        if field in {"locked_until", "last_access"}:
-                            if field_value is None:
-                                identity_data[field] = datetime.min.replace(tzinfo=UTC)
-                            else:
-                                identity_data[field] = field_value
-                        elif field_value is not None:
-                            identity_data[field] = field_value
+                        identity_data[field] = field_value
             filtered_identity_data = {
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }

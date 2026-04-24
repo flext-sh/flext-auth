@@ -133,7 +133,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         flow_value = self.config.get("flow")
         match flow_value:
             case None | "":
-                return c.Auth.OAuth2.FLOW_DEFAULT
+                return str(c.Auth.OAuth2.FLOW_DEFAULT)
             case str() as flow:
                 if flow not in c.Auth.OAuth2.FLOWS:
                     error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAuth2.FLOWS}, got {flow}"
@@ -148,7 +148,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         use_pkce_value = self.config.get("use_pkce")
         match use_pkce_value:
             case None:
-                return c.Auth.OAuth2.USE_PKCE_DEFAULT
+                return bool(c.Auth.OAuth2.USE_PKCE_DEFAULT)
             case bool() as use_pkce:
                 return use_pkce
             case _:
@@ -160,11 +160,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         scope_value = self.config.get("scope")
         match scope_value:
             case None:
-                return c.Auth.OAuth2.SCOPE_DEFAULT
+                return str(c.Auth.OAuth2.SCOPE_DEFAULT)
             case str() as scope if scope:
                 return scope
             case str():
-                return c.Auth.OAuth2.SCOPE_DEFAULT
+                return str(c.Auth.OAuth2.SCOPE_DEFAULT)
             case _:
                 error_msg = f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
                 raise ValueError(error_msg)
@@ -176,7 +176,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
         match token_endpoint_auth_method_value:
             case None | "":
-                return c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
+                return str(c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT)
             case str() as auth_method:
                 if auth_method not in c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS:
                     error_msg = f"OAuth2 'token_endpoint_auth_method' must be one of {c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS}, got {auth_method}"
@@ -325,15 +325,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             _ = code_verifier
             _ = redirect_uri
             scope_value = self.provider.get_scope()
-            match scope_value:
-                case None:
-                    return r[m.Auth.OAuth2TokenResponse].fail(
-                        "OAuth2 scope is required",
-                    )
-                case str() as scope_str:
-                    scope = scope_str
-                case _:
-                    scope = ""
+            if scope_value is None:
+                return r[m.Auth.OAuth2TokenResponse].fail(
+                    "OAuth2 scope is required",
+                )
+            scope = scope_value
             token_response = m.Auth.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
@@ -381,7 +377,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def get_verifier(self, state: str) -> str | None:
             """Get stored PKCE code verifier."""
-            return self._verifiers.get(state)
+            verifier = self._verifiers.get(state)
+            return verifier if isinstance(verifier, str) else None
 
         def store_verifier(self, state: str, verifier: str) -> None:
             """Store PKCE code verifier for later use."""

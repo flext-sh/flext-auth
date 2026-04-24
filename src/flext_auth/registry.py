@@ -154,7 +154,7 @@ class FlextAuthRegistry:
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
-        return self.fetch_plugin(self.PROVIDERS, name).success
+        return bool(self.fetch_plugin(self.PROVIDERS, name).success)
 
     def list_providers(self) -> t.StrSequence:
         """List registered provider names."""
