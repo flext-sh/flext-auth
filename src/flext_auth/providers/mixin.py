@@ -224,7 +224,7 @@ class FlextAuthProviderMixin:
     def _decode_token_claims(
         self,
         token: str,
-    ) -> p.Result[t.Auth.Tokens.ClaimMap]:
+    ) -> p.Result[t.Auth.TokensClaimMap]:
         """Decode JWT token and return claims payload.
 
         Args:
@@ -236,12 +236,12 @@ class FlextAuthProviderMixin:
         """
         settings = self._provider_config
         if not settings:
-            return r[t.Auth.Tokens.ClaimMap].fail(
+            return r[t.Auth.TokensClaimMap].fail(
                 "Provider configuration required for token decoding"
             )
         secret_key_value = settings.get("secret_key")
         if not isinstance(secret_key_value, (str, t.SecretStr)):
-            return r[t.Auth.Tokens.ClaimMap].fail("JWT secret_key not configured")
+            return r[t.Auth.TokensClaimMap].fail("JWT secret_key not configured")
         secret_key = (
             secret_key_value.get_secret_value()
             if isinstance(secret_key_value, t.SecretStr)
@@ -273,7 +273,7 @@ class FlextAuthProviderMixin:
         algorithm: str,
     ) -> p.Result[str]:
         """Encode token payload using JWT with canonical result flow."""
-        normalized_payload: t.Auth.Tokens.ClaimMap = {
+        normalized_payload: t.Auth.TokensClaimMap = {
             str(key): value for key, value in payload.items()
         }
         return u.Auth.encode_token(normalized_payload, secret, algorithm)

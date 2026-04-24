@@ -24,7 +24,7 @@ class FlextAuthSessionManagers:
             self._dispatcher: p.Dispatcher = (
                 FlextContainer.shared().dispatcher().unwrap()
             )
-            self._sessions: MutableMapping[str, t.Auth.Managers.SessionData] = {}
+            self._sessions: MutableMapping[str, t.Auth.ManagersSessionData] = {}
 
         def cleanup_expired_sessions(self) -> p.Result[int]:
             cleaned_count = 0
@@ -47,7 +47,7 @@ class FlextAuthSessionManagers:
         ) -> p.Result[m.Auth.Session]:
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
-            session_data: t.Auth.Managers.SessionData = {
+            session_data: t.Auth.ManagersSessionData = {
                 "id": session_id,
                 "unique_id": session_id,
                 "identity_id": user_id,
@@ -142,7 +142,7 @@ class FlextAuthSessionManagers:
 
         def _is_session_active(
             self,
-            session_data: t.Auth.Managers.SessionData,
+            session_data: t.Auth.ManagersSessionData,
         ) -> bool:
             expires_at_value = session_data.get("expires_at")
             if not isinstance(expires_at_value, datetime):

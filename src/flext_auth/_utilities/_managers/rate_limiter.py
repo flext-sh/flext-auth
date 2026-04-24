@@ -21,7 +21,7 @@ class FlextAuthRateLimiterManagers:
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
             self.context = FlextContext()
-            self._attempts: MutableMapping[str, t.Auth.Managers.AttemptData] = {}
+            self._attempts: MutableMapping[str, t.Auth.ManagersAttemptData] = {}
             self._max_attempts = 5
             self._window_minutes = 15
 
@@ -58,7 +58,7 @@ class FlextAuthRateLimiterManagers:
             self,
             username: str,
             now: datetime,
-        ) -> t.Auth.Managers.AttemptEvents:
+        ) -> t.Auth.ManagersAttemptEvents:
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)
             if attempt_data is None:
@@ -66,7 +66,7 @@ class FlextAuthRateLimiterManagers:
             attempts_value = attempt_data.get("attempts")
             if attempts_value is None:
                 return []
-            recent_attempts: t.Auth.Managers.AttemptEvents = [
+            recent_attempts: t.Auth.ManagersAttemptEvents = [
                 attempt for attempt in attempts_value if attempt > window_start
             ]
             return recent_attempts

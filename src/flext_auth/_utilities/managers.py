@@ -88,7 +88,7 @@ class FlextAuthUtilitiesManagers(
         config: FlextAuthSettings
         logger: p.Logger
         context: p.Context
-        _users: MutableMapping[str, t.Auth.Managers.UserData]
+        _users: MutableMapping[str, t.Auth.ManagersUserData]
 
         def __init__(self, settings: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
@@ -96,7 +96,7 @@ class FlextAuthUtilitiesManagers(
             self.config = settings
             self.logger = u.fetch_logger(__name__)
             self.context = FlextContext()
-            self._users: MutableMapping[str, t.Auth.Managers.UserData] = {}
+            self._users: MutableMapping[str, t.Auth.ManagersUserData] = {}
 
         def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
             """Add permission to user."""
@@ -202,7 +202,7 @@ class FlextAuthUtilitiesManagers(
                     token = str(v) if v is not None else ""
                 elif k == "session_id":
                     session_id = str(v) if v is not None else ""
-            storage_data: t.Auth.Managers.UserData = {
+            storage_data: t.Auth.ManagersUserData = {
                 "unique_id": unique_id,
                 "name": name,
                 "contact": contact,
@@ -290,7 +290,7 @@ class FlextAuthUtilitiesManagers(
             **updates: t.Scalar | t.StrSequence | datetime | None,
         ) -> p.Result[m.Auth.AuthIdentity]:
             """Update user data."""
-            filtered_updates: t.Auth.Managers.UserData = {
+            filtered_updates: t.Auth.ManagersUserData = {
                 k: v for k, v in updates.items() if v is not None
             }
             return self._find_user_by_id(user_id).map(
@@ -303,7 +303,7 @@ class FlextAuthUtilitiesManagers(
 
         def _apply_list_modification(
             self,
-            user_data: t.Auth.Managers.UserData,
+            user_data: t.Auth.ManagersUserData,
             field: str,
             value: str,
             *,
@@ -321,7 +321,7 @@ class FlextAuthUtilitiesManagers(
 
         def _apply_list_modification_and_return_true(
             self,
-            user_data: t.Auth.Managers.UserData,
+            user_data: t.Auth.ManagersUserData,
             field: str,
             value: str,
             *,
@@ -333,7 +333,7 @@ class FlextAuthUtilitiesManagers(
 
         def _create_identity_from_storage(
             self,
-            storage_data: t.Auth.Managers.UserData,
+            storage_data: t.Auth.ManagersUserData,
         ) -> m.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
@@ -369,7 +369,7 @@ class FlextAuthUtilitiesManagers(
                     for permission in permissions_raw
                     if isinstance(permission, str)
                 ]
-            identity_data: t.Auth.Managers.UserData = {
+            identity_data: t.Auth.ManagersUserData = {
                 "unique_id": identity_id,
                 "name": name_value,
                 "contact": contact_value,
@@ -415,7 +415,7 @@ class FlextAuthUtilitiesManagers(
 
         def _extract_identity_id(
             self,
-            storage_data: t.Auth.Managers.UserData,
+            storage_data: t.Auth.ManagersUserData,
         ) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
@@ -431,7 +431,7 @@ class FlextAuthUtilitiesManagers(
         def _find_user_by_id(
             self,
             user_id: str,
-        ) -> p.Result[tuple[str, t.Auth.Managers.UserData]]:
+        ) -> p.Result[tuple[str, t.Auth.ManagersUserData]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
@@ -442,11 +442,11 @@ class FlextAuthUtilitiesManagers(
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, t.Auth.Managers.UserData]].ok((
+                    return r[tuple[str, t.Auth.ManagersUserData]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, t.Auth.Managers.UserData]].fail(
+            return r[tuple[str, t.Auth.ManagersUserData]].fail(
                 "User not found",
             )
 
@@ -473,7 +473,7 @@ class FlextAuthUtilitiesManagers(
 
         def _validate_required_field[T](
             self,
-            storage_data: t.Auth.Managers.UserData,
+            storage_data: t.Auth.ManagersUserData,
             field: str,
             field_type: type[T],
         ) -> T:
@@ -515,7 +515,7 @@ class FlextAuthUtilitiesManagers(
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
             self.context = FlextContext()
-            self._logs: MutableSequence[t.Auth.Managers.LogEntry] = []
+            self._logs: MutableSequence[t.Auth.ManagersLogEntry] = []
 
         def get_logs(
             self,
@@ -524,9 +524,9 @@ class FlextAuthUtilitiesManagers(
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> p.Result[Sequence[t.Auth.Managers.LogEntry]]:
+        ) -> p.Result[Sequence[t.Auth.ManagersLogEntry]]:
             """Get audit logs with optional filtering."""
-            filtered_logs: MutableSequence[t.Auth.Managers.LogEntry] = []
+            filtered_logs: MutableSequence[t.Auth.ManagersLogEntry] = []
             for log in self._logs:
                 if user_id is not None:
                     username_value = log.get("username")
@@ -567,7 +567,7 @@ class FlextAuthUtilitiesManagers(
                     ):
                         continue
                 filtered_logs.append(log)
-            return r[Sequence[t.Auth.Managers.LogEntry]].ok(filtered_logs[-limit:])
+            return r[Sequence[t.Auth.ManagersLogEntry]].ok(filtered_logs[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""
@@ -733,10 +733,10 @@ class FlextAuthUtilitiesManagers(
             **data: t.Scalar | t.StrSequence | datetime | None,
         ) -> None:
             """Log an audit event."""
-            filtered_data: t.Auth.Managers.LogEntry = {
+            filtered_data: t.Auth.ManagersLogEntry = {
                 k: v for k, v in data.items() if v is not None
             }
-            log_entry: t.Auth.Managers.LogEntry = {
+            log_entry: t.Auth.ManagersLogEntry = {
                 "id": str(uuid4()),
                 "event_type": event_type,
                 "timestamp": datetime.now(UTC),

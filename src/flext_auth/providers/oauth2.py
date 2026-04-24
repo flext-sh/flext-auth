@@ -543,7 +543,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     introspection_result.error
                     or "OAuth2 introspection token validation failed",
                 )
-            active_value = introspection_result.value.get(c.CommonStatus.ACTIVE)
+            active_value = introspection_result.value.get("active")
             is_active = bool(active_value) if isinstance(active_value, bool) else False
             if not is_active:
                 return r[m.Auth.AuthIdentity].fail("OAuth2 token is inactive")

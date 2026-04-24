@@ -85,7 +85,7 @@ class FlextAuthJwtTokenGenerator:
                 audience,
                 extra_claims,
             )
-            payload_for_encoding: t.Auth.Tokens.ClaimMap = dict(payload)
+            payload_for_encoding: t.Auth.TokensClaimMap = dict(payload)
             token_result = u.Auth.encode_token(
                 payload_for_encoding,
                 secret_result.value,

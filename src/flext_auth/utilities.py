@@ -144,7 +144,7 @@ class FlextAuthUtilities(u):
             verify: bool = True,
             algorithms: tuple[str, ...] | None = None,
             audience: str | None = None,
-        ) -> p.Result[t.Auth.Tokens.ClaimMap]:
+        ) -> p.Result[t.Auth.TokensClaimMap]:
             """Generic JWT token decoding.
 
             Args:
@@ -171,17 +171,17 @@ class FlextAuthUtilities(u):
                     audience=audience,
                 )
                 if not u.dict_like(payload):
-                    return r[t.Auth.Tokens.ClaimMap].fail(
+                    return r[t.Auth.TokensClaimMap].fail(
                         "Decoded token payload is not a dictionary",
                     )
-                typed_payload: t.Auth.Tokens.ClaimMap = {
+                typed_payload: t.Auth.TokensClaimMap = {
                     str(key): value for key, value in payload.items()
                 }
-                return r[t.Auth.Tokens.ClaimMap].ok(typed_payload)
+                return r[t.Auth.TokensClaimMap].ok(typed_payload)
             except jwt.InvalidTokenError as exc:
-                return r[t.Auth.Tokens.ClaimMap].fail(f"Invalid token: {exc}")
+                return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}")
             except c.ValidationError as exc:
-                return r[t.Auth.Tokens.ClaimMap].fail(
+                return r[t.Auth.TokensClaimMap].fail(
                     f"Decoded token payload validation failed: {exc}",
                 )
             except (
@@ -193,11 +193,11 @@ class FlextAuthUtilities(u):
                 RuntimeError,
                 ImportError,
             ) as exc:
-                return r[t.Auth.Tokens.ClaimMap].fail(f"Decoding failed: {exc}")
+                return r[t.Auth.TokensClaimMap].fail(f"Decoding failed: {exc}")
 
         @staticmethod
         def encode_token(
-            payload: t.Auth.Tokens.ClaimMap,
+            payload: t.Auth.TokensClaimMap,
             secret: str,
             algorithm: str = c.Auth.Jwt.DEFAULT_ALGORITHM,
         ) -> p.Result[str]:

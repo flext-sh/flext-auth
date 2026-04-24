@@ -1,7 +1,4 @@
-"""FLEXT Auth Types - Type definitions and aliases.
-
-Uses Pydantic models from flext_auth for consolidated type definitions.
-Maintains backward compatibility where possible while enforcing new patterns.
+"""FLEXT Auth Types.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -14,229 +11,46 @@ from collections.abc import (
     MutableSequence,
 )
 from datetime import datetime
-from typing import Annotated, Literal, override
+from typing import Annotated, Literal
 
-from flext_api import m, t, u
+from flext_api import t, u
 
 from flext_auth import c
 
 
 class FlextAuthTypes(t):
-    """Authentication-specific type definitions extending t with composition."""
+    """Authentication-specific type definitions extending t via MRO."""
 
     class Auth:
-        """Authentication-related type definitions."""
-
-        type AuthMethod = c.Auth.AuthMethod
-        type AuthStatus = c.Auth.AuthStatus
-        type CoercedTokenTypes = Annotated[
-            c.Auth.TokenTypes,
-            m.BeforeValidator(lambda x: x),
-        ]
-        type CoercedProviderTypes = Annotated[
-            c.Auth.ProviderTypes,
-            m.BeforeValidator(lambda x: x),
-        ]
-        type CoercedRoleTypes = Annotated[
-            c.Auth.RoleTypes,
-            m.BeforeValidator(lambda x: x),
-        ]
-
-        class UserManagement:
-            """User management type definitions."""
-
-            type UserStatus = c.Auth.UserStatus
-            type UserAction = c.Auth.UserAction
-
-        class SessionManagement:
-            """Session management type definitions."""
-
-            type SessionStatus = c.Auth.SessionStatus
-            type SessionAction = c.Auth.SessionAction
-
-        class TokenManagement:
-            """Token management type definitions."""
-
-            type TokenType = c.Auth.AuthTokenType
-            type TokenStatus = c.Auth.TokenStatus
-
-        class Authorization:
-            """Authorization type definitions."""
-
-            type Permission = c.Auth.Permission
-            type Role = c.Auth.Role
-
-        class Security:
-            """Security-related type definitions."""
-
-            type SecurityEvent = c.Auth.SecurityEvent
-            type ThreatLevel = c.Auth.ThreatLevel
-
-        class Providers:
-            """Provider-oriented type definitions."""
-
-            type Key = Annotated[
-                str,
-                u.Field(
-                    min_length=1,
-                    max_length=c.Auth.Validation.SHORT_NAME_MAX,
-                    pattern="^[a-z0-9](?:[a-z0-9\\-_.]{0,62}[a-z0-9])?$",
-                    description="Provider registry key",
-                ),
-            ]
-            type Capability = Annotated[
-                str,
-                u.Field(
-                    min_length=1,
-                    max_length=c.Auth.Validation.SHORT_NAME_MAX,
-                    pattern="^[a-z][a-z0-9_:-]*$",
-                    description="Provider capability identifier",
-                ),
-            ]
-            type CapabilitySet = Annotated[
-                frozenset[Capability],
-                u.Field(min_length=1, description="Declared capabilities"),
-            ]
-
-        class Credentials:
-            """Credential payload type definitions."""
-
-            type Username = Annotated[
-                str,
-                u.Field(
-                    min_length=1,
-                    max_length=c.Auth.Validation.LONG_NAME_MAX,
-                    description="Identity username",
-                ),
-            ]
-            type Password = Annotated[
-                str,
-                u.Field(
-                    min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
-                    max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
-                    description="Raw credential string",
-                ),
-            ]
-            type Secret = Annotated[
-                t.SecretStr,
-                u.Field(
-                    min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
-                    max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
-                    description="Protected credential value",
-                ),
-            ]
+        """Auth domain namespace (flat members per AGENTS.md §149)."""
 
         type TokenRequestType = Literal["access", "refresh", "id", "bearer"]
-        "Allowed token types for token generation requests."
 
-        class Tokens:
-            """Token-related type definitions."""
+        type ProvidersKey = Annotated[
+            str,
+            u.Field(
+                min_length=1,
+                max_length=c.Auth.Validation.SHORT_NAME_MAX,
+                pattern="^[a-z0-9](?:[a-z0-9\\-_.]{0,62}[a-z0-9])?$",
+                description="Provider registry key",
+            ),
+        ]
 
-            type TokenType = c.Auth.TokenTypes
-            type ClaimMap = t.MutableJsonMapping
-            type Claims = t.MutableJsonMapping
-            type Introspection = t.MutableJsonMapping
+        type TokensClaimMap = t.MutableJsonMapping
 
-        class Sessions:
-            """Session-related type definitions."""
+        type ManagersManagerValue = t.JsonValue | t.Scalar | t.StrSequence
+        type ManagersUserData = MutableMapping[str, ManagersManagerValue]
+        type ManagersLogEntry = MutableMapping[str, ManagersManagerValue]
+        type ManagersSessionData = t.MutableMetadataMapping
+        type ManagersAttemptEvents = MutableSequence[datetime]
+        type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
 
-            type Activity = t.MutableJsonMapping
-
-        class Responses:
-            """Response payload abstractions."""
-
-            type AuthenticationPayload = MutableMapping[
-                str,
-                t.JsonValue,
-            ]
-
-        class Managers:
-            """Manager-specific supporting types."""
-
-            type ManagerValue = t.JsonValue | t.Scalar | t.StrSequence
-            type UserData = MutableMapping[str, ManagerValue]
-            type SessionData = t.MutableMetadataMapping
-            type LogEntry = MutableMapping[str, ManagerValue]
-            type AuditEntry = t.MutableJsonMapping
-            type AttemptEvents = MutableSequence[datetime]
-            type AttemptData = MutableMapping[str, AttemptEvents]
-            type AttemptWindow = tuple[int, int]
-
-        class Domain:
-            """Domain-level literals and shortcuts."""
-
-            type ProviderType = c.Auth.ProviderTypes
-            type Role = c.Auth.RoleTypes
-            type Permission = c.Auth.PermissionTypes
-            type AccessTokens = c.Auth.AccessTokens
-            "Access token types for operations."
-            type RefreshTokens = Literal["refresh"]
-            "Refresh token types."
-            type BearerTokens = c.Auth.BearerTokens
-            "Bearer token types."
-            type AdminRoles = Literal["REDACTED_LDAP_BIND_PASSWORD"]
-            "Admin role types."
-            type UserRoles = c.Auth.UserRoles
-            "User role types."
-            type WritePermissions = c.Auth.WritePermissions
-            "Write permission types."
-            type AdminPermissions = Literal["REDACTED_LDAP_BIND_PASSWORD"]
-            "Admin permission types."
-            type TokenTypeLiteral = c.Auth.TokenTypeLiteral
-            "Token type literal - references TokenTypes StrEnum members."
-            type ProviderTypeLiteral = c.Auth.ProviderTypeLiteral
-            "Provider type literal - references ProviderTypes StrEnum members."
-            type RoleTypeLiteral = c.Auth.RoleTypeLiteral
-            "Role type literal - matches RoleTypes StrEnum values exactly."
-            type PermissionTypeLiteral = c.Auth.PermissionTypeLiteral
-            "Permission type literal - matches PermissionTypes StrEnum values exactly."
-            type AlgorithmLiteral = c.Auth.AlgorithmLiteral
-            "Algorithm literal - matches Algorithms StrEnum values exactly."
-
-        class Unit:
-            """Unit type for operations that return nothing but may fail."""
-
-            class UnitType:
-                """Singleton unit type for void operations."""
-
-                __slots__: tuple[()] = ()
-
-                @override
-                def __repr__(self) -> str:
-                    """Return string representation of Unit type."""
-                    return "Unit"
-
-            UNIT = UnitType()
-
-        class Project:
-            """Auth project namespace."""
-
-            type ProjectType = c.Auth.ProjectType
-
-        CONFIGURATION_MAPPING_ADAPTER: u.TypeAdapter[t.ConfigurationMapping] = (
-            u.TypeAdapter(t.ConfigurationMapping)
-        )
         STR_SEQUENCE_ADAPTER: u.TypeAdapter[t.StrSequence] = u.TypeAdapter(
             t.StrSequence
         )
         CONTAINER_VALUE_MAPPING_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
             t.JsonMapping
         )
-
-        COERCED_PROVIDER_TYPE = Annotated[
-            c.Auth.ProviderTypes,
-            u.Api.Pydantic.coerced_enum_validator(c.Auth.ProviderTypes),
-        ]
-
-        COERCED_ROLE_TYPE = Annotated[
-            c.Auth.RoleTypes,
-            u.Api.Pydantic.coerced_enum_validator(c.Auth.RoleTypes),
-        ]
-
-        COERCED_TOKEN_TYPE = Annotated[
-            c.Auth.TokenTypes,
-            u.Api.Pydantic.coerced_enum_validator(c.Auth.TokenTypes),
-        ]
 
 
 t = FlextAuthTypes
