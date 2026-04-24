@@ -1,0 +1,40 @@
+src/flext_auth/services/provider_service.py
+  1e8c46a785af34f8 153
+src/flext_auth/utilities.py
+  1e8c46a785af34f8 147,174,177,180,182,184,196,200
+src/flext_auth/providers/jwt_token_generator.py
+  1e8c46a785af34f8 88
+src/flext_auth/providers/mixin.py
+  1e8c46a785af34f8 227,239,244,276
+src/flext_auth/_utilities/managers.py
+  1e8c46a785af34f8 91,99,205,293,306,324,336,372,418,434,445,449,476,518,527,529,570,736,739
+src/flext_auth/typings.py
+  1e8c46a785af34f8 1,14,16,22,25,27-36,39-46
+src/flext_auth/_utilities/_managers/auth_managers_session.py
+  1e8c46a785af34f8 27,50,145
+tests/unit/test_typings.py
+  1e8c46a785af34f8 1,11,13
+src/flext_auth/_utilities/_managers/rate_limiter.py
+  1e8c46a785af34f8 24,61,69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "4b279745c7e654d64f3291666a7cf1002687a6bd",
+  "prompts": {
+    "1e8c46a785af34f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa25f2cb-80b0-440b-a64c-b692f5b15b99",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 63,
+      "total_deletions": 314,
+      "accepted_lines": 63,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/4ddf623464145a585be60e57afe7dcf52c569d0f41e427fa95025ec8e8ad1397"
+    }
+  }
+}
