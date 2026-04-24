@@ -189,7 +189,7 @@ class FlextAuthConstants(c):
         "User identifier payload key."
         DEFAULT_TIMEOUT: Final[float] = float(c.DEFAULT_TIMEOUT_SECONDS)
         "Default request timeout in seconds."
-        DEFAULT_MAX_RETRIES: Final[int] = c.DEFAULT_MAX_RETRY_ATTEMPTS
+        DEFAULT_MAX_RETRIES: Final[int] = 3
         "Default maximum retry attempts."
         DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440
         "Default JWT token expiry in minutes."
