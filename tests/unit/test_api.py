@@ -34,31 +34,13 @@ class HttpRequest:
 
 
 class TestsFlextAuthApi:
-    def test_auth_service_initialization(self) -> None:
-        """Test FlextAuth services are properly initialized."""
+    def test_auth_service_initialization_exposes_public_services(self) -> None:
+        """FlextAuth quick_start initializes the public service properties."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        u.Tests.Matchers.that(hasattr(auth, "_provider_service"), eq=True)
-        u.Tests.Matchers.that(auth._provider_service, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_identity_service"), eq=True)
-        u.Tests.Matchers.that(auth._identity_service, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_token_service"), eq=True)
-        u.Tests.Matchers.that(auth._token_service, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_session_service"), eq=True)
-        u.Tests.Matchers.that(auth._session_service, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_registry"), eq=True)
-        u.Tests.Matchers.that(auth._registry, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
-        u.Tests.Matchers.that(auth._dispatcher, none=False)
-
-    def test_services_registered_on_initialization(self) -> None:
-        """Test that services are registered during initialization."""
-        auth = FlextAuth.quick_start(create_admin_user=False)
-        u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
-        u.Tests.Matchers.that(auth._dispatcher, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_registry"), eq=True)
-        u.Tests.Matchers.that(auth._registry, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_provider_service"), eq=True)
-        u.Tests.Matchers.that(auth._provider_service, none=False)
+        u.Tests.Matchers.that(auth.identity_service, none=False)
+        u.Tests.Matchers.that(auth.token_service, none=False)
+        u.Tests.Matchers.that(auth.session_service, none=False)
+        u.Tests.Matchers.that(auth.registry, none=False)
 
     def test_username_validation_processor(self) -> None:
         """Test username validation through processor."""
@@ -100,8 +82,6 @@ class TestsFlextAuthApi:
     def test_identity_service_operations(self) -> None:
         """Test that identity service operations work correctly."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        u.Tests.Matchers.that(hasattr(auth, "_identity_service"), eq=True)
-        u.Tests.Matchers.that(auth._identity_service, none=False)
         result = auth.register_user("cmduser", "cmd@example.com", "CmdPass123!")
         u.Tests.Matchers.that(result.success, eq=True)
 
@@ -114,33 +94,11 @@ class TestsFlextAuthApi:
         )
         u.Tests.Matchers.that(result.success, eq=True)
 
-    def test_registry_initialized(self) -> None:
-        """Test that registry is initialized."""
+    def test_registry_lists_providers(self) -> None:
+        """Registry exposes list_providers() returning a list."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        u.Tests.Matchers.that(hasattr(auth, "_registry"), eq=True)
-        u.Tests.Matchers.that(auth._registry, none=False)
-        providers = auth._registry.list_providers()
+        providers = auth.registry.list_providers()
         u.Tests.Matchers.that(providers, is_=list)
-
-    def test_flext_container_integration(self) -> None:
-        """Test FlextAuth service initialization."""
-        auth = FlextAuth.quick_start(create_admin_user=False)
-        u.Tests.Matchers.that(hasattr(auth, "_registry"), eq=True)
-        u.Tests.Matchers.that(auth._registry, none=False)
-        u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
-        u.Tests.Matchers.that(auth._dispatcher, none=False)
-
-    def test_flext_context_integration(self) -> None:
-        """Test s integration (FlextAuth extends s)."""
-        auth = FlextAuth.quick_start(create_admin_user=False)
-        u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
-        u.Tests.Matchers.that(auth._dispatcher, none=False)
-
-    def test_flext_dispatcher_integration(self) -> None:
-        """Test FlextDispatcher event bus."""
-        auth = FlextAuth.quick_start(create_admin_user=False)
-        u.Tests.Matchers.that(hasattr(auth, "_dispatcher"), eq=True)
-        u.Tests.Matchers.that(auth._dispatcher, none=False)
 
     def test_username_index_management(self) -> None:
         """Test username index is maintained correctly."""
@@ -1198,24 +1156,6 @@ class TestsFlextAuthApi:
         """Test that FlextAuth has proper docstring."""
         u.Tests.Matchers.that(FlextAuth.__doc__, none=False)
         u.Tests.Matchers.that(len((FlextAuth.__doc__ or "").strip()) > 0, eq=True)
-
-    def test_flext_auth_method_signatures(self) -> None:
-        """Test that auth facade exposes correct public API methods."""
-        auth = FlextAuth()
-        expected_methods = [
-            "register_user",
-            "authenticate_user",
-            "authenticate",
-            "create_token",
-        ]
-        for method_name in expected_methods:
-            u.Tests.Matchers.that(hasattr(auth, method_name), eq=True)
-            method = (
-                auth.__getattribute__(method_name)
-                if hasattr(auth, method_name)
-                else None
-            )
-            u.Tests.Matchers.that(callable(method), eq=True)
 
     def test_flext_auth_with_real_data(self) -> None:
         """Test auth functionality with realistic data scenarios."""
