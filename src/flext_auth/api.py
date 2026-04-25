@@ -15,7 +15,7 @@ class FlextAuth(FlextAuthApplicationService):
     pass
 
 
-auth = FlextAuth.get_global()
+auth = FlextAuth.fetch_global()
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuth", "auth"]

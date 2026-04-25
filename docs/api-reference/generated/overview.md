@@ -3,15 +3,15 @@
 # flext-auth API Overview
 
 - Package: `flext_auth`
-- Version: `0.12.0-dev`
+- Version: ``
 - Description: FLEXT Auth - Enterprise Authentication & Authorization Service
 - Project class: `platform`
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`, `security`, `typed`
-- Main facades: `FlextAuth`, `FlextAuthConstants`, `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthSettings`, `FlextAuthTypes`, `FlextAuthUtilities`
+- Main facades: `FlextAuthCertificateProvider`, `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthLdapProvider`, `FlextAuthProviderService`, `FlextAuthUtilitiesManagers`, `FlextAuthJwtProvider`, `FlextAuthOidcProvider` (+25 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextAuth`, `FlextAuthConstants`, `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthSettings`, `FlextAuthTypes`, `FlextAuthUtilities`
-- Exported module shortcuts: `api`, `constants`, `models`, `protocols`, `providers`, `settings`, `transports`, `typings` (+1 more)
-- Generated module pages: `9`
+- Public symbol exports: `FlextAuthCertificateProvider`, `FlextAuthModels`, `auth`, `FlextAuthProtocols`, `FlextAuthLdapProvider`, `FlextAuthProviderService`, `FlextAuthUtilitiesManagers`, `FlextAuthJwtProvider`, `FlextAuthOidcProvider`, `FlextAuthTypes` (+24 more)
+- Exported module shortcuts: _none_
+- Generated module pages: `31`
 
 ## Next Pages
 

@@ -19,7 +19,7 @@ This section is generated from public exports and real docstrings.
 
 ## Surface Summary
 
-- Primary facades: `FlextAuth`, `FlextAuthConstants`, `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthSettings`, `FlextAuthTypes` (+1 more)
-- Generated module pages: `9`
+- Primary facades: `FlextAuthCertificateProvider`, `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthLdapProvider`, `FlextAuthProviderService`, `FlextAuthUtilitiesManagers` (+27 more)
+- Generated module pages: `31`
 
 - [Back to project docs](../index.md)

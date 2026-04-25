@@ -17,9 +17,9 @@ from flext_auth import FlextAuth, FlextAuthSettings
 
 
 class _MockGlobal:
-    """Mock for FlextAuthSettings.get_global."""
+    """Mock for FlextAuthSettings.fetch_global."""
 
-    def get_global(self) -> None:
+    def fetch_global(self) -> None:
         """Return None as mock global instance."""
         return
 
@@ -43,8 +43,8 @@ def auth_settings() -> FlextAuthSettings:
 
 
 @pytest.fixture
-def mock_get_global() -> _MockGlobal:
-    """Mock for FlextAuthSettings.get_global.
+def mock_fetch_global() -> _MockGlobal:
+    """Mock for FlextAuthSettings.fetch_global.
 
     Returns:
         Mock t.JsonValue for global instance

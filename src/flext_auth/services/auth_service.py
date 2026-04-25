@@ -101,7 +101,7 @@ class FlextAuthApplicationService:
         return self._token_service
 
     @classmethod
-    def get_global(cls) -> Self:
+    def fetch_global(cls) -> Self:
         """Thread-safe singleton accessor."""
         instance = cls._instance
         if isinstance(instance, cls):

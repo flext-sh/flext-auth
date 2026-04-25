@@ -36,7 +36,7 @@
   - [Security Validations](#security-validations)
 - [🔗 FLEXT INTEGRATION](#flext-integration)
   - [Mandatory FLEXT Domain Library Usage](#mandatory-flext-domain-library-usage)
-  - [s Integration](#flextservice-integration)
+  - [s Integration](#s-integration)
 - [📘 API DESIGN](#api-design)
   - [Public API Patterns](#public-api-patterns)
 - [🏗️ IMPLEMENTATION PHASES](#implementation-phases)
