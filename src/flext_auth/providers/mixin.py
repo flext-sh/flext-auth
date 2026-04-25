@@ -336,7 +336,7 @@ class FlextAuthProviderMixin:
 
         """
         capabilities: list[t.JsonValue] = list(self.supports())
-        metadata: dict[str, t.JsonValue] = {
+        metadata: t.JsonMapping = {
             "capabilities": capabilities,
             "provider_type": self.__class__.__name__,
         }
@@ -383,4 +383,4 @@ class FlextAuthProviderMixin:
         return r[bool].ok(value=True)
 
 
-__all__: list[str] = ["FlextAuthProviderMixin"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthProviderMixin"]

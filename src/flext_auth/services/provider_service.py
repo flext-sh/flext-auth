@@ -149,7 +149,7 @@ class FlextAuthProviderService(s):
             return
         provider_config = self._auth_config.model_dump()
         providers: Sequence[
-            tuple[
+            t.Triple[
                 t.Auth.ProvidersKey,
                 type[p.Auth.FlextAuthBaseProvider],
                 Callable[[], bool],
@@ -220,4 +220,4 @@ class FlextAuthProviderService(s):
                     )
 
 
-__all__: list[str] = ["FlextAuthProviderService"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthProviderService"]

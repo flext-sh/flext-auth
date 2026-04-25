@@ -1,9 +1,3 @@
-<!-- TOC START -->
-- [Source of Truth](#source-of-truth)
-- [Generated Pages](#generated-pages)
-- [Surface Summary](#surface-summary)
-<!-- TOC END -->
-
 <!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 # flext-auth API Reference
@@ -25,7 +19,7 @@ This section is generated from public exports and real docstrings.
 
 ## Surface Summary
 
-- Primary facades: `FlextAuthServiceBase`, `FlextAuthConstants`, `FlextWebTransportAdapter`, `FlextAuthOidcProvider`, `FlextAuthModels`, `FlextAuthTokenService` (+27 more)
+- Primary facades: `FlextAuthApiKeyProvider`, `FlextAuthProtocols`, `FlextAuthRegistry`, `FlextAuthLdapProvider`, `FlextAuthPasswordHasher`, `FlextAuthProviderService` (+27 more)
 - Generated module pages: `31`
 
 - [Back to project docs](../index.md)

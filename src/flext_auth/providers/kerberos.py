@@ -301,7 +301,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = f"{identity_id}@kerberos.local"
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
-            parsed_roles: t.MutableSequenceOf[str]
+            parsed_roles: list[str] = []
             try:
                 parsed_roles = list(
                     t.Auth.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
@@ -310,7 +310,6 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 u.fetch_logger(__name__).warning(
                     f"Failed to validate roles from Kerberos payload: {exc}, using empty list",
                 )
-                parsed_roles = []
             roles = [role for role in parsed_roles if role]
         else:
             roles = ["user"]

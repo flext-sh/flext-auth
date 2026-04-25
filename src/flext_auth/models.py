@@ -648,4 +648,4 @@ class FlextAuthModels(m):
 # Short aliases
 m = FlextAuthModels
 
-__all__: list[str] = ["FlextAuthModels", "m"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthModels", "m"]
