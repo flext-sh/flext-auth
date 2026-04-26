@@ -58,14 +58,17 @@ class FlextAuthIdentityService(s):
                 "Account is locked due to too many failed attempts",
             )
         verification_result = identity.verify_credential(credential)
+        if verification_result.success and verification_result.value:
+            return r[m.Auth.AuthIdentity].ok(identity.with_successful_access())
         if verification_result.failure:
             return r[m.Auth.AuthIdentity].fail(verification_result.error)
-        if verification_result.value:
-            return r[m.Auth.AuthIdentity].ok(identity.with_successful_access())
         failed_attempt_result = self._handle_failed_attempt(identity)
-        if failed_attempt_result.failure:
-            return r[m.Auth.AuthIdentity].fail(failed_attempt_result.error)
-        return r[m.Auth.AuthIdentity].fail("Invalid credentials")
+        error_message = (
+            failed_attempt_result.error
+            if failed_attempt_result.failure
+            else "Invalid credentials"
+        )
+        return r[m.Auth.AuthIdentity].fail(error_message)
 
     def authorize_identity(
         self,
@@ -109,11 +112,10 @@ class FlextAuthIdentityService(s):
                 f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
             )
         set_result = identity.update_credential(new_credential)
-        return set_result.fold(
-            on_failure=lambda exc: r[bool].fail(exc),
-            on_success=lambda _: r[bool].ok(
-                self._log_success("Password change successful", identity.name),
-            ),
+        if set_result.failure:
+            return r[bool].fail(set_result.error)
+        return r[bool].ok(
+            self._log_success("Password change successful", identity.name),
         )
 
     def create_identity(
@@ -187,11 +189,10 @@ class FlextAuthIdentityService(s):
                 f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
             )
         set_result = identity.update_credential(new_credential)
-        return set_result.fold(
-            on_failure=lambda exc: r[bool].fail(exc),
-            on_success=lambda _: r[bool].ok(
-                self._log_success("Password reset successful", identity.name),
-            ),
+        if set_result.failure:
+            return r[bool].fail(set_result.error)
+        return r[bool].ok(
+            self._log_success("Password reset successful", identity.name),
         )
 
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:

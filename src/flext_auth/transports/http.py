@@ -166,8 +166,7 @@ class FlextWebTransportAdapter:
         method: str = "POST",
         data: t.Api.RequestBody | None = None,
         headers: t.StrMapping | None = None,
-        query: t.Api.WebParams | None = None,
-        timeout: float | None = None,
+        **kwargs: t.Scalar,
     ) -> p.Result[t.JsonMapping]:
         """Send HTTP request using flext-api transport.
 
@@ -178,13 +177,21 @@ class FlextWebTransportAdapter:
         method: HTTP method (GET, POST, PUT, DELETE, etc.)
         data: Request body data
         headers: Request headers
+        **kwargs: Optional transport controls such as ``query`` and ``timeout``
 
         Returns:
         r containing response data or error
 
         """
         request_headers: t.StrMapping = dict(headers) if headers is not None else {}
-        request_timeout = timeout if timeout is not None else self._timeout
+        query_raw = kwargs.get("query")
+        query = query_raw if isinstance(query_raw, Mapping) else None
+        timeout_raw = kwargs.get("timeout")
+        request_timeout = (
+            float(timeout_raw)
+            if isinstance(timeout_raw, (int, float))
+            else self._timeout
+        )
         resolved_body = self._resolve_body(method, data)
         resolved_query = self._resolve_query(method, data, query)
         request = m.Api.HttpRequest(
