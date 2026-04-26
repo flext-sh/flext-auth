@@ -1,0 +1,14 @@
+src/flext_auth/_utilities/managers.py
+  h_9db9d35f50cf33 95-138,140-153,155-160,191-196,198,200-208,211-223,311,313-336,469-474
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "bea305de9cb9783d1ccc9077a208099bfe30ecb1",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
