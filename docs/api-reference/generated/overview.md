@@ -7,9 +7,9 @@
 - Description: FLEXT Auth - Enterprise Authentication & Authorization Service
 - Project class: `platform`
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`, `security`, `typed`
-- Main facades: `FlextAuthApiKeyProvider`, `FlextAuthProtocols`, `FlextAuthRegistry`, `FlextAuthLdapProvider`, `FlextAuthPasswordHasher`, `FlextAuthProviderService`, `FlextAuthOAuth2Provider`, `FlextAuthUtilitiesManagers` (+25 more)
+- Main facades: `FlextAuthCertificateProvider`, `FlextAuthJwtTokenGenerator`, `FlextAuth`, `FlextAuthRfcProvider`, `FlextAuthOidcProvider`, `FlextAuthUtilitiesManagers`, `FlextWebTransportAdapter`, `FlextAuthOAuth2Provider` (+25 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextAuthApiKeyProvider`, `FlextAuthProtocols`, `FlextAuthRegistry`, `FlextAuthLdapProvider`, `FlextAuthPasswordHasher`, `FlextAuthProviderService`, `FlextAuthOAuth2Provider`, `FlextAuthUtilitiesManagers`, `FlextAuthIdentityService`, `FlextAuthCertificateProvider` (+24 more)
+- Public symbol exports: `FlextAuthCertificateProvider`, `FlextAuthJwtTokenGenerator`, `FlextAuth`, `FlextAuthRfcProvider`, `FlextAuthOidcProvider`, `FlextAuthUtilitiesManagers`, `FlextWebTransportAdapter`, `FlextAuthOAuth2Provider`, `FlextAuthProtocols`, `FlextAuthTypes` (+24 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `31`
 
