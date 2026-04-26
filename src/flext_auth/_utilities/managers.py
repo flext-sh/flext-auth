@@ -92,6 +92,72 @@ class FlextAuthUtilitiesManagers(
         _DATETIME_ADAPTER: ClassVar[u.TypeAdapter[datetime]] = u.TypeAdapter(datetime)
         _MIN_DATETIME: ClassVar[datetime] = datetime.min.replace(tzinfo=UTC)
 
+        class IdentityExtras(m.BaseModel):
+            """Normalized optional extras for identity creation."""
+
+            _MIN_DATETIME: ClassVar[datetime] = datetime.min.replace(tzinfo=UTC)
+
+            full_name: str | None = None
+            is_active: bool | None = None
+            roles: t.StrSequence | None = None
+            permissions: t.StrSequence | None = None
+            failed_attempts: int | None = None
+            locked_until: datetime | None = None
+            last_access: datetime | None = None
+            token: str | None = None
+            session_id: str | None = None
+
+            @u.field_validator("roles", "permissions", mode="before")
+            @classmethod
+            def normalize_str_sequence(
+                cls,
+                value: t.Scalar | t.StrSequence | datetime | None,
+            ) -> t.StrSequence | None:
+                """Normalize sequence-like values to strict string sequences."""
+                if value is None:
+                    return None
+                if isinstance(value, Sequence) and not isinstance(
+                    value,
+                    (str, bytes, bytearray),
+                ):
+                    return [str(item) for item in value]
+                return []
+
+            @u.field_validator("failed_attempts", mode="before")
+            @classmethod
+            def normalize_failed_attempts(
+                cls,
+                value: t.Scalar | t.StrSequence | datetime | None,
+            ) -> int | None:
+                """Normalize failed attempts from int-like values."""
+                if value is None:
+                    return None
+                if isinstance(value, int):
+                    return max(value, 0)
+                if isinstance(value, str) and value.isdigit():
+                    return int(value)
+                return 0
+
+            @u.field_validator("locked_until", "last_access", mode="before")
+            @classmethod
+            def normalize_datetime(
+                cls,
+                value: t.Scalar | t.StrSequence | datetime | None,
+            ) -> datetime | None:
+                """Normalize datetime-like values with deterministic fallback."""
+                if value is None:
+                    return None
+                match value:
+                    case datetime() as datetime_value:
+                        return datetime_value
+                    case str() as datetime_str:
+                        try:
+                            return datetime.fromisoformat(datetime_str)
+                        except ValueError:
+                            return cls._MIN_DATETIME
+                    case _:
+                        return cls._MIN_DATETIME
+
         def __init__(self, settings: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
             super().__init__()
@@ -121,113 +187,46 @@ class FlextAuthUtilitiesManagers(
             **extra_fields: t.Scalar | t.StrSequence | datetime | None,
         ) -> p.Result[m.Auth.AuthIdentity]:
             """Create a new user."""
-            if username in self._users:
-                return r[m.Auth.AuthIdentity].fail("Identity already exists")
             normalized_email = email.lower()
-            for existing_user_data in self._users.values():
-                existing_contact = existing_user_data.get("contact", "")
-                match existing_contact:
-                    case str() as existing_contact_str if (
-                        existing_contact_str.lower() == normalized_email
-                    ):
-                        return r[m.Auth.AuthIdentity].fail("Identity already exists")
-                    case _:
-                        continue
+            duplicate_identity_exists = username in self._users or any(
+                isinstance(existing_user_data.get("contact"), str)
+                and str(existing_user_data.get("contact")).lower() == normalized_email
+                for existing_user_data in self._users.values()
+            )
+            if duplicate_identity_exists:
+                return r[m.Auth.AuthIdentity].fail("Identity already exists")
+
             user_id = str(uuid4())
-            unique_id: str = str(user_id)
-            name: str = str(username)
-            contact: str = str(email)
-            credential_hash: str = str(password_hash)
-            full_name: str = ""
-            is_active: bool = True
-            roles: t.MutableSequenceOf[str] = []
-            permissions: t.MutableSequenceOf[str] = []
-            failed_attempts: int = 0
-            locked_until: datetime = self._MIN_DATETIME
-            last_access: datetime = self._MIN_DATETIME
-            token: str = ""
-            session_id: str = ""
-            for k, v in extra_fields.items():
-                if k == "full_name":
-                    full_name = str(v) if v is not None else ""
-                elif k == "is_active":
-                    is_active = bool(v)
-                elif k == "roles":
-                    roles = [str(item) for item in v] if isinstance(v, list) else []
-                elif k == "permissions":
-                    permissions = (
-                        [str(item) for item in v] if isinstance(v, list) else []
-                    )
-                elif k == "failed_attempts":
-                    match v:
-                        case int() as int_value:
-                            failed_attempts = int(int_value)
-                        case str() as str_value if str_value.isdigit():
-                            failed_attempts = int(str_value)
-                        case _:
-                            failed_attempts = 0
-                elif k in {"locked_until", "last_access"}:
-                    parsed_datetime = self._MIN_DATETIME
-                    match v:
-                        case datetime() as datetime_value:
-                            parsed_datetime = datetime_value
-                        case str() as datetime_str:
-                            try:
-                                parsed_datetime = (
-                                    self._DATETIME_ADAPTER.validate_python(
-                                        datetime_str,
-                                    )
-                                )
-                            except c.ValidationError as exc:
-                                u.fetch_logger(__name__).debug(
-                                    f"Failed to parse {k} datetime '{datetime_str}': {exc}, using minimum datetime",
-                                )
-                        case _:
-                            parsed_datetime = self._MIN_DATETIME
-                    if k == "locked_until":
-                        locked_until = parsed_datetime
-                    else:
-                        last_access = parsed_datetime
-                elif k == "token":
-                    token = str(v) if v is not None else ""
-                elif k == "session_id":
-                    session_id = str(v) if v is not None else ""
+            now = datetime.now(UTC)
+            user = m.Auth.AuthIdentity.model_validate(
+                {
+                    "unique_id": user_id,
+                    "name": username,
+                    "contact": normalized_email,
+                    "credential_hash": password_hash,
+                    **self._normalize_identity_extras(extra_fields),
+                },
+            )
             storage_data: t.Auth.ManagersUserData = {
-                "unique_id": unique_id,
-                "name": name,
-                "contact": contact,
-                "credential_hash": credential_hash,
-                "full_name": full_name,
-                "is_active": is_active,
-                "roles": roles,
-                "permissions": permissions,
-                "failed_attempts": failed_attempts,
-                "locked_until": locked_until,
-                "last_access": last_access,
-                "token": token,
-                "session_id": session_id,
+                "unique_id": user.unique_id,
+                "name": user.name,
+                "contact": user.contact,
+                "credential_hash": user.credential_hash,
+                "full_name": user.full_name,
+                "is_active": user.is_active,
+                "roles": list(user.roles),
+                "permissions": list(user.permissions),
+                "failed_attempts": user.failed_attempts,
+                "locked_until": user.locked_until,
+                "last_access": user.last_access,
+                "token": user.token,
+                "session_id": user.session_id,
                 "id": user_id,
                 "identity_id": user_id,
-                "created_at": datetime.now(UTC),
-                "updated_at": datetime.now(UTC),
+                "created_at": now,
+                "updated_at": now,
             }
             self._users[username] = storage_data
-            identity_dict = {
-                "unique_id": unique_id,
-                "name": name,
-                "contact": contact,
-                "credential_hash": credential_hash,
-                "full_name": full_name,
-                "is_active": is_active,
-                "roles": roles,
-                "permissions": permissions,
-                "failed_attempts": failed_attempts,
-                "locked_until": locked_until,
-                "last_access": last_access,
-                "token": token,
-                "session_id": session_id,
-            }
-            user = m.Auth.AuthIdentity.model_validate(identity_dict)
             return r[m.Auth.AuthIdentity].ok(user)
 
         def delete_user(self, user_id: str) -> p.Result[bool]:
@@ -309,17 +308,32 @@ class FlextAuthUtilitiesManagers(
             elif not add and value in field_list_value:
                 field_list_value.remove(value)
 
-        def _apply_list_modification_and_return_true(
+        def _normalize_identity_extras(
             self,
-            user_data: t.Auth.ManagersUserData,
-            field: str,
-            value: str,
-            *,
-            add: bool,
-        ) -> bool:
-            """Apply list mutation and return success sentinel."""
-            self._apply_list_modification(user_data, field, value, add=add)
-            return True
+            extra_fields: dict[str, t.Scalar | t.StrSequence | datetime | None],
+        ) -> dict[str, t.Scalar | t.StrSequence | datetime | bool]:
+            """Normalize optional identity extras before Pydantic validation."""
+            normalized = self.IdentityExtras.model_validate(extra_fields)
+            normalized_data: dict[str, t.Scalar | t.StrSequence | datetime | bool] = {}
+            if normalized.full_name is not None:
+                normalized_data["full_name"] = normalized.full_name
+            if normalized.is_active is not None:
+                normalized_data["is_active"] = normalized.is_active
+            if normalized.roles is not None:
+                normalized_data["roles"] = normalized.roles
+            if normalized.permissions is not None:
+                normalized_data["permissions"] = normalized.permissions
+            if normalized.failed_attempts is not None:
+                normalized_data["failed_attempts"] = normalized.failed_attempts
+            if normalized.locked_until is not None:
+                normalized_data["locked_until"] = normalized.locked_until
+            if normalized.last_access is not None:
+                normalized_data["last_access"] = normalized.last_access
+            if normalized.token is not None:
+                normalized_data["token"] = normalized.token
+            if normalized.session_id is not None:
+                normalized_data["session_id"] = normalized.session_id
+            return normalized_data
 
         def _create_identity_from_storage(
             self,
@@ -452,14 +466,12 @@ class FlextAuthUtilitiesManagers(
 
             Generic list field modifier - eliminates duplication in 4 methods.
             """
-            return self._find_user_by_id(user_id).map(
-                lambda ud: self._apply_list_modification_and_return_true(
-                    ud[1],
-                    field,
-                    value,
-                    add=add,
-                ),
-            )
+            user_result = self._find_user_by_id(user_id)
+            if user_result.failure:
+                return r[bool].fail(user_result.error or "User not found")
+            _, user_data = user_result.unwrap()
+            self._apply_list_modification(user_data, field, value, add=add)
+            return r[bool].ok(True)
 
         def _validate_required_field[T](
             self,
