@@ -16,17 +16,17 @@ from collections.abc import (
     Sequence,
 )
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
 from flext_api import r
-from flext_core import FlextContext, u
 
 from flext_auth import c, m, p, t
 from flext_auth._utilities._managers.auth_managers_session import (
     FlextAuthSessionManagers,
 )
 from flext_auth._utilities._managers.rate_limiter import FlextAuthRateLimiterManagers
+from flext_core import FlextContext, u
 
 if TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings
@@ -89,6 +89,8 @@ class FlextAuthUtilitiesManagers(
         logger: p.Logger
         context: p.Context
         _users: MutableMapping[str, t.Auth.ManagersUserData]
+        _DATETIME_ADAPTER: ClassVar[u.TypeAdapter[datetime]] = u.TypeAdapter(datetime)
+        _MIN_DATETIME: ClassVar[datetime] = datetime.min.replace(tzinfo=UTC)
 
         def __init__(self, settings: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
@@ -141,8 +143,8 @@ class FlextAuthUtilitiesManagers(
             roles: t.MutableSequenceOf[str] = []
             permissions: t.MutableSequenceOf[str] = []
             failed_attempts: int = 0
-            locked_until: datetime = datetime.min.replace(tzinfo=UTC)
-            last_access: datetime = datetime.min.replace(tzinfo=UTC)
+            locked_until: datetime = self._MIN_DATETIME
+            last_access: datetime = self._MIN_DATETIME
             token: str = ""
             session_id: str = ""
             for k, v in extra_fields.items():
@@ -164,40 +166,28 @@ class FlextAuthUtilitiesManagers(
                             failed_attempts = int(str_value)
                         case _:
                             failed_attempts = 0
-                elif k == "locked_until":
-                    if isinstance(v, datetime):
-                        locked_until = v
+                elif k in {"locked_until", "last_access"}:
+                    parsed_datetime = self._MIN_DATETIME
+                    match v:
+                        case datetime() as datetime_value:
+                            parsed_datetime = datetime_value
+                        case str() as datetime_str:
+                            try:
+                                parsed_datetime = (
+                                    self._DATETIME_ADAPTER.validate_python(
+                                        datetime_str,
+                                    )
+                                )
+                            except c.ValidationError as exc:
+                                u.fetch_logger(__name__).debug(
+                                    f"Failed to parse {k} datetime '{datetime_str}': {exc}, using minimum datetime",
+                                )
+                        case _:
+                            parsed_datetime = self._MIN_DATETIME
+                    if k == "locked_until":
+                        locked_until = parsed_datetime
                     else:
-                        match v:
-                            case str() as locked_until_str:
-                                try:
-                                    locked_until = datetime.fromisoformat(
-                                        locked_until_str,
-                                    )
-                                except ValueError as exc:
-                                    u.fetch_logger(__name__).debug(
-                                        f"Failed to parse locked_until datetime '{locked_until_str}': {exc}, using minimum datetime",
-                                    )
-                                    locked_until = datetime.min.replace(tzinfo=UTC)
-                            case _:
-                                locked_until = datetime.min.replace(tzinfo=UTC)
-                elif k == "last_access":
-                    if isinstance(v, datetime):
-                        last_access = v
-                    else:
-                        match v:
-                            case str() as last_access_str:
-                                try:
-                                    last_access = datetime.fromisoformat(
-                                        last_access_str,
-                                    )
-                                except ValueError as exc:
-                                    u.fetch_logger(__name__).debug(
-                                        f"Failed to parse last_access datetime '{last_access_str}': {exc}, using minimum datetime",
-                                    )
-                                    last_access = datetime.min.replace(tzinfo=UTC)
-                            case _:
-                                last_access = datetime.min.replace(tzinfo=UTC)
+                        last_access = parsed_datetime
                 elif k == "token":
                     token = str(v) if v is not None else ""
                 elif k == "session_id":

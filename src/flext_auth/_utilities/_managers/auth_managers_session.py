@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from flext_api import r, u
-from flext_core import FlextContainer, FlextContext, p
 
 from flext_auth import m, t
+from flext_core import FlextContainer, FlextContext, p
 
 if TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings

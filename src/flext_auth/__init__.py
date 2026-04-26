@@ -5,13 +5,12 @@ from __future__ import annotations
 
 import typing as _t
 
+from flext_auth.__version__ import *
 from flext_core.lazy import (
     build_lazy_import_map,
     install_lazy_exports,
     merge_lazy_imports,
 )
-
-from flext_auth.__version__ import *
 
 if _t.TYPE_CHECKING:
     from flext_api import d, e, h, r, x

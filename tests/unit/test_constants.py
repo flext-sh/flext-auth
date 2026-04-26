@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from flext_core import FlextConstants
-
 from tests import c, u
 
 

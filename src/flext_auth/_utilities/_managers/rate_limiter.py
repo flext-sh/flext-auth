@@ -7,9 +7,9 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from flext_api import r, u
-from flext_core import FlextContext, p
 
 from flext_auth import t
+from flext_core import FlextContext, p
 
 if TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings
