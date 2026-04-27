@@ -28,8 +28,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypeIs
-
 from flext_api import r
 
 from flext_auth import m, p, s, t
@@ -43,13 +41,6 @@ class FlextAuthMiddleware(s):
     to work with HTTP client middleware (flext-api) and web application middleware
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
-
-    @staticmethod
-    def _request_has_headers(
-        req: p.Auth.RequestWithHeaders,
-    ) -> TypeIs[p.Auth.RequestWithHeaders]:
-        """TypeGuard: request has a headers attribute."""
-        return hasattr(req, "headers")
 
     class _MiddlewareControlMixin:
         """Shared enable/disable functionality for middleware classes."""
@@ -195,34 +186,19 @@ class FlextAuthMiddleware(s):
             refreshed_payload = refresh_result.value
             identity_id_value = (
                 refreshed_payload.identity_id
-                if hasattr(refreshed_payload, "identity_id")
-                else ""
+                or refreshed_payload.user_id
+                or current_token.identity_id
             )
-            if not identity_id_value:
-                user_id_value = (
-                    refreshed_payload.user_id
-                    if hasattr(refreshed_payload, "user_id")
-                    else ""
-                )
-                identity_id_value = user_id_value or current_token.identity_id
             try:
                 refreshed_token = m.Auth.AuthToken(
                     identity_id=identity_id_value,
                     token=refreshed_payload.token,
-                    token_type=refreshed_payload.token_type
-                    if hasattr(refreshed_payload, "token_type")
-                    else "Bearer",
+                    token_type=refreshed_payload.token_type,
                     expires_at=refreshed_payload.expires_at,
-                    is_revoked=bool(
-                        refreshed_payload.is_revoked
-                        if hasattr(refreshed_payload, "is_revoked")
-                        else False,
-                    ),
-                    refresh_token=refreshed_payload.refresh_token
-                    if hasattr(refreshed_payload, "refresh_token")
-                    else "",
+                    is_revoked=bool(refreshed_payload.is_revoked),
+                    refresh_token=refreshed_payload.refresh_token,
                 )
-            except (AttributeError, TypeError, ValueError):
+            except (TypeError, ValueError):
                 return r[m.Auth.AuthToken].fail(
                     "Provider refresh returned invalid token payload",
                 )
