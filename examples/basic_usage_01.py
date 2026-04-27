@@ -99,7 +99,7 @@ def example_user_lifecycle() -> None:
     )
     if register_result.success:
         user_data = register_result.value
-        roles_payload: t.MutableSequenceOf[t.JsonValue] = list(user_data.roles)
+        roles_payload: list[t.JsonValue] = list(user_data.roles)
         logger.info(
             "User registered successfully",
             name=user_data.name,
@@ -169,7 +169,7 @@ def example_advanced_registration() -> None:
     )
     if register_result.success:
         user_data = register_result.value
-        admin_roles_payload: t.MutableSequenceOf[t.JsonValue] = list(user_data.roles)
+        admin_roles_payload: list[t.JsonValue] = list(user_data.roles)
         logger.info(
             "Admin user registered successfully",
             name=user_data.name,
@@ -188,7 +188,7 @@ def example_advanced_registration() -> None:
     )
     if user_result.success:
         user_data = user_result.value
-        user_roles_payload: t.MutableSequenceOf[t.JsonValue] = list(user_data.roles)
+        user_roles_payload: list[t.JsonValue] = list(user_data.roles)
         logger.info(
             "Regular user registered successfully",
             name=user_data.name,

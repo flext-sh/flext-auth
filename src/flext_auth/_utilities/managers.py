@@ -519,6 +519,24 @@ class FlextAuthUtilitiesManagers(
             self.context = FlextContext()
             self._logs: MutableSequence[t.Auth.ManagersLogEntry] = []
 
+        @staticmethod
+        def _log_matches(
+            log: t.Auth.ManagersLogEntry,
+            user_id: str | None,
+            event_type: str | None,
+            start_date: datetime | None,
+            end_date: datetime | None,
+        ) -> bool:
+            ts = log.get("timestamp")
+            return all([
+                user_id is None
+                or log.get("username") == user_id
+                or log.get(c.Auth.KEY_USER_ID) == user_id,
+                event_type is None or log.get("event_type") == event_type,
+                start_date is None or (isinstance(ts, datetime) and ts >= start_date),
+                end_date is None or (isinstance(ts, datetime) and ts <= end_date),
+            ])
+
         def get_logs(
             self,
             user_id: str | None = None,
@@ -528,48 +546,12 @@ class FlextAuthUtilitiesManagers(
             limit: int = 100,
         ) -> p.Result[Sequence[t.Auth.ManagersLogEntry]]:
             """Get audit logs with optional filtering."""
-            filtered_logs: MutableSequence[t.Auth.ManagersLogEntry] = []
-            for log in self._logs:
-                if user_id is not None:
-                    username_value = log.get("username")
-                    log_user_id_value = log.get(c.Auth.KEY_USER_ID)
-                    match username_value:
-                        case str() as username if username == user_id:
-                            username_matches = True
-                        case _:
-                            username_matches = False
-                    match log_user_id_value:
-                        case str() as log_user_id if log_user_id == user_id:
-                            log_user_matches = True
-                        case _:
-                            log_user_matches = False
-                    if not username_matches and (not log_user_matches):
-                        continue
-                if event_type is not None:
-                    log_event_type = log.get("event_type")
-                    match log_event_type:
-                        case str() as log_event if log_event == event_type:
-                            filtered_event_matches = True
-                        case _:
-                            filtered_event_matches = False
-                    if not filtered_event_matches:
-                        continue
-                if start_date is not None:
-                    log_timestamp = log.get("timestamp")
-                    if (
-                        not isinstance(log_timestamp, datetime)
-                        or log_timestamp < start_date
-                    ):
-                        continue
-                if end_date is not None:
-                    log_timestamp = log.get("timestamp")
-                    if (
-                        not isinstance(log_timestamp, datetime)
-                        or log_timestamp > end_date
-                    ):
-                        continue
-                filtered_logs.append(log)
-            return r[Sequence[t.Auth.ManagersLogEntry]].ok(filtered_logs[-limit:])
+            matched = [
+                log
+                for log in self._logs
+                if self._log_matches(log, user_id, event_type, start_date, end_date)
+            ]
+            return r[Sequence[t.Auth.ManagersLogEntry]].ok(matched[-limit:])
 
         def get_total_log_entries(self) -> int:
             """Get total count of log entries."""
