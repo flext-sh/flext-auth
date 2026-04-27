@@ -133,10 +133,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         flow_value = self.config.get("flow")
         match flow_value:
             case None | "":
-                return str(c.Auth.OAuth2.FLOW_DEFAULT)
+                return str(c.Auth.OAUTH2_FLOW_DEFAULT)
             case str() as flow:
-                if flow not in c.Auth.OAuth2.FLOWS:
-                    error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAuth2.FLOWS}, got {flow}"
+                if flow not in c.Auth.OAUTH2_FLOWS:
+                    error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAUTH2_FLOWS}, got {flow}"
                     raise ValueError(error_msg)
                 return flow
             case _:
@@ -148,7 +148,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         use_pkce_value = self.config.get("use_pkce")
         match use_pkce_value:
             case None:
-                return bool(c.Auth.OAuth2.USE_PKCE_DEFAULT)
+                return bool(c.Auth.OAUTH2_USE_PKCE_DEFAULT)
             case bool() as use_pkce:
                 return use_pkce
             case _:
@@ -160,11 +160,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         scope_value = self.config.get("scope")
         match scope_value:
             case None:
-                return str(c.Auth.OAuth2.SCOPE_DEFAULT)
+                return str(c.Auth.OAUTH2_SCOPE_DEFAULT)
             case str() as scope if scope:
                 return scope
             case str():
-                return str(c.Auth.OAuth2.SCOPE_DEFAULT)
+                return str(c.Auth.OAUTH2_SCOPE_DEFAULT)
             case _:
                 error_msg = f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
                 raise ValueError(error_msg)
@@ -176,10 +176,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
         match token_endpoint_auth_method_value:
             case None | "":
-                return str(c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT)
+                return str(c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT)
             case str() as auth_method:
-                if auth_method not in c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS:
-                    error_msg = f"OAuth2 'token_endpoint_auth_method' must be one of {c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS}, got {auth_method}"
+                if auth_method not in c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS:
+                    error_msg = f"OAuth2 'token_endpoint_auth_method' must be one of {c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS}, got {auth_method}"
                     raise ValueError(error_msg)
                 return auth_method
             case _:
@@ -438,7 +438,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             version="1.0.0",
             capabilities=tuple(self.supports()),
             extras={
-                "flows": [c.Auth.OAuth2.FLOW_DEFAULT, "client_credentials"],
+                "flows": [c.Auth.OAUTH2_FLOW_DEFAULT, "client_credentials"],
                 "pkce_supported": self._use_pkce,
             },
         )

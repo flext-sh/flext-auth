@@ -4,10 +4,10 @@ from typing import Final
 
 from flext_tests import FlextTestsConstants
 
-from flext_auth import FlextAuthConstants
+from flext_auth import c
 
 
-class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
+class TestsFlextAuthConstants(FlextTestsConstants, c):
     """Test constants for flext-auth."""
 
     class Tests(FlextTestsConstants.Tests):
@@ -25,7 +25,7 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
         TEST_SECRET: Final[str] = "test_secret_key_for_jwt_signing_32bytes"
         TEST_ISSUER: Final[str] = "test-issuer"
         TEST_AUDIENCE: Final[str] = "test-audience"
-        TEST_ALGORITHM: Final[str] = "HS256"
+        TEST_ALGORITHM: Final[str] = c.Auth.Algorithms.HS256
 
         TEST_CLIENT_ID: Final[str] = "test_client_id"
         TEST_CLIENT_SECRET: Final[str] = "test_client_secret"

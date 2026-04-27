@@ -155,6 +155,10 @@ class FlextAuthConstants(c):
             RS256 = "RS256"
             ES256 = "ES256"
 
+        # ===== Regex Patterns for Validation =====
+        PATTERN_EMAIL: Final[str] = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        "Standard email address validation pattern."
+
         VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value for member in TokenTypes.__members__.values()
         )
@@ -198,7 +202,7 @@ class FlextAuthConstants(c):
         "Default maximum sessions per user."
         DEFAULT_HASH_ROUNDS: Final[int] = 12
         "Default bcrypt hash rounds."
-        DEFAULT_JWT_ALGORITHM: Final[str] = "HS256"
+        DEFAULT_JWT_ALGORITHM: Final[str] = Algorithms.HS256
         "Default JWT algorithm."
         MAX_USERNAME_LENGTH: Final[int] = 255
         "Maximum username length."
@@ -262,7 +266,7 @@ class FlextAuthConstants(c):
         "Template for successful authentication responses."
 
         # ===== JWT Constants =====
-        JWT_DEFAULT_ALGORITHM: Final[str] = "HS256"
+        JWT_DEFAULT_ALGORITHM: Final[str] = Algorithms.HS256
         "Default JWT algorithm."
         JWT_DEFAULT_EXPIRY_MINUTES: Final[int] = 30
         "Default JWT expiry in minutes."
@@ -354,17 +358,17 @@ class FlextAuthConstants(c):
         "Maximum length for long names (usernames, descriptions)."
 
         # ===== Model Validation Constants =====
-        MODEL_VALIDATION_BCRYPT_ROUNDS: Final[int] = 12
+        VALIDATION_BCRYPT_ROUNDS: Final[int] = 12
         "Bcrypt rounds for password hashing."
-        MODEL_VALIDATION_DEFAULT_TOKEN_EXPIRY_MINUTES: Final[int] = 60
+        VALIDATION_DEFAULT_TOKEN_EXPIRY_MINUTES: Final[int] = 60
         "Default token expiry in minutes."
-        MODEL_VALIDATION_MAX_ROLE_NAME_LENGTH: Final[int] = 50
+        VALIDATION_MAX_ROLE_NAME_LENGTH: Final[int] = 50
         "Maximum length for role names."
-        MODEL_VALIDATION_MAX_ROLE_DESCRIPTION_LENGTH: Final[int] = 500
+        VALIDATION_MAX_ROLE_DESCRIPTION_LENGTH: Final[int] = 500
         "Maximum length for role descriptions."
-        MODEL_VALIDATION_MAX_PERMISSION_NAME_LENGTH: Final[int] = 100
+        VALIDATION_MAX_PERMISSION_NAME_LENGTH: Final[int] = 100
         "Maximum length for permission names."
-        MODEL_VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
+        VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
         "Maximum length for permission descriptions."
 
         @unique
@@ -552,14 +556,7 @@ class FlextAuthConstants(c):
             DELETE = "delete"
             REDACTED_LDAP_BIND_PASSWORD = "REDACTED_LDAP_BIND_PASSWORD"
 
-        @unique
-        class AlgorithmLiteral(StrEnum):
-            """Algorithm literal enumeration."""
-
-            HS256 = "HS256"
-            RS256 = "RS256"
-            ES256 = "ES256"
-
 
 c = FlextAuthConstants
+
 __all__: t.MutableSequenceOf[str] = ["FlextAuthConstants", "c"]

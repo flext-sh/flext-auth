@@ -11,7 +11,7 @@ from collections.abc import (
     MutableSequence,
 )
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated
 
 from flext_api import t, u
 
@@ -24,13 +24,13 @@ class FlextAuthTypes(t):
     class Auth:
         """Auth domain namespace (flat members per AGENTS.md §149)."""
 
-        type TokenRequestType = Literal["access", "refresh", "id", "bearer"]
+        type TokenRequestType = c.Auth.TokenTypes | str
 
         type ProvidersKey = Annotated[
             str,
             u.Field(
                 min_length=1,
-                max_length=c.Auth.Validation.SHORT_NAME_MAX,
+                max_length=c.Auth.VALIDATION_SHORT_NAME_MAX,
                 pattern=c.PATTERN_IDENTIFIER_LOWERCASE,
                 description="Provider registry key",
             ),

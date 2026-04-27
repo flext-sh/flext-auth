@@ -74,7 +74,7 @@ ______________________________________________________________________
 | -------------------- | ---- | ---------------- | -------------------------------- |
 | `jwt_secret_key`     | str  | "dev-secret-key" | Secret key for JWT signing       |
 | `jwt_expiry_minutes` | int  | 60               | Token expiration time in minutes |
-| `jwt_algorithm`      | str  | "HS256"          | JWT signing algorithm            |
+| `jwt_algorithm`      | str  | c.Auth.Algorithms.HS256          | JWT signing algorithm            |
 
 ### Security Settings
 

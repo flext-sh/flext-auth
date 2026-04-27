@@ -46,7 +46,7 @@ class FlextAuthModels(m):
             @staticmethod
             def hash_password(password: str) -> str:
                 """Hash a password using bcrypt."""
-                salt = bcrypt.gensalt(rounds=c.Auth.ModelValidation.BCRYPT_ROUNDS)
+                salt = bcrypt.gensalt(rounds=c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS)
                 return bcrypt.hashpw(password.encode(), salt).decode()
 
             @staticmethod
@@ -105,17 +105,17 @@ class FlextAuthModels(m):
 
             identity_id: Annotated[str, u.Field(..., description="Identity ID")]
             token_type: Annotated[
-                t.Auth.TokenRequestType,
+                c.Auth.TokenTypes | str,
                 u.Field(
                     description="Token type",
                 ),
-            ] = "access"
+            ] = c.Auth.TokenTypes.ACCESS.value
             expiry_minutes: Annotated[
                 t.PositiveInt,
                 u.Field(
                     description="Token expiry",
                 ),
-            ] = c.Auth.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES
+            ] = c.Auth.VALIDATION_DEFAULT_TOKEN_EXPIRY_MINUTES
             extra_claims: t.JsonMapping = u.Field(default_factory=dict)
             session_id: Annotated[str, u.Field(description="Session ID")] = ""
 
@@ -165,8 +165,8 @@ class FlextAuthModels(m):
                 str,
                 u.Field(
                     ...,
-                    min_length=c.Auth.CREDENTIALS_Username.MIN_LENGTH,
-                    max_length=c.Auth.CREDENTIALS_Username.MAX_LENGTH,
+                    min_length=c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH,
+                    max_length=c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH,
                     description="Unique identity name",
                 ),
             ]
@@ -174,7 +174,7 @@ class FlextAuthModels(m):
                 t.NonEmptyStr,
                 u.Field(
                     ...,
-                    pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                    pattern=c.Auth.PATTERN_EMAIL,
                     description="Contact info (email)",
                 ),
             ]
@@ -182,7 +182,7 @@ class FlextAuthModels(m):
                 str,
                 u.Field(
                     ...,
-                    min_length=c.Auth.CREDENTIALS_Password.MIN_LENGTH,
+                    min_length=c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH,
                     description="Credential (password/key)",
                     exclude=True,
                 ),
@@ -205,8 +205,8 @@ class FlextAuthModels(m):
                 str,
                 u.Field(
                     ...,
-                    min_length=c.Auth.CREDENTIALS_Username.MIN_LENGTH,
-                    max_length=c.Auth.CREDENTIALS_Username.MAX_LENGTH,
+                    min_length=c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH,
+                    max_length=c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH,
                     description="Unique identity name",
                 ),
             ]
@@ -332,14 +332,14 @@ class FlextAuthModels(m):
                 t.NonEmptyStr,
                 u.Field(
                     ...,
-                    max_length=c.Auth.ModelValidation.MAX_ROLE_NAME_LENGTH,
+                    max_length=c.Auth.VALIDATION_MAX_ROLE_NAME_LENGTH,
                     description="Role name",
                 ),
             ]
             description: Annotated[
                 str,
                 u.Field(
-                    max_length=c.Auth.ModelValidation.MAX_ROLE_DESCRIPTION_LENGTH,
+                    max_length=c.Auth.VALIDATION_MAX_ROLE_DESCRIPTION_LENGTH,
                     description="Description",
                 ),
             ] = ""
@@ -352,14 +352,14 @@ class FlextAuthModels(m):
                 t.NonEmptyStr,
                 u.Field(
                     ...,
-                    max_length=c.Auth.ModelValidation.MAX_PERMISSION_NAME_LENGTH,
+                    max_length=c.Auth.VALIDATION_MAX_PERMISSION_NAME_LENGTH,
                     description="Permission",
                 ),
             ]
             description: Annotated[
                 str,
                 u.Field(
-                    max_length=c.Auth.ModelValidation.MAX_PERMISSION_DESCRIPTION_LENGTH,
+                    max_length=c.Auth.VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH,
                     description="Description",
                 ),
             ] = ""

@@ -250,7 +250,11 @@ class FlextAuthProviderMixin:
         secret_key_obj = t.SecretStr(secret_key)
 
         algorithm_value = settings.get("algorithm")
-        algorithm = algorithm_value if isinstance(algorithm_value, str) else "HS256"
+        algorithm = (
+            algorithm_value
+            if isinstance(algorithm_value, str)
+            else c.Auth.Algorithms.HS256
+        )
 
         audience_value = settings.get("audience")
         audience = (

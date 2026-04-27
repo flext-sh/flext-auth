@@ -228,7 +228,7 @@ class FlextAuthSettings(FlextSettings):
     # JWT Settings
     jwt_secret_key: str = "dev-secret-key"
     jwt_expiry_minutes: int = 60
-    jwt_algorithm: str = "HS256"
+    jwt_algorithm: str = c.Auth.Algorithms.HS256
 
     # Security Settings
     bcrypt_rounds: int = 12

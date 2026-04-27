@@ -13,7 +13,7 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(c.__mro__, has=FlextConstants)
 
     def test_jwt_constants(self) -> None:
-        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_ALGORITHM, eq="HS256")
+        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_ALGORITHM, eq=c.Auth.Algorithms.HS256)
         u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_EXPIRY_MINUTES, eq=30)
         u.Tests.Matchers.that(c.Auth.JWT_MAX_EXPIRY_MINUTES, eq=1440)
         u.Tests.Matchers.that(c.Auth.JWT_ISSUER_CLAIM, eq="flext-auth")
@@ -22,14 +22,13 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_TOKEN_TYPE, eq="Bearer")
 
     def test_credentials_constants(self) -> None:
-        creds = c.Auth.Credentials
-        u.Tests.Matchers.that(creds.Username.MIN_LENGTH, eq=3)
-        u.Tests.Matchers.that(creds.Username.MAX_LENGTH, eq=50)
-        u.Tests.Matchers.that(creds.Password.MIN_LENGTH, eq=8)
-        u.Tests.Matchers.that(creds.Password.MAX_LENGTH, eq=128)
-        u.Tests.Matchers.that(creds.Password.MIN_SCORE, eq=3)
-        u.Tests.Matchers.that(creds.Password.MIN_BCRYPT_HASH_LENGTH, eq=60)
-        u.Tests.Matchers.that(creds.Password.BCRYPT_ROUNDS, eq=12)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH, eq=3)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH, eq=50)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH, eq=8)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH, eq=128)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MIN_SCORE, eq=3)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MIN_BCRYPT_HASH_LENGTH, eq=60)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS, eq=12)
 
     def test_session_constants(self) -> None:
         u.Tests.Matchers.that(c.Auth.SESSION_DEFAULT_EXPIRY_MINUTES, eq=120)
@@ -38,19 +37,19 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(c.Auth.SESSION_MIN_TOKEN_LENGTH, eq=32)
 
     def test_auth_security_constants(self) -> None:
-        security = c.Auth.AuthSecurity
-        u.Tests.Matchers.that(security.MAX_LOGIN_ATTEMPTS, eq=5)
-        u.Tests.Matchers.that(security.LOCKOUT_DURATION_MINUTES, eq=15)
-        u.Tests.Matchers.that(security.MAX_REQUESTS_PER_MINUTE, eq=60)
-        u.Tests.Matchers.that(security.MAX_REQUESTS_PER_HOUR, eq=1000)
+        u.Tests.Matchers.that(c.Auth.SECURITY_MAX_LOGIN_ATTEMPTS, eq=5)
+        u.Tests.Matchers.that(c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES, eq=15)
+        u.Tests.Matchers.that(c.Auth.SECURITY_MAX_REQUESTS_PER_MINUTE, eq=60)
+        u.Tests.Matchers.that(c.Auth.SECURITY_MAX_REQUESTS_PER_HOUR, eq=1000)
 
     def test_error_codes_constants(self) -> None:
-        codes = c.Auth.ErrorCodes
-        u.Tests.Matchers.that(codes.INVALID_CREDENTIALS, eq="INVALID_CREDENTIALS")
-        u.Tests.Matchers.that(codes.ACCOUNT_LOCKED, eq="ACCOUNT_LOCKED")
-        u.Tests.Matchers.that(codes.ACCOUNT_DISABLED, eq="ACCOUNT_DISABLED")
-        u.Tests.Matchers.that(codes.TOKEN_EXPIRED, eq="TOKEN_EXPIRED")
-        u.Tests.Matchers.that(codes.INVALID_TOKEN, eq="INVALID_TOKEN")
+        u.Tests.Matchers.that(
+            c.Auth.ERROR_INVALID_CREDENTIALS, eq="INVALID_CREDENTIALS"
+        )
+        u.Tests.Matchers.that(c.Auth.ERROR_ACCOUNT_LOCKED, eq="ACCOUNT_LOCKED")
+        u.Tests.Matchers.that(c.Auth.ERROR_ACCOUNT_DISABLED, eq="ACCOUNT_DISABLED")
+        u.Tests.Matchers.that(c.Auth.ERROR_TOKEN_EXPIRED, eq="TOKEN_EXPIRED")
+        u.Tests.Matchers.that(c.Auth.ERROR_INVALID_TOKEN, eq="INVALID_TOKEN")
 
     def test_permission_types_strenum(self) -> None:
         perms = c.Auth.PermissionTypes
@@ -86,9 +85,9 @@ class TestsFlextAuthConstantsUnit:
 
     def test_algorithms_strenum(self) -> None:
         algos = c.Auth.Algorithms
-        u.Tests.Matchers.that(algos.HS256, eq="HS256")
-        u.Tests.Matchers.that(algos.RS256, eq="RS256")
-        u.Tests.Matchers.that(algos.ES256, eq="ES256")
+        u.Tests.Matchers.that(algos.HS256, eq=c.Auth.Algorithms.HS256)
+        u.Tests.Matchers.that(algos.RS256, eq=c.Auth.Algorithms.RS256)
+        u.Tests.Matchers.that(algos.ES256, eq=c.Auth.Algorithms.ES256)
 
     def test_valid_token_types_frozenset(self) -> None:
         valid = c.Auth.VALID_TOKEN_TYPES
@@ -125,7 +124,7 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(auth.DEFAULT_SESSION_EXPIRY_MINUTES, eq=1440)
         u.Tests.Matchers.that(auth.DEFAULT_MAX_SESSIONS_PER_USER, eq=5)
         u.Tests.Matchers.that(auth.DEFAULT_HASH_ROUNDS, eq=12)
-        u.Tests.Matchers.that(auth.DEFAULT_JWT_ALGORITHM, eq="HS256")
+        u.Tests.Matchers.that(auth.DEFAULT_JWT_ALGORITHM, eq=c.Auth.Algorithms.HS256)
 
     def test_security_policy_constants(self) -> None:
         auth = c.Auth
@@ -134,21 +133,21 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(auth.SECRET_MIN_LENGTH, eq=32)
 
     def test_model_validation_constants(self) -> None:
-        mv = c.Auth.ModelValidation
-        u.Tests.Matchers.that(mv.BCRYPT_ROUNDS, eq=12)
-        u.Tests.Matchers.that(mv.DEFAULT_TOKEN_EXPIRY_MINUTES, eq=60)
-        u.Tests.Matchers.that(mv.MAX_ROLE_NAME_LENGTH, eq=50)
-        u.Tests.Matchers.that(mv.MAX_ROLE_DESCRIPTION_LENGTH, eq=500)
-        u.Tests.Matchers.that(mv.MAX_PERMISSION_NAME_LENGTH, eq=100)
-        u.Tests.Matchers.that(mv.MAX_PERMISSION_DESCRIPTION_LENGTH, eq=500)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_BCRYPT_ROUNDS, eq=12)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_DEFAULT_TOKEN_EXPIRY_MINUTES, eq=60)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_ROLE_NAME_LENGTH, eq=50)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_ROLE_DESCRIPTION_LENGTH, eq=500)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_PERMISSION_NAME_LENGTH, eq=100)
+        u.Tests.Matchers.that(
+            c.Auth.VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH, eq=500
+        )
 
     def test_oauth2_constants(self) -> None:
-        oauth2 = c.Auth.OAuth2
-        u.Tests.Matchers.that(oauth2.SCOPE_DEFAULT, eq="openid profile email")
-        u.Tests.Matchers.that(oauth2.FLOWS, has="authorization_code")
-        u.Tests.Matchers.that(oauth2.FLOWS, has="client_credentials")
-        u.Tests.Matchers.that(oauth2.FLOW_DEFAULT, eq="authorization_code")
-        u.Tests.Matchers.that(oauth2.USE_PKCE_DEFAULT, eq=True)
+        u.Tests.Matchers.that(c.Auth.OAUTH2_SCOPE_DEFAULT, eq="openid profile email")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_FLOWS, has="authorization_code")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_FLOWS, has="client_credentials")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_FLOW_DEFAULT, eq="authorization_code")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_USE_PKCE_DEFAULT, eq=True)
 
     def test_validation_limits_mapping(self) -> None:
         limits = c.Auth.VALIDATION_LIMITS

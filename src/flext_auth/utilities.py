@@ -52,13 +52,13 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             """Validate password strength."""
             if not password:
                 return r[str].fail("Password cannot be empty")
-            if len(password) < c.Auth.CREDENTIALS_Password.MIN_LENGTH:
+            if len(password) < c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH:
                 return r[str].fail(
-                    f"Password too short (min {c.Auth.CREDENTIALS_Password.MIN_LENGTH} chars)",
+                    f"Password too short (min {c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH} chars)",
                 )
-            if len(password) > c.Auth.CREDENTIALS_Password.MAX_LENGTH:
+            if len(password) > c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH:
                 return r[str].fail(
-                    f"Password too long (max {c.Auth.CREDENTIALS_Password.MAX_LENGTH} chars)",
+                    f"Password too long (max {c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH} chars)",
                 )
             return r[str].ok(password)
 
@@ -68,13 +68,13 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             if not username or not username.strip():
                 return r[str].fail("Username cannot be empty")
             username = username.strip()
-            if len(username) < c.Auth.CREDENTIALS_Username.MIN_LENGTH:
+            if len(username) < c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH:
                 return r[str].fail(
-                    f"Username too short (min {c.Auth.CREDENTIALS_Username.MIN_LENGTH} chars)",
+                    f"Username too short (min {c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH} chars)",
                 )
-            if len(username) > c.Auth.CREDENTIALS_Username.MAX_LENGTH:
+            if len(username) > c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH:
                 return r[str].fail(
-                    f"Username too long (max {c.Auth.CREDENTIALS_Username.MAX_LENGTH} chars)",
+                    f"Username too long (max {c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH} chars)",
                 )
             return r[str].ok(username)
 

@@ -273,7 +273,7 @@ class TestsFlextAuthApi:
         custom_expiry = 60
         custom_config = FlextAuthSettings(
             secret_key=custom_secret,
-            algorithm="HS256",
+            algorithm=c.Auth.Algorithms.HS256,
             issuer="flext-auth",
             audience="flext-users",
             hash_rounds=custom_rounds,
