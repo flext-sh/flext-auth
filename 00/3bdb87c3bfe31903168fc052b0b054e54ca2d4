@@ -1,0 +1,24 @@
+src/flext_auth/constants.py
+  h_9db9d35f50cf33 264-265,267,269,271,273,275,277,280-281,283,289,291,293,299,302-303,305,307,309,311,313,315,318-319,321,323,325,328-329,331,333,335,338-339,341,343,345,347,350-351,353,356-357,359,361,363,365,367
+src/flext_auth/services/identity_service.py
+  h_9db9d35f50cf33 201,204
+src/flext_auth/utilities.py
+  h_9db9d35f50cf33 55,57,59,61,71,73,75,77,164,203
+src/flext_auth/typings.py
+  h_9db9d35f50cf33 34
+tests/unit/test_constants.py
+  h_9db9d35f50cf33 16-22,35-38
+src/flext_auth/models.py
+  h_9db9d35f50cf33 168-169,185,208-209,547
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "003bdb87c3bfe31903168fc052b0b054e54ca2d4",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
