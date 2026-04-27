@@ -16,6 +16,7 @@ from typing import Annotated, Literal
 from flext_api import t, u
 
 from flext_auth import c
+from flext_core import c as core_c
 
 
 class FlextAuthTypes(t):
@@ -31,7 +32,7 @@ class FlextAuthTypes(t):
             u.Field(
                 min_length=1,
                 max_length=c.Auth.Validation.SHORT_NAME_MAX,
-                pattern="^[a-z0-9](?:[a-z0-9\\-_.]{0,62}[a-z0-9])?$",
+                pattern=core_c.PATTERN_IDENTIFIER_LOWERCASE,
                 description="Provider registry key",
             ),
         ]
