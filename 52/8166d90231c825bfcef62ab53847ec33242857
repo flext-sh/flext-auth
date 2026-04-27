@@ -1,0 +1,14 @@
+src/flext_auth/providers/oauth2.py
+  h_9db9d35f50cf33 463-470,472,476-479
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "528166d90231c825bfcef62ab53847ec33242857",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
