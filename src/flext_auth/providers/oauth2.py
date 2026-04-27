@@ -458,26 +458,25 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Refresh OAuth2 token using composition."""
         token_text = self._extract_token_string(token)
         refresh_token_value = getattr(token, "refresh_token", "")
-        if isinstance(refresh_token_value, str) and refresh_token_value:
-            refresh_source = refresh_token_value
-            identity_candidate = getattr(token, "identity_id", "")
-            if not isinstance(identity_candidate, str) or not identity_candidate:
-                user_id_candidate = getattr(token, c.Auth.KEY_USER_ID, "")
-                if isinstance(user_id_candidate, str) and user_id_candidate:
-                    identity_candidate = user_id_candidate
-            if isinstance(identity_candidate, str) and identity_candidate:
-                identity_id = identity_candidate
-            else:
-                identity_id = "oauth2_user"
-        else:
-            refresh_source = token_text
-            identity_id_result = self._decode_token_claims(token_text).flat_map(
+        has_refresh_token = isinstance(refresh_token_value, str) and bool(
+            refresh_token_value
+        )
+        refresh_source = refresh_token_value if has_refresh_token else token_text
+        identity_id_result = (
+            self._extract_identity_id(
+                {
+                    "identity_id": getattr(token, "identity_id", ""),
+                    c.Auth.KEY_USER_ID: getattr(token, c.Auth.KEY_USER_ID, ""),
+                },
+            )
+            if has_refresh_token
+            else self._decode_token_claims(token_text).flat_map(
                 self._extract_identity_id,
             )
-            if identity_id_result.success:
-                identity_id = identity_id_result.value
-            else:
-                identity_id = "oauth2_user"
+        )
+        identity_id = (
+            identity_id_result.value if identity_id_result.success else "oauth2_user"
+        )
         if not refresh_source:
             return r[p.Auth.Token].fail("No refresh token available")
         token_result = self._token_manager.refresh_access_token(refresh_source)
