@@ -1,0 +1,14 @@
+src/flext_auth/typings.py
+  h_9db9d35f50cf33 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "07470b055ee107f7affec69a1b2d2c93cde6a83c",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
