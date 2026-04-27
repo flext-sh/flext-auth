@@ -165,8 +165,8 @@ class FlextAuthModels(m):
                 str,
                 u.Field(
                     ...,
-                    min_length=c.Auth.Credentials.Username.MIN_LENGTH,
-                    max_length=c.Auth.Credentials.Username.MAX_LENGTH,
+                    min_length=c.Auth.CREDENTIALS_Username.MIN_LENGTH,
+                    max_length=c.Auth.CREDENTIALS_Username.MAX_LENGTH,
                     description="Unique identity name",
                 ),
             ]
@@ -182,7 +182,7 @@ class FlextAuthModels(m):
                 str,
                 u.Field(
                     ...,
-                    min_length=c.Auth.Credentials.Password.MIN_LENGTH,
+                    min_length=c.Auth.CREDENTIALS_Password.MIN_LENGTH,
                     description="Credential (password/key)",
                     exclude=True,
                 ),
@@ -205,8 +205,8 @@ class FlextAuthModels(m):
                 str,
                 u.Field(
                     ...,
-                    min_length=c.Auth.Credentials.Username.MIN_LENGTH,
-                    max_length=c.Auth.Credentials.Username.MAX_LENGTH,
+                    min_length=c.Auth.CREDENTIALS_Username.MIN_LENGTH,
+                    max_length=c.Auth.CREDENTIALS_Username.MAX_LENGTH,
                     description="Unique identity name",
                 ),
             ]
@@ -544,7 +544,7 @@ class FlextAuthModels(m):
             token_type: Annotated[
                 str,
                 u.Field(description="Token type"),
-            ] = c.Auth.Jwt.DEFAULT_TOKEN_TYPE
+            ] = c.Auth.JWT_DEFAULT_TOKEN_TYPE
             expires_in: Annotated[
                 t.NonNegativeInt,
                 u.Field(description="Expiry seconds"),

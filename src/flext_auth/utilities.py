@@ -52,13 +52,13 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             """Validate password strength."""
             if not password:
                 return r[str].fail("Password cannot be empty")
-            if len(password) < c.Auth.Credentials.Password.MIN_LENGTH:
+            if len(password) < c.Auth.CREDENTIALS_Password.MIN_LENGTH:
                 return r[str].fail(
-                    f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)",
+                    f"Password too short (min {c.Auth.CREDENTIALS_Password.MIN_LENGTH} chars)",
                 )
-            if len(password) > c.Auth.Credentials.Password.MAX_LENGTH:
+            if len(password) > c.Auth.CREDENTIALS_Password.MAX_LENGTH:
                 return r[str].fail(
-                    f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)",
+                    f"Password too long (max {c.Auth.CREDENTIALS_Password.MAX_LENGTH} chars)",
                 )
             return r[str].ok(password)
 
@@ -68,13 +68,13 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             if not username or not username.strip():
                 return r[str].fail("Username cannot be empty")
             username = username.strip()
-            if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
+            if len(username) < c.Auth.CREDENTIALS_Username.MIN_LENGTH:
                 return r[str].fail(
-                    f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
+                    f"Username too short (min {c.Auth.CREDENTIALS_Username.MIN_LENGTH} chars)",
                 )
-            if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
+            if len(username) > c.Auth.CREDENTIALS_Username.MAX_LENGTH:
                 return r[str].fail(
-                    f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
+                    f"Username too long (max {c.Auth.CREDENTIALS_Username.MAX_LENGTH} chars)",
                 )
             return r[str].ok(username)
 
@@ -161,7 +161,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             try:
                 algorithms_list: t.StrSequence
                 if algorithms is None:
-                    algorithms_list = [c.Auth.Jwt.DEFAULT_ALGORITHM]
+                    algorithms_list = [c.Auth.JWT_DEFAULT_ALGORITHM]
                 else:
                     algorithms_list = list(algorithms)
                 payload = jwt.decode(
@@ -200,7 +200,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
         def encode_token(
             payload: t.Auth.TokensClaimMap,
             secret: str,
-            algorithm: str = c.Auth.Jwt.DEFAULT_ALGORITHM,
+            algorithm: str = c.Auth.JWT_DEFAULT_ALGORITHM,
         ) -> p.Result[str]:
             """Generic JWT token encoding.
 

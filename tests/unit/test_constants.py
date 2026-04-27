@@ -13,14 +13,13 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(c.__mro__, has=FlextConstants)
 
     def test_jwt_constants(self) -> None:
-        jwt = c.Auth.Jwt
-        u.Tests.Matchers.that(jwt.DEFAULT_ALGORITHM, eq="HS256")
-        u.Tests.Matchers.that(jwt.DEFAULT_EXPIRY_MINUTES, eq=30)
-        u.Tests.Matchers.that(jwt.MAX_EXPIRY_MINUTES, eq=1440)
-        u.Tests.Matchers.that(jwt.ISSUER_CLAIM, eq="flext-auth")
-        u.Tests.Matchers.that(jwt.AUDIENCE_CLAIM, eq="flext-users")
-        u.Tests.Matchers.that(jwt.MIN_SECRET_KEY_LENGTH, eq=32)
-        u.Tests.Matchers.that(jwt.DEFAULT_TOKEN_TYPE, eq="Bearer")
+        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_ALGORITHM, eq="HS256")
+        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_EXPIRY_MINUTES, eq=30)
+        u.Tests.Matchers.that(c.Auth.JWT_MAX_EXPIRY_MINUTES, eq=1440)
+        u.Tests.Matchers.that(c.Auth.JWT_ISSUER_CLAIM, eq="flext-auth")
+        u.Tests.Matchers.that(c.Auth.JWT_AUDIENCE_CLAIM, eq="flext-users")
+        u.Tests.Matchers.that(c.Auth.JWT_MIN_SECRET_KEY_LENGTH, eq=32)
+        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_TOKEN_TYPE, eq="Bearer")
 
     def test_credentials_constants(self) -> None:
         creds = c.Auth.Credentials
@@ -33,11 +32,10 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(creds.Password.BCRYPT_ROUNDS, eq=12)
 
     def test_session_constants(self) -> None:
-        session = c.Auth.Session
-        u.Tests.Matchers.that(session.DEFAULT_EXPIRY_MINUTES, eq=120)
-        u.Tests.Matchers.that(session.MAX_EXPIRY_MINUTES, eq=1440)
-        u.Tests.Matchers.that(session.MAX_SESSIONS_PER_USER, eq=5)
-        u.Tests.Matchers.that(session.MIN_TOKEN_LENGTH, eq=32)
+        u.Tests.Matchers.that(c.Auth.SESSION_DEFAULT_EXPIRY_MINUTES, eq=120)
+        u.Tests.Matchers.that(c.Auth.SESSION_MAX_EXPIRY_MINUTES, eq=1440)
+        u.Tests.Matchers.that(c.Auth.SESSION_MAX_SESSIONS_PER_USER, eq=5)
+        u.Tests.Matchers.that(c.Auth.SESSION_MIN_TOKEN_LENGTH, eq=32)
 
     def test_auth_security_constants(self) -> None:
         security = c.Auth.AuthSecurity

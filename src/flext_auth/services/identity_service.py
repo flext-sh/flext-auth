@@ -198,10 +198,10 @@ class FlextAuthIdentityService(s):
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
-        max_attempts = c.Auth.AuthSecurity.MAX_LOGIN_ATTEMPTS
+        max_attempts = c.Auth.SECURITY_MAX_LOGIN_ATTEMPTS
         if identity.failed_attempts >= max_attempts:
             lockout_duration = timedelta(
-                minutes=c.Auth.AuthSecurity.LOCKOUT_DURATION_MINUTES,
+                minutes=c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES,
             )
             identity.locked_until = datetime.now(UTC) + lockout_duration
             self.logger.warning(
