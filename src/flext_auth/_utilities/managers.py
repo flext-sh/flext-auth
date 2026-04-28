@@ -120,7 +120,7 @@ class FlextAuthUtilitiesManagers(
                     value,
                     (str, bytes, bytearray),
                 ):
-                    return [str(item) for item in value]
+                    return list(value)
                 return []
 
             @u.field_validator("failed_attempts", mode="before")

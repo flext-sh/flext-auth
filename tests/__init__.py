@@ -23,7 +23,7 @@ if _t.TYPE_CHECKING:
     from tests.models import TestsFlextAuthModels, m
     from tests.protocols import TestsFlextAuthProtocols, p
     from tests.typings import TestsFlextAuthTypes, t
-    from tests.unit.test_api import HttpRequest, TestsFlextAuthApi
+    from tests.unit.test_api import TestsFlextAuthApi
     from tests.unit.test_config import TestsFlextAuthConfig
     from tests.unit.test_constants import TestsFlextAuthConstantsUnit
     from tests.unit.test_token_real_flows import TestsFlextAuthTokenRealFlows
@@ -57,10 +57,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextAuthTypes",
                 "t",
             ),
-            ".unit.test_api": (
-                "HttpRequest",
-                "TestsFlextAuthApi",
-            ),
+            ".unit.test_api": ("TestsFlextAuthApi",),
             ".unit.test_config": ("TestsFlextAuthConfig",),
             ".unit.test_constants": ("TestsFlextAuthConstantsUnit",),
             ".unit.test_token_real_flows": ("TestsFlextAuthTokenRealFlows",),
@@ -113,7 +110,6 @@ install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__: list[str] = [
     "CertificateFixture",
-    "HttpRequest",
     "TestsFlextAuthApi",
     "TestsFlextAuthConfig",
     "TestsFlextAuthConstants",

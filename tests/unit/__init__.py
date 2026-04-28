@@ -7,10 +7,7 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        ".test_api": (
-            "HttpRequest",
-            "TestsFlextAuthApi",
-        ),
+        ".test_api": ("TestsFlextAuthApi",),
         ".test_config": ("TestsFlextAuthConfig",),
         ".test_constants": ("TestsFlextAuthConstantsUnit",),
         ".test_token_real_flows": ("TestsFlextAuthTokenRealFlows",),

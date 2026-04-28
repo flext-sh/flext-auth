@@ -24,15 +24,6 @@ from flext_auth import (
 from tests import c, m, r, t, u
 
 
-class HttpRequest:
-    """Minimal HTTP request fixture for middleware tests."""
-
-    def __init__(self) -> None:
-        """Initialize with empty headers."""
-        headers: dict[str, str] = {}
-        self.headers: t.StrMapping = headers
-
-
 class TestsFlextAuthApi:
     def test_auth_service_initialization_exposes_public_services(self) -> None:
         """FlextAuth quick_start initializes the public service properties."""
@@ -990,7 +981,7 @@ class TestsFlextAuthApi:
         u.Tests.Matchers.that(register_result.success, eq=True)
         user = register_result.value
         user_id = user.unique_id
-        result = auth.identity_service.identity_manager.get_user(str(user_id))
+        result = auth.identity_service.identity_manager.get_user(user_id)
         u.Tests.Matchers.that(result, is_=r)
 
     def test_flext_auth_validate_token(self) -> None:
