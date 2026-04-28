@@ -1,0 +1,42 @@
+examples/basic_usage_01.py
+  h_9db9d35f50cf33 22-23,25-27,29,31,33,37,41-83,86,88,91,96,99-106,109-120,123,125-130,133,140,143,145-175,177-178,180-181,183-184,186-195,197-198,200-207,209-212,214,217,220-221,223-224,226-275
+tests/unit/test_api.py
+  h_9db9d35f50cf33 984
+tests/unit/test_config.py
+  h_9db9d35f50cf33 21-24,28,35,44,50,55,63,74
+examples/refactored_system_showcase_04.py
+  h_9db9d35f50cf33 16-19,29-30,42-43,50-51,56-57,63-65,67-71,75
+examples/utils.py
+  h_9db9d35f50cf33 18-19,21-22,26-29
+examples/comprehensive_demo_03.py
+  h_9db9d35f50cf33 25-28,50-54,64-71,75-79,86-88,103-106,109-110,118-119,127-128,130,133-134,137-139,141-147,152
+examples/advanced_features_02.py
+  h_9db9d35f50cf33 21-22,26-34,49-53,64-69,77-78,92-95,116-117,121-124,132,143-144,146,149-150,153-155,157-163,167
+examples/basic_usage_07.py
+  h_9db9d35f50cf33 12-13,15-17,24,30,36
+examples/debug_auth_issues_09.py
+  h_9db9d35f50cf33 15-16,18,29-33,35,55,69-70,72-74,78
+src/flext_auth/_utilities/managers.py
+  h_9db9d35f50cf33 123
+examples/flext_config_usage.py
+  h_9db9d35f50cf33 8-9,11-13,24
+tests/fixtures/certificates.py
+  h_9db9d35f50cf33 25,27,32-45,49,56,58,62-75,79
+examples/basic_refactored_usage_06.py
+  h_9db9d35f50cf33 57,60,69-76,93-100,109-115,123,126-131,141-144,149
+examples/basic_auth_05.py
+  h_9db9d35f50cf33 10-11,13-15,41
+examples/simple_usage_08.py
+  h_9db9d35f50cf33 17-20,29-33,45,51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "8e52a357f4616d993e75ccc4ed500bc7beb4e893",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
