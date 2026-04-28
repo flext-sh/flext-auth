@@ -24,7 +24,7 @@ class FlextAuthSessionManagers:
             super().__init__()
             self.config = settings
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextContext()
+            self.context = FlextContext.create()
             self._dispatcher: p.Dispatcher = (
                 FlextContainer.shared().dispatcher().unwrap()
             )

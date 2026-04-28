@@ -163,7 +163,7 @@ class FlextAuthUtilitiesManagers(
             super().__init__()
             self.config = settings
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextContext()
+            self.context = FlextContext.create()
             self._users: MutableMapping[str, t.Auth.ManagersUserData] = {}
 
         def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
@@ -198,13 +198,16 @@ class FlextAuthUtilitiesManagers(
 
             user_id = str(uuid4())
             now = datetime.now(UTC)
+            normalized_identity_extras = self.IdentityExtras.model_validate(
+                extra_fields
+            ).model_dump(exclude_none=True)
             user = m.Auth.AuthIdentity.model_validate(
                 {
                     "unique_id": user_id,
                     "name": username,
                     "contact": normalized_email,
                     "credential_hash": password_hash,
-                    **self._normalize_identity_extras(extra_fields),
+                    **normalized_identity_extras,
                 },
             )
             storage_data: t.Auth.ManagersUserData = {
@@ -307,33 +310,6 @@ class FlextAuthUtilitiesManagers(
                 field_list_value.append(value)
             elif not add and value in field_list_value:
                 field_list_value.remove(value)
-
-        def _normalize_identity_extras(
-            self,
-            extra_fields: dict[str, t.Scalar | t.StrSequence | datetime | None],
-        ) -> dict[str, t.Scalar | t.StrSequence | datetime | bool]:
-            """Normalize optional identity extras before Pydantic validation."""
-            normalized = self.IdentityExtras.model_validate(extra_fields)
-            normalized_data: dict[str, t.Scalar | t.StrSequence | datetime | bool] = {}
-            if normalized.full_name is not None:
-                normalized_data["full_name"] = normalized.full_name
-            if normalized.is_active is not None:
-                normalized_data["is_active"] = normalized.is_active
-            if normalized.roles is not None:
-                normalized_data["roles"] = normalized.roles
-            if normalized.permissions is not None:
-                normalized_data["permissions"] = normalized.permissions
-            if normalized.failed_attempts is not None:
-                normalized_data["failed_attempts"] = normalized.failed_attempts
-            if normalized.locked_until is not None:
-                normalized_data["locked_until"] = normalized.locked_until
-            if normalized.last_access is not None:
-                normalized_data["last_access"] = normalized.last_access
-            if normalized.token is not None:
-                normalized_data["token"] = normalized.token
-            if normalized.session_id is not None:
-                normalized_data["session_id"] = normalized.session_id
-            return normalized_data
 
         def _create_identity_from_storage(
             self,
@@ -516,7 +492,7 @@ class FlextAuthUtilitiesManagers(
             self.config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextContext()
+            self.context = FlextContext.create()
             self._logs: MutableSequence[t.Auth.ManagersLogEntry] = []
 
         @staticmethod
