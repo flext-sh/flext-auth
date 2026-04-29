@@ -314,15 +314,23 @@ class FlextWebTransportAdapter:
         query: t.Api.WebParams | None,
     ) -> t.Api.WebParams | None:
         if isinstance(data, Mapping) and method.upper() == c.Api.Method.GET.value:
-            data_mapping = {str(key): value for key, value in data.items()}
+            data_mapping = dict(data.items())
             query_dict: t.Api.WebParams = query if query is not None else {}
-            merged_query = {
+            merged_query: t.Api.WebParams = {
                 **query_dict,
-                **{str(key): value for key, value in data_mapping.items()},
+                **{k: str(v) for k, v in data_mapping.items()},
             }
             normalized: MutableMapping[str, t.StrSequence | str] = {}
             for key, value in merged_query.items():
-                normalized[str(key)] = str(value)
+                match value:
+                    case str() as string_value:
+                        normalized[key] = string_value
+                    case list() as list_value:
+                        normalized[key] = list(list_value)
+                    case tuple() as tuple_value:
+                        normalized[key] = list(tuple_value)
+                    case _:
+                        normalized[key] = str(value)
             return normalized
         return query
 

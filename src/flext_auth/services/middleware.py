@@ -28,9 +28,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_api import r
 
-from flext_auth import m, p, s, t
+from flext_auth import m, p, t
+from flext_auth.base import s
 from flext_core import u
 
 
@@ -62,12 +65,13 @@ class FlextAuthMiddleware(s):
             """Enable middleware processing."""
             self._enabled = True
 
-    def execute(self) -> p.Result[bool]:
+    @override
+    def execute(self) -> p.Result[p.Base]:
         """Execute method for s interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
-        return r[bool].fail(
+        return r[p.Base].fail(
             "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware",
         )
 
@@ -132,9 +136,7 @@ class FlextAuthMiddleware(s):
                 )
             try:
                 headers_val = request.headers
-                mutable_headers: t.MutableStrMapping = {
-                    str(key): str(value) for key, value in headers_val.items()
-                }
+                mutable_headers: t.MutableStrMapping = dict(headers_val.items())
                 mutable_headers["Authorization"] = f"Bearer {self._current_token.token}"
                 request.headers = mutable_headers
             except (AttributeError, TypeError) as exc:
@@ -159,7 +161,7 @@ class FlextAuthMiddleware(s):
             validation_result = self._provider.validate(token.token)
             folded: bool = validation_result.fold(
                 on_failure=lambda _: False,
-                on_success=lambda v: bool(v),
+                on_success=lambda v: v,
             )
             return folded
 
@@ -195,7 +197,7 @@ class FlextAuthMiddleware(s):
                     token=refreshed_payload.token,
                     token_type=refreshed_payload.token_type,
                     expires_at=refreshed_payload.expires_at,
-                    is_revoked=bool(refreshed_payload.is_revoked),
+                    is_revoked=refreshed_payload.is_revoked,
                     refresh_token=refreshed_payload.refresh_token,
                 )
             except (TypeError, ValueError):

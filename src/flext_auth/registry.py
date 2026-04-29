@@ -88,7 +88,7 @@ class FlextAuthRegistry:
         provider = provider_result.unwrap()
         try:
             caps = provider.supports()
-            return r[set[str]].ok({str(c) for c in caps})
+            return r[set[str]].ok(set(caps))
         except (
             ValueError,
             TypeError,
@@ -154,7 +154,7 @@ class FlextAuthRegistry:
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
-        return bool(self.fetch_plugin(self.PROVIDERS, name).success)
+        return self.fetch_plugin(self.PROVIDERS, name).success
 
     def list_providers(self) -> t.StrSequence:
         """List registered provider names."""
@@ -163,7 +163,7 @@ class FlextAuthRegistry:
             return list[str]()
         plugins = result.unwrap()
         if isinstance(plugins, list):
-            return [str(name) for name in plugins]
+            return list(plugins)
         return list[str]()
 
     def register_provider(
@@ -240,7 +240,7 @@ class FlextAuthRegistry:
     ) -> m.Auth.Providers.Metadata:
         """Build metadata from provider and provided data."""
         try:
-            caps = tuple(str(c) for c in service.supports())
+            caps = tuple(c for c in service.supports())
         except (AttributeError, TypeError) as exc:
             u.fetch_logger(__name__).warning(
                 f"Provider {name} does not support capabilities introspection: {exc}",

@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import override
 
 from flext_api import r
 
@@ -172,9 +173,10 @@ class FlextAuthIdentityService(s):
             )
         )
 
-    def execute(self) -> p.Result[bool]:
+    @override
+    def execute(self) -> p.Result[p.Base]:
         """Railway-oriented execute with focused service pattern."""
-        return r[bool].fail(
+        return r[p.Base].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
 

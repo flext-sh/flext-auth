@@ -133,7 +133,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         flow_value = self.config.get("flow")
         match flow_value:
             case None | "":
-                return str(c.Auth.OAUTH2_FLOW_DEFAULT)
+                return c.Auth.OAUTH2_FLOW_DEFAULT
             case str() as flow:
                 if flow not in c.Auth.OAUTH2_FLOWS:
                     error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAUTH2_FLOWS}, got {flow}"
@@ -148,7 +148,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         use_pkce_value = self.config.get("use_pkce")
         match use_pkce_value:
             case None:
-                return bool(c.Auth.OAUTH2_USE_PKCE_DEFAULT)
+                return c.Auth.OAUTH2_USE_PKCE_DEFAULT
             case bool() as use_pkce:
                 return use_pkce
             case _:
@@ -160,11 +160,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         scope_value = self.config.get("scope")
         match scope_value:
             case None:
-                return str(c.Auth.OAUTH2_SCOPE_DEFAULT)
+                return c.Auth.OAUTH2_SCOPE_DEFAULT
             case str() as scope if scope:
                 return scope
             case str():
-                return str(c.Auth.OAUTH2_SCOPE_DEFAULT)
+                return c.Auth.OAUTH2_SCOPE_DEFAULT
             case _:
                 error_msg = f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
                 raise ValueError(error_msg)
@@ -176,7 +176,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
         match token_endpoint_auth_method_value:
             case None | "":
-                return str(c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT)
+                return c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
             case str() as auth_method:
                 if auth_method not in c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS:
                     error_msg = f"OAuth2 'token_endpoint_auth_method' must be one of {c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS}, got {auth_method}"
@@ -289,7 +289,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             for key, value in kwargs.items():
                 match value:
                     case str() as text:
-                        params[str(key)] = text
+                        params[key] = text
                     case _:
                         continue
             return r[str].ok(f"{auth_endpoint}?{urlencode(params)}")
@@ -391,7 +391,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     ) -> p.Result[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: t.ConfigurationMapping = {
-            str(k): v
+            k: v
             for k, v in credentials.items()
             if isinstance(v, (str, int, float, bool))
         }
@@ -543,7 +543,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     or "OAuth2 introspection token validation failed",
                 )
             active_value = introspection_result.value.get("active")
-            is_active = bool(active_value) if isinstance(active_value, bool) else False
+            is_active = active_value if isinstance(active_value, bool) else False
             if not is_active:
                 return r[m.Auth.AuthIdentity].fail("OAuth2 token is inactive")
             return self._map_token_payload_to_identity(introspection_result.value)

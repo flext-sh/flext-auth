@@ -277,9 +277,7 @@ class FlextAuthProviderMixin:
         algorithm: str,
     ) -> p.Result[str]:
         """Encode token payload using JWT with canonical result flow."""
-        normalized_payload: t.Auth.TokensClaimMap = {
-            str(key): value for key, value in payload.items()
-        }
+        normalized_payload: t.Auth.TokensClaimMap = dict(payload.items())
         return u.Auth.encode_token(normalized_payload, secret, algorithm)
 
     def _extract_identity_id(
@@ -322,7 +320,7 @@ class FlextAuthProviderMixin:
 
         """
         token_value = token.token if isinstance(token, p.Auth.Token) else token
-        token_text = str(token_value)
+        token_text = token_value
         if token_text:
             return token_text
         error_msg = f"Invalid token type: expected str or Token, got {type(token)}"

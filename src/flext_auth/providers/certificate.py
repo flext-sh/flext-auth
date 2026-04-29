@@ -54,7 +54,7 @@ class FlextAuthCertificateProvider(
         else:
             token_protocol: p.Auth.Token = token
             token_value = token_protocol.token
-        return self.validate_token(str(token_value))
+        return self.validate_token(token_value)
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Validate authentication token.

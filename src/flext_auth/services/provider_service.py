@@ -13,6 +13,7 @@ from collections.abc import (
     Mapping,
     Sequence,
 )
+from typing import override
 
 from flext_api import r
 
@@ -80,9 +81,10 @@ class FlextAuthProviderService(s):
             ),
         )
 
-    def execute(self) -> p.Result[bool]:
+    @override
+    def execute(self) -> p.Result[p.Base]:
         """Railway-oriented execute with focused service pattern."""
-        return r[bool].fail(
+        return r[p.Base].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc.",
         )
 
