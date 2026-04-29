@@ -17,9 +17,6 @@ if _t.TYPE_CHECKING:
     from flext_auth import d, e, h, r, s, x
     from tests.constants import TestsFlextAuthConstants, c
     from tests.fixtures.certificates import CertificateFixture
-    from tests.helpers.protocols import TestsProtocols
-    from tests.helpers.typings import TestsTypings
-    from tests.helpers.utilities import TestsUtilities
     from tests.models import TestsFlextAuthModels, m
     from tests.protocols import TestsFlextAuthProtocols, p
     from tests.typings import TestsFlextAuthTypes, t
@@ -32,7 +29,6 @@ if _t.TYPE_CHECKING:
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         ".fixtures",
-        ".helpers",
         ".unit",
     ),
     build_lazy_import_map(
@@ -42,9 +38,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "c",
             ),
             ".fixtures.certificates": ("CertificateFixture",),
-            ".helpers.protocols": ("TestsProtocols",),
-            ".helpers.typings": ("TestsTypings",),
-            ".helpers.utilities": ("TestsUtilities",),
             ".models": (
                 "TestsFlextAuthModels",
                 "m",
@@ -120,9 +113,6 @@ __all__: list[str] = [
     "TestsFlextAuthTypes",
     "TestsFlextAuthTypesUnit",
     "TestsFlextAuthUtilities",
-    "TestsProtocols",
-    "TestsTypings",
-    "TestsUtilities",
     "c",
     "d",
     "e",

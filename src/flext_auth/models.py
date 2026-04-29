@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from types import MappingProxyType
 from typing import Annotated, ClassVar, Self
 
 import bcrypt
@@ -62,9 +63,15 @@ class FlextAuthModels(m):
             """Generic validation result for any operation (immutable value object)."""
 
             valid: Annotated[bool, u.Field(..., description="Validation outcome")]
-            data: t.JsonMapping = u.Field(default_factory=dict)
+            data: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Additional validation result data",
+            )
             error: Annotated[str, u.Field(description="Error message")] = ""
-            metadata: t.JsonMapping = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Metadata associated with the validation result",
+            )
 
             @property
             def status(self) -> str:
@@ -116,7 +123,10 @@ class FlextAuthModels(m):
                     description="Token expiry",
                 ),
             ] = c.Auth.VALIDATION_DEFAULT_TOKEN_EXPIRY_MINUTES
-            extra_claims: t.JsonMapping = u.Field(default_factory=dict)
+            extra_claims: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Additional claims to include in the token",
+            )
             session_id: Annotated[str, u.Field(description="Session ID")] = ""
 
         class AuthToken(m.Entity):
@@ -224,7 +234,10 @@ class FlextAuthModels(m):
                 default_factory=lambda: [c.Auth.RoleTypes.USER.value],
                 description="Roles",
             )
-            permissions: t.StrSequence = u.Field(default_factory=tuple)
+            permissions: t.StrSequence = u.Field(
+                default_factory=tuple,
+                description="List of permissions assigned to the identity",
+            )
             failed_attempts: Annotated[
                 t.NonNegativeInt,
                 u.Field(description="Failed attempts"),
@@ -343,7 +356,10 @@ class FlextAuthModels(m):
                     description="Description",
                 ),
             ] = ""
-            permissions: t.StrSequence = u.Field(default_factory=tuple)
+            permissions: t.StrSequence = u.Field(
+                default_factory=tuple,
+                description="List of permissions assigned to the identity",
+            )
 
         class Permission(m.Entity):
             """Generic permission entity."""
@@ -475,20 +491,29 @@ class FlextAuthModels(m):
 
             name: Annotated[str, u.Field(description="Provider name")] = "default"
             version: Annotated[str, u.Field(description="Provider version")] = "1.0.0"
-            capabilities: t.StrSequence = u.Field(default_factory=tuple)
+            capabilities: t.StrSequence = u.Field(
+                default_factory=tuple,
+                description="List of capabilities for the provider",
+            )
 
         class ApiKeyValidation(m.Value):
             """API key validation request (immutable value object)."""
 
             api_key: Annotated[str, u.Field(..., description="API key to validate")]
-            metadata: t.JsonMapping = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Metadata associated with the API key validation",
+            )
 
         class ApiKeyData(m.Value):
             """API key data structure (immutable value object)."""
 
             key_hash: Annotated[str, u.Field(..., description="Hashed API key")]
             name: Annotated[str, u.Field(..., description="Key name")]
-            permissions: t.StrSequence = u.Field(default_factory=tuple)
+            permissions: t.StrSequence = u.Field(
+                default_factory=tuple,
+                description="List of permissions assigned to the identity",
+            )
             is_active: Annotated[bool, u.Field(description="Key active status")] = True
             expires_at: datetime = u.Field(
                 default_factory=lambda: datetime.max.replace(tzinfo=UTC),
@@ -504,7 +529,10 @@ class FlextAuthModels(m):
 
             username: Annotated[str, u.Field(..., description="Username")]
             password: Annotated[str, u.Field(..., description="Password", exclude=True)]
-            metadata: t.JsonMapping = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Metadata for the credential validation",
+            )
 
         # =========================================================================
         # CREDENTIAL MODELS - Generic credential handling
@@ -518,7 +546,10 @@ class FlextAuthModels(m):
                 str,
                 u.Field(..., description="Credential value", exclude=True),
             ]
-            metadata: t.JsonMapping = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Metadata for the credential",
+            )
 
         # =========================================================================
         # AUTHENTICATION RESPONSE - Generic response
@@ -528,10 +559,16 @@ class FlextAuthModels(m):
             """Generic authentication response (immutable value object)."""
 
             success: Annotated[bool, u.Field(..., description="Authentication success")]
-            identity: t.JsonMapping = u.Field(default_factory=dict)
+            identity: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Identity information for the API key",
+            )
             token: Annotated[str, u.Field(description="Token", exclude=True)] = ""
             message: Annotated[str, u.Field(description="Response message")] = ""
-            metadata: t.JsonMapping = u.Field(default_factory=dict)
+            metadata: t.JsonMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="Metadata for the authentication response",
+            )
 
         # =========================================================================
         # OAUTH2 TOKEN RESPONSE - OAuth2 token exchange result
@@ -584,7 +621,10 @@ class FlextAuthModels(m):
                 u.Field(..., description="HTTP status code"),
             ]
             body: Annotated[str, u.Field(description="Response body")] = ""
-            headers: t.StrMapping = u.Field(default_factory=dict)
+            headers: t.StrMapping = u.Field(
+                default_factory=MappingProxyType,
+                description="HTTP headers for the webhook request",
+            )
 
         # =========================================================================
         # PROVIDERS NAMESPACE - Provider metadata and related models
@@ -633,7 +673,10 @@ class FlextAuthModels(m):
                 capabilities: t.VariadicTuple[str] = u.Field(
                     default_factory=tuple, description="Provider capabilities"
                 )
-                extras: t.JsonMapping = u.Field(default_factory=dict)
+                extras: t.JsonMapping = u.Field(
+                    default_factory=MappingProxyType,
+                    description="Extra attributes for the identity",
+                )
 
             class Registration(m.Value):
                 """Provider registration payload (immutable value object)."""
