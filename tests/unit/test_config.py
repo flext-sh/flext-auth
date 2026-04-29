@@ -42,7 +42,7 @@ class TestsFlextAuthConfig:
     def test_config_validation(self) -> None:
         """Test settings validation."""
         base_config = self._require_settings()
-        settings = base_config.model_copy(update={"expiry_minutes": 30})
+        settings = base_config.clone(expiry_minutes=30)
         u.Tests.Matchers.that(settings.expiry_minutes, eq=30)
 
     def test_global_instance(self) -> None:
