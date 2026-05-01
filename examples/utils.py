@@ -11,8 +11,9 @@ from __future__ import annotations
 
 from collections.abc import (
     Callable,
-    Sequence,
 )
+
+from examples import t
 
 
 class FlextAuthExampleUtilities:
@@ -20,8 +21,8 @@ class FlextAuthExampleUtilities:
 
     @staticmethod
     def basic_example_runner(
-        sync_examples: Sequence[Callable[[], None]],
-        examples: Sequence[Callable[[], None]],
+        sync_examples: t.SequenceOf[Callable[[], None]],
+        examples: t.SequenceOf[Callable[[], None]],
     ) -> None:
         """Run all examples using the shared runner (DRY principle)."""
         for example in sync_examples:

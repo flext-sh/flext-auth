@@ -19,7 +19,6 @@ from __future__ import annotations
 from collections.abc import (
     Callable,
     Mapping,
-    Sequence,
 )
 from datetime import UTC, datetime
 from typing import override
@@ -65,16 +64,16 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         self.ticket_validator = self._KerberosTicketValidator(self)
         self._service_handler = self._KerberosServiceHandler(self)
         self._auth_manager = self._KerberosAuthManager(self)
-        self._active_tickets: Mapping[str, m.Auth.KerberosTicketData] = {}
+        self._active_tickets: t.MappingKV[str, m.Auth.KerberosTicketData] = {}
 
     @staticmethod
     def _to_scalar_config(
         settings: t.ConfigurationMapping | None,
-    ) -> Mapping[str, t.Primitives] | None:
+    ) -> t.MappingKV[str, t.Primitives] | None:
         """Project provider settings into RFC base scalar contract."""
         if settings is None:
             return None
-        scalar_config: Mapping[str, t.Primitives] = {
+        scalar_config: t.MappingKV[str, t.Primitives] = {
             key: value
             for key, value in settings.items()
             if isinstance(value, (bool, int, str))
@@ -92,7 +91,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
             )
-        validations: Sequence[t.Triple[str, t.VariadicTuple[type], str]] = [
+        validations: t.SequenceOf[t.Triple[str, t.VariadicTuple[type], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
             ("kdc", (str,), "Kerberos kdc must be a string"),
             (

@@ -16,7 +16,6 @@ import secrets
 from base64 import b64encode, urlsafe_b64encode
 from collections.abc import (
     Mapping,
-    Sequence,
 )
 from datetime import UTC, datetime, timedelta
 from typing import Final, override
@@ -78,15 +77,15 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._flow = self._init_flow()
         self._use_pkce = self._init_pkce()
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
-        self._pkce_verifiers: Mapping[str, str] = {}
+        self._pkce_verifiers: t.MappingKV[str, str] = {}
         self._http_client: http.client.HTTPSConnection | None = None
 
     @staticmethod
     def _to_scalar_config(
         settings: t.ConfigurationMapping,
-    ) -> Mapping[str, t.Primitives]:
+    ) -> t.MappingKV[str, t.Primitives]:
         """Project OAuth2 settings to RFC base scalar contract."""
-        scalar_config: Mapping[str, t.Primitives] = {
+        scalar_config: t.MappingKV[str, t.Primitives] = {
             key: value
             for key, value in settings.items()
             if isinstance(value, (bool, int, str))
@@ -198,7 +197,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[bool].fail(
                 f"Missing required OAuth2 configuration fields: {fields_str}",
             )
-        validations: Sequence[t.Triple[str, t.VariadicTuple[type], str]] = [
+        validations: t.SequenceOf[t.Triple[str, t.VariadicTuple[type], str]] = [
             ("client_id", (str,), "OAuth2 client_id must be a string"),
             (
                 "client_secret",

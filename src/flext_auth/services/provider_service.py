@@ -10,8 +10,6 @@ from __future__ import annotations
 
 from collections.abc import (
     Callable,
-    Mapping,
-    Sequence,
 )
 from typing import override
 
@@ -58,9 +56,9 @@ class FlextAuthProviderService(s):
     @staticmethod
     def _build_provider_init_config(
         provider_config: t.ConfigurationMapping,
-    ) -> Mapping[str, t.Primitives]:
+    ) -> t.MappingKV[str, t.Primitives]:
         """Normalize provider settings to base-provider scalar contract."""
-        normalized: Mapping[str, t.Primitives] = {
+        normalized: t.MappingKV[str, t.Primitives] = {
             key: value
             for key, value in provider_config.items()
             if isinstance(value, (bool, int, str))
@@ -150,7 +148,7 @@ class FlextAuthProviderService(s):
             self.logger.error("Configuration is required for provider registration")
             return
         provider_config = self._auth_config.model_dump()
-        providers: Sequence[
+        providers: t.SequenceOf[
             t.Triple[
                 t.Auth.ProvidersKey,
                 type[p.Auth.FlextAuthBaseProvider],

@@ -267,7 +267,7 @@ class FlextAuthRegistry:
 
     def list_providers(self) -> t.StringList
 
-    def discover_providers(self) -> Mapping[str, type[FlextAuthBaseProvider]]
+    def discover_providers(self) -> t.MappingKV[str, type[FlextAuthBaseProvider]]
 
     def get_capabilities(self, name: str) -> p.Result[set[str]]
 
@@ -775,7 +775,7 @@ class TokenManager:
         credentials: dict,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-        retry_on: Sequence[type[Exception]] | None = None,
+        retry_on: t.SequenceOf[type[Exception]] | None = None,
     ) -> p.Result[AuthToken]:
         """Get token with automatic retry on failure."""
         return self._retry.execute(
@@ -809,7 +809,7 @@ class RetryPolicy:
         func: Callable,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-        retry_on: Sequence[type[Exception]] | None = None,
+        retry_on: t.SequenceOf[type[Exception]] | None = None,
         **kwargs,
     ) -> p.Result[T]:
         """Execute function with retry logic."""
