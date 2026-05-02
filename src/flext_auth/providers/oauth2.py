@@ -18,14 +18,13 @@ from collections.abc import (
     Mapping,
 )
 from datetime import UTC, datetime, timedelta
-from typing import Final, override
+from http import HTTPStatus
+from typing import override
 from urllib.parse import urlencode, urlparse
 
 from flext_api import u
 
 from flext_auth import FlextAuthRfcProvider, c, e, m, p, r, t
-
-_HTTP_BAD_REQUEST: Final[int] = 400
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -648,7 +647,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         finally:
             connection.close()
-        if status_code >= _HTTP_BAD_REQUEST:
+        if status_code >= HTTPStatus.BAD_REQUEST:
             error_body = response_payload.strip()
             error_message = (
                 f"OAuth2 introspection request failed with status {status_code}: {error_body}"
