@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthJwtProvider, p, r, t, u
+from flext_auth import FlextAuthJwtProvider, p, t, u
 
 
 class FlextAuthPasswordHasher:
@@ -34,10 +34,11 @@ class FlextAuthPasswordHasher:
         r containing hashed password or error
 
         """
-        try:
-            return r[str].ok(u.Auth.hash_password(password))
-        except (TypeError, ValueError) as exc:
-            return r[str].fail_op("hash password", exc)
+        return u.try_(
+            lambda: u.Auth.hash_password(password),
+            catch=(TypeError, ValueError),
+            op_name="hash password",
+        )
 
     def verify_password(self, password: str, hashed_password: str) -> p.Result[bool]:
         """Verify password against hash using bcrypt.
@@ -50,10 +51,11 @@ class FlextAuthPasswordHasher:
         r containing verification result or error
 
         """
-        try:
-            return r[bool].ok(u.Auth.verify_password(password, hashed_password))
-        except (TypeError, ValueError) as exc:
-            return r[bool].fail_op("verify password", exc)
+        return u.try_(
+            lambda: u.Auth.verify_password(password, hashed_password),
+            catch=(TypeError, ValueError),
+            op_name="verify password",
+        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthPasswordHasher"]
