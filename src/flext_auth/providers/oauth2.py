@@ -657,7 +657,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             parsed_mapping = t.json_mapping_adapter().validate_json(
                 response_payload,
             )
-        except (ValueError, c.ValidationError) as exc:
+        except c.EXC_VALIDATION_VALUE as exc:
             return r[t.JsonMapping].fail(
                 f"OAuth2 introspection payload is not valid JSON: {exc}",
             )

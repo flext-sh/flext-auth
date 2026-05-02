@@ -139,7 +139,7 @@ class FlextAuthMiddleware(s):
                 mutable_headers: t.MutableStrMapping = dict(headers_val.items())
                 mutable_headers["Authorization"] = f"Bearer {self._current_token.token}"
                 request.headers = mutable_headers
-            except (AttributeError, TypeError) as exc:
+            except c.EXC_ATTR_TYPE as exc:
                 return r[p.Auth.RequestWithHeaders].fail(
                     f"Unable to attach authorization header: {exc}",
                 )

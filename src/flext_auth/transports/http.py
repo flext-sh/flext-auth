@@ -243,7 +243,7 @@ class FlextWebTransportAdapter:
         try:
             parsed = t.json_mapping_adapter().validate_json(decoded)
             return r[t.JsonMapping].ok(parsed)
-        except (ValueError, c.ValidationError):
+        except c.EXC_VALIDATION_VALUE:
             return r[t.JsonMapping].fail("Unable to parse response body as JSON")
 
     def _parse_token_response(

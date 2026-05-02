@@ -233,7 +233,7 @@ class FlextAuthRegistry:
         """Build metadata from provider and provided data."""
         try:
             caps = tuple(c for c in service.supports())
-        except (AttributeError, TypeError) as exc:
+        except c.EXC_ATTR_TYPE as exc:
             u.fetch_logger(__name__).warning(
                 f"Provider {name} does not support capabilities introspection: {exc}",
             )
