@@ -79,9 +79,6 @@ class FlextAuthSessionManagers:
             )
             return r[m.Auth.Session].ok(session)
 
-        def end_all_sessions(self, user_id: str) -> p.Result[bool]:
-            return self.end_session(user_id)
-
         def end_session(self, user_id: str) -> p.Result[bool]:
             found = False
             for session_data in self._sessions.values():
