@@ -426,7 +426,9 @@ class FlextAuthUtilitiesManagers(
                         username,
                         user_data,
                     ))
-            return e.fail_not_found("User", "", result_type=r[tuple[str, t.Auth.ManagersUserData]])
+            return e.fail_not_found(
+                "User", "", result_type=r[tuple[str, t.Auth.ManagersUserData]]
+            )
 
         def _modify_user_list_field(
             self,
