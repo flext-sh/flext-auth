@@ -87,9 +87,7 @@ class FlextAuthJwtTokenValidator:
             RuntimeError,
             ImportError,
         ) as exc:
-            return r[t.JsonMapping].fail(
-                f"Token validation failed: {exc}",
-            )
+            return r[t.JsonMapping].fail_op("Token validation", exc)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthJwtTokenValidator"]

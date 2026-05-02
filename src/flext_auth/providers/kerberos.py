@@ -237,8 +237,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 RuntimeError,
                 ImportError,
             ) as exc:
-                return r[m.Auth.AuthIdentity].fail(
-                    f"Kerberos ticket validator execution failed: {exc}",
+                return r[m.Auth.AuthIdentity].fail_op(
+                    "Kerberos ticket validator execution", exc
                 )
             if isinstance(validator_result, m.Auth.AuthIdentity):
                 return r[m.Auth.AuthIdentity].ok(validator_result)
@@ -323,9 +323,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 last_access=datetime.now(UTC),
             )
         except (ValueError, TypeError) as exc:
-            return r[m.Auth.AuthIdentity].fail(
-                f"Kerberos identity mapping failed: {exc}",
-            )
+            return r[m.Auth.AuthIdentity].fail_op("Kerberos identity mapping", exc)
         return r[m.Auth.AuthIdentity].ok(identity)
 
     def _ticket_validator_callable(

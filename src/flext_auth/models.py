@@ -299,7 +299,7 @@ class FlextAuthModels(m):
                     RuntimeError,
                     ImportError,
                 ) as exc:
-                    return r[bool].fail(f"Credential verification failed: {exc}")
+                    return r[bool].fail_op("Credential verification", exc)
 
             def with_successful_access(self) -> Self:
                 """Record successful access (fluent interface)."""

@@ -180,8 +180,8 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             except jwt.InvalidTokenError as exc:
                 return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}")
             except c.ValidationError as exc:
-                return r[t.Auth.TokensClaimMap].fail(
-                    f"Decoded token payload validation failed: {exc}",
+                return r[t.Auth.TokensClaimMap].fail_op(
+                    "Decoded token payload validation", exc
                 )
             except (
                 ValueError,
@@ -192,7 +192,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
                 RuntimeError,
                 ImportError,
             ) as exc:
-                return r[t.Auth.TokensClaimMap].fail(f"Decoding failed: {exc}")
+                return r[t.Auth.TokensClaimMap].fail_op("Decoding", exc)
 
         @staticmethod
         def encode_token(
@@ -223,7 +223,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
                 RuntimeError,
                 ImportError,
             ) as exc:
-                return r[str].fail(f"Encoding failed: {exc}")
+                return r[str].fail_op("Encoding", exc)
 
 
 u = FlextAuthUtilities

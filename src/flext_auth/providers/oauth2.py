@@ -642,9 +642,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             status_code = response.status
             response_payload = response.read().decode("utf-8")
         except (http.client.HTTPException, OSError, ValueError, TypeError) as exc:
-            return r[t.JsonMapping].fail(
-                f"OAuth2 introspection request failed: {exc}",
-            )
+            return r[t.JsonMapping].fail_op("OAuth2 introspection request", exc)
         finally:
             connection.close()
         if status_code >= HTTPStatus.BAD_REQUEST:
@@ -737,7 +735,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 last_access=datetime.now(UTC),
             )
         except (ValueError, TypeError) as exc:
-            return r[m.Auth.AuthIdentity].fail(f"OAuth2 identity mapping failed: {exc}")
+            return r[m.Auth.AuthIdentity].fail_op("OAuth2 identity mapping", exc)
         return r[m.Auth.AuthIdentity].ok(identity)
 
 
