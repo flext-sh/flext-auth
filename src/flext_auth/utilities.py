@@ -206,15 +206,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             try:
                 encoded = jwt.encode(dict(payload), secret, algorithm=algorithm)
                 return r[str].ok(encoded)
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                AttributeError,
-                OSError,
-                RuntimeError,
-                ImportError,
-            ) as exc:
+            except c.EXC_BROAD_IO_TYPE as exc:
                 return r[str].fail_op("Encoding", exc)
 
 

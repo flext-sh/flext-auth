@@ -282,15 +282,7 @@ class FlextAuthModels(m):
                         self.credential_hash,
                     )
                     return r[bool].ok(valid)
-                except (
-                    ValueError,
-                    TypeError,
-                    KeyError,
-                    AttributeError,
-                    OSError,
-                    RuntimeError,
-                    ImportError,
-                ) as exc:
+                except c.EXC_BROAD_IO_TYPE as exc:
                     return r[bool].fail_op("Credential verification", exc)
 
             def with_successful_access(self) -> Self:

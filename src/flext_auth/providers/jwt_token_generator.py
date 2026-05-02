@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 
 from flext_api import r
 
-from flext_auth import FlextAuthJwtProvider, p, t, u
+from flext_auth import FlextAuthJwtProvider, c, p, t, u
 
 
 class FlextAuthJwtTokenGenerator:
@@ -96,15 +96,7 @@ class FlextAuthJwtTokenGenerator:
                     token_result.error or "Token encoding failed",
                 )
             return r[str].ok(token_result.value)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as exc:
+        except c.EXC_BROAD_IO_TYPE as exc:
             return r[str].fail_op("Token generation", exc)
 
     def _build_payload(

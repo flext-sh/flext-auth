@@ -32,7 +32,7 @@ from typing import override
 
 from flext_api import r
 
-from flext_auth import m, p, t
+from flext_auth import c, m, p, t
 from flext_auth.base import s
 from flext_core import u
 
@@ -200,7 +200,7 @@ class FlextAuthMiddleware(s):
                     is_revoked=refreshed_payload.is_revoked,
                     refresh_token=refreshed_payload.refresh_token,
                 )
-            except (TypeError, ValueError):
+            except c.EXC_TYPE_VALIDATION:
                 return r[m.Auth.AuthToken].fail(
                     "Provider refresh returned invalid token payload",
                 )

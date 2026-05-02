@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthProviderMixin, p, r, t, u
+from flext_auth import FlextAuthProviderMixin, c, p, r, t, u
 
 
 class FlextAuthJwtTokenValidator:
@@ -78,15 +78,7 @@ class FlextAuthJwtTokenValidator:
                     decode_result.error or "Invalid token",
                 )
             return r[t.JsonMapping].ok(decode_result.value)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as exc:
+        except c.EXC_BROAD_IO_TYPE as exc:
             return r[t.JsonMapping].fail_op("Token validation", exc)
 
 
