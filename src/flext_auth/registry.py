@@ -89,15 +89,7 @@ class FlextAuthRegistry:
         try:
             caps = provider.supports()
             return r[set[str]].ok(set(caps))
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as exc:
+        except c.EXC_BROAD_IO_TYPE as exc:
             return r[set[str]].fail(
                 f"Provider '{name}' capabilities resolution failed: {exc}",
             )
@@ -259,7 +251,7 @@ class FlextAuthRegistry:
             try:
                 raw = get_metadata_fn()
                 return m.Auth.Providers.Metadata.model_validate(raw)
-            except (AttributeError, TypeError, ValueError) as exc:
+            except c.EXC_BASIC_TYPE as exc:
                 u.fetch_logger(__name__).debug(
                     f"Provider {name} metadata extraction failed, using base: {exc}",
                 )

@@ -228,15 +228,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         if validator is not None:
             try:
                 validator_result = validator(token)
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                AttributeError,
-                OSError,
-                RuntimeError,
-                ImportError,
-            ) as exc:
+            except c.EXC_BROAD_IO_TYPE as exc:
                 return r[m.Auth.AuthIdentity].fail_op(
                     "Kerberos ticket validator execution", exc
                 )
@@ -322,7 +314,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 locked_until=datetime.min.replace(tzinfo=UTC),
                 last_access=datetime.now(UTC),
             )
-        except (ValueError, TypeError) as exc:
+        except c.EXC_TYPE_VALIDATION as exc:
             return r[m.Auth.AuthIdentity].fail_op("Kerberos identity mapping", exc)
         return r[m.Auth.AuthIdentity].ok(identity)
 

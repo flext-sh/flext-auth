@@ -183,15 +183,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
                 return r[t.Auth.TokensClaimMap].fail_op(
                     "Decoded token payload validation", exc
                 )
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                AttributeError,
-                OSError,
-                RuntimeError,
-                ImportError,
-            ) as exc:
+            except c.EXC_BROAD_IO_TYPE as exc:
                 return r[t.Auth.TokensClaimMap].fail_op("Decoding", exc)
 
         @staticmethod

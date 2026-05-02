@@ -734,7 +734,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 locked_until=datetime.min.replace(tzinfo=UTC),
                 last_access=datetime.now(UTC),
             )
-        except (ValueError, TypeError) as exc:
+        except c.EXC_TYPE_VALIDATION as exc:
             return r[m.Auth.AuthIdentity].fail_op("OAuth2 identity mapping", exc)
         return r[m.Auth.AuthIdentity].ok(identity)
 

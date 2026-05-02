@@ -271,15 +271,7 @@ class FlextAuthModels(m):
                         FlextAuthModels.Auth.PasswordUtil.hash_password(credential)
                     )
                     return r[bool].ok(value=True)
-                except (
-                    ValueError,
-                    TypeError,
-                    KeyError,
-                    AttributeError,
-                    OSError,
-                    RuntimeError,
-                    ImportError,
-                ) as exc:
+                except c.EXC_BROAD_IO_TYPE as exc:
                     return r[bool].fail(f"Failed to hash credential: {exc}")
 
             def verify_credential(self, credential: str) -> p.Result[bool]:

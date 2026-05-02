@@ -146,15 +146,7 @@ class FlextAuthIdentityService(s):
             ]
             error_msg = "; ".join(error_messages) if error_messages else str(exc)
             return r[m.Auth.AuthIdentity].fail(error_msg)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as exc:
+        except c.EXC_BROAD_IO_TYPE as exc:
             return r[m.Auth.AuthIdentity].fail(str(exc))
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.Auth.AuthIdentity].fail(
