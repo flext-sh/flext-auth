@@ -21,7 +21,7 @@ from uuid import uuid4
 
 from flext_api import r
 
-from flext_auth import c, m, p, t
+from flext_auth import c, e, m, p, t
 from flext_auth._utilities._managers.auth_managers_session import (
     FlextAuthSessionManagers,
 )
@@ -256,7 +256,7 @@ class FlextAuthUtilitiesManagers(
         def get_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
             """Get user by username."""
             if username not in self._users:
-                return r[m.Auth.AuthIdentity].fail("User not found")
+                return e.fail_not_found("User", "", result_type=r[m.Auth.AuthIdentity])
             storage_data = self._users[username]
             user = self._create_identity_from_storage(storage_data)
             return r[m.Auth.AuthIdentity].ok(user)
@@ -426,9 +426,7 @@ class FlextAuthUtilitiesManagers(
                         username,
                         user_data,
                     ))
-            return r[tuple[str, t.Auth.ManagersUserData]].fail(
-                "User not found",
-            )
+            return e.fail_not_found("User", "", result_type=r[tuple[str, t.Auth.ManagersUserData]])
 
         def _modify_user_list_field(
             self,

@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from flext_api import r, u
 
-from flext_auth import m, t
+from flext_auth import e, m, t
 from flext_core import FlextContainer, FlextContext, p
 
 if TYPE_CHECKING:
@@ -102,7 +102,7 @@ class FlextAuthSessionManagers:
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
                 return r[bool].ok(value=True)
-            return r[bool].fail("Session not found")
+            return e.fail_not_found("Session", "", result_type=r[bool])
 
         def get_active_sessions(
             self, user_id: str
