@@ -608,29 +608,33 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def _introspect_token(self, token: str) -> p.Result[t.JsonMapping]:
         endpoint_result = self._introspection_endpoint()
-        if endpoint_result.failure:
-            return r[t.JsonMapping].fail(
-                endpoint_result.error or "OAuth2 introspection endpoint is required",
-            )
         headers_result = self._build_introspection_headers()
-        if headers_result.failure:
-            return r[t.JsonMapping].fail(
-                headers_result.error or "OAuth2 introspection headers are invalid",
-            )
         body_result = self._build_introspection_form_data(token)
-        if body_result.failure:
-            return r[t.JsonMapping].fail(
-                body_result.error or "OAuth2 introspection payload is invalid",
+
+        step_errors = [
+            res.error or msg
+            for res, msg in (
+                (endpoint_result, "OAuth2 introspection endpoint is required"),
+                (headers_result, "OAuth2 introspection headers are invalid"),
+                (body_result, "OAuth2 introspection payload is invalid"),
             )
+            if res.failure
+        ]
+        if step_errors:
+            return r[t.JsonMapping].fail(step_errors[0])
+
         parsed = urlparse(endpoint_result.value)
         if parsed.scheme != "https":
             return r[t.JsonMapping].fail(
                 f"Unsupported URL scheme: {parsed.scheme}",
             )
+
         request_path = parsed.path or "/"
         if parsed.query:
             request_path = f"{request_path}?{parsed.query}"
+
         connection = http.client.HTTPSConnection(parsed.netloc, timeout=10.0)
+        result: p.Result[t.JsonMapping]
         try:
             connection.request(
                 "POST",
@@ -642,26 +646,30 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             status_code = response.status
             response_payload = response.read().decode("utf-8")
         except (http.client.HTTPException, OSError, ValueError, TypeError) as exc:
-            return r[t.JsonMapping].fail_op("OAuth2 introspection request", exc)
+            result = r[t.JsonMapping].fail_op("OAuth2 introspection request", exc)
+        else:
+            if status_code >= HTTPStatus.BAD_REQUEST:
+                error_body = response_payload.strip()
+                error_message = (
+                    f"OAuth2 introspection request failed with status {status_code}: {error_body}"
+                    if error_body
+                    else f"OAuth2 introspection request failed with status {status_code}"
+                )
+                result = r[t.JsonMapping].fail(error_message)
+            else:
+                try:
+                    parsed_mapping = t.json_mapping_adapter().validate_json(
+                        response_payload,
+                    )
+                except c.EXC_VALIDATION_VALUE as exc:
+                    result = r[t.JsonMapping].fail(
+                        f"OAuth2 introspection payload is not valid JSON: {exc}",
+                    )
+                else:
+                    result = r[t.JsonMapping].ok(parsed_mapping)
         finally:
             connection.close()
-        if status_code >= HTTPStatus.BAD_REQUEST:
-            error_body = response_payload.strip()
-            error_message = (
-                f"OAuth2 introspection request failed with status {status_code}: {error_body}"
-                if error_body
-                else f"OAuth2 introspection request failed with status {status_code}"
-            )
-            return r[t.JsonMapping].fail(error_message)
-        try:
-            parsed_mapping = t.json_mapping_adapter().validate_json(
-                response_payload,
-            )
-        except c.EXC_VALIDATION_VALUE as exc:
-            return r[t.JsonMapping].fail(
-                f"OAuth2 introspection payload is not valid JSON: {exc}",
-            )
-        return r[t.JsonMapping].ok(parsed_mapping)
+        return result
 
     def _introspection_endpoint(self) -> p.Result[str]:
         for key in ("introspection_endpoint", "token_introspection_endpoint"):
