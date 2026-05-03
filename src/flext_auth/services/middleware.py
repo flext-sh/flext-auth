@@ -170,7 +170,9 @@ class FlextAuthMiddleware(s):
             current_token = self._current_token
             if current_token is None:
                 result = r[m.Auth.AuthToken].fail("No token available for refresh")
-            elif not (refresh_input := current_token.refresh_token or current_token.token):
+            elif not (
+                refresh_input := current_token.refresh_token or current_token.token
+            ):
                 result = r[m.Auth.AuthToken].fail("No refresh token available")
             else:
                 validation_result = self._provider.validate(refresh_input)

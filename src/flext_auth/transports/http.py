@@ -227,7 +227,9 @@ class FlextWebTransportAdapter:
             http_response = response.value
             body = http_response.body
             if body is None:
-                result = r[t.JsonMapping].ok(t.json_mapping_adapter().validate_python({}))
+                result = r[t.JsonMapping].ok(
+                    t.json_mapping_adapter().validate_python({})
+                )
             elif isinstance(body, Mapping):
                 result = r[t.JsonMapping].ok(
                     t.json_mapping_adapter().validate_python(body),
@@ -247,7 +249,9 @@ class FlextWebTransportAdapter:
                     try:
                         parsed = t.json_mapping_adapter().validate_json(decoded)
                     except c.EXC_VALIDATION_VALUE:
-                        result = r[t.JsonMapping].fail("Unable to parse response body as JSON")
+                        result = r[t.JsonMapping].fail(
+                            "Unable to parse response body as JSON"
+                        )
                     else:
                         result = r[t.JsonMapping].ok(parsed)
         return result
