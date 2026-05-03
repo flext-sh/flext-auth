@@ -169,43 +169,47 @@ class FlextAuthMiddleware(s):
             """Refresh token or re-authenticate if refresh fails."""
             current_token = self._current_token
             if current_token is None:
-                return r[m.Auth.AuthToken].fail("No token available for refresh")
-            refresh_input = current_token.refresh_token or current_token.token
-            if not refresh_input:
-                return r[m.Auth.AuthToken].fail("No refresh token available")
-            validation_result = self._provider.validate(refresh_input)
-            if validation_result.failure:
-                return r[m.Auth.AuthToken].fail(
-                    validation_result.error or "Refresh source token is invalid",
-                )
-            if not validation_result.value:
-                return r[m.Auth.AuthToken].fail("Refresh source token is invalid")
-            refresh_result = self._provider.refresh(refresh_input)
-            if refresh_result.failure:
-                return r[m.Auth.AuthToken].fail(
-                    refresh_result.error or "Token refresh failed",
-                )
-            refreshed_payload = refresh_result.value
-            identity_id_value = (
-                refreshed_payload.identity_id
-                or refreshed_payload.user_id
-                or current_token.identity_id
-            )
-            try:
-                refreshed_token = m.Auth.AuthToken(
-                    identity_id=identity_id_value,
-                    token=refreshed_payload.token,
-                    token_type=refreshed_payload.token_type,
-                    expires_at=refreshed_payload.expires_at,
-                    is_revoked=refreshed_payload.is_revoked,
-                    refresh_token=refreshed_payload.refresh_token,
-                )
-            except c.EXC_TYPE_VALIDATION:
-                return r[m.Auth.AuthToken].fail(
-                    "Provider refresh returned invalid token payload",
-                )
-            self._current_token = refreshed_token
-            return r[m.Auth.AuthToken].ok(refreshed_token)
+                result = r[m.Auth.AuthToken].fail("No token available for refresh")
+            elif not (refresh_input := current_token.refresh_token or current_token.token):
+                result = r[m.Auth.AuthToken].fail("No refresh token available")
+            else:
+                validation_result = self._provider.validate(refresh_input)
+                if validation_result.failure:
+                    result = r[m.Auth.AuthToken].fail(
+                        validation_result.error or "Refresh source token is invalid",
+                    )
+                elif not validation_result.value:
+                    result = r[m.Auth.AuthToken].fail("Refresh source token is invalid")
+                else:
+                    refresh_result = self._provider.refresh(refresh_input)
+                    if refresh_result.failure:
+                        result = r[m.Auth.AuthToken].fail(
+                            refresh_result.error or "Token refresh failed",
+                        )
+                    else:
+                        refreshed_payload = refresh_result.value
+                        identity_id_value = (
+                            refreshed_payload.identity_id
+                            or refreshed_payload.user_id
+                            or current_token.identity_id
+                        )
+                        try:
+                            refreshed_token = m.Auth.AuthToken(
+                                identity_id=identity_id_value,
+                                token=refreshed_payload.token,
+                                token_type=refreshed_payload.token_type,
+                                expires_at=refreshed_payload.expires_at,
+                                is_revoked=refreshed_payload.is_revoked,
+                                refresh_token=refreshed_payload.refresh_token,
+                            )
+                        except c.EXC_TYPE_VALIDATION:
+                            result = r[m.Auth.AuthToken].fail(
+                                "Provider refresh returned invalid token payload",
+                            )
+                        else:
+                            self._current_token = refreshed_token
+                            result = r[m.Auth.AuthToken].ok(refreshed_token)
+            return result
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthMiddleware"]

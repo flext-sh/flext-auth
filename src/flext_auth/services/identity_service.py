@@ -99,25 +99,30 @@ class FlextAuthIdentityService(s):
         new_credential: str,
     ) -> p.Result[bool]:
         """Railway-oriented credential change with validation."""
+        result: p.Result[bool]
         identity_result = self.identity_manager.get_user(identity_id)
         if identity_result.failure:
-            return r[bool].fail(identity_result.error)
-        identity = identity_result.value
-        verify_result = identity.verify_credential(current_credential)
-        if verify_result.failure:
-            return r[bool].fail(verify_result.error)
-        if not verify_result.value:
-            return r[bool].fail("Current credential is incorrect")
-        if len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
-            return r[bool].fail(
-                f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
-            )
-        set_result = identity.update_credential(new_credential)
-        if set_result.failure:
-            return r[bool].fail(set_result.error)
-        return r[bool].ok(
-            self._log_success("Password change successful", identity.name),
-        )
+            result = r[bool].fail(identity_result.error)
+        else:
+            identity = identity_result.value
+            verify_result = identity.verify_credential(current_credential)
+            if verify_result.failure:
+                result = r[bool].fail(verify_result.error)
+            elif not verify_result.value:
+                result = r[bool].fail("Current credential is incorrect")
+            elif len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
+                result = r[bool].fail(
+                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                )
+            else:
+                set_result = identity.update_credential(new_credential)
+                if set_result.failure:
+                    result = r[bool].fail(set_result.error)
+                else:
+                    result = r[bool].ok(
+                        self._log_success("Password change successful", identity.name),
+                    )
+        return result
 
     def create_identity(
         self,
