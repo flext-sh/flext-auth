@@ -99,7 +99,7 @@ class FlextAuthSessionManagers:
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
                 return r[bool].ok(value=True)
-            return e.fail_not_found("Session", "", result_type=r[bool])
+            return e.fail_not_found("Session", session_id, result_type=r[bool])
 
         def get_active_sessions(
             self, user_id: str

@@ -531,7 +531,7 @@ class TestsFlextAuthApi:
         )
         u.Tests.Matchers.that(not logout_result.success, eq=True)
         u.Tests.Matchers.that(not logout_result.success, eq=True)
-        u.Tests.Matchers.that((logout_result.error or ""), has="Session not found")
+        u.Tests.Matchers.that((logout_result.error or ""), has="not found")
 
     def test_flext_auth_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start() with default parameters."""
