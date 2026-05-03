@@ -62,7 +62,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
         "._utilities",
         ".providers",
         ".services",
-        ".transports",
     ),
     build_lazy_import_map(
         {
