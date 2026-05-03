@@ -86,49 +86,6 @@ class FlextAuthModels(m):
         # TOKEN MODELS - Generic token handling
         # =========================================================================
 
-        class TokenPayload(m.Value):
-            """Generic JWT token payload (immutable value object)."""
-
-            sub: Annotated[str, u.Field(..., description="Subject (identity ID)")]
-            exp: Annotated[int, u.Field(..., description="Expiration timestamp (UNIX)")]
-            iat: Annotated[int, u.Field(..., description="Issued at timestamp (UNIX)")]
-            jti: Annotated[str, u.Field(description="Token ID")] = ""
-            iss: Annotated[
-                str,
-                u.Field(
-                    description="Issuer",
-                ),
-            ] = c.Auth.DEFAULT_ISSUER
-            aud: Annotated[
-                str,
-                u.Field(
-                    description="Audience",
-                ),
-            ] = c.Auth.DEFAULT_AUDIENCE
-            session_id: Annotated[str, u.Field(description="Session ID")] = ""
-
-        class TokenRequest(m.Value):
-            """Generic token generation request (immutable value object)."""
-
-            identity_id: Annotated[str, u.Field(..., description="Identity ID")]
-            token_type: Annotated[
-                c.Auth.TokenTypes | str,
-                u.Field(
-                    description="Token type",
-                ),
-            ] = c.Auth.TokenTypes.ACCESS.value
-            expiry_minutes: Annotated[
-                t.PositiveInt,
-                u.Field(
-                    description="Token expiry",
-                ),
-            ] = c.Auth.VALIDATION_DEFAULT_TOKEN_EXPIRY_MINUTES
-            extra_claims: t.JsonMapping = u.Field(
-                default_factory=MappingProxyType,
-                description="Additional claims to include in the token",
-            )
-            session_id: Annotated[str, u.Field(description="Session ID")] = ""
-
         class AuthToken(m.Entity):
             """Generic authentication token entity."""
 
@@ -319,54 +276,6 @@ class FlextAuthModels(m):
                 return datetime.now(UTC) > self.expires_at
 
         # =========================================================================
-        # ROLE & PERMISSION MODELS - Generic RBAC
-        # =========================================================================
-
-        class Role(m.Entity):
-            """Generic role entity."""
-
-            name: Annotated[
-                t.NonEmptyStr,
-                u.Field(
-                    ...,
-                    max_length=c.Auth.VALIDATION_MAX_ROLE_NAME_LENGTH,
-                    description="Role name",
-                ),
-            ]
-            description: Annotated[
-                str,
-                u.Field(
-                    max_length=c.Auth.VALIDATION_MAX_ROLE_DESCRIPTION_LENGTH,
-                    description="Description",
-                ),
-            ] = ""
-            permissions: t.StrSequence = u.Field(
-                default_factory=tuple,
-                description="List of permissions assigned to the identity",
-            )
-
-        class Permission(m.Entity):
-            """Generic permission entity."""
-
-            name: Annotated[
-                t.NonEmptyStr,
-                u.Field(
-                    ...,
-                    max_length=c.Auth.VALIDATION_MAX_PERMISSION_NAME_LENGTH,
-                    description="Permission",
-                ),
-            ]
-            description: Annotated[
-                str,
-                u.Field(
-                    max_length=c.Auth.VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH,
-                    description="Description",
-                ),
-            ] = ""
-            resource: Annotated[str, u.Field(description="Resource path")] = ""
-            action: Annotated[str, u.Field(description="Action type")] = ""
-
-        # =========================================================================
         # PROVIDER MODELS - Generic provider configuration
         # =========================================================================
 
@@ -470,44 +379,6 @@ class FlextAuthModels(m):
                 """Check if configured."""
                 return bool(self.name and self.type)
 
-        class ProviderConfiguration(m.FlexibleModel):
-            """Provider configuration for authentication providers."""
-
-            name: Annotated[str, u.Field(description="Provider name")] = "default"
-            version: Annotated[str, u.Field(description="Provider version")] = "1.0.0"
-            capabilities: t.StrSequence = u.Field(
-                default_factory=tuple,
-                description="List of capabilities for the provider",
-            )
-
-        class ApiKeyValidation(m.Value):
-            """API key validation request (immutable value object)."""
-
-            api_key: Annotated[str, u.Field(..., description="API key to validate")]
-            metadata: t.JsonMapping = u.Field(
-                default_factory=MappingProxyType,
-                description="Metadata associated with the API key validation",
-            )
-
-        class ApiKeyData(m.Value):
-            """API key data structure (immutable value object)."""
-
-            key_hash: Annotated[str, u.Field(..., description="Hashed API key")]
-            name: Annotated[str, u.Field(..., description="Key name")]
-            permissions: t.StrSequence = u.Field(
-                default_factory=tuple,
-                description="List of permissions assigned to the identity",
-            )
-            is_active: Annotated[bool, u.Field(description="Key active status")] = True
-            expires_at: datetime = u.Field(
-                default_factory=lambda: datetime.max.replace(tzinfo=UTC),
-                description="Key expiration (datetime.max means never expires)",
-            )
-            created_at: datetime = u.Field(
-                default_factory=lambda: datetime.now(UTC),
-                description="Creation time",
-            )
-
         class CredentialValidation(m.Value):
             """Credential validation request (immutable value object)."""
 
@@ -516,23 +387,6 @@ class FlextAuthModels(m):
             metadata: t.JsonMapping = u.Field(
                 default_factory=MappingProxyType,
                 description="Metadata for the credential validation",
-            )
-
-        # =========================================================================
-        # CREDENTIAL MODELS - Generic credential handling
-        # =========================================================================
-
-        class Credential(m.Value):
-            """Generic credential container (immutable value object)."""
-
-            credential_type: Annotated[str, u.Field(..., description="Credential type")]
-            value: Annotated[
-                str,
-                u.Field(..., description="Credential value", exclude=True),
-            ]
-            metadata: t.JsonMapping = u.Field(
-                default_factory=MappingProxyType,
-                description="Metadata for the credential",
             )
 
         # =========================================================================
@@ -594,23 +448,6 @@ class FlextAuthModels(m):
             realm: Annotated[str, u.Field(description="Kerberos realm")] = ""
 
         # =========================================================================
-        # HTTP RESPONSE DATA - Generic HTTP response container
-        # =========================================================================
-
-        class HttpResponseData(m.Value):
-            """Generic HTTP response data."""
-
-            status_code: Annotated[
-                t.HttpStatusCode,
-                u.Field(..., description="HTTP status code"),
-            ]
-            body: Annotated[str, u.Field(description="Response body")] = ""
-            headers: t.StrMapping = u.Field(
-                default_factory=MappingProxyType,
-                description="HTTP headers for the webhook request",
-            )
-
-        # =========================================================================
         # PROVIDERS NAMESPACE - Provider metadata and related models
         # =========================================================================
 
@@ -661,15 +498,6 @@ class FlextAuthModels(m):
                     default_factory=MappingProxyType,
                     description="Extra attributes for the identity",
                 )
-
-            class Registration(m.Value):
-                """Provider registration payload (immutable value object)."""
-
-                name: Annotated[str, u.Field(..., description="Provider name")]
-                provider_type: Annotated[
-                    str,
-                    u.Field(..., description="Provider type"),
-                ]
 
 
 # Short aliases
