@@ -59,29 +59,6 @@ class FlextAuthModels(m):
         # GENERIC VALIDATION RESULT - Single model for all validations
         # =========================================================================
 
-        class ValidationResult(m.Value):
-            """Generic validation result for any operation (immutable value object)."""
-
-            valid: Annotated[bool, u.Field(..., description="Validation outcome")]
-            data: t.JsonMapping = u.Field(
-                default_factory=MappingProxyType,
-                description="Additional validation result data",
-            )
-            error: Annotated[str, u.Field(description="Error message")] = ""
-            metadata: t.JsonMapping = u.Field(
-                default_factory=MappingProxyType,
-                description="Metadata associated with the validation result",
-            )
-
-            @property
-            def status(self) -> str:
-                """Human-readable validation status."""
-                if self.valid:
-                    return "valid"
-                if not self.error:
-                    return "invalid"
-                return f"invalid: {self.error}"
-
         # =========================================================================
         # TOKEN MODELS - Generic token handling
         # =========================================================================
