@@ -221,47 +221,53 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Validate Kerberos token and return user."""
         if not token.strip():
-            return r[m.Auth.AuthIdentity].fail(
+            result = r[m.Auth.AuthIdentity].fail(
                 "Kerberos token must be a non-empty string",
             )
-        validator = self._ticket_validator_callable()
-        if validator is not None:
-            try:
-                validator_result = validator(token)
-            except c.EXC_BROAD_IO_TYPE as exc:
-                return r[m.Auth.AuthIdentity].fail_op(
-                    "Kerberos ticket validator execution", exc
-                )
-            if isinstance(validator_result, m.Auth.AuthIdentity):
-                return r[m.Auth.AuthIdentity].ok(validator_result)
-            if isinstance(validator_result, Mapping):
+        else:
+            validator = self._ticket_validator_callable()
+            if validator is not None:
                 try:
-                    parsed_claims = (
-                        t.Auth.CONTAINER_VALUE_MAPPING_ADAPTER.validate_python(
-                            validator_result,
-                        )
+                    validator_result = validator(token)
+                except c.EXC_BROAD_IO_TYPE as exc:
+                    result = r[m.Auth.AuthIdentity].fail_op(
+                        "Kerberos ticket validator execution", exc
                     )
-                except c.ValidationError as exc:
-                    return r[m.Auth.AuthIdentity].fail(
-                        f"Kerberos ticket validator mapping payload is invalid: {exc}",
-                    )
-                return self._map_identity_payload(parsed_claims)
-            principal_value = validator_result.principal
-            principal = principal_value or "kerberos-user"
-            identity_map: t.JsonMapping = {
-                "identity_id": principal,
-                "name": principal,
-                "contact": f"{principal}@kerberos.local",
-                "roles": ["user"],
-            }
-            return self._map_identity_payload(identity_map)
-        claims_result = self._decode_token_claims(token)
-        return claims_result.fold(
-            on_failure=lambda _: r[m.Auth.AuthIdentity].fail(
-                "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
-            ),
-            on_success=lambda v: self._map_identity_payload(v),
-        )
+                else:
+                    if isinstance(validator_result, m.Auth.AuthIdentity):
+                        result = r[m.Auth.AuthIdentity].ok(validator_result)
+                    elif isinstance(validator_result, Mapping):
+                        try:
+                            parsed_claims = (
+                                t.Auth.CONTAINER_VALUE_MAPPING_ADAPTER.validate_python(
+                                    validator_result,
+                                )
+                            )
+                        except c.ValidationError as exc:
+                            result = r[m.Auth.AuthIdentity].fail(
+                                f"Kerberos ticket validator mapping payload is invalid: {exc}",
+                            )
+                        else:
+                            result = self._map_identity_payload(parsed_claims)
+                    else:
+                        principal_value = validator_result.principal
+                        principal = principal_value or "kerberos-user"
+                        identity_map: t.JsonMapping = {
+                            "identity_id": principal,
+                            "name": principal,
+                            "contact": f"{principal}@kerberos.local",
+                            "roles": ["user"],
+                        }
+                        result = self._map_identity_payload(identity_map)
+            else:
+                claims_result = self._decode_token_claims(token)
+                result = claims_result.fold(
+                    on_failure=lambda _: r[m.Auth.AuthIdentity].fail(
+                        "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
+                    ),
+                    on_success=lambda v: self._map_identity_payload(v),
+                )
+        return result
 
     def _map_identity_payload(
         self,
