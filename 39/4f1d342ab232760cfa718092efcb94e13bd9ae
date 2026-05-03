@@ -1,0 +1,26 @@
+tests/unit/test_api.py
+  59721e408c0da1b2 534
+src/flext_auth/_utilities/_managers/auth_managers_session.py
+  59721e408c0da1b2 102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "394f1d342ab232760cfa718092efcb94e13bd9ae",
+  "prompts": {
+    "59721e408c0da1b2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "556b2347-c380-4f70-8574-35960061b3be",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 2,
+      "accepted_lines": 2,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/4239c3764371526b89aaed671eda70f2f98644eb61cfda116c833c3cdeae55d3"
+    }
+  }
+}
