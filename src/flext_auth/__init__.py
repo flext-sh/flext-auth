@@ -40,8 +40,6 @@ if _t.TYPE_CHECKING:
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
     from flext_auth.providers.jwt import FlextAuthJwtProvider
-    from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
-    from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
     from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
     from flext_auth.providers.kerberos import FlextAuthKerberosProvider
     from flext_auth.providers.ldap import FlextAuthLdapProvider
@@ -53,12 +51,10 @@ if _t.TYPE_CHECKING:
     from flext_auth.registry import FlextAuthRegistry
     from flext_auth.services.auth_service import FlextAuthApplicationService
     from flext_auth.services.identity_service import FlextAuthIdentityService
-    from flext_auth.services.middleware import FlextAuthMiddleware
     from flext_auth.services.provider_service import FlextAuthProviderService
     from flext_auth.services.session_service import FlextAuthSessionService
     from flext_auth.services.token_service import FlextAuthTokenService
     from flext_auth.settings import FlextAuthSettings
-    from flext_auth.transports.http import FlextWebTransportAdapter
     from flext_auth.typings import FlextAuthTypes, t
     from flext_auth.utilities import FlextAuthUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
@@ -109,8 +105,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".providers.basic": ("FlextAuthBasicProvider",),
             ".providers.certificate": ("FlextAuthCertificateProvider",),
             ".providers.jwt": ("FlextAuthJwtProvider",),
-            ".providers.jwt_password_hasher": ("FlextAuthPasswordHasher",),
-            ".providers.jwt_token_generator": ("FlextAuthJwtTokenGenerator",),
             ".providers.jwt_token_validator": ("FlextAuthJwtTokenValidator",),
             ".providers.kerberos": ("FlextAuthKerberosProvider",),
             ".providers.ldap": ("FlextAuthLdapProvider",),
@@ -122,12 +116,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".registry": ("FlextAuthRegistry",),
             ".services.auth_service": ("FlextAuthApplicationService",),
             ".services.identity_service": ("FlextAuthIdentityService",),
-            ".services.middleware": ("FlextAuthMiddleware",),
             ".services.provider_service": ("FlextAuthProviderService",),
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
             ".settings": ("FlextAuthSettings",),
-            ".transports.http": ("FlextWebTransportAdapter",),
             ".typings": (
                 "FlextAuthTypes",
                 "t",
@@ -179,15 +171,12 @@ __all__: list[str] = [
     "FlextAuthConstants",
     "FlextAuthIdentityService",
     "FlextAuthJwtProvider",
-    "FlextAuthJwtTokenGenerator",
     "FlextAuthJwtTokenValidator",
     "FlextAuthKerberosProvider",
     "FlextAuthLdapProvider",
-    "FlextAuthMiddleware",
     "FlextAuthModels",
     "FlextAuthOAuth2Provider",
     "FlextAuthOidcProvider",
-    "FlextAuthPasswordHasher",
     "FlextAuthProtocols",
     "FlextAuthProviderMixin",
     "FlextAuthProviderService",
@@ -203,7 +192,6 @@ __all__: list[str] = [
     "FlextAuthTypes",
     "FlextAuthUtilities",
     "FlextAuthUtilitiesManagers",
-    "FlextWebTransportAdapter",
     "__author__",
     "__author_email__",
     "__description__",

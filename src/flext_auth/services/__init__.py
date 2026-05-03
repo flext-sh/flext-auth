@@ -9,7 +9,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".auth_service": ("FlextAuthApplicationService",),
         ".identity_service": ("FlextAuthIdentityService",),
-        ".middleware": ("FlextAuthMiddleware",),
         ".provider_service": ("FlextAuthProviderService",),
         ".session_service": ("FlextAuthSessionService",),
         ".token_service": ("FlextAuthTokenService",),

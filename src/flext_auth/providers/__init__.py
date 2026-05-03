@@ -11,8 +11,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".basic": ("FlextAuthBasicProvider",),
         ".certificate": ("FlextAuthCertificateProvider",),
         ".jwt": ("FlextAuthJwtProvider",),
-        ".jwt_password_hasher": ("FlextAuthPasswordHasher",),
-        ".jwt_token_generator": ("FlextAuthJwtTokenGenerator",),
         ".jwt_token_validator": ("FlextAuthJwtTokenValidator",),
         ".kerberos": ("FlextAuthKerberosProvider",),
         ".ldap": ("FlextAuthLdapProvider",),
