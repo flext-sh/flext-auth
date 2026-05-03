@@ -222,29 +222,35 @@ class FlextWebTransportAdapter:
     def _execute_request(self, request: m.Api.HttpRequest) -> p.Result[t.JsonMapping]:
         response = self._client.request(request)
         if response.failure:
-            return r[t.JsonMapping].fail(response.error)
-        http_response = response.value
-        body = http_response.body
-        if body is None:
-            return r[t.JsonMapping].ok(t.json_mapping_adapter().validate_python({}))
-        if isinstance(body, Mapping):
-            return r[t.JsonMapping].ok(
-                t.json_mapping_adapter().validate_python(body),
-            )
-        match body:
-            case bytes() as body_bytes:
-                decoded = body_bytes.decode("utf-8", errors="replace")
-            case str() as body_text:
-                decoded = body_text
-            case _:
-                return r[t.JsonMapping].fail(
-                    f"Unsupported response body type: {type(body)}",
+            result = r[t.JsonMapping].fail(response.error)
+        else:
+            http_response = response.value
+            body = http_response.body
+            if body is None:
+                result = r[t.JsonMapping].ok(t.json_mapping_adapter().validate_python({}))
+            elif isinstance(body, Mapping):
+                result = r[t.JsonMapping].ok(
+                    t.json_mapping_adapter().validate_python(body),
                 )
-        try:
-            parsed = t.json_mapping_adapter().validate_json(decoded)
-            return r[t.JsonMapping].ok(parsed)
-        except c.EXC_VALIDATION_VALUE:
-            return r[t.JsonMapping].fail("Unable to parse response body as JSON")
+            else:
+                decoded: str | None = None
+                match body:
+                    case bytes() as body_bytes:
+                        decoded = body_bytes.decode("utf-8", errors="replace")
+                    case str() as body_text:
+                        decoded = body_text
+                if decoded is None:
+                    result = r[t.JsonMapping].fail(
+                        f"Unsupported response body type: {type(body)}",
+                    )
+                else:
+                    try:
+                        parsed = t.json_mapping_adapter().validate_json(decoded)
+                    except c.EXC_VALIDATION_VALUE:
+                        result = r[t.JsonMapping].fail("Unable to parse response body as JSON")
+                    else:
+                        result = r[t.JsonMapping].ok(parsed)
+        return result
 
     def _parse_token_response(
         self,
