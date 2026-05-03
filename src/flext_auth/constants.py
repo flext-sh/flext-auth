@@ -175,19 +175,6 @@ class FlextAuthConstants(c):
             member.value for member in PermissionTypes.__members__.values()
         )
         "Immutable set of all valid permission types."
-        ACCESS_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
-            member.value for member in [TokenTypes.ACCESS, TokenTypes.BEARER]
-        )
-        "Access token types for validation."
-        USER_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
-            member.value
-            for member in [RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
-        )
-        "User role types for validation."
-        WRITE_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
-            member.value for member in [PermissionTypes.WRITE, PermissionTypes.DELETE]
-        )
-        "Write permission types for validation."
         KEY_USER_ID: Final[str] = "user_id"
         "User identifier payload key."
         DEFAULT_TIMEOUT: Final[float] = float(c.DEFAULT_TIMEOUT_SECONDS)
@@ -220,8 +207,6 @@ class FlextAuthConstants(c):
         "Default JWT issuer."
         DEFAULT_AUDIENCE: Final[str] = "flext-auth-users"
         "Default JWT audience."
-        HASH_ROUNDS_DEFAULT: Final[int] = 12
-        "Default hash rounds."
         HASH_ROUNDS_MIN: Final[int] = 4
         "Minimum hash rounds."
         HASH_ROUNDS_MAX: Final[int] = 31
@@ -234,18 +219,6 @@ class FlextAuthConstants(c):
         "Default max authentication attempts."
         LOCKOUT_DURATION_MINUTES: Final[int] = 30
         "Lockout duration in minutes."
-        SESSION_EXPIRY_DEFAULT_MINUTES: Final[int] = 1440
-        "Default session expiry in minutes."
-        SESSION_EXPIRY_MAX_MINUTES: Final[int] = 43200
-        "Maximum session expiry in minutes."
-        MAX_SESSIONS_DEFAULT: Final[int] = 5
-        "Default max sessions per user."
-        PERFORMANCE_THRESHOLD_MS: Final[float] = 1000.0
-        "Performance warning threshold in milliseconds."
-        MAX_REQUESTS_PER_MINUTE: Final[int] = 60
-        "Max requests per minute."
-        MAX_REQUESTS_PER_HOUR: Final[int] = 3600
-        "Max requests per hour."
         SECRET_MIN_LENGTH: Final[int] = 32
         "Minimum secret key length."
         VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
@@ -354,8 +327,6 @@ class FlextAuthConstants(c):
         # ===== Validation Constants =====
         VALIDATION_SHORT_NAME_MAX: Final[int] = 64
         "Maximum length for short names (provider keys, capabilities)."
-        VALIDATION_LONG_NAME_MAX: Final[int] = 255
-        "Maximum length for long names (usernames, descriptions)."
 
         # ===== Model Validation Constants =====
         VALIDATION_BCRYPT_ROUNDS: Final[int] = 12
