@@ -263,12 +263,13 @@ class FlextAuthProviderMixin:
             else None
         )
         algorithms_list = (algorithm,) if algorithm else (c.Auth.DEFAULT_JWT_ALGORITHM,)
-        return u.Auth.decode_token(
+        decoded: p.Result[t.Auth.TokensClaimMap] = u.Auth.decode_token(
             token,
             secret_key_obj,
             algorithms=algorithms_list,
             audience=audience,
         )
+        return decoded
 
     @staticmethod
     def _encode_token_payload(
@@ -278,7 +279,10 @@ class FlextAuthProviderMixin:
     ) -> p.Result[str]:
         """Encode token payload using JWT with canonical result flow."""
         normalized_payload: t.Auth.TokensClaimMap = dict(payload.items())
-        return u.Auth.encode_token(normalized_payload, secret, algorithm)
+        encoded: p.Result[str] = u.Auth.encode_token(
+            normalized_payload, secret, algorithm
+        )
+        return encoded
 
     def _extract_identity_id(
         self,

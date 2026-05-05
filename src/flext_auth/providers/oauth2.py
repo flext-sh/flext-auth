@@ -129,9 +129,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_flow(self) -> str:
         """Initialize flow configuration."""
         flow_value = self.config.get("flow")
+        flow_default: str = c.Auth.OAUTH2_FLOW_DEFAULT
         match flow_value:
             case None | "":
-                return c.Auth.OAUTH2_FLOW_DEFAULT
+                return flow_default
             case str() as flow:
                 if flow not in c.Auth.OAUTH2_FLOWS:
                     error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAUTH2_FLOWS}, got {flow}"
@@ -144,9 +145,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_pkce(self) -> bool:
         """Initialize PKCE configuration."""
         use_pkce_value = self.config.get("use_pkce")
+        pkce_default: bool = c.Auth.OAUTH2_USE_PKCE_DEFAULT
         match use_pkce_value:
             case None:
-                return c.Auth.OAUTH2_USE_PKCE_DEFAULT
+                return pkce_default
             case bool() as use_pkce:
                 return use_pkce
             case _:
@@ -156,13 +158,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_scope(self) -> str:
         """Initialize scope configuration."""
         scope_value = self.config.get("scope")
+        scope_default: str = c.Auth.OAUTH2_SCOPE_DEFAULT
         match scope_value:
             case None:
-                return c.Auth.OAUTH2_SCOPE_DEFAULT
+                return scope_default
             case str() as scope if scope:
                 return scope
             case str():
-                return c.Auth.OAUTH2_SCOPE_DEFAULT
+                return scope_default
             case _:
                 error_msg = f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
                 raise ValueError(error_msg)
@@ -172,9 +175,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         token_endpoint_auth_method_value = self.config.get(
             "token_endpoint_auth_method",
         )
+        method_default: str = c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
         match token_endpoint_auth_method_value:
             case None | "":
-                return c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
+                return method_default
             case str() as auth_method:
                 if auth_method not in c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS:
                     error_msg = f"OAuth2 'token_endpoint_auth_method' must be one of {c.Auth.OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS}, got {auth_method}"
