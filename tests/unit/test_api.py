@@ -253,7 +253,7 @@ class TestsFlextAuthApi:
 
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
-        FlextAuthSettings._reset_instance()
+        FlextAuthSettings.reset_instance()
         auth: FlextAuth = FlextAuth()
         u.Tests.Matchers.that(auth.config.auth_secret, none=False)
         u.Tests.Matchers.that(len(auth.config.auth_secret.get_secret_value()), gt=20)
