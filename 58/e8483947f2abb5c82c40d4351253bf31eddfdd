@@ -1,0 +1,24 @@
+tests/unit/test_api.py
+  b34517541da1f7b4 256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "58e8483947f2abb5c82c40d4351253bf31eddfdd",
+  "prompts": {
+    "b34517541da1f7b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "79ce5f45-26cd-493f-b92b-4bcc166f6a35",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/2960d6d1129aa24396e6ebfdb2a58ce61c25f929d59e746a008b3f9afc154d79"
+    }
+  }
+}
