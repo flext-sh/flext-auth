@@ -1,0 +1,26 @@
+src/flext_auth/__init__.py
+  31ee9137f8909d3e 8-17,152-166
+src/flext_auth/__version__.py
+  31ee9137f8909d3e 14,22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "9e28e2b11630fbd679f1cea4f1179a874db8d371",
+  "prompts": {
+    "31ee9137f8909d3e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cbeb61c6-cd2e-4000-9bed-dcd82a916aec",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 27,
+      "total_deletions": 23,
+      "accepted_lines": 27,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/b137c55153eb3162336b3a348d65a44cfc0d1cb93287efb54de9ad0530f969a6"
+    }
+  }
+}
