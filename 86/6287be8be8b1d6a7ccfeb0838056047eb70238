@@ -1,0 +1,40 @@
+src/flext_auth/providers/mixin.py
+  31ee9137f8909d3e 266
+src/flext_auth/providers/kerberos.py
+  31ee9137f8909d3e 264-268,270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "866287be8be8b1d6a7ccfeb0838056047eb70238",
+  "prompts": {
+    "31ee9137f8909d3e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cbeb61c6-cd2e-4000-9bed-dcd82a916aec",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 7,
+      "total_deletions": 6,
+      "accepted_lines": 7,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/1e5207c6283c32168839f59cb879ef815ab6fe7d936a6afa6e13e32e5d1afe31"
+    },
+    "b34517541da1f7b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "79ce5f45-26cd-493f-b92b-4bcc166f6a35",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 16,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/c2c1d2c870f1b83d06fac7616e553a0153e9bd31d0e028968f8858c23c483b5d"
+    }
+  }
+}
