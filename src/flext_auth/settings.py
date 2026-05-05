@@ -12,11 +12,10 @@ from __future__ import annotations
 from typing import Annotated, ClassVar
 
 from flext_auth import c, m, t, u
-from flext_core import FlextSettings
+from flext_core import FlextSettingsBase
 
 
-@FlextSettings.auto_register("auth")
-class FlextAuthSettings(FlextSettings):
+class FlextAuthSettings(FlextSettingsBase):
     """Validated settings used by auth providers and token services."""
 
     model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
