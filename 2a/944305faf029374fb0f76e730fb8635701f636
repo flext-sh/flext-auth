@@ -1,0 +1,34 @@
+src/flext_auth/providers/jwt_token_validator.py
+  s_0290f35b98ef0c::t_d8cac96fe88947 13,23
+src/flext_auth/services/token_service.py
+  h_5cf852cc46bf92 52,161,165,168,173
+src/flext_auth/utilities.py
+  h_5cf852cc46bf92 178,208,210
+src/flext_auth/providers/mixin.py
+  h_5cf852cc46bf92 127,161,281
+src/flext_auth/services/provider_service.py
+  h_5cf852cc46bf92 108-110
+src/flext_auth/registry.py
+  h_5cf852cc46bf92 179,223
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "2a944305faf029374fb0f76e730fb8635701f636",
+  "prompts": {},
+  "humans": {
+    "h_5cf852cc46bf92": {
+      "author": "FLEXT Bot <team@flext.sh>"
+    }
+  },
+  "sessions": {
+    "s_0290f35b98ef0c": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0c4cc853-563f-48ad-a39a-f49b587090b8",
+        "model": "unknown"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    }
+  }
+}
