@@ -175,7 +175,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
                     return r[t.Auth.TokensClaimMap].fail(
                         "Decoded token payload is not a dictionary",
                     )
-                typed_payload: t.Auth.TokensClaimMap = dict(payload.items())
+                typed_payload = t.json_dict_adapter().validate_python(payload)
                 return r[t.Auth.TokensClaimMap].ok(typed_payload)
             except jwt.InvalidTokenError as exc:
                 return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}")
@@ -204,7 +204,11 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
 
             """
             try:
-                encoded = jwt.encode(dict(payload), secret, algorithm=algorithm)
+                encoded = jwt.encode(
+                    t.json_dict_adapter().validate_python(payload),
+                    secret,
+                    algorithm=algorithm,
+                )
                 return r[str].ok(encoded)
             except c.EXC_BROAD_IO_TYPE as exc:
                 return r[str].fail_op("Encoding", exc)

@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthProviderMixin, c, p, r, t, u
+from flext_auth import c, p, r, t, u
 
 
 class FlextAuthJwtTokenValidator:
@@ -20,7 +20,7 @@ class FlextAuthJwtTokenValidator:
     Uses composition and delegates to flext-core for consistent patterns.
     """
 
-    def __init__(self, provider: FlextAuthProviderMixin) -> None:
+    def __init__(self, provider: p.Auth.FlextAuthBaseProvider) -> None:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 

@@ -124,7 +124,7 @@ class FlextAuthProviderMixin:
 
         """
         if isinstance(user, Mapping):
-            payload: t.MutableJsonMapping = dict(user)
+            payload = t.json_dict_adapter().validate_python(user)
         else:
             payload = user.model_dump()
         if "sub" not in payload and "unique_id" in payload:
@@ -158,7 +158,7 @@ class FlextAuthProviderMixin:
                 identity_result.error or "Identity extraction failed during refresh"
             )
         identity_id = identity_result.value
-        new_token_result = self.generate_token(dict(claims), "access")
+        new_token_result = self.generate_token(claims, "access")
         if new_token_result.failure:
             return r[p.Auth.Token].fail(
                 new_token_result.error or "Token generation failed during refresh"
@@ -278,7 +278,7 @@ class FlextAuthProviderMixin:
         algorithm: str,
     ) -> p.Result[str]:
         """Encode token payload using JWT with canonical result flow."""
-        normalized_payload: t.Auth.TokensClaimMap = dict(payload.items())
+        normalized_payload = t.json_dict_adapter().validate_python(payload)
         encoded: p.Result[str] = u.Auth.encode_token(
             normalized_payload, secret, algorithm
         )

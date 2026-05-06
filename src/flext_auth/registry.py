@@ -176,7 +176,7 @@ class FlextAuthRegistry:
         if configuration:
             config_wrapper = m.Auth.ConfigWrapper(
                 category=f"{self.PROVIDERS}config",
-                data=dict(configuration),
+                data=t.scalar_mapping_adapter().validate_python(configuration),
             )
             config_result = self.register_plugin(
                 f"{self.PROVIDERS}config",
@@ -220,7 +220,7 @@ class FlextAuthRegistry:
         self.unregister_plugin(f"{self.PROVIDERS}config", name)
         config_wrapper = m.Auth.ConfigWrapper(
             category=f"{self.PROVIDERS}config",
-            data=dict(settings),
+            data=t.scalar_mapping_adapter().validate_python(settings),
         )
         return self.register_plugin(f"{self.PROVIDERS}config", name, config_wrapper)
 

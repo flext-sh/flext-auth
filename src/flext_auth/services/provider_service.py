@@ -105,17 +105,9 @@ class FlextAuthProviderService(s):
             ),
         )
 
-    def fetch_jwt_provider(self) -> p.Result[FlextAuthJwtProvider]:
-        """Fetch registered JWT provider with strict provider type."""
-        provider_result = self._providers.get("jwt")
-        if provider_result.failure:
-            return r[FlextAuthJwtProvider].fail(
-                provider_result.error or "JWT provider is not registered",
-            )
-        provider = provider_result.value
-        if not isinstance(provider, FlextAuthJwtProvider):
-            return r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
-        return r[FlextAuthJwtProvider].ok(provider)
+    def fetch_jwt_provider(self) -> p.Result[p.Auth.FlextAuthBaseProvider]:
+        """Fetch the registered JWT provider through the public provider protocol."""
+        return self._providers.get("jwt")
 
     def fetch_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Fetch registered provider."""

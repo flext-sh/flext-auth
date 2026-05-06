@@ -15,7 +15,6 @@ from typing import override
 from flext_api import r
 
 from flext_auth import (
-    FlextAuthJwtProvider,
     FlextAuthProviderService,
     FlextAuthSettings,
     FlextAuthUtilitiesManagers,
@@ -50,7 +49,7 @@ class FlextAuthTokenService(s):
             else FlextAuthUtilitiesManagers.ServiceManagers(settings, dispatcher)
         )
         self._provider_service = provider_service
-        self._jwt_provider_cache: FlextAuthJwtProvider | None = None
+        self._jwt_provider_cache: p.Auth.FlextAuthBaseProvider | None = None
 
     @property
     def user_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
@@ -159,19 +158,19 @@ class FlextAuthTokenService(s):
         return (
             self
             ._get_jwt_provider_cached()
-            .flat_map(lambda provider: provider.validate_token(token))
+            .flat_map(lambda provider: provider.validate(token))
             .tap_error(_log_token_validation_error)
         )
 
-    def _get_jwt_provider_cached(self) -> p.Result[FlextAuthJwtProvider]:
+    def _get_jwt_provider_cached(self) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Get JWT provider with lazy caching to eliminate repeated lookups."""
         if self._jwt_provider_cache is not None:
-            return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)
+            return r[p.Auth.FlextAuthBaseProvider].ok(self._jwt_provider_cache)
         result = self._provider_service.fetch_jwt_provider()
         if result.failure:
             return result
         self._jwt_provider_cache = result.value
-        return r[FlextAuthJwtProvider].ok(self._jwt_provider_cache)
+        return r[p.Auth.FlextAuthBaseProvider].ok(self._jwt_provider_cache)
 
 
 __all__: list[str] = ["FlextAuthTokenService"]
