@@ -1,0 +1,22 @@
+src/flext_auth/services/auth_service.py
+  h_5cf852cc46bf92 34,51
+src/flext_auth/_utilities/_managers/auth_managers_session.py
+  h_5cf852cc46bf92 9,22-24,30,32
+src/flext_auth/base.py
+  h_5cf852cc46bf92 13,23
+src/flext_auth/_utilities/managers.py
+  h_5cf852cc46bf92 43-44,167
+src/flext_auth/_utilities/_managers/rate_limiter.py
+  h_5cf852cc46bf92 7,19-20,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "6388f1d47d1c55f92576b3fbb8f4fb0fd781bbcb",
+  "prompts": {},
+  "humans": {
+    "h_5cf852cc46bf92": {
+      "author": "FLEXT Bot <team@flext.sh>"
+    }
+  }
+}
