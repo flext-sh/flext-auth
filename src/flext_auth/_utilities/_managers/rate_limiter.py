@@ -4,7 +4,7 @@ from collections.abc import (
     MutableMapping,
 )
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r, u
 
@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthRateLimiterManagers:
+    _context_type: ClassVar[p.ContextType] = FlextContext
+
     class FlextAuthRateLimiter:
         def __init__(
             self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
@@ -24,7 +26,7 @@ class FlextAuthRateLimiterManagers:
             self.config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextContext.create()
+            self.context = FlextAuthRateLimiterManagers._context_type.create()
             self._attempts: MutableMapping[str, t.Auth.ManagersAttemptData] = {}
             self._max_attempts = 5
             self._window_minutes = 15

@@ -40,6 +40,8 @@ class FlextAuthUtilitiesManagers(
     providing a single import point while maintaining clean separation of concerns.
     """
 
+    _context_type: ClassVar[p.ContextType] = FlextContext
+
     class ServiceManagers:
         """Manager composition helper for auth services."""
 
@@ -162,7 +164,7 @@ class FlextAuthUtilitiesManagers(
             super().__init__()
             self.config = settings
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextContext.create()
+            self.context = FlextAuthUtilitiesManagers._context_type.create()
             self._users: MutableMapping[str, t.Auth.ManagersUserData] = {}
 
         def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:

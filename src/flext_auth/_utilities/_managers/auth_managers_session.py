@@ -6,7 +6,7 @@ from collections.abc import (
     Sequence,
 )
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
 from flext_api import r, u
@@ -19,14 +19,17 @@ if TYPE_CHECKING:
 
 
 class FlextAuthSessionManagers:
+    _container_type: ClassVar[p.ContainerType] = FlextContainer
+    _context_type: ClassVar[p.ContextType] = FlextContext
+
     class FlextAuthSessionManager:
         def __init__(self, settings: FlextAuthSettings) -> None:
             super().__init__()
             self.config = settings
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextContext.create()
+            self.context = FlextAuthSessionManagers._context_type.create()
             self._dispatcher: p.Dispatcher = (
-                FlextContainer.shared().dispatcher().unwrap()
+                FlextAuthSessionManagers._container_type.shared().dispatcher().unwrap()
             )
             self._sessions: MutableMapping[str, t.Auth.ManagersSessionData] = {}
 

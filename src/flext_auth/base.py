@@ -10,7 +10,7 @@ from abc import ABC
 from typing import override
 
 from flext_auth import FlextAuthSettings, t
-from flext_core import FlextSettings, s
+from flext_core import s
 
 
 class FlextAuthServiceBase(s[bool], ABC):
@@ -20,7 +20,7 @@ class FlextAuthServiceBase(s[bool], ABC):
     @override
     def settings(self) -> FlextAuthSettings:
         """Return the typed auth settings namespace."""
-        return FlextSettings.fetch_global().fetch_namespace("auth", FlextAuthSettings)
+        return FlextAuthSettings.fetch_global()
 
 
 s = FlextAuthServiceBase

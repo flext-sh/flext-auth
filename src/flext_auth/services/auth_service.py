@@ -31,6 +31,7 @@ class FlextAuthApplicationService:
 
     _instance: ClassVar[Self | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
+    _container_type: ClassVar[p.ContainerType] = FlextContainer
     logger: p.Logger
     config: FlextAuthSettings
     _registry: FlextAuthRegistry
@@ -47,7 +48,7 @@ class FlextAuthApplicationService:
         """Initialize with dependency injection and event bus."""
         self.config = settings if settings is not None else FlextAuthSettings()
         self._registry = FlextAuthRegistry()
-        self._dispatcher = FlextContainer.shared().dispatcher().unwrap()
+        self._dispatcher = self._container_type.shared().dispatcher().unwrap()
         self.logger = u.fetch_logger(__name__)
         shared_managers = FlextAuthUtilitiesManagers.ServiceManagers(
             self.config,
