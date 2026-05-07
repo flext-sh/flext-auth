@@ -24,6 +24,7 @@ class FlextAuthTypes(t):
     class Auth:
         """Auth domain namespace (flat members per AGENTS.md §149)."""
 
+        type DateTimeValue = datetime
         type TokenRequestType = c.Auth.TokenTypes | str
 
         type ProvidersKey = Annotated[
@@ -42,7 +43,7 @@ class FlextAuthTypes(t):
         type ManagersUserData = MutableMapping[str, ManagersManagerValue]
         type ManagersLogEntry = MutableMapping[str, ManagersManagerValue]
         type ManagersSessionData = t.MutableMetadataMapping
-        type ManagersAttemptEvents = MutableSequence[datetime]
+        type ManagersAttemptEvents = MutableSequence[DateTimeValue]
         type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
 
 

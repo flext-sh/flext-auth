@@ -90,7 +90,7 @@ class FlextAuthTokenService(s):
             )
             return r[str].fail(error or "User lookup failed")
         user = user_result.value
-        user_dict = user.model_dump(exclude={"credential_hash"})
+        user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.generate_token_for_user(
                 user_dict,

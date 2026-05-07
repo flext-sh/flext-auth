@@ -94,7 +94,7 @@ class FlextAuthProviderService(s):
         effective_token_type = token_type if token_type is not None else token_kind
         return self._providers.get(provider).flat_map(
             lambda p: p.generate_token_for_user(
-                user.model_dump(),
+                user.model_dump(mode="json"),
                 token_kind,
                 effective_token_type,
                 expiry_minutes,

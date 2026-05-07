@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Protocol, override, runtime_checkable
 
 from flext_api import p
@@ -69,7 +68,7 @@ class FlextAuthProtocols(p):
             "Identity roles."
             failed_attempts: int
             "Failed login attempts count."
-            locked_until: datetime
+            locked_until: t.Auth.DateTimeValue
             "Lock expiration time (datetime.min means not locked)."
 
             @property
@@ -125,7 +124,7 @@ class FlextAuthProtocols(p):
             id: str
             user_id: str
             session_token: str
-            expires_at: datetime
+            expires_at: t.Auth.DateTimeValue
             is_active: bool
             ip_address: str | None
             user_agent: str | None
@@ -156,7 +155,7 @@ class FlextAuthProtocols(p):
             """
 
             @property
-            def expires_at(self) -> datetime:
+            def expires_at(self) -> t.Auth.DateTimeValue:
                 """Token expiration time."""
                 ...
 
