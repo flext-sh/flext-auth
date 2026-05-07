@@ -6,9 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Callable,
-)
 from typing import ClassVar, TypeIs
 
 from flext_auth import c, m, p, r, t, u
@@ -170,7 +167,11 @@ class FlextAuthRegistry:
             category=self.PROVIDERS,
             provider=provider,
         )
-        provider_result = self.register_plugin(self.PROVIDERS, name, provider_wrapper)
+        provider_result = self._registry.register_plugin(
+            self.PROVIDERS,
+            name,
+            provider_wrapper,
+        )
         if provider_result.failure:
             return provider_result
         if configuration:
@@ -178,7 +179,7 @@ class FlextAuthRegistry:
                 category=f"{self.PROVIDERS}config",
                 data=t.scalar_mapping_adapter().validate_python(configuration),
             )
-            config_result = self.register_plugin(
+            config_result = self._registry.register_plugin(
                 f"{self.PROVIDERS}config",
                 name,
                 config_wrapper,
@@ -191,7 +192,7 @@ class FlextAuthRegistry:
                 category=f"{self.PROVIDERS}_metadata",
                 data=metadata,
             )
-            metadata_result = self.register_plugin(
+            metadata_result = self._registry.register_plugin(
                 f"{self.PROVIDERS}_metadata",
                 name,
                 metadata_wrapper,
@@ -222,7 +223,11 @@ class FlextAuthRegistry:
             category=f"{self.PROVIDERS}config",
             data=t.scalar_mapping_adapter().validate_python(settings),
         )
-        return self.register_plugin(f"{self.PROVIDERS}config", name, config_wrapper)
+        return self._registry.register_plugin(
+            f"{self.PROVIDERS}config",
+            name,
+            config_wrapper,
+        )
 
     def _build_metadata(
         self,
@@ -279,26 +284,6 @@ class FlextAuthRegistry:
         """Delegate plugin listing to the canonical registry."""
         return r[t.StrSequence].from_result(
             self._registry.list_plugins(category, scope=scope),
-        )
-
-    def register_plugin(
-        self,
-        category: str,
-        name: str,
-        plugin: t.RegistrablePlugin,
-        *,
-        validate: Callable[[t.RegistrablePlugin], r[bool]] | None = None,
-        scope: c.RegistrationScope = c.RegistrationScope.INSTANCE,
-    ) -> p.Result[bool]:
-        """Delegate plugin registration to the canonical registry."""
-        return r[bool].from_result(
-            self._registry.register_plugin(
-                category,
-                name,
-                plugin,
-                validate=validate,
-                scope=scope,
-            ),
         )
 
     def unregister_plugin(

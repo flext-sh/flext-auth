@@ -23,6 +23,7 @@ from flext_auth import (
     FlextAuthLdapProvider,
     FlextAuthOidcProvider,
     FlextAuthRegistry,
+    FlextAuthRfcProvider,
     FlextAuthSamlProvider,
     FlextAuthSettings,
     c,
@@ -58,12 +59,7 @@ class FlextAuthProviderService(s):
         provider_config: t.ConfigurationMapping,
     ) -> t.MappingKV[str, t.Primitives]:
         """Normalize provider settings to base-provider scalar contract."""
-        normalized: t.MappingKV[str, t.Primitives] = {
-            key: value
-            for key, value in provider_config.items()
-            if isinstance(value, (bool, int, str))
-        }
-        return normalized
+        return FlextAuthRfcProvider.project_to_scalar_config(provider_config) or {}
 
     def authenticate_user(
         self,

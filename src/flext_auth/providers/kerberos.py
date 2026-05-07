@@ -20,10 +20,8 @@ from collections.abc import (
     Callable,
     Mapping,
 )
-from datetime import UTC, datetime
-from typing import override
-
-from flext_api import u
+from types import MappingProxyType
+from typing import ClassVar, override
 
 from flext_auth import FlextAuthRfcProvider, c, m, p, r, t
 
@@ -55,7 +53,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
         """
-        super().__init__(self._to_scalar_config(settings))
+        super().__init__(self.project_to_scalar_config(settings))
         self.config = settings
         validation_result = self._validate_kerberos_configuration()
         if validation_result.failure:
@@ -66,74 +64,42 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         self._auth_manager = self._KerberosAuthManager(self)
         self._active_tickets: t.MappingKV[str, m.Auth.KerberosTicketData] = {}
 
-    @staticmethod
-    def _to_scalar_config(
-        settings: t.ConfigurationMapping | None,
-    ) -> t.MappingKV[str, t.Primitives] | None:
-        """Project provider settings into RFC base scalar contract."""
-        if settings is None:
-            return None
-        scalar_config: t.MappingKV[str, t.Primitives] = {
-            key: value
-            for key, value in settings.items()
-            if isinstance(value, (bool, int, str))
-        }
-        return scalar_config
+    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = (
+        "realm",
+        "kdc",
+        "service_principal",
+    )
+    _KERBEROS_FIELD_TYPES: ClassVar[t.MappingKV[str, tuple[type, ...]]] = (
+        MappingProxyType({
+            "realm": (str,),
+            "kdc": (str,),
+            "service_principal": (str,),
+            "keytab_path": (str, type(None)),
+            "clockskew_tolerance": (int, type(None)),
+            "ticket_lifetime": (int, type(None)),
+            "renew_lifetime": (int, type(None)),
+            "forwardable": (bool, type(None)),
+            "proxiable": (bool, type(None)),
+        })
+    )
 
     def _validate_kerberos_configuration(self) -> p.Result[bool]:
         """Railway-oriented Kerberos configuration validation."""
         if self.config is None:
             return r[bool].fail("Kerberos configuration is required")
         settings = self.config
-        required_fields = ["realm", "kdc", "service_principal"]
-        missing_fields = u.filter(required_fields, lambda field: field not in settings)
-        if missing_fields:
+        missing = [f for f in self._KERBEROS_REQUIRED if f not in settings]
+        if missing:
             return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
+                f"Missing required Kerberos configuration fields: {', '.join(missing)}",
             )
-        validations: t.SequenceOf[t.Triple[str, t.VariadicTuple[type], str]] = [
-            ("realm", (str,), "Kerberos realm must be a string"),
-            ("kdc", (str,), "Kerberos kdc must be a string"),
-            (
-                "service_principal",
-                (str,),
-                "Kerberos service_principal must be a string",
-            ),
-            (
-                "keytab_path",
-                (str, type(None)),
-                "Kerberos keytab_path must be a string or None",
-            ),
-            (
-                "clockskew_tolerance",
-                (int, type(None)),
-                "Kerberos clockskew_tolerance must be an integer or None",
-            ),
-            (
-                "ticket_lifetime",
-                (int, type(None)),
-                "Kerberos ticket_lifetime must be an integer or None",
-            ),
-            (
-                "renew_lifetime",
-                (int, type(None)),
-                "Kerberos renew_lifetime must be an integer or None",
-            ),
-            (
-                "forwardable",
-                (bool, type(None)),
-                "Kerberos forwardable must be a boolean or None",
-            ),
-            (
-                "proxiable",
-                (bool, type(None)),
-                "Kerberos proxiable must be a boolean or None",
-            ),
-        ]
-        for field_name, expected_types, error_msg in validations:
-            field_value = settings.get(field_name)
-            if field_value is not None and not isinstance(field_value, expected_types):
-                return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
+        for field, expected_types in self._KERBEROS_FIELD_TYPES.items():
+            value = settings.get(field)
+            if value is not None and not isinstance(value, expected_types):
+                return r[bool].fail(
+                    f"Kerberos {field!r}: expected {expected_types}, "
+                    f"got {type(value).__name__}",
+                )
         return r[bool].ok(value=True)
 
     class _KerberosTicketValidator:
@@ -189,22 +155,6 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
-    @override
-    def generate_token_for_user(
-        self,
-        user: m.Auth.AuthIdentity | t.JsonMapping,
-        token_kind: str = "access",
-        token_type: str | None = None,
-        expiry_minutes: int | None = None,
-    ) -> p.Result[str]:
-        """Generate Kerberos token for user."""
-        return super().generate_token_for_user(
-            user=user,
-            token_kind=token_kind,
-            token_type=token_type,
-            expiry_minutes=expiry_minutes,
-        )
-
     def get_metadata(self) -> m.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
         return m.Auth.Providers.Metadata(
@@ -221,109 +171,65 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Validate Kerberos token and return user."""
         if not token.strip():
-            result = r[m.Auth.AuthIdentity].fail(
+            return r[m.Auth.AuthIdentity].fail(
                 "Kerberos token must be a non-empty string",
             )
-        else:
-            validator = self._ticket_validator_callable()
-            if validator is not None:
-                try:
-                    validator_result = validator(token)
-                except c.EXC_BROAD_IO_TYPE as exc:
-                    result = r[m.Auth.AuthIdentity].fail_op(
-                        "Kerberos ticket validator execution", exc
-                    )
-                else:
-                    if isinstance(validator_result, m.Auth.AuthIdentity):
-                        result = r[m.Auth.AuthIdentity].ok(validator_result)
-                    elif isinstance(validator_result, Mapping):
-                        try:
-                            parsed_claims = (
-                                t.Auth.CONTAINER_VALUE_MAPPING_ADAPTER.validate_python(
-                                    validator_result,
-                                )
-                            )
-                        except c.ValidationError as exc:
-                            result = r[m.Auth.AuthIdentity].fail(
-                                f"Kerberos ticket validator mapping payload is invalid: {exc}",
-                            )
-                        else:
-                            result = self._map_identity_payload(parsed_claims)
-                    else:
-                        principal_value = validator_result.principal
-                        principal = principal_value or "kerberos-user"
-                        identity_map: t.JsonMapping = {
-                            "identity_id": principal,
-                            "name": principal,
-                            "contact": f"{principal}@kerberos.local",
-                            "roles": ["user"],
-                        }
-                        result = self._map_identity_payload(identity_map)
-            else:
-                claims_result = self._decode_token_claims(token)
-                if claims_result.success:
-                    claims_value = claims_result.value
-                    result = self._map_identity_payload(claims_value)
-                else:
-                    result = r[m.Auth.AuthIdentity].fail(
-                        "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
-                    )
-        return result
-
-    def _map_identity_payload(
-        self,
-        claims: t.JsonMapping,
-    ) -> p.Result[m.Auth.AuthIdentity]:
-        identity_fields = ("sub", "identity_id", "user_id", "username")
-        identity_id: str | None = None
-        for field in identity_fields:
-            value = claims.get(field)
-            if isinstance(value, str) and value:
-                identity_id = value
-                break
-        if identity_id is None:
-            return r[m.Auth.AuthIdentity].fail(
-                "No identity field found in token claims "
-                f"(checked: {', '.join(identity_fields)})",
+        validator = self._ticket_validator_callable()
+        if validator is None:
+            claims_result = self._decode_token_claims(token)
+            return (
+                r[m.Auth.AuthIdentity].from_validation(
+                    {
+                        **claims_result.value,
+                        c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
+                    },
+                    m.Auth.AuthIdentity,
+                )
+                if claims_result.success
+                else r[m.Auth.AuthIdentity].fail(
+                    "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
+                )
             )
-        name_value = claims.get("name")
-        name = name_value if isinstance(name_value, str) and name_value else identity_id
-        contact_value = claims.get("contact")
-        if isinstance(contact_value, str) and contact_value:
-            contact = contact_value
-        else:
-            email_value = claims.get("email")
-            if isinstance(email_value, str) and email_value:
-                contact = email_value
-            else:
-                contact = f"{identity_id}@kerberos.local"
-        roles_value = claims.get("roles")
-        if isinstance(roles_value, list):
-            parsed_roles: list[str] = []
-            try:
-                parsed_roles = list(
-                    t.Auth.STR_SEQUENCE_ADAPTER.validate_python(roles_value)
-                )
-            except c.ValidationError as exc:
-                u.fetch_logger(__name__).warning(
-                    f"Failed to validate roles from Kerberos payload: {exc}, using empty list",
-                )
-            roles = [role for role in parsed_roles if role]
-        else:
-            roles = ["user"]
         try:
-            identity = m.Auth.AuthIdentity(
-                unique_id=identity_id,
-                name=name,
-                contact=contact,
-                roles=roles,
-                failed_attempts=0,
-                locked_until=datetime.min.replace(tzinfo=UTC),
-                last_access=datetime.now(UTC),
+            validator_payload = validator(token)
+        except c.EXC_BROAD_IO_TYPE as exc:
+            return r[m.Auth.AuthIdentity].fail_op(
+                "Kerberos ticket validator execution",
+                exc,
             )
-        except c.EXC_TYPE_VALIDATION as exc:
-            return r[m.Auth.AuthIdentity].fail_op("Kerberos identity mapping", exc)
-        return r[m.Auth.AuthIdentity].ok(identity)
+        result = r[m.Auth.AuthIdentity].fail(
+            "Kerberos ticket validator returned unsupported payload",
+        )
+        match validator_payload:
+            case m.Auth.AuthIdentity() as identity:
+                result = r[m.Auth.AuthIdentity].ok(identity)
+            case Mapping() as mapping:
+                try:
+                    parsed_claims = t.json_mapping_adapter().validate_python(mapping)
+                except c.ValidationError as exc:
+                    result = r[m.Auth.AuthIdentity].fail(
+                        f"Kerberos ticket validator mapping payload is invalid: {exc}",
+                    )
+                else:
+                    result = r[m.Auth.AuthIdentity].from_validation(
+                        {
+                            **parsed_claims,
+                            c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
+                        },
+                        m.Auth.AuthIdentity,
+                    )
+            case m.Auth.KerberosTicketData(principal=principal_value):
+                principal = principal_value or c.Auth.DEFAULT_KERBEROS_USERNAME
+                result = r[m.Auth.AuthIdentity].from_validation(
+                    {
+                        c.Auth.KEY_IDENTITY_ID: principal,
+                        c.Auth.KEY_NAME: principal,
+                        c.Auth.KEY_CONTACT: f"{principal}@{c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN}",
+                        c.Auth.KEY_ROLES: [c.Auth.RoleTypes.USER.value],
+                    },
+                    m.Auth.AuthIdentity,
+                )
+        return result
 
     def _ticket_validator_callable(
         self,

@@ -24,7 +24,7 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> p.Result[t.JsonMapping]:
+    def validate_token(self, token: str) -> p.Result[t.Auth.TokensClaimMap]:
         """Validate JWT token with railway-oriented programming.
 
         Args:
@@ -37,54 +37,17 @@ class FlextAuthJwtTokenValidator:
         try:
             settings = self._provider.settings
             if not settings:
-                return r[t.JsonMapping].fail(
+                return r[t.Auth.TokensClaimMap].fail(
                     "JWT configuration not provided",
                 )
-            secret_key = ""
-            algorithm = ""
-            audience = None
-            config_errors: list[str] = []
-
-            secret_key_value = settings.get("secret_key")
-            match secret_key_value:
-                case str() as secret if secret:
-                    secret_key = secret
-                case _:
-                    config_errors.append("JWT secret key not configured")
-
-            algorithm_value = settings.get("algorithm")
-            match algorithm_value:
-                case str() as algorithm_str:
-                    algorithm = algorithm_str
-                case _:
-                    config_errors.append("JWT algorithm not configured")
-
-            audience_value = settings.get("audience")
-            if audience_value is not None:
-                match audience_value:
-                    case str() as audience_str:
-                        audience = audience_str
-                    case _:
-                        config_errors.append(
-                            "JWT audience must be a string if provided"
-                        )
-
-            if config_errors:
-                return r[t.JsonMapping].fail(config_errors[0])
-
-            decode_result = u.Auth.decode_token(
-                token,
-                t.SecretStr(secret_key),
-                algorithms=(algorithm,),
-                audience=audience,
-            )
-            return (
-                r[t.JsonMapping].ok(decode_result.value)
-                if decode_result.success
-                else r[t.JsonMapping].fail(decode_result.error or "Invalid token")
+            return r[t.Auth.TokensClaimMap].from_result(
+                u.Auth.decode_token(
+                    token,
+                    settings,
+                ),
             )
         except c.EXC_BROAD_IO_TYPE as exc:
-            return r[t.JsonMapping].fail_op("Token validation", exc)
+            return r[t.Auth.TokensClaimMap].fail_op("Token validation", exc)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthJwtTokenValidator"]

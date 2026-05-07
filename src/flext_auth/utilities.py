@@ -14,7 +14,7 @@ import bcrypt
 import jwt
 from flext_api import r, u
 
-from flext_auth import c, p, t
+from flext_auth import c, m, p, t
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
@@ -140,41 +140,45 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
         @staticmethod
         def decode_token(
             token: str,
-            secret: t.SecretStr,
+            config: m.Auth.ProviderConfig | t.ScalarMapping,
             *,
             verify: bool = True,
-            algorithms: t.VariadicTuple[str] | None = None,
-            audience: str | None = None,
         ) -> p.Result[t.Auth.TokensClaimMap]:
             """Generic JWT token decoding.
 
             Args:
-            token: JWT token to decode
-            secret: Secret key for verification
-            verify: Whether to verify signature
-            audience: Expected audience claim for validation
+                token: JWT token to decode
+                config: Provider configuration with JWT secret and claims settings
+                verify: Whether to verify signature
 
             Returns:
-            r with decoded payload or error
+                r with decoded payload or error
 
             """
             try:
-                algorithms_list: t.StrSequence
-                if algorithms is None:
-                    algorithms_list = [c.Auth.JWT_DEFAULT_ALGORITHM]
-                else:
-                    algorithms_list = list(algorithms)
+                provider_config = (
+                    config
+                    if isinstance(config, m.Auth.ProviderConfig)
+                    else m.Auth.ProviderConfig.model_validate(
+                        {
+                            c.Auth.KEY_NAME: c.Auth.ProviderTypes.JWT.value,
+                            "type": c.Auth.ProviderTypes.JWT.value,
+                            **config,
+                        },
+                    )
+                )
+                if not provider_config.secret_key:
+                    return r[t.Auth.TokensClaimMap].fail(
+                        "JWT secret_key not configured",
+                    )
+                algorithm = provider_config.algorithm or c.Auth.JWT_DEFAULT_ALGORITHM
                 payload = jwt.decode(
                     token,
-                    secret.get_secret_value(),
-                    algorithms=list(algorithms_list),
+                    provider_config.secret_key,
+                    algorithms=[algorithm],
                     options={"verify_signature": verify},
-                    audience=audience,
+                    audience=provider_config.audience,
                 )
-                if not u.dict_like(payload):
-                    return r[t.Auth.TokensClaimMap].fail(
-                        "Decoded token payload is not a dictionary",
-                    )
                 typed_payload = t.json_dict_adapter().validate_python(payload)
                 return r[t.Auth.TokensClaimMap].ok(typed_payload)
             except jwt.InvalidTokenError as exc:

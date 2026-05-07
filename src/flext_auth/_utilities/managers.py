@@ -118,8 +118,7 @@ class FlextAuthUtilitiesManagers(
                 if value is None:
                     return None
                 if isinstance(value, Sequence) and not isinstance(
-                    value,
-                    (str, bytes, bytearray),
+                    value, t.STR_BINARY_TYPES
                 ):
                     return list(value)
                 return []
@@ -317,82 +316,13 @@ class FlextAuthUtilitiesManagers(
             storage_data: t.Auth.ManagersUserData,
         ) -> m.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
-            identity_id = self._extract_identity_id(storage_data)
-            name_value = self._validate_required_field(storage_data, "name", str)
-            if not name_value:
-                msg = "Storage data 'name' must be a non-empty string"
-                raise ValueError(msg)
-            contact_value = self._validate_required_field(storage_data, "contact", str)
-            if not contact_value:
-                msg = "Storage data 'contact' must be a non-empty string"
-                raise ValueError(msg)
-            credential_hash = self._validate_required_field(
-                storage_data,
-                "credential_hash",
-                str,
-            )
-            is_active = self._validate_required_field(storage_data, "is_active", bool)
-            roles_raw = storage_data.get("roles", [])
-            permissions_raw = storage_data.get("permissions", [])
-            roles: t.StrSequence = []
-            permissions: t.StrSequence = []
-            if isinstance(roles_raw, Sequence) and not isinstance(
-                roles_raw,
-                (str, bytes, bytearray),
-            ):
-                roles = [role for role in roles_raw if isinstance(role, str)]
-            if isinstance(permissions_raw, Sequence) and not isinstance(
-                permissions_raw,
-                (str, bytes, bytearray),
-            ):
-                permissions = [
-                    permission
-                    for permission in permissions_raw
-                    if isinstance(permission, str)
-                ]
-            identity_data: t.Auth.ManagersUserData = {
-                "unique_id": identity_id,
-                "name": name_value,
-                "contact": contact_value,
-                "credential_hash": credential_hash,
-                "is_active": is_active,
-                "roles": roles,
-                "permissions": permissions,
+            identity_data: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
+                field: storage_data[field]
+                for field in m.Auth.AuthIdentity.model_fields
+                if field in storage_data
             }
-            valid_identity_fields = {
-                "unique_id",
-                "name",
-                "contact",
-                "credential_hash",
-                "is_active",
-                "roles",
-                "permissions",
-                "full_name",
-                "failed_attempts",
-                "locked_until",
-                "last_access",
-            }
-            for field in (
-                "full_name",
-                "failed_attempts",
-                "locked_until",
-                "last_access",
-            ):
-                if field in storage_data:
-                    field_type = (
-                        str
-                        if field == "full_name"
-                        else int
-                        if field == "failed_attempts"
-                        else datetime
-                    )
-                    field_value = storage_data.get(field)
-                    if isinstance(field_value, field_type):
-                        identity_data[field] = field_value
-            filtered_identity_data = {
-                k: v for k, v in identity_data.items() if k in valid_identity_fields
-            }
-            return m.Auth.AuthIdentity.model_validate(filtered_identity_data)
+            identity_data["unique_id"] = self._extract_identity_id(storage_data)
+            return m.Auth.AuthIdentity.model_validate(identity_data)
 
         def _extract_identity_id(
             self,
@@ -449,16 +379,3 @@ class FlextAuthUtilitiesManagers(
             _, user_data = user_result.unwrap()
             self._apply_list_modification(user_data, field, value, add=add)
             return r[bool].ok(True)
-
-        def _validate_required_field[T](
-            self,
-            storage_data: t.Auth.ManagersUserData,
-            field: str,
-            field_type: type[T],
-        ) -> T:
-            """Validate and extract required field with type checking."""
-            value = storage_data.get(field)
-            if not isinstance(value, field_type):
-                msg = f"Storage data '{field}' must be a {field_type.__name__}"
-                raise TypeError(msg)
-            return value

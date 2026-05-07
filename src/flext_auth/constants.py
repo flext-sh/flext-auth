@@ -175,8 +175,63 @@ class FlextAuthConstants(c):
             member.value for member in PermissionTypes.__members__.values()
         )
         "Immutable set of all valid permission types."
+        KEY_SUBJECT: Final[str] = "sub"
+        "Subject claim key."
+        KEY_IDENTITY_ID: Final[str] = "identity_id"
+        "Identity identifier claim key."
         KEY_USER_ID: Final[str] = "user_id"
         "User identifier payload key."
+        KEY_USERNAME: Final[str] = "username"
+        "Username claim key."
+        KEY_NAME: Final[str] = "name"
+        "Display-name claim key."
+        KEY_PREFERRED_USERNAME: Final[str] = "preferred_username"
+        "Preferred username claim key."
+        KEY_CONTACT: Final[str] = "contact"
+        "Contact claim key."
+        KEY_EMAIL: Final[str] = "email"
+        "Email claim key."
+        KEY_ROLES: Final[str] = "roles"
+        "Roles claim key."
+        KEY_SCOPE: Final[str] = "scope"
+        "OAuth scope claim key."
+        KEY_CONTACT_DOMAIN: Final[str] = "contact_domain"
+        "Local contact-domain override key for identity claim normalization."
+        TOKEN_IDENTITY_KEYS: Final[tuple[str, ...]] = (
+            KEY_SUBJECT,
+            KEY_IDENTITY_ID,
+            KEY_USER_ID,
+            KEY_USERNAME,
+        )
+        "Identity claim keys in priority order."
+        TOKEN_NAME_KEYS: Final[tuple[str, ...]] = (
+            KEY_NAME,
+            KEY_PREFERRED_USERNAME,
+            KEY_USERNAME,
+        )
+        "Display-name claim keys in priority order."
+        TOKEN_CONTACT_KEYS: Final[tuple[str, ...]] = (KEY_CONTACT, KEY_EMAIL)
+        "Contact claim keys in priority order."
+        TOKEN_IDENTITY_PASSTHROUGH_FIELDS: Final[tuple[str, ...]] = (
+            "credential_hash",
+            "failed_attempts",
+            "full_name",
+            "is_active",
+            "last_access",
+            "locked_until",
+            "permissions",
+            "session_id",
+            "token",
+        )
+        "AuthIdentity fields preserved when normalizing external token claims."
+        DEFAULT_OAUTH_CONTACT_DOMAIN: Final[str] = "oauth.local"
+        "Fallback local contact domain for OAuth identities."
+        DEFAULT_KERBEROS_CONTACT_DOMAIN: Final[str] = "kerberos.local"
+        "Fallback local contact domain for Kerberos identities."
+        DEFAULT_KERBEROS_USERNAME: Final[str] = "kerberos-user"
+        "Fallback principal name for Kerberos ticket data without a principal."
+        SCOPE_SEPARATOR: Final[str] = " "
+        "OAuth scope separator."
         DEFAULT_TIMEOUT: Final[float] = float(c.DEFAULT_TIMEOUT_SECONDS)
         "Default request timeout in seconds."
         DEFAULT_MAX_RETRIES: Final[int] = 3

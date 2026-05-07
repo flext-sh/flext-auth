@@ -192,6 +192,72 @@ class FlextAuthModels(m):
             ] = ""
             session_id: Annotated[str, u.Field(description="Session ID")] = ""
 
+            @u.model_validator(mode="before")
+            @classmethod
+            def normalize_token_claims(
+                cls,
+                data: t.MappingKV[str, t.JsonPayload | datetime] | Self,
+            ) -> t.MappingKV[str, t.JsonPayload | datetime] | Self:
+                """Normalize OAuth/Kerberos claim payloads into identity fields."""
+                if isinstance(data, cls) or (
+                    c.Auth.KEY_NAME in data and c.Auth.KEY_CONTACT in data
+                ):
+                    return data
+                identity_candidates = tuple(
+                    value
+                    for value in (data.get(key) for key in c.Auth.TOKEN_IDENTITY_KEYS)
+                    if u.string_non_empty(value)
+                )
+                identity_id = identity_candidates[0] if identity_candidates else ""
+                if not identity_id:
+                    return data
+                name_candidates = tuple(
+                    value
+                    for value in (data.get(key) for key in c.Auth.TOKEN_NAME_KEYS)
+                    if u.string_non_empty(value)
+                )
+                name = name_candidates[0] if name_candidates else identity_id
+                contact_candidates = tuple(
+                    value
+                    for value in (data.get(key) for key in c.Auth.TOKEN_CONTACT_KEYS)
+                    if u.string_non_empty(value)
+                )
+                contact = contact_candidates[0] if contact_candidates else ""
+                if not contact:
+                    domain_value = data.get(c.Auth.KEY_CONTACT_DOMAIN)
+                    domain = (
+                        domain_value
+                        if u.string_non_empty(domain_value)
+                        else c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN
+                    )
+                    contact = f"{identity_id}@{domain}"
+                roles_value = data.get(c.Auth.KEY_ROLES)
+                if roles_value is None:
+                    scope_value = data.get(c.Auth.KEY_SCOPE)
+                    roles_value = (
+                        [
+                            scope
+                            for scope in scope_value.split(c.Auth.SCOPE_SEPARATOR)
+                            if scope
+                        ]
+                        if u.string_non_empty(scope_value)
+                        else [c.Auth.RoleTypes.USER.value]
+                    )
+                normalized: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
+                    c.FIELD_ID: identity_id,
+                    c.Auth.KEY_NAME: name,
+                    c.Auth.KEY_CONTACT: contact,
+                    c.Auth.KEY_ROLES: roles_value,
+                }
+                normalized.update(
+                    {
+                        field_name: data[field_name]
+                        for field_name in c.Auth.TOKEN_IDENTITY_PASSTHROUGH_FIELDS
+                        if field_name in data
+                    },
+                )
+                return normalized
+
             def locked(self) -> bool:
                 """Check if identity is locked."""
                 if self.locked_until == datetime.min.replace(tzinfo=UTC):

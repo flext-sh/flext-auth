@@ -239,35 +239,9 @@ class FlextAuthProviderMixin:
             return r[t.Auth.TokensClaimMap].fail(
                 "Provider configuration required for token decoding"
             )
-        secret_key_value = settings.get("secret_key")
-        if not isinstance(secret_key_value, (str, t.SecretStr)):
-            return r[t.Auth.TokensClaimMap].fail("JWT secret_key not configured")
-        secret_key = (
-            secret_key_value.get_secret_value()
-            if isinstance(secret_key_value, t.SecretStr)
-            else secret_key_value
-        )
-        secret_key_obj = t.SecretStr(secret_key)
-
-        algorithm_value = settings.get("algorithm")
-        algorithm = (
-            algorithm_value
-            if isinstance(algorithm_value, str)
-            else c.Auth.Algorithms.HS256
-        )
-
-        audience_value = settings.get("audience")
-        audience = (
-            audience_value
-            if isinstance(audience_value, str) and audience_value
-            else None
-        )
-        algorithms_list = (algorithm,) if algorithm else (c.Auth.DEFAULT_JWT_ALGORITHM,)
         decoded: p.Result[t.Auth.TokensClaimMap] = u.Auth.decode_token(
             token,
-            secret_key_obj,
-            algorithms=algorithms_list,
-            audience=audience,
+            settings,
         )
         return decoded
 
@@ -300,14 +274,13 @@ class FlextAuthProviderMixin:
             r[str]: Identity ID on success, error if no identity field found.
 
         """
-        identity_fields = ("sub", "identity_id", "user_id", "username")
-        for field in identity_fields:
+        for field in c.Auth.TOKEN_IDENTITY_KEYS:
             value = claims.get(field)
             if isinstance(value, str) and value:
                 return r[str].ok(value)
         return r[str].fail(
             "No identity field found in token claims "
-            f"(checked: {', '.join(identity_fields)})"
+            f"(checked: {', '.join(c.Auth.TOKEN_IDENTITY_KEYS)})"
         )
 
     def _extract_token_string(self, token: str | p.Auth.Token) -> str:
@@ -341,7 +314,7 @@ class FlextAuthProviderMixin:
             >>> print(f"Capabilities: {', '.join(metadata['capabilities'])}")
 
         """
-        capabilities: list[t.JsonValue] = list(self.supports())
+        capabilities: t.JsonValueList = list(self.supports())
         metadata: t.JsonMapping = {
             "capabilities": capabilities,
             "provider_type": self.__class__.__name__,

@@ -37,6 +37,24 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(settings)
 
+    @staticmethod
+    def project_to_scalar_config(
+        settings: t.ConfigurationMapping | None,
+    ) -> t.MappingKV[str, t.Primitives] | None:
+        """Project provider settings into the RFC base scalar contract.
+
+        Filters out non-primitive values (only keeps str/int/bool entries),
+        passing ``None`` through. Centralized here so all RFC providers reuse
+        the same projection rather than re-implementing the filter.
+        """
+        if settings is None:
+            return None
+        return {
+            key: value
+            for key, value in settings.items()
+            if isinstance(value, (bool, int, str))
+        }
+
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 

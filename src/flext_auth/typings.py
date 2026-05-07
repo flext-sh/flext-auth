@@ -45,13 +45,6 @@ class FlextAuthTypes(t):
         type ManagersAttemptEvents = MutableSequence[datetime]
         type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
 
-        STR_SEQUENCE_ADAPTER: u.TypeAdapter[t.StrSequence] = u.TypeAdapter(
-            t.StrSequence
-        )
-        CONTAINER_VALUE_MAPPING_ADAPTER: u.TypeAdapter[t.JsonMapping] = u.TypeAdapter(
-            t.JsonMapping
-        )
-
 
 t = FlextAuthTypes
 
