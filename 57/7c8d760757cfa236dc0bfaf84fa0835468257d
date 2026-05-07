@@ -1,0 +1,90 @@
+src/flext_auth/providers/mixin.py
+  s_5a9c2b140a8456::t_b1b096998b1965 317
+  s_552d8e4891a938::t_b45d79f114a654 277,283
+  h_5cf852cc46bf92 244
+src/flext_auth/_utilities/managers.py
+  h_5cf852cc46bf92 319,321-322,324-325
+  s_b15aa8dbf80823::t_129f5eae1b93eb 121
+src/flext_auth/providers/jwt_token_validator.py
+  s_0290f35b98ef0c::t_f5cb2f2febd57b 44
+  h_5cf852cc46bf92 27,40,43,46-47,50
+src/flext_auth/providers/oauth2.py
+  s_b15aa8dbf80823::t_1015c0e27dbfc4 148
+  s_b15aa8dbf80823::t_49efdf1d75cdcb 413-414
+  s_b15aa8dbf80823::t_8509ab3a462416 56-58,60-63,65
+  s_b15aa8dbf80823::t_aafdb18aa8dd2f 82-84,89-95,99,101-103,118,120-122
+  s_b15aa8dbf80823::t_46c884f08f887a 52
+  s_b15aa8dbf80823::t_27e53eb6638152 85-86,88,104
+  h_5cf852cc46bf92 42,44-46,48,53,55,75,77,100,108-109,113-114,119,133,151-154,184,226,228-229,244,246,275-280,287-292,303-304,332-333
+  s_0290f35b98ef0c::t_a228d272b469cd 410
+  s_b15aa8dbf80823::t_85b27214b9f1f3 126-132,134-135,137
+  s_b15aa8dbf80823::t_5cbe61a80eb80f 51
+  s_b15aa8dbf80823::t_9f6ac061704685 17
+  s_b15aa8dbf80823::t_bb4bb54a84e36b 87
+src/flext_auth/providers/kerberos.py
+  s_b15aa8dbf80823::t_c094e17f80d9e7 67-84,91-92,94,96-102
+  s_b15aa8dbf80823::t_4ab716b4765b51 56
+  s_b15aa8dbf80823::t_c54b73377cc352 23-24
+  h_5cf852cc46bf92 174,177-206,208-211,214-219,221-230,232
+src/flext_auth/services/provider_service.py
+  s_b15aa8dbf80823::t_104081b2f2db78 62
+  s_b15aa8dbf80823::t_aa7f7515a212bf 26
+src/flext_auth/registry.py
+  h_5cf852cc46bf92 170,173,182,195,226-229
+src/flext_auth/providers/rfc.py
+  s_b15aa8dbf80823::t_2ab2177748ba03 40-57
+src/flext_auth/constants.py
+  s_552d8e4891a938::t_b45d79f114a654 178-181,184-230,233-234
+  h_5cf852cc46bf92 231-232
+src/flext_auth/models.py
+  s_552d8e4891a938::t_b45d79f114a654 195-205,213,224,227-229,231-242,244-251,256,259-260
+  h_5cf852cc46bf92 206-211,214-223,225,230,243,252-255,257-258
+src/flext_auth/utilities.py
+  h_5cf852cc46bf92 17,143,159-174,177-178
+  s_0290f35b98ef0c::t_3921b7a493c16d 150-152,155,180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "577c8d760757cfa236dc0bfaf84fa0835468257d",
+  "prompts": {},
+  "humans": {
+    "h_5cf852cc46bf92": {
+      "author": "FLEXT Bot <team@flext.sh>"
+    }
+  },
+  "sessions": {
+    "s_0290f35b98ef0c": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0c4cc853-563f-48ad-a39a-f49b587090b8",
+        "model": "unknown"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    },
+    "s_552d8e4891a938": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "35c0040b-2ae9-466e-90aa-7721509e1e19",
+        "model": "unknown"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    },
+    "s_5a9c2b140a8456": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019dfddc-86ee-79a0-b5bf-0433a8110b6a",
+        "model": "gpt-5.5"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    },
+    "s_b15aa8dbf80823": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d896ab0f-dd16-4dca-9ad4-b3d924a501e7",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    }
+  }
+}
