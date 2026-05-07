@@ -1,0 +1,30 @@
+src/flext_auth/protocols.py
+  h_5cf852cc46bf92 71,127,158
+src/flext_auth/typings.py
+  s_0290f35b98ef0c::t_1283f6e640c70f 27,46
+src/flext_auth/services/provider_service.py
+  h_5cf852cc46bf92 97
+src/flext_auth/services/token_service.py
+  s_0290f35b98ef0c::t_fbce7fe913d8cf 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "9c9c9610d9fdb9a9f34c44a00989e550329c4b92",
+  "prompts": {},
+  "humans": {
+    "h_5cf852cc46bf92": {
+      "author": "FLEXT Bot <team@flext.sh>"
+    }
+  },
+  "sessions": {
+    "s_0290f35b98ef0c": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0c4cc853-563f-48ad-a39a-f49b587090b8",
+        "model": "unknown"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    }
+  }
+}
