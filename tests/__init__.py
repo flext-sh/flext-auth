@@ -14,11 +14,13 @@ from flext_core.lazy import (
 if _t.TYPE_CHECKING:
     from flext_tests import td, tf, tk, tm, tv
 
-    from flext_auth import d, e, h, r, s, x
+    from flext_auth import d, e, h, r, x
+    from tests.base import TestsFlextAuthServiceBase, s
     from tests.constants import TestsFlextAuthConstants, c
     from tests.fixtures.certificates import CertificateFixture
     from tests.models import TestsFlextAuthModels, m
     from tests.protocols import TestsFlextAuthProtocols, p
+    from tests.settings import TestsFlextAuthSettings
     from tests.typings import TestsFlextAuthTypes, t
     from tests.unit.test_api import TestsFlextAuthApi
     from tests.unit.test_config import TestsFlextAuthConfig
@@ -33,6 +35,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
     ),
     build_lazy_import_map(
         {
+            ".base": (
+                "TestsFlextAuthServiceBase",
+                "s",
+            ),
             ".constants": (
                 "TestsFlextAuthConstants",
                 "c",
@@ -46,6 +52,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextAuthProtocols",
                 "p",
             ),
+            ".settings": ("TestsFlextAuthSettings",),
             ".typings": (
                 "TestsFlextAuthTypes",
                 "t",
@@ -64,7 +71,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "e",
                 "h",
                 "r",
-                "s",
                 "x",
             ),
             "flext_tests": (
@@ -109,6 +115,8 @@ __all__: list[str] = [
     "TestsFlextAuthConstantsUnit",
     "TestsFlextAuthModels",
     "TestsFlextAuthProtocols",
+    "TestsFlextAuthServiceBase",
+    "TestsFlextAuthSettings",
     "TestsFlextAuthTokenRealFlows",
     "TestsFlextAuthTypes",
     "TestsFlextAuthTypesUnit",

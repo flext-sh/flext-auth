@@ -21,10 +21,10 @@ from flext_auth import (
     FlextAuth,
     FlextAuthSettings,
 )
-from tests import c, m, r, t, u
+from tests import c, m, r, s, t, u
 
 
-class TestsFlextAuthApi:
+class TestsFlextAuthApi(s):
     def test_auth_service_initialization_exposes_public_services(self) -> None:
         """FlextAuth quick_start initializes the public service properties."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -253,7 +253,6 @@ class TestsFlextAuthApi:
 
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
-        FlextAuthSettings.reset_instance()
         auth: FlextAuth = FlextAuth()
         u.Tests.Matchers.that(auth.config.auth_secret, none=False)
         u.Tests.Matchers.that(len(auth.config.auth_secret.get_secret_value()), gt=20)

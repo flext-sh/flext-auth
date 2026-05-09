@@ -115,6 +115,12 @@ class FlextAuthApplicationService:
             return instance
 
     @classmethod
+    def reset_for_testing(cls) -> None:
+        """Clear the cached singleton instance for test isolation."""
+        with cls._lock:
+            cls._instance = None
+
+    @classmethod
     def quick_start(cls, *, create_admin_user: bool = True) -> Self:
         """Quick start factory with default configuration."""
         auth: Self = cls()
