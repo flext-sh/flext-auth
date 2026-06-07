@@ -112,7 +112,7 @@ validation_result = auth.validate_token(token)
 
 1. **Token Format**:
 
-   ```python notest
+   ```python
    # Ensure proper Bearer format or clean token
    token = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
    # or
@@ -415,7 +415,7 @@ print(f'Max attempts: {settings.max_failed_attempts}')  # Should be <= 5
 
 1. **Session timeout management**:
 
-   ```python notest
+   ```python
    # Implement session cleanup
    def cleanup_sessions():
        """Clean expired sessions."""
@@ -425,7 +425,7 @@ print(f'Max attempts: {settings.max_failed_attempts}')  # Should be <= 5
 
 1. **External session storage** (future):
 
-   ```python notest
+   ```python
    # Future Redis integration
    class RedisSessionStorage:
        def store_session(self, session):

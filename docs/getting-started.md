@@ -136,7 +136,7 @@ if settings.success:
 
 ### Custom Configuration
 
-```python notest
+```python
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Custom configuration

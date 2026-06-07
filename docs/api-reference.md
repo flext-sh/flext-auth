@@ -65,7 +65,7 @@ ______________________________________________________________________
 
 ### Constructor
 
-```python notest
+```python
 from flext_auth import FlextAuth, FlextAuthSettings
 
 settings = FlextAuthSettings()
