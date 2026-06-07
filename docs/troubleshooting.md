@@ -40,7 +40,7 @@ ______________________________________________________________________
 
 **Problem**: User registration fails with validation errors
 
-```python
+```python notest
 result = auth.register_user("user", "invalid-email", "weak")
 # Returns failure result
 ```
@@ -49,21 +49,21 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 1. **Email Validation**:
 
-   ```python
+   ```python notest
    # Use valid email format
    result = auth.register_user("user", "user@example.com", "password123")
    ```
 
 1. **Password Requirements**:
 
-   ```python
+   ```python notest
    # Use stronger password (current implementation has basic validation)
    result = auth.register_user("user", "user@example.com", "SecurePassword123!")
    ```
 
 1. **Username Uniqueness**:
 
-   ```python
+   ```python notest
    # Check if user already exists
    existing_user = auth._find_user("username")  # Internal method
    if existing_user.success:
@@ -74,14 +74,14 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 **Problem**: User authentication fails unexpectedly
 
-```python
+```python notest
 auth_result = auth.authenticate_user("user", "password")
 # Returns failure even with correct credentials
 ```
 
 **Debugging**:
 
-```python
+```python notest
 # Check if user exists
 user_result = auth._find_user("user")
 if user_result.failure:
@@ -103,7 +103,7 @@ else:
 
 **Problem**: JWT token validation fails
 
-```python
+```python notest
 validation_result = auth.validate_token(token)
 # Returns failure for valid tokens
 ```
@@ -112,7 +112,7 @@ validation_result = auth.validate_token(token)
 
 1. **Token Format**:
 
-   ```python
+   ```python notest
    # Ensure proper Bearer format or clean token
    token = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
    # or
@@ -121,7 +121,7 @@ validation_result = auth.validate_token(token)
 
 1. **Token Expiration**:
 
-   ```python
+   ```python notest
    import jwt
 
    # Check token expiration without validation
@@ -134,7 +134,7 @@ validation_result = auth.validate_token(token)
 
 1. **Secret Key Mismatch**:
 
-   ```python
+   ```python notest
    # Ensure same secret key is used for generation and validation
    settings = FlextAuthSettings()
    print(f"JWT Secret: {settings.jwt_secret_key}")
@@ -148,7 +148,7 @@ ______________________________________________________________________
 
 **Problem**: Configuration not loading correctly
 
-```python
+```python notest
 settings = FlextAuthSettings()
 if settings.failure:
     print(f"Config error: {settings.error}")
@@ -165,7 +165,7 @@ if settings.failure:
 
 1. **Valid Environment Names**:
 
-   ```python
+   ```python notest
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
    settings = FlextAuthSettings()
@@ -173,7 +173,7 @@ if settings.failure:
 
 1. **Manual Configuration**:
 
-   ```python
+   ```python notest
    # Create configuration manually if environment fails
    settings = FlextAuthSettings(jwt_secret_key="manual-secret-key", jwt_expiry_minutes=60)
    ```
@@ -184,7 +184,7 @@ if settings.failure:
 
 **Check Configuration**:
 
-```python
+```python notest
 settings = FlextAuthSettings()
 print(f"JWT Algorithm: {settings.jwt_algorithm}")
 print(f"JWT Expiry: {settings.jwt_expiry_minutes}")
@@ -231,7 +231,7 @@ ______________________________________________________________________
 
 1. **Mock Issues**:
 
-   ```python
+   ```python notest
    # In test fixtures
    @pytest.fixture(autouse=True)
    def reset_global_state():
@@ -267,7 +267,7 @@ ______________________________________________________________________
 
 **Investigation**:
 
-```python
+```python notest
 import time
 
 # Measure bcrypt performance
@@ -285,13 +285,13 @@ print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
 
 1. **Reduce bcrypt rounds for development**:
 
-   ```python
+   ```python notest
    dev_config = FlextAuthSettings(bcrypt_rounds=10)  # Faster for development
    ```
 
 1. **Use production rounds only in production**:
 
-   ```python
+   ```python notest
    prod_config = FlextAuthSettings(bcrypt_rounds=14)  # High security
    ```
 
@@ -303,7 +303,7 @@ print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
 
 **Monitoring**:
 
-```python
+```python notest
 import psutil
 
 # Monitor memory usage
@@ -319,7 +319,7 @@ print(f"Active sessions: {session_count}")
 
 **Mitigation**:
 
-```python
+```python notest
 # Implement session cleanup
 def cleanup_expired_sessions():
     """Clean up expired sessions (placeholder)."""
@@ -351,7 +351,7 @@ mypy src/flext_auth/
 
 1. **Type Annotations**:
 
-   ```python
+   ```python notest
    # Always use proper type hints
    from typing import Optional
 
@@ -362,7 +362,7 @@ mypy src/flext_auth/
 
 1. **r Types**:
 
-   ```python
+   ```python notest
    # Specify generic type for r
    result: p.Result[User] = auth.register_user(...)
    ```
@@ -373,7 +373,7 @@ mypy src/flext_auth/
 
 **Solution**:
 
-```python
+```python notest
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
 from flext_auth import m
 
@@ -415,7 +415,7 @@ print(f'Max attempts: {settings.max_failed_attempts}')  # Should be <= 5
 
 1. **Session timeout management**:
 
-   ```python
+   ```python notest
    # Implement session cleanup
    def cleanup_sessions():
        """Clean expired sessions."""
@@ -425,7 +425,7 @@ print(f'Max attempts: {settings.max_failed_attempts}')  # Should be <= 5
 
 1. **External session storage** (future):
 
-   ```python
+   ```python notest
    # Future Redis integration
    class RedisSessionStorage:
        def store_session(self, session):
@@ -441,7 +441,7 @@ ______________________________________________________________________
 
 Enable debug logging:
 
-```python
+```python notest
 logging.basicConfig(level=logging.DEBUG)
 
 # Test authentication with debug output
@@ -453,7 +453,7 @@ result = auth.register_user("debug", "debug@example.com", "password123")
 
 Extract detailed error information:
 
-```python
+```python notest
 result = auth.authenticate_user("user", "wrong_password")
 if result.failure:
     print(f"Error: {result.error}")

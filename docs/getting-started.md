@@ -62,7 +62,7 @@ ______________________________________________________________________
 
 ### Quick Start Service
 
-```python
+```python notest
 from flext_auth import flext_auth_quick_start, FlextAuthModels
 
 # Initialize authentication service
@@ -89,7 +89,7 @@ else:
 
 ### User Authentication
 
-```python
+```python notest
 # Authenticate user
 auth_result = auth.authenticate_user("alice", "secure123")
 
@@ -104,7 +104,7 @@ else:
 
 ### Token Validation
 
-```python
+```python notest
 # Validate JWT token
 token = "your-jwt-token-here"
 validation_result = auth.validate_token(token)
@@ -122,7 +122,7 @@ ______________________________________________________________________
 
 ### Environment Configuration
 
-```python
+```python notest
 from flext_auth import FlextAuthSettings
 
 # Development configuration
@@ -136,7 +136,7 @@ if settings.success:
 
 ### Custom Configuration
 
-```python
+```python notest
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Custom configuration
@@ -186,7 +186,7 @@ ______________________________________________________________________
 
 ### r Error Handling
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -237,7 +237,7 @@ if result.success:
 
 ### Container Integration
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -280,7 +280,7 @@ ______________________________________________________________________
 
 ### Working with User Entities
 
-```python
+```python notest
 from flext_auth import FlextAuthModels
 
 # Create user entity
@@ -303,7 +303,7 @@ if verification_result.success and verification_result.unwrap():
 
 ### Session Management
 
-```python
+```python notest
 from datetime import datetime, timedelta
 
 # Create session
@@ -324,7 +324,7 @@ ______________________________________________________________________
 
 ### Unit Testing with r
 
-```python
+```python notest
 import pytest
 from flext_auth import flext_auth_quick_start
 

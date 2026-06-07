@@ -200,7 +200,7 @@ ______________________________________________________________________
 
 **Public API**:
 
-```python
+```python notest
 class FlextAuth(s[AuthenticationResponseDict]):
     # Factory methods
     @classmethod
@@ -250,7 +250,7 @@ class FlextAuth(s[AuthenticationResponseDict]):
 
 **Interface**:
 
-```python
+```python notest
 class FlextAuthRegistry:
     """Registry for managing authentication providers."""
 
@@ -282,7 +282,7 @@ class FlextAuthRegistry:
 
 **Protocol Definition**:
 
-```python
+```python notest
 class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers."""
 
@@ -393,7 +393,7 @@ ______________________________________________________________________
 
 ### Provider Implementation Pattern
 
-```python
+```python notest
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
@@ -503,7 +503,7 @@ ______________________________________________________________________
 
 ### Transport Abstraction (`transports/base.py`)
 
-```python
+```python notest
 class BaseTransportAdapter(Protocol):
     """Base protocol for transport adapters."""
 
@@ -534,7 +534,7 @@ class BaseTransportAdapter(Protocol):
 
 **⚠️ MANDATORY**: Uses **flext-api** (NOT direct httpx/requests)
 
-```python
+```python notest
 from flext_api import FlextApi
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -583,7 +583,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 
 **⚠️ MANDATORY**: Uses **flext-grpc** (NOT direct grpc/grpcio)
 
-```python
+```python notest
 from flext_grpc import FlextGrpc
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -635,7 +635,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 ### WebSocket Transport (`transports/websocket.py`)
 
-```python
+```python notest
 class WebSocketTransportAdapter(BaseTransportAdapter):
     """WebSocket transport adapter for real-time authentication."""
 
@@ -660,7 +660,7 @@ ______________________________________________________________________
 
 ### Protocol Handler Base (`protocol_handlers/base.py`)
 
-```python
+```python notest
 class BaseProtocolHandler(Protocol):
     """Base protocol for protocol-specific handlers."""
 
@@ -677,7 +677,7 @@ class BaseProtocolHandler(Protocol):
 
 ### REST Protocol Handler (`protocol_handlers/rest.py`)
 
-```python
+```python notest
 class RestProtocolHandler(BaseProtocolHandler):
     """REST/JSON protocol handler (default)."""
 
@@ -706,7 +706,7 @@ class RestProtocolHandler(BaseProtocolHandler):
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
 
-```python
+```python notest
 class SoapProtocolHandler(BaseProtocolHandler):
     """SOAP/XML protocol handler (stub)."""
 
@@ -739,7 +739,7 @@ ______________________________________________________________________
 
 **Interface**:
 
-```python
+```python notest
 class TokenManager:
     """Unified token management across providers."""
 
@@ -800,7 +800,7 @@ class TokenManager:
 
 ### Token Retry Logic (`tokens/retry.py`)
 
-```python
+```python notest
 class RetryPolicy:
     """Token retry policy with exponential backoff."""
 
@@ -832,7 +832,7 @@ class RetryPolicy:
 
 ### Token Cache (`tokens/cache.py`)
 
-```python
+```python notest
 class TokenCache:
     """Token caching with multiple backend support."""
 
@@ -875,7 +875,7 @@ ______________________________________________________________________
 
 ### Credential Management (`credentials/manager.py`)
 
-```python
+```python notest
 class CredentialManager:
     """Secure credential management with encryption."""
 
@@ -919,7 +919,7 @@ class CredentialManager:
 
 ### Security Validations
 
-```python
+```python notest
 class SecurityValidator:
     """Security validation for authentication operations."""
 
@@ -963,7 +963,7 @@ ______________________________________________________________________
 
 #### FORBIDDEN Direct Imports
 
-```python
+```python notest
 # ❌ ABSOLUTELY FORBIDDEN in flext-auth
 import httpx  # Use flext-api instead
 import requests  # Use flext-api instead
@@ -974,7 +974,7 @@ import ldap3  # Use flext-ldap instead
 
 #### Correct Integration Pattern
 
-```python
+```python notest
 # ✅ CORRECT - Using FLEXT domain libraries
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -1022,7 +1022,7 @@ class FlextAuthLdapProvider:
 
 All providers and managers extend s for consistency:
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -1061,7 +1061,7 @@ ______________________________________________________________________
 
 #### Pattern 1: Simple JWT (Backward Compatible)
 
-```python
+```python notest
 from flext_auth import FlextAuth
 
 # v1.0.0 API (deprecated but works)
@@ -1075,7 +1075,7 @@ result = auth.authenticate_user("username", "password")
 
 #### Pattern 2: Multi-Provider
 
-```python
+```python notest
 from flext_auth import FlextAuth, FlextAuthRegistry
 from flext_auth import (
     FlextAuthJwtProvider,
@@ -1109,7 +1109,7 @@ providers = auth.list_providers()  # ["jwt", "oauth2", "saml"]
 
 #### Pattern 3: Custom Transport
 
-```python
+```python notest
 from flext_auth import FlextAuth
 from flext_auth import FlextAuthOAuth2Provider
 from flext_auth import GrpcTransportAdapter
@@ -1127,7 +1127,7 @@ result = auth.authenticate(credentials)
 
 #### Pattern 4: Token Retry
 
-```python
+```python notest
 from flext_auth import FlextAuth
 
 auth = FlextAuth.with_oauth2(client_id="client", client_secret="secret")

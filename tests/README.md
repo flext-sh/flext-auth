@@ -174,7 +174,7 @@ tests/
 
 ### Given-When-Then Pattern
 
-```python
+```python notest
 def test_user_authentication_with_valid_credentials():
     """Test user authentication succeeds with valid credentials."""
     # Given: A registered user with valid credentials

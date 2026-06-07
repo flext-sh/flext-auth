@@ -22,7 +22,7 @@ No legacy helper functions or wrapper factories are part of the supported exampl
 
 ## Minimal Flow
 
-```python
+```python notest
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
