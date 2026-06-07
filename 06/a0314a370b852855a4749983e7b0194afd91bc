@@ -1,0 +1,22 @@
+src/flext_auth/models.py
+  s_9942ef7a89ba9a::t_2a737882589bfd 265
+  s_9942ef7a89ba9a::t_31df6cdd383b47 290
+  s_9942ef7a89ba9a::t_0a1a4073af5158 312
+  s_9942ef7a89ba9a::t_c64f48312f0895 99,319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "06a0314a370b852855a4749983e7b0194afd91bc",
+  "prompts": {},
+  "sessions": {
+    "s_9942ef7a89ba9a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "84fb5cb9-a1bd-4654-9339-7a49b63e96d1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
