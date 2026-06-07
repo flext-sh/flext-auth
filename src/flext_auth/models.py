@@ -96,7 +96,7 @@ class FlextAuthModels(m):
             @property
             def expired(self) -> bool:
                 """Check if token is expired."""
-                return datetime.now(UTC) > self.expires_at
+                return u.now() > self.expires_at
 
         # =========================================================================
         # IDENTITY MODELS - Generic identity/user entity
@@ -262,7 +262,7 @@ class FlextAuthModels(m):
                 """Check if identity is locked."""
                 if self.locked_until == datetime.min.replace(tzinfo=UTC):
                     return False
-                return datetime.now(UTC) < self.locked_until
+                return u.now() < self.locked_until
 
             def update_credential(self, credential: str) -> p.Result[bool]:
                 """Update credential with bcrypt hashing via domain verb."""
@@ -287,7 +287,7 @@ class FlextAuthModels(m):
 
             def with_successful_access(self) -> Self:
                 """Record successful access (fluent interface)."""
-                self.last_access = datetime.now(UTC)
+                self.last_access = u.now()
                 self.failed_attempts = 0
                 self.locked_until = datetime.min.replace(tzinfo=UTC)
                 return self
@@ -309,14 +309,14 @@ class FlextAuthModels(m):
             ip_address: Annotated[str, u.Field(description="IP address")] = ""
             user_agent: Annotated[str, u.Field(description="User agent")] = ""
             last_accessed: datetime = u.Field(
-                default_factory=lambda: datetime.now(UTC),
+                default_factory=lambda: u.now(),
                 description="Last access",
             )
 
             @property
             def expired(self) -> bool:
                 """Check if session is expired."""
-                return datetime.now(UTC) > self.expires_at
+                return u.now() > self.expires_at
 
         # =========================================================================
         # PROVIDER MODELS - Generic provider configuration
