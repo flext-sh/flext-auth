@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import (
     MutableMapping,
 )
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r, u
@@ -32,7 +32,7 @@ class FlextAuthRateLimiterManagers:
             self._window_minutes = 15
 
         def check_rate_limit(self, username: str) -> p.Result[bool]:
-            now = datetime.now(UTC)
+            now = u.now()
             if username not in self._attempts:
                 return r[bool].ok(value=True)
             recent_attempts = self._cleanup_window(username, now)
@@ -47,7 +47,7 @@ class FlextAuthRateLimiterManagers:
             return sum(len(attempts) for attempts in self._attempts.values())
 
         def record_failed_attempt(self, username: str) -> None:
-            now = datetime.now(UTC)
+            now = u.now()
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
