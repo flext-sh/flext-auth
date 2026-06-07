@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
 import bcrypt
 import jwt
@@ -81,7 +81,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
         @staticmethod
         def calculate_expiry_time(minutes: int) -> datetime:
             """Calculate token/session expiry time."""
-            return datetime.now(UTC) + timedelta(minutes=minutes)
+            return u.generate_datetime_utc() + timedelta(minutes=minutes)
 
         @staticmethod
         def generate_session_id() -> str:
@@ -91,7 +91,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
         @staticmethod
         def expired(expiry_time: datetime) -> bool:
             """Check if a timestamp is expired."""
-            return datetime.now(UTC) > expiry_time
+            return u.now() > expiry_time
 
         @staticmethod
         def hash_password(password: str) -> str:
@@ -114,7 +114,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
                 "success": False,
                 "error": error,
                 "error_code": error_code,
-                "timestamp": datetime.now(UTC).isoformat(),
+                "timestamp": u.now().isoformat(),
             }
 
         @staticmethod
@@ -127,7 +127,7 @@ class FlextAuthUtilities(u, FlextAuthUtilitiesManagers):
             response: t.MutableConfigurationMapping = {
                 "success": True,
                 "message": str(c.Auth.SUCCESS_AUTH_RESPONSE["message"]),
-                "timestamp": datetime.now(UTC).isoformat(),
+                "timestamp": u.now().isoformat(),
             }
             if token:
                 response["token"] = token
