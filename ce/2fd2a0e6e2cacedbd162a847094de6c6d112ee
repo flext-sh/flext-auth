@@ -1,0 +1,20 @@
+src/flext_auth/_utilities/_managers/rate_limiter.py
+  s_9942ef7a89ba9a::t_a6103344a72ff3 6
+  s_9942ef7a89ba9a::t_5488368cc7eff0 35,50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "ce2fd2a0e6e2cacedbd162a847094de6c6d112ee",
+  "prompts": {},
+  "sessions": {
+    "s_9942ef7a89ba9a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "84fb5cb9-a1bd-4654-9339-7a49b63e96d1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
