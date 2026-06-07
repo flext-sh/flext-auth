@@ -197,7 +197,7 @@ class FlextAuthUtilitiesManagers(
                 return r[m.Auth.AuthIdentity].fail("Identity already exists")
 
             user_id = str(uuid4())
-            now = datetime.now(UTC)
+            now = u.now()
             normalized_identity_extras = self.IdentityExtras.model_validate(
                 extra_fields
             ).model_dump(exclude_none=True)
@@ -288,7 +288,7 @@ class FlextAuthUtilitiesManagers(
             return self._find_user_by_id(user_id).map(
                 lambda ud: (
                     ud[1].update(filtered_updates),
-                    ud[1].update({"updated_at": datetime.now(UTC)}),
+                    ud[1].update({"updated_at": u.now()}),
                     self._create_identity_from_storage(ud[1]),
                 )[2],
             )
