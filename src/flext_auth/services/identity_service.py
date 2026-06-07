@@ -9,12 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from typing import override
 
 from flext_api import r
 
-from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, c, m, p, s, t
+from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, c, m, p, s, t, u
 
 
 class FlextAuthIdentityService(s):
@@ -202,7 +202,7 @@ class FlextAuthIdentityService(s):
             lockout_duration = timedelta(
                 minutes=c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES,
             )
-            identity.locked_until = datetime.now(UTC) + lockout_duration
+            identity.locked_until = u.generate_datetime_utc() + lockout_duration
             self.logger.warning(
                 "Authentication failure",
                 username=identity.name,
