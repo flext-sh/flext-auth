@@ -5,7 +5,7 @@ from collections.abc import (
     MutableSequence,
     Sequence,
 )
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
@@ -53,7 +53,7 @@ class FlextAuthSessionManagers:
             user_agent: str | None = None,
         ) -> p.Result[m.Auth.Session]:
             session_id = str(uuid4())
-            expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
+            expires_at = u.now() + timedelta(minutes=expires_in_minutes)
             session_data: t.Auth.ManagersSessionData = {
                 "id": session_id,
                 "unique_id": session_id,
@@ -61,7 +61,7 @@ class FlextAuthSessionManagers:
                 "session_token": token,
                 "expires_at": expires_at,
                 "is_active": True,
-                "last_accessed": datetime.now(UTC),
+                "last_accessed": u.now(),
                 "ip_address": ip_address or "",
                 "user_agent": user_agent or "",
             }
@@ -78,7 +78,7 @@ class FlextAuthSessionManagers:
                 last_accessed=session_data["last_accessed"]
                 if "last_accessed" in session_data
                 and isinstance(session_data["last_accessed"], datetime)
-                else datetime.now(UTC),
+                else u.now(),
             )
             return r[m.Auth.Session].ok(session)
 
@@ -129,7 +129,7 @@ class FlextAuthSessionManagers:
                             last_accessed=session_data["last_accessed"]
                             if "last_accessed" in session_data
                             and isinstance(session_data["last_accessed"], datetime)
-                            else datetime.now(UTC),
+                            else u.now(),
                         )
                         session.unique_id = session_id
                         sessions.append(session)
@@ -158,4 +158,4 @@ class FlextAuthSessionManagers:
                     is_active = active
                 case _:
                     return False
-            return is_active and expires_at > datetime.now(UTC)
+            return is_active and expires_at > u.now()
