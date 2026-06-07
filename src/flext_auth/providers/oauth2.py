@@ -17,12 +17,12 @@ from collections.abc import (
     Collection,
     Mapping,
 )
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from http import HTTPStatus
 from typing import override
 from urllib.parse import urlencode, urlparse
 
-from flext_auth import FlextAuthRfcProvider, c, e, m, p, r, t
+from flext_auth import FlextAuthRfcProvider, c, e, m, p, r, t, u
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -153,7 +153,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             ),
             token=str(credential_payload.get("access_token") or ""),
             token_type="Bearer",
-            expires_at=datetime.now(UTC) + timedelta(hours=1),
+            expires_at=u.generate_datetime_utc() + timedelta(hours=1),
         )
         return r[p.Auth.Token].ok(token_model)
 
@@ -225,7 +225,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             identity_id=identity_id,
             token=f"access_token_{secrets.token_hex(16)}",
             token_type="Bearer",
-            expires_at=datetime.now(UTC) + timedelta(seconds=3600),
+            expires_at=u.generate_datetime_utc() + timedelta(seconds=3600),
             refresh_token=f"refresh_token_{secrets.token_hex(16)}",
         )
         return r[p.Auth.Token].ok(refreshed_model)
