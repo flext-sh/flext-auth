@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import (
     Mapping,
 )
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
 from flext_auth import c, e, m, p, r, t, u
 
@@ -88,7 +88,7 @@ class FlextAuthProviderMixin:
         effective_expiry = (
             expiry_minutes if expiry_minutes is not None else default_expiry
         )
-        now = datetime.now(UTC)
+        now = u.generate_datetime_utc()
         claims: t.MutableJsonMapping = {
             k: int(v.timestamp()) if isinstance(v, datetime) else v
             for k, v in payload.items()
@@ -172,7 +172,7 @@ class FlextAuthProviderMixin:
             identity_id=identity_id,
             token=new_token_result.value,
             token_type="Bearer",
-            expires_at=datetime.now(UTC) + timedelta(minutes=default_expiry),
+            expires_at=u.generate_datetime_utc() + timedelta(minutes=default_expiry),
         )
         return r[p.Auth.Token].ok(refreshed)
 
