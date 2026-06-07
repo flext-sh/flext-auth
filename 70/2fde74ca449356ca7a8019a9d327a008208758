@@ -1,0 +1,20 @@
+src/flext_auth/services/identity_service.py
+  s_9942ef7a89ba9a::t_fa386486f04cbf 205
+  s_9942ef7a89ba9a::t_0801e362b19952 12,17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "702fde74ca449356ca7a8019a9d327a008208758",
+  "prompts": {},
+  "sessions": {
+    "s_9942ef7a89ba9a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "84fb5cb9-a1bd-4654-9339-7a49b63e96d1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
