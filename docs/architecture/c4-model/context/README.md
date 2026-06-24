@@ -1,27 +1,5 @@
 # C4 Context: System Context Diagram
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [System Context](#system-context)
-  - [Key Elements](#key-elements)
-- [System Boundaries](#system-boundaries)
-  - [What flext-auth IS responsible for](#what-flext-auth-is-responsible-for)
-  - [What flext-auth is NOT responsible for](#what-flext-auth-is-not-responsible-for)
-- [External Interfaces](#external-interfaces)
-  - [Authentication Protocols](#authentication-protocols)
-  - [Integration Points](#integration-points)
-- [Quality Attributes in Context](#quality-attributes-in-context)
-  - [Security](#security)
-  - [Performance](#performance)
-  - [Usability](#usability)
-- [Constraints and Assumptions](#constraints-and-assumptions)
-  - [Technical Constraints](#technical-constraints)
-  - [Business Constraints](#business-constraints)
-  - [Environmental Assumptions](#environmental-assumptions)
-- [Related Documentation](#related-documentation)
-- [Diagram](#diagram)
-<!-- TOC END -->
-
 ## Overview
 
 The System Context diagram shows flext-auth in relation to its users, external systems, and the broader FLEXT ecosystem. This is the highest level view of the system.

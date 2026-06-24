@@ -1,32 +1,5 @@
 # C4 Containers: Container Architecture Diagram
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [Container Architecture](#container-architecture)
-  - [Technology Choices](#technology-choices)
-- [Deployment Architecture](#deployment-architecture)
-  - [Single Container Deployment](#single-container-deployment)
-  - [Microservices Deployment](#microservices-deployment)
-  - [Kubernetes Deployment](#kubernetes-deployment)
-- [Container Relationships](#container-relationships)
-  - [Data Flow](#data-flow)
-  - [Communication Patterns](#communication-patterns)
-- [Technology Stack Details](#technology-stack-details)
-  - [Runtime Environment](#runtime-environment)
-  - [Data Storage](#data-storage)
-  - [External Integrations](#external-integrations)
-- [Quality Attributes by Container](#quality-attributes-by-container)
-  - [flext-auth Container](#flext-auth-container)
-  - [Database Container](#database-container)
-  - [External Services](#external-services)
-- [Deployment Considerations](#deployment-considerations)
-  - [Scaling Strategies](#scaling-strategies)
-  - [High Availability](#high-availability)
-  - [Security Considerations](#security-considerations)
-- [Related Documentation](#related-documentation)
-- [Diagram](#diagram)
-<!-- TOC END -->
-
 ## Overview
 
 The Container diagram shows the high-level technology choices and how the system is deployed as containers/services. This view abstracts away code and focuses on technology stacks and deployment architecture.

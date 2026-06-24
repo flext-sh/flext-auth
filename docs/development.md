@@ -1,39 +1,5 @@
 # Development
 
-<!-- TOC START -->
-- [Development Setup](#development-setup)
-  - [Prerequisites](#prerequisites)
-  - [Setup Environment](#setup-environment)
-- [Development Commands](#development-commands)
-  - [Essential Commands](#essential-commands)
-  - [Testing Commands](#testing-commands)
-- [Quality Standards](#quality-standards)
-  - [Production Status](#production-status)
-  - [Quality Gates](#quality-gates)
-- [Code Standards](#code-standards)
-  - [FLEXT Pattern Compliance](#flext-pattern-compliance)
-  - [Domain Model Patterns](#domain-model-patterns)
-- [Current Development Areas](#current-development-areas)
-  - [Priority 1: Test Stabilization](#priority-1-test-stabilization)
-  - [Priority 2: Security Enhancements](#priority-2-security-enhancements)
-  - [Priority 3: Production Features](#priority-3-production-features)
-- [Contributing Workflow](#contributing-workflow)
-  - [1. Before Development](#1-before-development)
-  - [2. Development Process](#2-development-process)
-  - [3. Before Committing](#3-before-committing)
-  - [4. Contribution Guidelines](#4-contribution-guidelines)
-- [Testing Strategy](#testing-strategy)
-  - [Current Test Structure](#current-test-structure)
-  - [Test Categories](#test-categories)
-  - [Adding Tests](#adding-tests)
-- [Architecture Guidelines](#architecture-guidelines)
-  - [Service Layer](#service-layer)
-  - [Error Handling](#error-handling)
-- [Debugging](#debugging)
-  - [Common Issues](#common-issues)
-  - [Debug Mode](#debug-mode)
-<!-- TOC END -->
-
 **Version**: 0.9.0 Multi-Provider Implementation | **Updated**: October 10, 2025
 
 Development workflow and contributing guidelines for flext-auth with multi-provider authentication architecture. Implementation complete for Phases 1-3, transport layer in progress.
@@ -129,7 +95,7 @@ ______________________________________________________________________
 
 All code must follow FLEXT patterns:
 
-```python notest
+```python
 # ✅ Correct - Use r for error handling
 def authenticate_user(username: str, password: str) -> p.Result[m.Dict]:
     if not username:
@@ -149,7 +115,7 @@ def authenticate_user(username: str, password: str) -> t.JsonMapping:
 
 ### Domain Model Patterns
 
-```python notest
+```python
 # ✅ Correct - Extend FlextModels.Entity
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -306,7 +272,7 @@ tests/
 
 ### Adding Tests
 
-```python notest
+```python
 import pytest
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import FlextBus
@@ -351,7 +317,7 @@ ______________________________________________________________________
 
 Follow FLEXT service patterns:
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -388,7 +354,7 @@ class AuthenticationService(s):
 
 Use r exclusively:
 
-```python notest
+```python
 # Chain operations with r
 def complete_auth_flow(username: str, password: str) -> p.Result[m.Dict]:
     return (
@@ -412,7 +378,7 @@ ______________________________________________________________________
 
 ### Debug Mode
 
-```python notest
+```python
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)
 

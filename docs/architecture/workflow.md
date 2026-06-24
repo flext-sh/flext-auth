@@ -1,37 +1,5 @@
 # Architecture Documentation Workflow
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [Workflow Phases](#workflow-phases)
-  - [1. Architecture Analysis & Discovery](#1-architecture-analysis-discovery)
-  - [2. Documentation Generation](#2-documentation-generation)
-  - [3. Quality Assurance & Validation](#3-quality-assurance-validation)
-  - [4. Review & Approval](#4-review-approval)
-  - [5. Publication & Maintenance](#5-publication-maintenance)
-- [Tool Integration](#tool-integration)
-  - [CI/CD Integration](#cicd-integration)
-  - [Pre-commit Hooks](#pre-commit-hooks)
-- [Decision-Making Framework](#decision-making-framework)
-  - [When to Update Architecture Documentation](#when-to-update-architecture-documentation)
-  - [ADR Creation Guidelines](#adr-creation-guidelines)
-- [Monitoring & Alerts](#monitoring-alerts)
-  - [Automated Monitoring](#automated-monitoring)
-  - [Dashboard Integration](#dashboard-integration)
-- [Troubleshooting](#troubleshooting)
-  - [Common Issues](#common-issues)
-  - [Recovery Procedures](#recovery-procedures)
-- [Best Practices](#best-practices)
-  - [Documentation Standards](#documentation-standards)
-  - [Tool Usage](#tool-usage)
-  - [Team Collaboration](#team-collaboration)
-- [Success Metrics](#success-metrics)
-  - [Quality Metrics](#quality-metrics)
-  - [Process Metrics](#process-metrics)
-- [Resources](#resources)
-  - [Documentation](#documentation)
-  - [Tools](#tools)
-<!-- TOC END -->
-
 ## Overview
 
 This document outlines the complete workflow for maintaining and updating FLEXT Auth architecture documentation. The workflow integrates automated tools with manual review processes to ensure comprehensive, accurate, and up-to-date documentation.

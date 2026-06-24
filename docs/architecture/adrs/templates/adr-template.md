@@ -1,38 +1,5 @@
 # ADR-\[Number\]: [Decision Title]
 
-<!-- TOC START -->
-- [Status](#status)
-- [Context](#context)
-  - [Problem Statement](#problem-statement)
-  - [Background](#background)
-  - [Current State](#current-state)
-  - [Constraints](#constraints)
-  - [Stakeholders](#stakeholders)
-- [Decision](#decision)
-  - [Decision Statement](#decision-statement)
-  - [Implementation Approach](#implementation-approach)
-  - [Scope](#scope)
-- [Consequences](#consequences)
-  - [Positive Consequences](#positive-consequences)
-  - [Negative Consequences](#negative-consequences)
-  - [Trade-offs](#trade-offs)
-- [Alternatives Considered](#alternatives-considered)
-  - [Option 1: [Alternative Name]](#option-1-alternative-name)
-  - [Option 2: [Alternative Name]](#option-2-alternative-name)
-- [Implementation Plan](#implementation-plan)
-  - [Phase 1: [Immediate Actions]](#phase-1-immediate-actions)
-  - [Phase 2: [Short-term Goals]](#phase-2-short-term-goals)
-  - [Phase 3: [Long-term Objectives]](#phase-3-long-term-objectives)
-- [Success Metrics](#success-metrics)
-  - [Quantitative Metrics](#quantitative-metrics)
-  - [Qualitative Metrics](#qualitative-metrics)
-- [Related ADRs](#related-adrs)
-- [References](#references)
-  - [External References](#external-references)
-  - [Internal References](#internal-references)
-- [Notes](#notes)
-<!-- TOC END -->
-
 ## Status
 
 **Status**: [Proposed | Accepted | Rejected | Deprecated | Superseded]

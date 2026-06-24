@@ -1,31 +1,5 @@
 # Troubleshooting
 
-<!-- TOC START -->
-- [Authentication Issues](#authentication-issues)
-  - [User Registration Failures](#user-registration-failures)
-  - [Authentication Failures](#authentication-failures)
-  - [Token Validation Issues](#token-validation-issues)
-- [Configuration Issues](#configuration-issues)
-  - [Environment Configuration](#environment-configuration)
-  - [JWT Configuration](#jwt-configuration)
-- [Testing Issues](#testing-issues)
-  - [Test Failures](#test-failures)
-  - [Test Environment Setup](#test-environment-setup)
-- [Performance Issues](#performance-issues)
-  - [Slow Authentication](#slow-authentication)
-  - [Memory Usage](#memory-usage)
-- [Development Issues](#development-issues)
-  - [IDE and Type Checking](#ide-and-type-checking)
-  - [Import Issues](#import-issues)
-- [Production Issues](#production-issues)
-  - [Security Concerns](#security-concerns)
-  - [Session Management](#session-management)
-- [Getting Help](#getting-help)
-  - [Debug Mode](#debug-mode)
-  - [Error Information](#error-information)
-  - [Community Support](#community-support)
-<!-- TOC END -->
-
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 Common issues and solutions for flext-auth authentication service.
@@ -40,7 +14,7 @@ ______________________________________________________________________
 
 **Problem**: User registration fails with validation errors
 
-```python notest
+```python
 result = auth.register_user("user", "invalid-email", "weak")
 # Returns failure result
 ```
@@ -74,14 +48,14 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 **Problem**: User authentication fails unexpectedly
 
-```python notest
+```python
 auth_result = auth.authenticate_user("user", "password")
 # Returns failure even with correct credentials
 ```
 
 **Debugging**:
 
-```python notest
+```python
 # Check if user exists
 user_result = auth._find_user("user")
 if user_result.failure:
@@ -103,7 +77,7 @@ else:
 
 **Problem**: JWT token validation fails
 
-```python notest
+```python
 validation_result = auth.validate_token(token)
 # Returns failure for valid tokens
 ```
@@ -148,7 +122,7 @@ ______________________________________________________________________
 
 **Problem**: Configuration not loading correctly
 
-```python notest
+```python
 settings = FlextAuthSettings()
 if settings.failure:
     print(f"Config error: {settings.error}")
@@ -184,7 +158,7 @@ if settings.failure:
 
 **Check Configuration**:
 
-```python notest
+```python
 settings = FlextAuthSettings()
 print(f"JWT Algorithm: {settings.jwt_algorithm}")
 print(f"JWT Expiry: {settings.jwt_expiry_minutes}")
@@ -267,7 +241,7 @@ ______________________________________________________________________
 
 **Investigation**:
 
-```python notest
+```python
 import time
 
 # Measure bcrypt performance
@@ -303,7 +277,7 @@ print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
 
 **Monitoring**:
 
-```python notest
+```python
 import psutil
 
 # Monitor memory usage
@@ -319,7 +293,7 @@ print(f"Active sessions: {session_count}")
 
 **Mitigation**:
 
-```python notest
+```python
 # Implement session cleanup
 def cleanup_expired_sessions():
     """Clean up expired sessions (placeholder)."""
@@ -373,7 +347,7 @@ mypy src/flext_auth/
 
 **Solution**:
 
-```python notest
+```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
 from flext_auth import m
 
@@ -441,7 +415,7 @@ ______________________________________________________________________
 
 Enable debug logging:
 
-```python notest
+```python
 logging.basicConfig(level=logging.DEBUG)
 
 # Test authentication with debug output
@@ -453,7 +427,7 @@ result = auth.register_user("debug", "debug@example.com", "password123")
 
 Extract detailed error information:
 
-```python notest
+```python
 result = auth.authenticate_user("user", "wrong_password")
 if result.failure:
     print(f"Error: {result.error}")

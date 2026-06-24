@@ -1,33 +1,5 @@
 # C4 Components: Component Architecture Diagram
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [Component Architecture](#component-architecture)
-  - [Core Components](#core-components)
-- [Component Relationships](#component-relationships)
-  - [Data Flow Architecture](#data-flow-architecture)
-  - [Key Interaction Patterns](#key-interaction-patterns)
-- [Design Patterns Used](#design-patterns-used)
-  - [Provider Pattern (Strategy)](#provider-pattern-strategy)
-  - [Registry Pattern](#registry-pattern)
-  - [Facade Pattern](#facade-pattern)
-  - [Railway-Oriented Programming](#railway-oriented-programming)
-- [Component Boundaries](#component-boundaries)
-  - [Clear Responsibilities](#clear-responsibilities)
-  - [Dependency Direction](#dependency-direction)
-  - [Interface Segregation](#interface-segregation)
-- [Quality Attributes by Component](#quality-attributes-by-component)
-  - [Security](#security)
-  - [Performance](#performance)
-  - [Maintainability](#maintainability)
-- [Testing Strategy by Component](#testing-strategy-by-component)
-  - [Unit Testing](#unit-testing)
-  - [Integration Testing](#integration-testing)
-  - [End-to-End Testing](#end-to-end-testing)
-- [Related Documentation](#related-documentation)
-- [Diagram](#diagram)
-<!-- TOC END -->
-
 ## Overview
 
 The Component diagram shows the internal structure of flext-auth, focusing on the key components, their responsibilities, and relationships. This view zooms into the container to show the architectural building blocks.

@@ -1,36 +1,5 @@
 # API Reference
 
-<!-- TOC START -->
-- [Core API](#core-api)
-  - [flext_auth_quick_start()](#flextauthquickstart)
-- [FlextAuth Service](#flextauth-service)
-  - [Constructor](#constructor)
-  - [register_user()](#registeruser)
-  - [authenticate_user()](#authenticateuser)
-  - [validate_token()](#validatetoken)
-- [Domain Models](#domain-models)
-  - [User](#user)
-  - [Session](#session)
-  - [UserCreationRequest](#usercreationrequest)
-- [Configuration](#configuration)
-  - [FlextAuthSettings](#flextauthsettings)
-- [CLI Interface](#cli-interface)
-  - [create-user](#create-user)
-  - [authenticate](#authenticate)
-  - [validate-settings](#validate-settings)
-- [Error Handling](#error-handling)
-  - [Success Pattern](#success-pattern)
-  - [Chaining Pattern](#chaining-pattern)
-- [Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
-  - [Container Integration](#container-integration)
-  - [r Usage](#r-usage)
-- [Security Considerations](#security-considerations)
-  - [Password Security](#password-security)
-  - [JWT Security](#jwt-security)
-  - [Session Management](#session-management)
-- [Related Documentation](#related-documentation)
-<!-- TOC END -->
-
 **Version**: 1.0.0 Current | **Updated**: October 1, 2025
 
 Complete API documentation for flext-auth enterprise authentication service with s and h architecture.
@@ -47,7 +16,7 @@ ______________________________________________________________________
 
 Initialize authentication service for development and testing.
 
-```python notest
+```python
 from flext_auth import flext_auth_quick_start
 
 auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
@@ -76,7 +45,7 @@ auth = FlextAuth(settings=settings)
 
 Register a new user with username, email, and password.
 
-```python notest
+```python
 def register_user(
     self,
     username: str,
@@ -95,7 +64,7 @@ def register_user(
 
 **Example**:
 
-```python notest
+```python
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
@@ -106,7 +75,7 @@ if result.success:
 
 Authenticate user with username and password.
 
-```python notest
+```python
 def authenticate_user(
     self,
     username: str,
@@ -123,7 +92,7 @@ def authenticate_user(
 
 **Example**:
 
-```python notest
+```python
 auth_result = auth.authenticate_user("demo", "secure123")
 if auth_result.success:
     session_data = auth_result.unwrap()
@@ -135,7 +104,7 @@ if auth_result.success:
 
 Validate JWT token and extract user information.
 
-```python notest
+```python
 def validate_token(self, token: str) -> p.Result[m.Dict]:
 ```
 
@@ -147,7 +116,7 @@ def validate_token(self, token: str) -> p.Result[m.Dict]:
 
 **Example**:
 
-```python notest
+```python
 validation_result = auth.validate_token(token)
 if validation_result.success:
     token_data = validation_result.unwrap()
@@ -162,7 +131,7 @@ ______________________________________________________________________
 
 User entity extending FlextModels.Entity.
 
-```python notest
+```python
 class User(FlextModels.Entity):
     username: str
     email: str
@@ -176,7 +145,7 @@ class User(FlextModels.Entity):
 
 #### set_password()
 
-```python notest
+```python
 def set_password(self, password: str) -> p.Result[bool]:
 ```
 
@@ -184,7 +153,7 @@ Hash and set user password using bcrypt.
 
 #### verify_password()
 
-```python notest
+```python
 def verify_password(self, password: str) -> p.Result[bool]:
 ```
 
@@ -194,7 +163,7 @@ Verify password against stored hash.
 
 Session entity for managing user sessions.
 
-```python notest
+```python
 class Session(FlextModels.Entity):
     user_id: str
     session_token: str
@@ -206,7 +175,7 @@ class Session(FlextModels.Entity):
 
 Request model for user registration.
 
-```python notest
+```python
 class UserCreationRequest(m.BaseModel):
     username: str
     email: str
@@ -223,7 +192,7 @@ ______________________________________________________________________
 
 Configuration class extending FlextSettings.
 
-```python notest
+```python
 class FlextAuthSettings(FlextSettings):
     # JWT Settings
     jwt_secret_key: str = "dev-secret-key"
@@ -238,7 +207,7 @@ class FlextAuthSettings(FlextSettings):
 
 #### create_for_environment()
 
-```python notest
+```python
 @classmethod
 def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]:
 ```
@@ -251,7 +220,7 @@ Create configuration for specific environment.
 
 **Example**:
 
-```python notest
+```python
 config_result = FlextAuthSettings()
 if config_result.success:
     settings = config_result.unwrap()
@@ -298,7 +267,7 @@ All operations return `r[T]` for type-safe error handling.
 
 ### Success Pattern
 
-```python notest
+```python
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
@@ -309,7 +278,7 @@ else:
 
 ### Chaining Pattern
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -352,7 +321,7 @@ ______________________________________________________________________
 
 ### Container Integration
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants

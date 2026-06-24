@@ -1,31 +1,5 @@
 # Integration
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [FLEXT-Core Integration](#flext-core-integration)
-  - [Authentication-Specific Integration](#authentication-specific-integration)
-  - [FlextContainer Integration](#flextcontainer-integration)
-  - [Domain Modeling](#domain-modeling)
-- [Integration with FLEXT Projects](#integration-with-flext-projects)
-  - [flext-api Integration](#flext-api-integration)
-  - [flext-web Integration](#flext-web-integration)
-  - [flext-cli Integration](#flext-cli-integration)
-- [Service Integration Patterns](#service-integration-patterns)
-  - [Authentication Service Provider](#authentication-service-provider)
-  - [Inter-Service Authentication](#inter-service-authentication)
-- [Database Integration](#database-integration)
-  - [User Storage (Future)](#user-storage-future)
-  - [Session Storage (Future)](#session-storage-future)
-- [Configuration Integration](#configuration-integration)
-  - [Environment-Aware Configuration](#environment-aware-configuration)
-  - [Shared Configuration](#shared-configuration)
-- [Testing Integration](#testing-integration)
-  - [Integration Testing](#integration-testing)
-- [Future Integration Plans](#future-integration-plans)
-  - [Modern Authentication Protocols](#modern-authentication-protocols)
-  - [Enterprise SSO](#enterprise-sso)
-<!-- TOC END -->
-
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 Integration patterns for flext-auth within the FLEXT ecosystem.
@@ -48,7 +22,7 @@ flext-auth follows **[flext-core](https://github.com/organization/flext/tree/mai
 
 Authentication operations return r for consistency with FLEXT ecosystem:
 
-```python notest
+```python
 from flext_auth import FlextAuth
 
 auth = FlextAuth()
@@ -74,7 +48,7 @@ else:
 
 Use FlextContainer for dependency injection:
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -119,7 +93,7 @@ class UserService:
 
 All domain entities extend FlextModels.Entity:
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -158,7 +132,7 @@ ______________________________________________________________________
 
 Authentication middleware for REST APIs:
 
-```python notest
+```python
 # In flext-api project
 from flext_auth import FlextAuth
 from fastapi import Depends, HTTPException
@@ -188,7 +162,7 @@ def protected_endpoint(user_data=Depends(authenticate_request)):
 
 Web application authentication flows:
 
-```python notest
+```python
 # In flext-web project
 from flask import session, request, redirect, url_for
 from flext_auth import FlextAuth
@@ -235,7 +209,7 @@ def require_auth(f):
 
 CLI authentication patterns:
 
-```python notest
+```python
 # In flext-cli project
 import click
 from flext_auth import FlextAuth
@@ -274,7 +248,7 @@ ______________________________________________________________________
 
 flext-auth acts as authentication service provider for the ecosystem:
 
-```python notest
+```python
 class AuthenticationProvider:
     """Centralized authentication for FLEXT ecosystem."""
 
@@ -296,7 +270,7 @@ class AuthenticationProvider:
 
 Pattern for service-to-service authentication:
 
-```python notest
+```python
 # Service A calling Service B
 class ServiceA:
     def __init__(self):
@@ -329,7 +303,7 @@ ______________________________________________________________________
 
 Integration with flext-db-oracle for user storage:
 
-```python notest
+```python
 # Future integration pattern
 from flext_db_oracle import OracleRepository
 from flext_auth import User
@@ -353,7 +327,7 @@ class UserRepository(OracleRepository[User]):
 
 Integration with Redis for session management:
 
-```python notest
+```python
 # Future integration pattern
 import redis
 from flext_auth import Session
@@ -385,7 +359,7 @@ ______________________________________________________________________
 
 Integration with FLEXT environment management:
 
-```python notest
+```python
 from flext_auth import FlextAuthSettings
 import os
 
@@ -405,7 +379,7 @@ else:
 
 Integration with FLEXT workspace configuration:
 
-```python notest
+```python
 # Shared configuration across FLEXT services
 from flext_core import FlextWorkspaceSettings
 
@@ -433,7 +407,7 @@ ______________________________________________________________________
 
 Test authentication with other FLEXT services:
 
-```python notest
+```python
 import pytest
 from flext_auth import FlextAuth
 from flext_api import FlextApiService  # Example integration
@@ -468,7 +442,7 @@ ______________________________________________________________________
 
 Plans for OAuth2/OIDC integration:
 
-```python notest
+```python
 # Future OAuth2 provider implementation
 class OAuth2Provider:
     """OAuth2 provider using flext-auth foundation."""
@@ -491,7 +465,7 @@ class OAuth2Provider:
 
 Plans for SAML integration:
 
-```python notest
+```python
 # Future SAML integration
 class SAMLProvider:
     """SAML service provider using flext-auth."""

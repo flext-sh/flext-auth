@@ -1,31 +1,5 @@
 # Configuration
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [FlextAuthSettings](#flextauthsettings)
-  - [Default Configuration](#default-configuration)
-  - [Environment-Specific Configuration](#environment-specific-configuration)
-- [Configuration Parameters](#configuration-parameters)
-  - [JWT Settings](#jwt-settings)
-  - [Security Settings](#security-settings)
-  - [Environment Variables](#environment-variables)
-- [Custom Configuration](#custom-configuration)
-  - [Override Specific Parameters](#override-specific-parameters)
-  - [Production Security Settings](#production-security-settings)
-- [Configuration Validation](#configuration-validation)
-  - [Validate Configuration](#validate-configuration)
-  - [CLI Validation](#cli-validation)
-- [Global Configuration](#global-configuration)
-  - [Singleton Pattern](#singleton-pattern)
-  - [Global Instance Access](#global-instance-access)
-- [Security Recommendations](#security-recommendations)
-  - [Production Settings](#production-settings)
-  - [Development Settings](#development-settings)
-- [Configuration Environments](#configuration-environments)
-  - [Available Environments](#available-environments)
-  - [Environment Detection](#environment-detection)
-<!-- TOC END -->
-
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 Configuration management for flext-auth authentication service.
@@ -42,7 +16,7 @@ ______________________________________________________________________
 
 ### Default Configuration
 
-```python notest
+```python
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
@@ -52,7 +26,7 @@ print(f"Bcrypt Rounds: {settings.bcrypt_rounds}")
 
 ### Environment-Specific Configuration
 
-```python notest
+```python
 # Development configuration
 dev_config = FlextAuthSettings()
 if dev_config.success:
@@ -102,7 +76,7 @@ ______________________________________________________________________
 
 ### Override Specific Parameters
 
-```python notest
+```python
 settings = FlextAuthSettings(
     jwt_expiry_minutes=30,  # 30-minute tokens
     bcrypt_rounds=14,  # Higher security
@@ -115,7 +89,7 @@ auth = FlextAuth(settings=settings)
 
 ### Production Security Settings
 
-```python notest
+```python
 prod_config = FlextAuthSettings(
     jwt_secret_key="your-production-secret-key",
     jwt_expiry_minutes=15,  # Short-lived tokens
@@ -131,7 +105,7 @@ ______________________________________________________________________
 
 ### Validate Configuration
 
-```python notest
+```python
 config_result = FlextAuthSettings()
 if config_result.failure:
     print(f"Configuration error: {config_result.error}")
@@ -155,7 +129,7 @@ ______________________________________________________________________
 
 FlextAuthSettings follows FLEXT singleton pattern for global configuration:
 
-```python notest
+```python
 # Set global configuration
 settings = FlextAuthSettings()
 FlextAuthSettings.set_global_instance(settings)
@@ -166,7 +140,7 @@ auth = FlextAuth()  # Uses global settings automatically
 
 ### Global Instance Access
 
-```python notest
+```python
 # Get current global configuration
 global_config = FlextAuthSettings.get_global_instance()
 print(f"Current JWT expiry: {global_config.jwt_expiry_minutes}")
@@ -180,7 +154,7 @@ ______________________________________________________________________
 
 For production environments:
 
-```python notest
+```python
 FlextAuthSettings(
     jwt_secret_key="strong-random-secret-256-bits",
     jwt_expiry_minutes=15,  # Short token lifetime
@@ -194,7 +168,7 @@ FlextAuthSettings(
 
 For development environments:
 
-```python notest
+```python
 FlextAuthSettings(
     jwt_secret_key="dev-secret-key",
     jwt_expiry_minutes=60,  # Convenient for testing
@@ -217,7 +191,7 @@ ______________________________________________________________________
 
 ### Environment Detection
 
-```python notest
+```python
 import os
 
 env = os.getenv("FLEXT_ENV", "development")
