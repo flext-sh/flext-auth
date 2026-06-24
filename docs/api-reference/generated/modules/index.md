@@ -4,7 +4,6 @@
 
 These pages are generated from public modules and their docstrings.
 
-- [flext_auth](flext_auth.md)
 - [flext_auth.api](api.md)
 - [flext_auth.base](base.md)
 - [flext_auth.constants](constants.md)
@@ -14,8 +13,6 @@ These pages are generated from public modules and their docstrings.
 - [flext_auth.providers.basic](providers/basic.md)
 - [flext_auth.providers.certificate](providers/certificate.md)
 - [flext_auth.providers.jwt](providers/jwt.md)
-- [flext_auth.providers.jwt_password_hasher](providers/jwt_password_hasher.md)
-- [flext_auth.providers.jwt_token_generator](providers/jwt_token_generator.md)
 - [flext_auth.providers.jwt_token_validator](providers/jwt_token_validator.md)
 - [flext_auth.providers.kerberos](providers/kerberos.md)
 - [flext_auth.providers.ldap](providers/ldap.md)
@@ -27,11 +24,9 @@ These pages are generated from public modules and their docstrings.
 - [flext_auth.registry](registry.md)
 - [flext_auth.services.auth_service](services/auth_service.md)
 - [flext_auth.services.identity_service](services/identity_service.md)
-- [flext_auth.services.middleware](services/middleware.md)
 - [flext_auth.services.provider_service](services/provider_service.md)
 - [flext_auth.services.session_service](services/session_service.md)
 - [flext_auth.services.token_service](services/token_service.md)
 - [flext_auth.settings](settings.md)
-- [flext_auth.transports.http](transports/http.md)
 - [flext_auth.typings](typings.md)
 - [flext_auth.utilities](utilities.md)
