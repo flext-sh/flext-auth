@@ -1,3 +1,7 @@
+<!-- TOC START -->
+- [Next Pages](#next-pages)
+<!-- TOC END -->
+
 <!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 # flext-auth API Overview
@@ -9,7 +13,7 @@
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`, `security`, `typed`
 - Main facades: _none_
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextAuthProtocols`, `FlextAuthOAuth2Provider`, `FlextAuthModels`, `FlextAuthSamlProvider`, `auth`, `FlextAuthServiceBase`, `FlextAuthSessionService`, `FlextAuthCertificateProvider`, `FlextAuthRfcProvider`, `FlextAuthApplicationService` (+20 more)
+- Public symbol exports: `FlextAuthApplicationService`, `auth`, `FlextAuthBasicProvider`, `FlextAuthTypes`, `FlextAuthJwtTokenValidator`, `FlextAuthProtocols`, `FlextAuthTokenService`, `FlextAuthSessionService`, `FlextAuthSettings`, `FlextAuth` (+17 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `26`
 

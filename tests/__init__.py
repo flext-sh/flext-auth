@@ -12,22 +12,40 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
-    from flext_tests import td, tf, tk, tm, tv
+    from flext_tests import td as td, tf as tf, tk as tk, tv as tv
 
-    from flext_auth import d, e, h, r, x
-    from tests.base import TestsFlextAuthServiceBase, s
-    from tests.constants import TestsFlextAuthConstants, c
-    from tests.fixtures.certificates import CertificateFixture
-    from tests.models import TestsFlextAuthModels, m
-    from tests.protocols import TestsFlextAuthProtocols, p
-    from tests.settings import TestsFlextAuthSettings
-    from tests.typings import TestsFlextAuthTypes, t
-    from tests.unit.test_api import TestsFlextAuthApi
-    from tests.unit.test_config import TestsFlextAuthConfig
-    from tests.unit.test_constants import TestsFlextAuthConstantsUnit
-    from tests.unit.test_token_real_flows import TestsFlextAuthTokenRealFlows
-    from tests.unit.test_typings import TestsFlextAuthTypesUnit
-    from tests.utilities import TestsFlextAuthUtilities, u
+    from flext_auth import d as d, e as e, h as h, r as r, x as x
+    from tests.base import (
+        TestsFlextAuthServiceBase as TestsFlextAuthServiceBase,
+        s as s,
+    )
+    from tests.constants import (
+        TestsFlextAuthConstants as TestsFlextAuthConstants,
+        c as c,
+    )
+    from tests.fixtures.certificates import CertificateFixture as CertificateFixture
+    from tests.models import TestsFlextAuthModels as TestsFlextAuthModels, m as m
+    from tests.protocols import (
+        TestsFlextAuthProtocols as TestsFlextAuthProtocols,
+        p as p,
+    )
+    from tests.settings import TestsFlextAuthSettings as TestsFlextAuthSettings
+    from tests.typings import TestsFlextAuthTypes as TestsFlextAuthTypes, t as t
+    from tests.unit.test_api import TestsFlextAuthApi as TestsFlextAuthApi
+    from tests.unit.test_config import TestsFlextAuthConfig as TestsFlextAuthConfig
+    from tests.unit.test_constants import (
+        TestsFlextAuthConstantsUnit as TestsFlextAuthConstantsUnit,
+    )
+    from tests.unit.test_token_real_flows import (
+        TestsFlextAuthTokenRealFlows as TestsFlextAuthTokenRealFlows,
+    )
+    from tests.unit.test_typings import (
+        TestsFlextAuthTypesUnit as TestsFlextAuthTypesUnit,
+    )
+    from tests.utilities import (
+        TestsFlextAuthUtilities as TestsFlextAuthUtilities,
+        u as u,
+    )
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         ".fixtures",
@@ -77,7 +95,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "td",
                 "tf",
                 "tk",
-                "tm",
                 "tv",
             ),
         },
@@ -133,7 +150,6 @@ __all__: list[str] = [
     "td",
     "tf",
     "tk",
-    "tm",
     "tv",
     "u",
     "x",
