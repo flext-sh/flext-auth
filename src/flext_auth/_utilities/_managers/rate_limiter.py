@@ -34,14 +34,19 @@ class FlextAuthRateLimiterManagers:
         def check_rate_limit(self, username: str) -> p.Result[bool]:
             now = u.now()
             if username not in self._attempts:
-                return r[bool].ok(value=True)
+                ok_result: p.Result[bool] = r[bool].ok(value=True)
+                return ok_result
             recent_attempts = self._cleanup_window(username, now)
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": recent_attempts}
 
             if len(recent_attempts) >= self._max_attempts:
-                return r[bool].fail("Too many failed attempts. Please try again later.")
-            return r[bool].ok(value=True)
+                fail_result: p.Result[bool] = r[bool].fail(
+                    "Too many failed attempts. Please try again later.",
+                )
+                return fail_result
+            allowed_result: p.Result[bool] = r[bool].ok(value=True)
+            return allowed_result
 
         def get_total_failed_attempts(self) -> int:
             return sum(len(attempts) for attempts in self._attempts.values())

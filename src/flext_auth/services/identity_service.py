@@ -1,28 +1,17 @@
-"""FLEXT Auth Identity Service - Generic identity management with flext-core integration.
-
-Uses Python 3.13+ syntax, railway-oriented programming, and consolidated generic patterns
-for maximum maintainability. Single FlextAuthIdentityService class with SOLID principles.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT Auth identity service."""
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import override
 
 from flext_api import r
 
-from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, c, m, p, s, t, u
+from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, c, m, p, s, t
+from flext_auth.services._identity_audit import FlextAuthIdentityAudit
 
 
-class FlextAuthIdentityService(s):
-    """Generic identity service using flext-core patterns and railway-oriented programming.
-
-    Python 3.13+ features, minimal line count through consolidated operations.
-    SOLID principles with dependency injection and railway error handling.
-    """
+class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
+    """Identity service using flext-core patterns and railway-oriented programming."""
 
     def __init__(
         self,
@@ -40,6 +29,7 @@ class FlextAuthIdentityService(s):
         )
 
     @property
+    @override
     def identity_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
@@ -193,57 +183,6 @@ class FlextAuthIdentityService(s):
         return r[bool].ok(
             self._log_success("Password reset successful", identity.name),
         )
-
-    def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
-        """Handle failed authentication attempt with lockout logic."""
-        identity.failed_attempts += 1
-        max_attempts = c.Auth.SECURITY_MAX_LOGIN_ATTEMPTS
-        if identity.failed_attempts >= max_attempts:
-            lockout_duration = timedelta(
-                minutes=c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES,
-            )
-            identity.locked_until = u.generate_datetime_utc() + lockout_duration
-            self.logger.warning(
-                "Authentication failure",
-                username=identity.name,
-                provider="internal",
-                reason=f"Account locked after {identity.failed_attempts} failed attempts",
-            )
-        else:
-            self.logger.warning(
-                "Authentication failure",
-                username=identity.name,
-                provider="internal",
-                reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
-            )
-        return self.identity_manager.update_user(
-            identity.unique_id,
-            failed_attempts=identity.failed_attempts,
-            locked_until=identity.locked_until,
-        ).map(lambda _: True)
-
-    def _log_authorization_result(
-        self,
-        identity: m.Auth.AuthIdentity,
-        permission: str,
-        resource: str | None,
-        *,
-        allowed: bool,
-    ) -> bool:
-        """Log authorization result and return decision."""
-        self.logger.debug(
-            "Authorization check",
-            username=identity.name,
-            resource=resource if resource is not None else "",
-            action=permission,
-            allowed=allowed,
-        )
-        return allowed
-
-    def _log_success(self, message: str, identity_name: str) -> bool:
-        """Log service success message and return truthy sentinel."""
-        self.logger.info(message, identity=identity_name)
-        return True
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityService"]

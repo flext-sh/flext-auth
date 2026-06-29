@@ -1,51 +1,16 @@
-"""Kerberos authentication provider implementation.
-
-This module implements Kerberos authentication for enterprise Single Sign-On (SSO).
-
-Kerberos is commonly used for:
-- Windows Active Directory authentication
-- Enterprise SSO systems
-- Service-to-service authentication
-- Secure distributed authentication
-
-Kerberos provides mutual authentication between client and server using
-tickets issued by a Key Distribution Center (KDC).
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-"""
+"""Kerberos authentication provider implementation."""
 
 from __future__ import annotations
 
-from collections.abc import (
-    Callable,
-    Mapping,
-)
-from types import MappingProxyType
-from typing import ClassVar, override
+from collections.abc import Mapping
+from typing import override
 
 from flext_auth import FlextAuthRfcProvider, c, m, p, r, t
+from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
 
 
-class FlextAuthKerberosProvider(FlextAuthRfcProvider):
-    """SOLID-compliant Kerberos authentication provider.
-
-    Uses composition for Kerberos ticket validation, service ticket handling,
-    and authentication. Railway-oriented programming for maximum maintainability.
-
-        >>> settings = {
-        ...     "realm": "EXAMPLE.COM",
-        ...     "kdc": "kdc.example.com",
-        ...     "service_principal": "HTTP/api.example.com@EXAMPLE.COM",
-        ...     "keytab_path": "/etc/krb5.keytab",
-        ...     "ticket_lifetime": 10,
-        ... }
-        >>> provider = FlextAuthKerberosProvider(settings)
-        >>> # Authenticate with Kerberos ticket
-        >>> result = provider.authenticate({
-        ...     "gssapi_token": "base64-encoded-gssapi-token",
-        ... })
-
-    """
+class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
+    """Kerberos authentication provider."""
 
     def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
@@ -63,97 +28,6 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         self._service_handler = self._KerberosServiceHandler(self)
         self._auth_manager = self._KerberosAuthManager(self)
         self._active_tickets: t.MappingKV[str, m.Auth.KerberosTicketData] = {}
-
-    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = (
-        "realm",
-        "kdc",
-        "service_principal",
-    )
-    _KERBEROS_FIELD_TYPES: ClassVar[t.MappingKV[str, tuple[type, ...]]] = (
-        MappingProxyType({
-            "realm": (str,),
-            "kdc": (str,),
-            "service_principal": (str,),
-            "keytab_path": (str, type(None)),
-            "clockskew_tolerance": (int, type(None)),
-            "ticket_lifetime": (int, type(None)),
-            "renew_lifetime": (int, type(None)),
-            "forwardable": (bool, type(None)),
-            "proxiable": (bool, type(None)),
-        })
-    )
-
-    def _validate_kerberos_configuration(self) -> p.Result[bool]:
-        """Railway-oriented Kerberos configuration validation."""
-        if self.config is None:
-            return r[bool].fail("Kerberos configuration is required")
-        settings = self.config
-        missing = [f for f in self._KERBEROS_REQUIRED if f not in settings]
-        if missing:
-            return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing)}",
-            )
-        for field, expected_types in self._KERBEROS_FIELD_TYPES.items():
-            value = settings.get(field)
-            if value is not None and not isinstance(value, expected_types):
-                return r[bool].fail(
-                    f"Kerberos {field!r}: expected {expected_types}, "
-                    f"got {type(value).__name__}",
-                )
-        return r[bool].ok(value=True)
-
-    class _KerberosTicketValidator:
-        """SOLID-compliant Kerberos ticket validator.
-
-        Single responsibility: validate Kerberos tickets.
-        """
-
-        def __init__(self, provider: FlextAuthKerberosProvider) -> None:
-            """Initialize ticket validator."""
-            self.provider = provider
-
-        def validate_ticket(
-            self,
-            _ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
-            """Validate Kerberos ticket."""
-            result = m.Auth.KerberosTicketData(
-                ticket="validated_ticket",
-                principal="kerberos_user",
-            )
-            return r[m.Auth.KerberosTicketData].ok(result)
-
-    class _KerberosServiceHandler:
-        """SOLID-compliant Kerberos service handler.
-
-        Single responsibility: handle service ticket operations.
-        """
-
-        def __init__(self, provider: FlextAuthKerberosProvider) -> None:
-            """Initialize service handler."""
-            self.provider = provider
-
-    def handle_service_ticket(self, ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
-        """Handle Kerberos service ticket."""
-        result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
-        return r[m.Auth.KerberosTicketData].ok(result)
-
-    class _KerberosAuthManager:
-        """SOLID-compliant Kerberos authentication manager.
-
-        Single responsibility: manage Kerberos authentication.
-        """
-
-        def __init__(self, provider: FlextAuthKerberosProvider) -> None:
-            """Initialize auth manager."""
-            self.provider = provider
-
-        def authenticate_ticket(
-            self,
-            ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
-            """Authenticate using Kerberos ticket."""
-            return self.provider.ticket_validator.validate_ticket(ticket_data)
 
     def get_metadata(self) -> m.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
@@ -230,27 +104,6 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                     m.Auth.AuthIdentity,
                 )
         return result
-
-    def _ticket_validator_callable(
-        self,
-    ) -> (
-        Callable[
-            [str],
-            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
-        ]
-        | None
-    ):
-        settings = self.config
-        if settings is None:
-            return None
-        validator_candidate = settings.get("ticket_validator")
-        if not callable(validator_candidate):
-            return None
-        validated: Callable[
-            [str],
-            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
-        ] = validator_candidate
-        return validated
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthKerberosProvider"]

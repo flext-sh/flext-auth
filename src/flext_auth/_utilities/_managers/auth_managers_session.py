@@ -42,7 +42,8 @@ class FlextAuthSessionManagers:
                     end_result = self.end_session_by_id(session_id)
                     if end_result.success:
                         cleaned_count += 1
-            return r[int].ok(cleaned_count)
+            result: p.Result[int] = r[int].ok(cleaned_count)
+            return result
 
         def create_session(
             self,
@@ -80,7 +81,8 @@ class FlextAuthSessionManagers:
                 and isinstance(session_data["last_accessed"], datetime)
                 else u.now(),
             )
-            return r[m.Auth.Session].ok(session)
+            result: p.Result[m.Auth.Session] = r[m.Auth.Session].ok(session)
+            return result
 
         def end_session(self, user_id: str) -> p.Result[bool]:
             found = False
@@ -95,14 +97,22 @@ class FlextAuthSessionManagers:
                     case _:
                         continue
             if found:
-                return r[bool].ok(value=True)
-            return r[bool].fail("No sessions found for user")
+                ok_result: p.Result[bool] = r[bool].ok(value=True)
+                return ok_result
+            fail_result: p.Result[bool] = r[bool].fail("No sessions found for user")
+            return fail_result
 
         def end_session_by_id(self, session_id: str) -> p.Result[bool]:
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
-                return r[bool].ok(value=True)
-            return e.fail_not_found("Session", session_id, result_type=r[bool])
+                ok_result: p.Result[bool] = r[bool].ok(value=True)
+                return ok_result
+            fail_result: p.Result[bool] = e.fail_not_found(
+                "Session",
+                session_id,
+                result_type=r[bool],
+            )
+            return fail_result
 
         def get_active_sessions(
             self, user_id: str
@@ -135,7 +145,10 @@ class FlextAuthSessionManagers:
                         sessions.append(session)
                     case _:
                         continue
-            return r[Sequence[m.Auth.Session]].ok(sessions)
+            result: p.Result[Sequence[m.Auth.Session]] = r[Sequence[m.Auth.Session]].ok(
+                sessions
+            )
+            return result
 
         def get_total_active_sessions(self) -> int:
             return sum(
@@ -158,4 +171,5 @@ class FlextAuthSessionManagers:
                     is_active = active
                 case _:
                     return False
-            return is_active and expires_at > u.now()
+            current_time: datetime = u.now()
+            return is_active and expires_at > current_time

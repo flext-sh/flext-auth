@@ -15,11 +15,11 @@ from flext_auth.__version__ import (
     __version__,
     __version_info__,
 )
-from flext_core.lazy import (
-    build_lazy_import_map,
-    install_lazy_exports,
-    merge_lazy_imports,
+from flext_auth._exports import (
+    FLEXT_AUTH_LAZY_IMPORTS,
+    FLEXT_AUTH_METADATA_EXPORTS,
 )
+from flext_core.lazy import install_lazy_exports
 
 if _t.TYPE_CHECKING:
     from flext_api import d as d, e as e, h as h, r as r, x as x
@@ -83,112 +83,12 @@ if _t.TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings as FlextAuthSettings
     from flext_auth.typings import FlextAuthTypes as FlextAuthTypes, t as t
     from flext_auth.utilities import FlextAuthUtilities as FlextAuthUtilities, u as u
-_LAZY_IMPORTS = merge_lazy_imports(
-    (
-        "._utilities",
-        ".providers",
-        ".services",
-    ),
-    build_lazy_import_map(
-        {
-            "._utilities._managers.auth_managers_session": (
-                "FlextAuthSessionManagers",
-            ),
-            "._utilities._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
-            "._utilities.managers": ("FlextAuthUtilitiesManagers",),
-            ".api": (
-                "FlextAuth",
-                "auth",
-            ),
-            ".base": (
-                "FlextAuthServiceBase",
-                "s",
-            ),
-            ".constants": (
-                "FlextAuthConstants",
-                "c",
-            ),
-            ".models": (
-                "FlextAuthModels",
-                "m",
-            ),
-            ".protocols": (
-                "FlextAuthProtocols",
-                "p",
-            ),
-            ".providers.apikey": ("FlextAuthApiKeyProvider",),
-            ".providers.basic": ("FlextAuthBasicProvider",),
-            ".providers.certificate": ("FlextAuthCertificateProvider",),
-            ".providers.jwt": ("FlextAuthJwtProvider",),
-            ".providers.jwt_token_validator": ("FlextAuthJwtTokenValidator",),
-            ".providers.kerberos": ("FlextAuthKerberosProvider",),
-            ".providers.ldap": ("FlextAuthLdapProvider",),
-            ".providers.mixin": ("FlextAuthProviderMixin",),
-            ".providers.oauth2": ("FlextAuthOAuth2Provider",),
-            ".providers.oidc": ("FlextAuthOidcProvider",),
-            ".providers.rfc": ("FlextAuthRfcProvider",),
-            ".providers.saml": ("FlextAuthSamlProvider",),
-            ".registry": ("FlextAuthRegistry",),
-            ".services.auth_service": ("FlextAuthApplicationService",),
-            ".services.identity_service": ("FlextAuthIdentityService",),
-            ".services.provider_service": ("FlextAuthProviderService",),
-            ".services.session_service": ("FlextAuthSessionService",),
-            ".services.token_service": ("FlextAuthTokenService",),
-            ".settings": ("FlextAuthSettings",),
-            ".typings": (
-                "FlextAuthTypes",
-                "t",
-            ),
-            ".utilities": (
-                "FlextAuthUtilities",
-                "u",
-            ),
-            "flext_api": (
-                "d",
-                "e",
-                "h",
-                "r",
-                "x",
-            ),
-        },
-    ),
-    exclude_names=(
-        "cleanup_submodule_namespace",
-        "install_lazy_exports",
-        "lazy_getattr",
-        "logger",
-        "merge_lazy_imports",
-        "output",
-        "output_reporting",
-        "pytest_addoption",
-        "pytest_collect_file",
-        "pytest_collection_modifyitems",
-        "pytest_configure",
-        "pytest_runtest_setup",
-        "pytest_runtest_teardown",
-        "pytest_sessionfinish",
-        "pytest_sessionstart",
-        "pytest_terminal_summary",
-        "pytest_warning_recorded",
-    ),
-    module_name=__name__,
-)
-
 
 install_lazy_exports(
     __name__,
     globals(),
-    _LAZY_IMPORTS,
-    [
-        "__author__",
-        "__author_email__",
-        "__description__",
-        "__license__",
-        "__title__",
-        "__url__",
-        "__version__",
-        "__version_info__",
-    ],
+    FLEXT_AUTH_LAZY_IMPORTS,
+    FLEXT_AUTH_METADATA_EXPORTS,
 )
 
 __all__: list[str] = [

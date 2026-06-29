@@ -17,7 +17,7 @@ from flext_auth import FlextAuth
 reset_settings = _shared_reset_settings
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def reset_auth_singleton(reset_settings: None) -> Iterator[None]:
     """Reset FlextAuth singleton and shared settings between tests."""
     _ = reset_settings

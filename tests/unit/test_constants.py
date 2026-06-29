@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import pytest
+
 from flext_core import FlextConstants
 from tests import c, u
+
+pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
 
 class TestsFlextAuthConstantsUnit:

@@ -85,7 +85,8 @@ class FlextAuthSettings(FlextSettingsBase):
     @classmethod
     def _normalize_secret_key(cls, value: str | t.SecretStr) -> str:
         if isinstance(value, t.SecretStr):
-            return value.get_secret_value()
+            secret_value: str = value.get_secret_value()
+            return secret_value
         return value
 
 

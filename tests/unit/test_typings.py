@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import pytest
 from flext_api import FlextApiTypes
 
 from tests import t, u
+
+pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
 
 class TestsFlextAuthTypesUnit:
