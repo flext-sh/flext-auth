@@ -71,39 +71,38 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 "Kerberos ticket validator execution",
                 exc,
             )
-        result = r[m.Auth.AuthIdentity].fail(
+        if isinstance(validator_payload, m.Auth.AuthIdentity):
+            return r[m.Auth.AuthIdentity].ok(validator_payload)
+        if isinstance(validator_payload, m.Auth.KerberosTicketData):
+            principal = validator_payload.principal or c.Auth.DEFAULT_KERBEROS_USERNAME
+            return r[m.Auth.AuthIdentity].from_validation(
+                {
+                    c.Auth.KEY_IDENTITY_ID: principal,
+                    c.Auth.KEY_NAME: principal,
+                    c.Auth.KEY_CONTACT: f"{principal}@{c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN}",
+                    c.Auth.KEY_ROLES: [c.Auth.RoleTypes.USER.value],
+                },
+                m.Auth.AuthIdentity,
+            )
+        if isinstance(validator_payload, Mapping):
+            try:
+                parsed_claims = t.json_mapping_adapter().validate_python(
+                    validator_payload,
+                )
+            except c.ValidationError as exc:
+                return r[m.Auth.AuthIdentity].fail(
+                    f"Kerberos ticket validator mapping payload is invalid: {exc}",
+                )
+            return r[m.Auth.AuthIdentity].from_validation(
+                {
+                    **parsed_claims,
+                    c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
+                },
+                m.Auth.AuthIdentity,
+            )
+        return r[m.Auth.AuthIdentity].fail(
             "Kerberos ticket validator returned unsupported payload",
         )
-        match validator_payload:
-            case m.Auth.AuthIdentity() as identity:
-                result = r[m.Auth.AuthIdentity].ok(identity)
-            case Mapping() as mapping:
-                try:
-                    parsed_claims = t.json_mapping_adapter().validate_python(mapping)
-                except c.ValidationError as exc:
-                    result = r[m.Auth.AuthIdentity].fail(
-                        f"Kerberos ticket validator mapping payload is invalid: {exc}",
-                    )
-                else:
-                    result = r[m.Auth.AuthIdentity].from_validation(
-                        {
-                            **parsed_claims,
-                            c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
-                        },
-                        m.Auth.AuthIdentity,
-                    )
-            case m.Auth.KerberosTicketData(principal=principal_value):
-                principal = principal_value or c.Auth.DEFAULT_KERBEROS_USERNAME
-                result = r[m.Auth.AuthIdentity].from_validation(
-                    {
-                        c.Auth.KEY_IDENTITY_ID: principal,
-                        c.Auth.KEY_NAME: principal,
-                        c.Auth.KEY_CONTACT: f"{principal}@{c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN}",
-                        c.Auth.KEY_ROLES: [c.Auth.RoleTypes.USER.value],
-                    },
-                    m.Auth.AuthIdentity,
-                )
-        return result
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthKerberosProvider"]

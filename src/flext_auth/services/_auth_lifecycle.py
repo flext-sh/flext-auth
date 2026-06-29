@@ -26,9 +26,10 @@ class FlextAuthApplicationLifecycle(ABC):
         username: str,
         email: str,
         password: str,
-        *,
         roles: t.StrSequence | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]: ...
+        role: str | None = None,
+    ) -> p.Result[m.Auth.AuthIdentity]:
+        raise NotImplementedError
 
     @classmethod
     def fetch_global(cls) -> Self:

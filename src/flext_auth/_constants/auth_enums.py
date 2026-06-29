@@ -8,7 +8,7 @@ from typing import ClassVar
 
 class FlextAuthConstantsAuthEnums:
     DEFAULT_ADMIN_USERNAME: ClassVar[str] = "admin"
-    DEFAULT_ADMIN_EMAIL: ClassVar[str] = "admin@localhost"
+    DEFAULT_ADMIN_EMAIL: ClassVar[str] = "admin@example.com"
 
     @unique
     class TokenTypes(StrEnum):
