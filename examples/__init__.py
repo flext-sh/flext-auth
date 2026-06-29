@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
-import typing as _t
+from typing import TYPE_CHECKING
 
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
-if _t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from examples.advanced_features_02 import (
         FlextAuthAdvancedFeaturesExample as FlextAuthAdvancedFeaturesExample,
     )
@@ -20,6 +20,12 @@ if _t.TYPE_CHECKING:
     )
     from examples.basic_usage_07 import (
         FlextAuthBasicUsagePortugueseExample as FlextAuthBasicUsagePortugueseExample,
+    )
+    from examples.basic_usage_flows import (
+        FlextAuthBasicUsageFlows as FlextAuthBasicUsageFlows,
+    )
+    from examples.basic_usage_workflow import (
+        FlextAuthBasicUsageWorkflow as FlextAuthBasicUsageWorkflow,
     )
     from examples.comprehensive_demo_03 import (
         FlextAuthComprehensiveDemo as FlextAuthComprehensiveDemo,
@@ -57,6 +63,8 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".basic_refactored_usage_06": ("FlextAuthDemo",),
         ".basic_usage_01": ("FlextAuthBasicUsageExample",),
         ".basic_usage_07": ("FlextAuthBasicUsagePortugueseExample",),
+        ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
+        ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
         ".comprehensive_demo_03": ("FlextAuthComprehensiveDemo",),
         ".debug_auth_issues_09": ("FlextAuthDebugIssuesExample",),
         ".flext_config_usage": ("FlextAuthConfigUsageExample",),
@@ -80,29 +88,9 @@ _LAZY_IMPORTS = build_lazy_import_map(
 )
 
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
-
-__all__: list[str] = [
-    "FlextAuthAdvancedFeaturesExample",
-    "FlextAuthBasicAuthExample",
-    "FlextAuthBasicUsageExample",
-    "FlextAuthBasicUsagePortugueseExample",
-    "FlextAuthComprehensiveDemo",
-    "FlextAuthConfigUsageExample",
-    "FlextAuthDebugIssuesExample",
-    "FlextAuthDemo",
-    "FlextAuthExampleUtilities",
-    "FlextAuthRefactoredSystemShowcaseExample",
-    "FlextAuthSimpleUsageExample",
-    "c",
-    "d",
-    "e",
-    "h",
-    "m",
-    "p",
-    "r",
-    "s",
-    "t",
-    "u",
-    "x",
-]
+install_lazy_exports(
+    __name__,
+    globals(),
+    _LAZY_IMPORTS,
+    publish_all=False,
+)

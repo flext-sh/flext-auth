@@ -17,13 +17,13 @@ from flext_api import r
 from flext_auth import (
     FlextAuthProviderService,
     FlextAuthSettings,
-    FlextAuthUtilitiesManagers,
     c,
     m,
     p,
     s,
     u,
 )
+from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
 class FlextAuthTokenService(s):

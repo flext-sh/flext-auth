@@ -11,7 +11,6 @@ from flext_auth import (
     FlextAuthSessionService,
     FlextAuthSettings,
     FlextAuthTokenService,
-    FlextAuthUtilitiesManagers,
     c,
     m,
     p,
@@ -19,6 +18,7 @@ from flext_auth import (
     t,
     u,
 )
+from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 from flext_core import FlextContainer
 

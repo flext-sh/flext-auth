@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import time
 
+from flext_tests import r
+
 from flext_auth import FlextAuth
-from tests import m, r, u
+from tests.models import m
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.utilities import u
 
 
 class TestsFlextAuthApiCase10:

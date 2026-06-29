@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from tests import m, u
+from tests.models import m
+from tests.utilities import u
 
 
 class CertificateFixture(m.BaseModel):

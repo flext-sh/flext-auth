@@ -14,8 +14,7 @@ import os
 import secrets
 import string
 
-from examples import t
-from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, u
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, t, u
 
 
 class FlextAuthAdvancedFeaturesExample:

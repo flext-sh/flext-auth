@@ -13,7 +13,7 @@ from collections.abc import (
     Callable,
 )
 
-from examples import t
+from flext_auth import t
 
 
 class FlextAuthExampleUtilities:

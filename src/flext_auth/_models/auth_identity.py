@@ -113,13 +113,18 @@ class FlextAuthModelsAuthIdentity:
             roles_value = payload.get(c.Auth.KEY_ROLES)
             if roles_value is None:
                 scope_value = payload.get(c.Auth.KEY_SCOPE)
+                scope_text = (
+                    scope_value
+                    if isinstance(scope_value, str) and u.string_non_empty(scope_value)
+                    else ""
+                )
                 roles_value = (
                     [
                         scope
-                        for scope in scope_value.split(c.Auth.SCOPE_SEPARATOR)
+                        for scope in scope_text.split(c.Auth.SCOPE_SEPARATOR)
                         if scope
                     ]
-                    if u.string_non_empty(scope_value)
+                    if scope_text
                     else [c.Auth.RoleTypes.USER.value]
                 )
             normalized: t.MutableMappingKV[str, t.JsonPayload | datetime] = {

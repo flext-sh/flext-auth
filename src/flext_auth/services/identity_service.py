@@ -6,7 +6,8 @@ from typing import override
 
 from flext_api import r
 
-from flext_auth import FlextAuthSettings, FlextAuthUtilitiesManagers, c, m, p, s, t
+from flext_auth import FlextAuthSettings, c, m, p, s, t
+from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 from flext_auth.services._identity_audit import FlextAuthIdentityAudit
 
 
