@@ -12,9 +12,15 @@ from __future__ import annotations
 import os
 import secrets
 import string
-import sys
+
+from flext_cli import u as cli_u
 
 from flext_auth import FlextAuth, m, p
+
+
+def _emit(message: str) -> None:
+    """Emit example output through the canonical CLI facade."""
+    cli_u.Cli.formatters_print(message)
 
 
 class FlextAuthDemo:
@@ -55,7 +61,7 @@ class FlextAuthDemo:
     def _print_token_info(self, auth_data: m.Auth.AuthIdentity) -> None:
         """Helper: Print token information."""
         token_length = len(auth_data.token) if auth_data.token else 0
-        print(f"Token length: {token_length}")
+        _emit(f"Token length: {token_length}")
 
     def demo_password_utilities(self) -> None:
         """Demo password utilities and validation."""
@@ -148,6 +154,6 @@ if __name__ == "__main__":
     try:
         FlextAuthDemo.main()
     except KeyboardInterrupt:
-        sys.exit(0)
+        raise SystemExit(0) from None
     except (RuntimeError, ValueError, OSError):
-        sys.exit(1)
+        raise SystemExit(1) from None

@@ -4,7 +4,14 @@ from __future__ import annotations
 
 import os
 
+from flext_cli import u as cli_u
+
 from flext_auth import FlextAuth, FlextAuthSettings
+
+
+def _emit(message: str) -> None:
+    """Emit example output through the canonical CLI facade."""
+    cli_u.Cli.formatters_print(message)
 
 
 class FlextAuthBasicAuthExample:
@@ -22,19 +29,19 @@ class FlextAuthBasicAuthExample:
             roles=["user"],
         )
         if registration.failure:
-            print(f"registration failed: {registration.error}")
+            _emit(f"registration failed: {registration.error}")
             return
         authentication = auth.authenticate_user("demouser", password)
         if authentication.failure:
-            print(f"authentication failed: {authentication.error}")
+            _emit(f"authentication failed: {authentication.error}")
             return
         identity = authentication.value
         token_result = auth.create_token(identity_id=identity.unique_id)
         if token_result.failure:
-            print(f"token generation failed: {token_result.error}")
+            _emit(f"token generation failed: {token_result.error}")
             return
         validation_result = auth.token_service.validate_token(token_result.value)
-        print(f"token valid: {validation_result.success and validation_result.value}")
+        _emit(f"token valid: {validation_result.success and validation_result.value}")
 
 
 if __name__ == "__main__":

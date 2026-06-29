@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-import sys
 
 from flext_auth import FlextAuth, FlextAuthModels
 
@@ -50,6 +49,6 @@ if __name__ == "__main__":
     try:
         FlextAuthSimpleUsageExample.main()
     except KeyboardInterrupt:
-        sys.exit(0)
+        raise SystemExit(0) from None
     except (RuntimeError, ValueError, OSError):
-        sys.exit(1)
+        raise SystemExit(1) from None
