@@ -43,7 +43,7 @@ if TYPE_CHECKING:
         FlextAuthSimpleUsageExample as FlextAuthSimpleUsageExample,
     )
     from examples.utils import FlextAuthExampleUtilities as FlextAuthExampleUtilities
-    from flext_auth import (
+    from flext_core import (
         c as c,
         d as d,
         e as e,
@@ -71,7 +71,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".refactored_system_showcase_04": ("FlextAuthRefactoredSystemShowcaseExample",),
         ".simple_usage_08": ("FlextAuthSimpleUsageExample",),
         ".utils": ("FlextAuthExampleUtilities",),
-        "flext_auth": (
+        "flext_core": (
             "c",
             "d",
             "e",

@@ -3,8 +3,33 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
+if TYPE_CHECKING:
+    from flext_auth._models.auth import FlextAuthModelsAuth as FlextAuthModelsAuth
+    from flext_auth._models.auth_identity import (
+        FlextAuthModelsAuthIdentity as FlextAuthModelsAuthIdentity,
+    )
+    from flext_auth._models.auth_identity_request import (
+        FlextAuthModelsAuthIdentityRequest as FlextAuthModelsAuthIdentityRequest,
+    )
+    from flext_auth._models.auth_password import (
+        FlextAuthModelsAuthPassword as FlextAuthModelsAuthPassword,
+    )
+    from flext_auth._models.auth_provider_config import (
+        FlextAuthModelsAuthProviderConfig as FlextAuthModelsAuthProviderConfig,
+    )
+    from flext_auth._models.auth_response import (
+        FlextAuthModelsAuthResponse as FlextAuthModelsAuthResponse,
+    )
+    from flext_auth._models.auth_session import (
+        FlextAuthModelsAuthSession as FlextAuthModelsAuthSession,
+    )
+    from flext_auth._models.auth_token import (
+        FlextAuthModelsAuthToken as FlextAuthModelsAuthToken,
+    )
 _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".auth": ("FlextAuthModelsAuth",),
