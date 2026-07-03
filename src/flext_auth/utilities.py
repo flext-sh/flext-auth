@@ -6,9 +6,14 @@ from flext_api.utilities import FlextApiUtilities
 
 from flext_auth import t
 from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
+from flext_core import FlextUtilitiesGuardsTypeCore, FlextUtilitiesModelRuntime
 
 
-class FlextAuthUtilities(FlextApiUtilities):
+class FlextAuthUtilities(
+    FlextApiUtilities,
+    FlextUtilitiesGuardsTypeCore,
+    FlextUtilitiesModelRuntime,
+):
     """FlextAuth advanced utilities extending the API utility namespace."""
 
     class Auth(FlextAuthUtilitiesAuth):

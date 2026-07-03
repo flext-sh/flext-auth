@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_core import FlextConstants
+from flext_core import c as core_c
 from tests.constants import c
 from tests.utilities import u
 
@@ -15,7 +15,7 @@ class TestsFlextAuthConstantsUnit:
     """Test FlextAuthConstants class and its nested constant classes."""
 
     def test_inherits_from_flext_constants(self) -> None:
-        u.Tests.Matchers.that(c.__mro__, has=FlextConstants)
+        u.Tests.Matchers.that(c.__mro__, has=core_c)
 
     def test_jwt_constants(self) -> None:
         u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_ALGORITHM, eq=c.Auth.Algorithms.HS256)
