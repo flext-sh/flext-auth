@@ -8,24 +8,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
-from flext_core import r
-
-from flext_auth import m, p
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth import FlextAuthJwtTokenValidator, FlextAuthProviderMixin, p, r, t
 
 
-class FlextAuthJwtProvider(FlextAuthBaseProvider):
+class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
-    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
+    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
-        super().__init__(config)
+        super().__init__(settings)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using JWT credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")
@@ -50,7 +46,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         return {"jwt", "validate", "refresh"}
 
     @override
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str) -> p.Result[bool]:
         """Validate JWT token.
 
         Args:
@@ -62,7 +58,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         """
         return self.validate_token(token)
 
-    def validate_token(self, token: str) -> r[bool]:
+    def validate_token(self, token: str) -> p.Result[bool]:
         """Validate JWT token.
 
         Args:
@@ -72,8 +68,8 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        _ = token
-        return r[bool].fail("Not implemented")
+        validator = FlextAuthJwtTokenValidator(self)
+        return validator.validate_token(token).map(lambda _payload: True)
 
 
-__all__ = ["FlextAuthJwtProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthJwtProvider"]

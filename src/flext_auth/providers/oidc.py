@@ -12,14 +12,10 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import r
-
-from flext_auth import m, p
-from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth import FlextAuthRfcProvider, p, r, t
 
 
-class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
+class FlextAuthOidcProvider(FlextAuthRfcProvider):
     """OpenID Connect (OIDC) authentication provider.
 
     This provider implements OpenID Connect authentication. It validates
@@ -28,14 +24,14 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     Example:
         >>> provider = FlextAuthOidcProvider()
         >>> result = provider.authenticate({"id_token": "oidc-token"})
-        >>> if result.is_success:
+        >>> if result.success:
         ...     token = result.value
         ...     print(f"Authenticated with token: {token.token}")
 
     """
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using OIDC credentials.
 
         Args:
@@ -69,7 +65,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         return {"oidc", "validate", "refresh"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate OIDC token.
 
         Args:
@@ -83,4 +79,4 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthOidcProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthOidcProvider"]

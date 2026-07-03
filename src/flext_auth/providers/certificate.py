@@ -8,24 +8,22 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
-from flext_core import r
-
-from flext_auth import m, p
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
-class FlextAuthCertificateProvider(FlextAuthBaseProvider):
+class FlextAuthCertificateProvider(
+    FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
+):
     """Certificate-based authentication provider."""
 
-    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
+    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
-        super().__init__(config)
+        super().__init__(settings)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using certificate credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")
@@ -41,7 +39,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         return {"certificate", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate certificate token.
 
         Args:
@@ -56,9 +54,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         else:
             token_protocol: p.Auth.Token = token
             token_value = token_protocol.token
-        return self.validate_token(str(token_value))
+        return self.validate_token(token_value)
 
-    def validate_token(self, token: str) -> r[bool]:
+    def validate_token(self, token: str) -> p.Result[bool]:
         """Validate authentication token.
 
         Args:
@@ -72,4 +70,4 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthCertificateProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthCertificateProvider"]

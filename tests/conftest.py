@@ -10,36 +10,17 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 import pytest
+from flext_tests import reset_settings as _shared_reset_settings
 
-from flext_auth import FlextAuth, FlextAuthSettings
+from flext_auth import FlextAuth
 
-
-@pytest.fixture(autouse=True)
-def _reset_singletons() -> Iterator[None]:
-    """Reset FlextAuth and FlextAuthSettings singletons between tests.
-
-    This prevents singleton corruption from leaking between tests.
-    FlextAuthSettings uses __new__ singleton pattern that caches instances
-    and __init__ uses object.__setattr__ for updates, bypassing Pydantic
-    coercion. Without reset, a test passing auth_secret as str corrupts
-    all subsequent tests.
-    """
-    yield
-    FlextAuthSettings._reset_instance()
-    FlextAuth._instance = None
+reset_settings = _shared_reset_settings
 
 
 @pytest.fixture
-def mock_get_global() -> object:
-    """Mock for FlextAuthSettings.get_global.
-
-    Returns:
-        Mock object for global instance
-
-    """
-
-    class MockGlobal:
-        def get_global(self) -> None:
-            return None
-
-    return MockGlobal()
+def reset_auth_singleton(reset_settings: None) -> Iterator[None]:
+    """Reset FlextAuth singleton and shared settings between tests."""
+    _ = reset_settings
+    FlextAuth.reset_for_testing()
+    yield
+    FlextAuth.reset_for_testing()

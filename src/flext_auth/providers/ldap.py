@@ -8,14 +8,10 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import r
-
-from flext_auth import m, p
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
-class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.
@@ -24,14 +20,14 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     Example:
         >>> provider = FlextAuthLdapProvider()
         >>> result = provider.authenticate({"username": "user", "password": "password"})
-        >>> if result.is_success:
+        >>> if result.success:
         ...     token = result.value
         ...     print(f"Authenticated with token: {token.token}")
 
     """
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using LDAP credentials.
 
         Args:
@@ -55,7 +51,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return {"ldap", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate authentication token.
 
         Args:
@@ -69,4 +65,4 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthLdapProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthLdapProvider"]

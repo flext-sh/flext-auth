@@ -12,17 +12,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
-from flext_core import r, t
-
-from flext_auth import m, p
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
-class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """Base class for RFC-compliant authentication providers.
 
     This class extends FlextAuthBaseProvider with RFC-specific functionality
@@ -38,9 +33,27 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: Mapping[str, t.Primitives] | None = None) -> None:
+    def __init__(self, settings: t.MappingKV[str, t.Primitives] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration."""
-        super().__init__(config)
+        super().__init__(settings)
+
+    @staticmethod
+    def project_to_scalar_config(
+        settings: t.ConfigurationMapping | None,
+    ) -> t.MappingKV[str, t.Primitives] | None:
+        """Project provider settings into the RFC base scalar contract.
+
+        Filters out non-primitive values (only keeps str/int/bool entries),
+        passing ``None`` through. Centralized here so all RFC providers reuse
+        the same projection rather than re-implementing the filter.
+        """
+        if settings is None:
+            return None
+        return {
+            key: value
+            for key, value in settings.items()
+            if isinstance(value, (bool, int, str))
+        }
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
@@ -69,7 +82,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         _ = feature
         return False
 
-    def validate_rfc_compliance(self, operation: str) -> r[bool]:
+    def validate_rfc_compliance(self, operation: str) -> p.Result[bool]:
         """Validate that an operation follows RFC standards.
 
         Args:
@@ -86,7 +99,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return r[bool].ok(value=True)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate user with provided credentials.
 
         This is an abstract method that must be implemented by RFC-specific providers.
@@ -99,11 +112,11 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         return r[p.Auth.Token].fail(
-            "RFC provider authenticate() must be implemented by subclass"
+            "RFC provider authenticate() must be implemented by subclass",
         )
 
     @override
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str) -> p.Result[bool]:
         """Validate authentication token.
 
         This is an abstract method that must be implemented by RFC-specific providers.
@@ -118,4 +131,4 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return r[bool].fail("RFC provider validate() must be implemented by subclass")
 
 
-__all__ = ["FlextAuthRfcProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthRfcProvider"]

@@ -8,63 +8,73 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthJwtProvider, FlextAuthSettings
-from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
+import pytest
+
+from flext_auth import (
+    FlextAuth,
+    FlextAuthSettings,
+)
+from tests.utilities import u
+
+pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
 
-class TestFlextAuthSettingsBasic:
+class TestsFlextAuthConfig:
     """Basic tests for FlextAuthSettings functionality."""
 
+    @staticmethod
+    def _require_settings() -> FlextAuthSettings:
+        """Fetch the current settings instance for test reuse."""
+        return FlextAuthSettings.fetch_global()
+
     def test_config_creation(self) -> None:
-        """Test basic config creation."""
-        config = FlextAuthSettings()
-        assert isinstance(config, FlextAuthSettings)
-        assert config.expiry_minutes > 0
-        assert config.algorithm is not None
+        """Test basic settings creation."""
+        settings = self._require_settings()
+        u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
+        u.Tests.Matchers.that(settings.expiry_minutes, gt=0)
+        u.Tests.Matchers.that(settings.algorithm, is_=str)
 
     def test_config_with_custom_values(self) -> None:
-        """Test config with custom values."""
-        config = FlextAuthSettings(expiry_minutes=60, hash_rounds=12)
-        assert config.expiry_minutes == 60
-        assert config.hash_rounds == 12
+        """Test settings with custom values."""
+        base_config = self._require_settings()
+        settings = base_config.model_copy(
+            update={"expiry_minutes": 60, "hash_rounds": 12},
+        )
+        u.Tests.Matchers.that(settings.expiry_minutes, eq=60)
+        u.Tests.Matchers.that(settings.hash_rounds, eq=12)
 
     def test_config_validation(self) -> None:
-        """Test config validation."""
-        config = FlextAuthSettings(expiry_minutes=30)
-        assert config.expiry_minutes == 30
+        """Test settings validation."""
+        base_config = self._require_settings()
+        settings = base_config.clone(expiry_minutes=30)
+        u.Tests.Matchers.that(settings.expiry_minutes, eq=30)
 
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
-        result = FlextAuthSettings.get_or_create_global()
-        assert result.is_success
-        config = result.value
-        assert isinstance(config, FlextAuthSettings)
-
-
-class TestJwtTokenGenerator:
-    """Test JWT token generator functionality."""
+        settings = self._require_settings()
+        u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
 
     def test_generate_token_missing_config(self) -> None:
-        """Test token generation with missing configuration."""
-        provider = FlextAuthJwtProvider(config=None)
-        generator = FlextAuthJwtTokenGenerator(provider)
-        result = generator.generate_token(identity_id="user-123")
-        assert result.is_failure
-        assert "not configured" in (result.error or "").lower()
+        """Token generation fails for unknown identity via public API."""
+        auth = FlextAuth(settings=self._require_settings())
+        result = auth.create_token(identity_id="missing-user")
+        assert result.failure
+        assert result.error is not None
+        assert "user" in result.error.lower()
 
     def test_generate_token_success(self) -> None:
-        """Test successful token generation."""
-        config = {
-            "secret_key": "test-secret-key-for-jwt-minimum-32-chars",
-            "algorithm": "HS256",
-            "expiry_minutes": 30,
-            "issuer": "flext-auth-test",
-        }
-        provider = FlextAuthJwtProvider(config=config)
-        generator = FlextAuthJwtTokenGenerator(provider)
-        result = generator.generate_token(identity_id="user-456")
-        assert result.is_success
-        token = result.value
-        assert isinstance(token, str)
-        assert len(token) > 0
-        assert token.count(".") == 2
+        """Generate token through public API after registering identity."""
+        auth = FlextAuth(settings=self._require_settings())
+        register_result = auth.register_user(
+            "config-token-user",
+            "config-token-user@example.com",
+            "ConfigTokenPass123!",
+        )
+        assert register_result.success
+        result = auth.create_token(identity_id=register_result.value.unique_id)
+        assert result.success
+        assert result.value is not None
+        u.Tests.Matchers.that(result.value, is_=str)
+        token_text = result.value
+        u.Tests.Matchers.that(len(token_text), gt=0)
+        u.Tests.Matchers.that(token_text.count("."), eq=2)

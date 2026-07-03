@@ -9,21 +9,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import contextlib
-from collections.abc import Callable
+from collections.abc import (
+    Callable,
+)
+
+from flext_auth import t
 
 
-def basic_example_runner(
-    sync_examples: list[Callable[[], None]], examples: list[Callable[[], None]]
-) -> None:
-    """Run all examples using the shared runner (DRY principle)."""
-    for example in sync_examples:
-        with contextlib.suppress(Exception):
+class FlextAuthExampleUtilities:
+    """Shared owner for example utility helpers."""
+
+    @staticmethod
+    def basic_example_runner(
+        sync_examples: t.SequenceOf[Callable[[], None]],
+        examples: t.SequenceOf[Callable[[], None]],
+    ) -> None:
+        """Run all examples using the shared runner (DRY principle)."""
+        for example in sync_examples:
             example()
 
-    def run_examples() -> None:
         for example in examples:
-            with contextlib.suppress(Exception):
-                example()
-
-    run_examples()
+            example()

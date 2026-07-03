@@ -1,194 +1,166 @@
-"""Tests for FlextAuthConstants.
-
-Tests the authentication constants module following FLEXT standards.
-"""
+"""Tests for FlextAuthConstants."""
 
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextConstants
 
-from flext_auth import FlextAuthConstants
+from flext_core import c as core_c
+from tests.constants import c
+from tests.utilities import u
 
-c = FlextAuthConstants
+pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
 
-class TestFlextAuthConstants:
+class TestsFlextAuthConstantsUnit:
     """Test FlextAuthConstants class and its nested constant classes."""
 
     def test_inherits_from_flext_constants(self) -> None:
-        """Test that FlextAuthConstants inherits from FlextConstants."""
-        assert issubclass(FlextAuthConstants, FlextConstants)
+        u.Tests.Matchers.that(c.__mro__, has=core_c)
 
     def test_jwt_constants(self) -> None:
-        """Test JWT-related constants."""
-        jwt = FlextAuthConstants.Auth.Jwt
-        assert jwt.DEFAULT_ALGORITHM == "HS256"
-        assert jwt.DEFAULT_EXPIRY_MINUTES == 30
-        assert jwt.MAX_EXPIRY_MINUTES == 1440
-        assert jwt.ISSUER_CLAIM == "flext-auth"
-        assert jwt.AUDIENCE_CLAIM == "flext-users"
-        assert jwt.MIN_SECRET_KEY_LENGTH == 32
-        assert jwt.DEFAULT_TOKEN_TYPE == "Bearer"
+        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_ALGORITHM, eq=c.Auth.Algorithms.HS256)
+        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_EXPIRY_MINUTES, eq=30)
+        u.Tests.Matchers.that(c.Auth.JWT_MAX_EXPIRY_MINUTES, eq=1440)
+        u.Tests.Matchers.that(c.Auth.JWT_ISSUER_CLAIM, eq="flext-auth")
+        u.Tests.Matchers.that(c.Auth.JWT_AUDIENCE_CLAIM, eq="flext-users")
+        u.Tests.Matchers.that(c.Auth.JWT_MIN_SECRET_KEY_LENGTH, eq=32)
+        u.Tests.Matchers.that(c.Auth.JWT_DEFAULT_TOKEN_TYPE, eq="Bearer")
 
     def test_credentials_constants(self) -> None:
-        """Test credential-related constants."""
-        creds = FlextAuthConstants.Auth.Credentials
-        assert creds.Username.MIN_LENGTH == 3
-        assert creds.Username.MAX_LENGTH == 50
-        assert creds.Password.MIN_LENGTH == 8
-        assert creds.Password.MAX_LENGTH == 128
-        assert creds.Password.MIN_SCORE == 3
-        assert creds.Password.MIN_BCRYPT_HASH_LENGTH == 60
-        assert creds.Password.BCRYPT_ROUNDS == 12
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH, eq=3)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH, eq=50)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH, eq=8)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH, eq=128)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MIN_SCORE, eq=3)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_MIN_BCRYPT_HASH_LENGTH, eq=60)
+        u.Tests.Matchers.that(c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS, eq=12)
 
     def test_session_constants(self) -> None:
-        """Test session-related constants."""
-        session = FlextAuthConstants.Auth.Session
-        assert session.DEFAULT_EXPIRY_MINUTES == 120
-        assert session.MAX_EXPIRY_MINUTES == 1440
-        assert session.MAX_SESSIONS_PER_USER == 5
-        assert session.MIN_TOKEN_LENGTH == 32
+        u.Tests.Matchers.that(c.Auth.SESSION_DEFAULT_EXPIRY_MINUTES, eq=120)
+        u.Tests.Matchers.that(c.Auth.SESSION_MAX_EXPIRY_MINUTES, eq=1440)
+        u.Tests.Matchers.that(c.Auth.SESSION_MAX_SESSIONS_PER_USER, eq=5)
+        u.Tests.Matchers.that(c.Auth.SESSION_MIN_TOKEN_LENGTH, eq=32)
 
     def test_auth_security_constants(self) -> None:
-        """Test authentication security constants."""
-        security = FlextAuthConstants.Auth.AuthSecurity
-        assert security.MAX_LOGIN_ATTEMPTS == 5
-        assert security.LOCKOUT_DURATION_MINUTES == 15
-        assert security.MAX_REQUESTS_PER_MINUTE == 60
-        assert security.MAX_REQUESTS_PER_HOUR == 1000
+        u.Tests.Matchers.that(c.Auth.SECURITY_MAX_LOGIN_ATTEMPTS, eq=5)
+        u.Tests.Matchers.that(c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES, eq=15)
+        u.Tests.Matchers.that(c.Auth.SECURITY_MAX_REQUESTS_PER_MINUTE, eq=60)
+        u.Tests.Matchers.that(c.Auth.SECURITY_MAX_REQUESTS_PER_HOUR, eq=1000)
 
     def test_error_codes_constants(self) -> None:
-        """Test error code constants."""
-        codes = FlextAuthConstants.Auth.ErrorCodes
-        assert codes.INVALID_CREDENTIALS == "INVALID_CREDENTIALS"
-        assert codes.ACCOUNT_LOCKED == "ACCOUNT_LOCKED"
-        assert codes.ACCOUNT_DISABLED == "ACCOUNT_DISABLED"
-        assert codes.TOKEN_EXPIRED == "TOKEN_EXPIRED"
-        assert codes.INVALID_TOKEN == "INVALID_TOKEN"
+        u.Tests.Matchers.that(
+            c.Auth.ERROR_INVALID_CREDENTIALS, eq="INVALID_CREDENTIALS"
+        )
+        u.Tests.Matchers.that(c.Auth.ERROR_ACCOUNT_LOCKED, eq="ACCOUNT_LOCKED")
+        u.Tests.Matchers.that(c.Auth.ERROR_ACCOUNT_DISABLED, eq="ACCOUNT_DISABLED")
+        u.Tests.Matchers.that(c.Auth.ERROR_TOKEN_EXPIRED, eq="TOKEN_EXPIRED")
+        u.Tests.Matchers.that(c.Auth.ERROR_INVALID_TOKEN, eq="INVALID_TOKEN")
 
     def test_permission_types_strenum(self) -> None:
-        """Test PermissionTypes StrEnum values."""
-        perms = FlextAuthConstants.Auth.PermissionTypes
-        assert perms.READ == "read"
-        assert perms.WRITE == "write"
-        assert perms.DELETE == "delete"
-        assert perms.ADMIN.value == "REDACTED_LDAP_BIND_PASSWORD"
+        perms = c.Auth.PermissionTypes
+        u.Tests.Matchers.that(perms.READ, eq="read")
+        u.Tests.Matchers.that(perms.WRITE, eq="write")
+        u.Tests.Matchers.that(perms.DELETE, eq="delete")
+        u.Tests.Matchers.that(perms.ADMIN.value, eq="REDACTED_LDAP_BIND_PASSWORD")
 
     def test_role_types_strenum(self) -> None:
-        """Test RoleTypes StrEnum values."""
-        roles = FlextAuthConstants.Auth.RoleTypes
-        assert roles.ADMIN.value == "REDACTED_LDAP_BIND_PASSWORD"
-        assert roles.USER == "user"
-        assert roles.MODERATOR == "moderator"
-        assert roles.GUEST == "guest"
+        roles = c.Auth.RoleTypes
+        u.Tests.Matchers.that(roles.ADMIN.value, eq="REDACTED_LDAP_BIND_PASSWORD")
+        u.Tests.Matchers.that(roles.USER, eq="user")
+        u.Tests.Matchers.that(roles.MODERATOR, eq="moderator")
+        u.Tests.Matchers.that(roles.GUEST, eq="guest")
 
     def test_token_types_strenum(self) -> None:
-        """Test TokenTypes StrEnum values."""
-        tokens = FlextAuthConstants.Auth.TokenTypes
-        assert tokens.ACCESS == "access"
-        assert tokens.REFRESH == "refresh"
-        assert tokens.API == "api"
-        assert tokens.BEARER == "bearer"
+        tokens = c.Auth.TokenTypes
+        u.Tests.Matchers.that(tokens.ACCESS, eq="access")
+        u.Tests.Matchers.that(tokens.REFRESH, eq="refresh")
+        u.Tests.Matchers.that(tokens.API, eq="api")
+        u.Tests.Matchers.that(tokens.BEARER, eq="bearer")
 
     def test_provider_types_strenum(self) -> None:
-        """Test ProviderTypes StrEnum values."""
-        providers = FlextAuthConstants.Auth.ProviderTypes
-        assert providers.BASIC == "basic"
-        assert providers.JWT == "jwt"
-        assert providers.OAUTH2 == "oauth2"
-        assert providers.SAML == "saml"
-        assert providers.LDAP == "ldap"
-        assert providers.CERTIFICATE == "certificate"
-        assert providers.KERBEROS == "kerberos"
-        assert providers.APIKEY == "apikey"
+        providers = c.Auth.ProviderTypes
+        u.Tests.Matchers.that(providers.BASIC, eq="basic")
+        u.Tests.Matchers.that(providers.JWT, eq="jwt")
+        u.Tests.Matchers.that(providers.OAUTH2, eq="oauth2")
+        u.Tests.Matchers.that(providers.SAML, eq="saml")
+        u.Tests.Matchers.that(providers.LDAP, eq="ldap")
+        u.Tests.Matchers.that(providers.CERTIFICATE, eq="certificate")
+        u.Tests.Matchers.that(providers.KERBEROS, eq="kerberos")
+        u.Tests.Matchers.that(providers.APIKEY, eq="apikey")
 
     def test_algorithms_strenum(self) -> None:
-        """Test Algorithms StrEnum values."""
-        algos = FlextAuthConstants.Auth.Algorithms
-        assert algos.HS256 == "HS256"
-        assert algos.RS256 == "RS256"
-        assert algos.ES256 == "ES256"
+        algos = c.Auth.Algorithms
+        u.Tests.Matchers.that(algos.HS256, eq=c.Auth.Algorithms.HS256)
+        u.Tests.Matchers.that(algos.RS256, eq=c.Auth.Algorithms.RS256)
+        u.Tests.Matchers.that(algos.ES256, eq=c.Auth.Algorithms.ES256)
 
     def test_valid_token_types_frozenset(self) -> None:
-        """Test VALID_TOKEN_TYPES immutable collection."""
-        valid = FlextAuthConstants.Auth.VALID_TOKEN_TYPES
-        assert "access" in valid
-        assert "refresh" in valid
-        assert "api" in valid
-        assert "bearer" in valid
+        valid = c.Auth.VALID_TOKEN_TYPES
+        u.Tests.Matchers.that(valid, has="access")
+        u.Tests.Matchers.that(valid, has="refresh")
+        u.Tests.Matchers.that(valid, has="api")
+        u.Tests.Matchers.that(valid, has="bearer")
 
     def test_valid_provider_types_frozenset(self) -> None:
-        """Test VALID_PROVIDER_TYPES immutable collection."""
-        valid = FlextAuthConstants.Auth.VALID_PROVIDER_TYPES
-        assert "basic" in valid
-        assert "jwt" in valid
-        assert "oauth2" in valid
+        valid = c.Auth.VALID_PROVIDER_TYPES
+        u.Tests.Matchers.that(valid, has="basic")
+        u.Tests.Matchers.that(valid, has="jwt")
+        u.Tests.Matchers.that(valid, has="oauth2")
 
     def test_valid_role_types_frozenset(self) -> None:
-        """Test VALID_ROLE_TYPES immutable collection."""
-        valid = FlextAuthConstants.Auth.VALID_ROLE_TYPES
-        assert "user" in valid
-        assert "REDACTED_LDAP_BIND_PASSWORD" in valid
-        assert "moderator" in valid
-        assert "guest" in valid
+        valid = c.Auth.VALID_ROLE_TYPES
+        u.Tests.Matchers.that(valid, has="user")
+        u.Tests.Matchers.that(valid, has="REDACTED_LDAP_BIND_PASSWORD")
+        u.Tests.Matchers.that(valid, has="moderator")
+        u.Tests.Matchers.that(valid, has="guest")
 
     def test_valid_permission_types_frozenset(self) -> None:
-        """Test VALID_PERMISSION_TYPES immutable collection."""
-        valid = FlextAuthConstants.Auth.VALID_PERMISSION_TYPES
-        assert "read" in valid
-        assert "write" in valid
-        assert "delete" in valid
-        assert "REDACTED_LDAP_BIND_PASSWORD" in valid
+        valid = c.Auth.VALID_PERMISSION_TYPES
+        u.Tests.Matchers.that(valid, has="read")
+        u.Tests.Matchers.that(valid, has="write")
+        u.Tests.Matchers.that(valid, has="delete")
+        u.Tests.Matchers.that(valid, has="REDACTED_LDAP_BIND_PASSWORD")
 
     def test_configuration_defaults(self) -> None:
-        """Test configuration default constants."""
-        auth = FlextAuthConstants.Auth
-        assert pytest.approx(30.0) == auth.DEFAULT_TIMEOUT
-        assert auth.DEFAULT_MAX_RETRIES == 3
-        assert auth.DEFAULT_JWT_EXPIRY_MINUTES == 1440
-        assert auth.DEFAULT_SESSION_EXPIRY_MINUTES == 1440
-        assert auth.DEFAULT_MAX_SESSIONS_PER_USER == 5
-        assert auth.DEFAULT_HASH_ROUNDS == 12
-        assert auth.DEFAULT_JWT_ALGORITHM == "HS256"
+        auth = c.Auth
+        u.Tests.Matchers.that(abs(auth.DEFAULT_TIMEOUT - 30.0), lt=1e-9)
+        u.Tests.Matchers.that(auth.DEFAULT_MAX_RETRIES, eq=3)
+        u.Tests.Matchers.that(auth.DEFAULT_JWT_EXPIRY_MINUTES, eq=1440)
+        u.Tests.Matchers.that(auth.DEFAULT_SESSION_EXPIRY_MINUTES, eq=1440)
+        u.Tests.Matchers.that(auth.DEFAULT_MAX_SESSIONS_PER_USER, eq=5)
+        u.Tests.Matchers.that(auth.DEFAULT_HASH_ROUNDS, eq=12)
+        u.Tests.Matchers.that(auth.DEFAULT_JWT_ALGORITHM, eq=c.Auth.Algorithms.HS256)
 
     def test_security_policy_constants(self) -> None:
-        """Test security policy constants."""
-        auth = FlextAuthConstants.Auth
-        assert auth.MAX_ATTEMPTS_DEFAULT == 5
-        assert auth.LOCKOUT_DURATION_MINUTES == 30
-        assert auth.SECRET_MIN_LENGTH == 32
+        auth = c.Auth
+        u.Tests.Matchers.that(auth.MAX_ATTEMPTS_DEFAULT, eq=5)
+        u.Tests.Matchers.that(auth.LOCKOUT_DURATION_MINUTES, eq=30)
+        u.Tests.Matchers.that(auth.SECRET_MIN_LENGTH, eq=32)
 
     def test_model_validation_constants(self) -> None:
-        """Test model validation constants."""
-        mv = FlextAuthConstants.Auth.ModelValidation
-        assert mv.BCRYPT_ROUNDS == 12
-        assert mv.DEFAULT_TOKEN_EXPIRY_MINUTES == 60
-        assert mv.MAX_ROLE_NAME_LENGTH == 50
-        assert mv.MAX_ROLE_DESCRIPTION_LENGTH == 500
-        assert mv.MAX_PERMISSION_NAME_LENGTH == 100
-        assert mv.MAX_PERMISSION_DESCRIPTION_LENGTH == 500
+        u.Tests.Matchers.that(c.Auth.VALIDATION_BCRYPT_ROUNDS, eq=12)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_DEFAULT_TOKEN_EXPIRY_MINUTES, eq=60)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_ROLE_NAME_LENGTH, eq=50)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_ROLE_DESCRIPTION_LENGTH, eq=500)
+        u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_PERMISSION_NAME_LENGTH, eq=100)
+        u.Tests.Matchers.that(
+            c.Auth.VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH, eq=500
+        )
 
     def test_oauth2_constants(self) -> None:
-        """Test OAuth2 constants."""
-        oauth2 = FlextAuthConstants.Auth.OAuth2
-        assert oauth2.SCOPE_DEFAULT == "openid profile email"
-        assert "authorization_code" in oauth2.FLOWS
-        assert "client_credentials" in oauth2.FLOWS
-        assert oauth2.FLOW_DEFAULT == "authorization_code"
-        assert oauth2.USE_PKCE_DEFAULT is True
+        u.Tests.Matchers.that(c.Auth.OAUTH2_SCOPE_DEFAULT, eq="openid profile email")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_FLOWS, has="authorization_code")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_FLOWS, has="client_credentials")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_FLOW_DEFAULT, eq="authorization_code")
+        u.Tests.Matchers.that(c.Auth.OAUTH2_USE_PKCE_DEFAULT, eq=True)
 
     def test_validation_limits_mapping(self) -> None:
-        """Test VALIDATION_LIMITS immutable mapping."""
-        limits = FlextAuthConstants.Auth.VALIDATION_LIMITS
-        assert "MAX_USERNAME_LENGTH" in limits
-        assert "MIN_PASSWORD_LENGTH" in limits
-        assert "DEFAULT_TIMEOUT" in limits
+        limits = c.Auth.VALIDATION_LIMITS
+        u.Tests.Matchers.that(limits, has="MAX_USERNAME_LENGTH")
+        u.Tests.Matchers.that(limits, has="MIN_PASSWORD_LENGTH")
+        u.Tests.Matchers.that(limits, has="DEFAULT_TIMEOUT")
 
     def test_response_templates(self) -> None:
-        """Test response template mappings."""
-        success = FlextAuthConstants.Auth.SUCCESS_AUTH_RESPONSE
-        assert success["status"] == "success"
-        assert success["message"] == "Authentication successful"
-        error = FlextAuthConstants.Auth.ERROR_AUTH_RESPONSE
-        assert error["status"] == "error"
+        success = c.Auth.SUCCESS_AUTH_RESPONSE
+        u.Tests.Matchers.that(success["status"], eq="success")
+        u.Tests.Matchers.that(success["message"], eq="Authentication successful")

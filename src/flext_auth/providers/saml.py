@@ -12,13 +12,10 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import r
-
-from flext_auth import m, p
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
-class FlextAuthSamlProvider(FlextAuthBaseProvider):
+class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """SAML 2.0 authentication provider.
 
     Provides SAML 2.0 authentication support following the FlextAuthBaseProvider protocol.
@@ -42,7 +39,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
     """
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using SAML 2.0 assertion.
 
         Args:
@@ -57,11 +54,11 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         _ = credentials
         return r[p.Auth.Token].fail("SAML provider not yet fully implemented")
 
-    def get_metadata(self) -> dict[str, str | list[str]]:
+    def get_metadata(self) -> t.AttributeMapping:
         """Get provider metadata.
 
         Returns:
-            Mapping[str, object]: Provider metadata (name, version, capabilities, etc.)
+            t.AttributeMapping: Provider metadata (name, version, capabilities, etc.)
 
         Business Rule: Returns metadata for provider discovery and configuration.
 
@@ -87,7 +84,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         return {"authenticate", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate SAML assertion token.
 
         Args:

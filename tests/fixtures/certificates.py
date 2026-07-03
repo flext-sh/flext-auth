@@ -7,57 +7,79 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Annotated, ClassVar
+
+from tests.models import m
+from tests.utilities import u
 
 
-class CertificateFixture(BaseModel):
+class CertificateFixture(m.BaseModel):
     """Certificate fixture data."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(frozen=True)
 
-    cert_pem: str = Field(description="PEM-encoded certificate")
-    key_pem: str = Field(description="PEM-encoded private key")
-    fingerprint: str = Field(description="Certificate fingerprint hash")
-    subject_cn: str = Field(description="Certificate subject common name")
+    cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
+    key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]
+    fingerprint: Annotated[str, u.Field(description="Certificate fingerprint hash")]
+    subject_cn: Annotated[str, u.Field(description="Certificate subject common name")]
 
+    @classmethod
+    def generate_self_signed_cert(
+        cls,
+        common_name: str = "test.example.com",
+        organization: str = "Test Organization",
+        valid_days: int = 365,
+    ) -> CertificateFixture:
+        """Generate a mock certificate fixture for testing."""
+        mock_cert_pem = (
+            "-----BEGIN CERTIFICATE-----\n"
+            "MOCK CERTIFICATE FOR TESTING\n"
+            f"Common Name: {common_name}\n"
+            f"Organization: {organization}\n"
+            f"Valid Days: {valid_days}\n"
+            "-----END CERTIFICATE-----"
+        )
+        mock_key_pem = (
+            "-----BEGIN PRIVATE KEY-----\n"
+            "MOCK PRIVATE KEY FOR TESTING\n"
+            "-----END PRIVATE KEY-----"
+        )
+        mock_fingerprint = (
+            "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+        )
+        return cls(
+            cert_pem=mock_cert_pem,
+            key_pem=mock_key_pem,
+            fingerprint=mock_fingerprint,
+            subject_cn=common_name,
+        )
 
-def generate_self_signed_cert(
-    common_name: str = "test.example.com",
-    organization: str = "Test Organization",
-    valid_days: int = 365,
-) -> CertificateFixture:
-    """Generate a mock certificate fixture for testing.
-
-    Returns hardcoded test data to avoid cryptography library type issues.
-    """
-    mock_cert_pem = f"-----BEGIN CERTIFICATE-----\nMOCK CERTIFICATE FOR TESTING\nCommon Name: {common_name}\nOrganization: {organization}\nValid Days: {valid_days}\n-----END CERTIFICATE-----"
-    mock_key_pem = "-----BEGIN PRIVATE KEY-----\nMOCK PRIVATE KEY FOR TESTING\n-----END PRIVATE KEY-----"
-    mock_fingerprint = (
-        "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
-    )
-    return CertificateFixture(
-        cert_pem=mock_cert_pem,
-        key_pem=mock_key_pem,
-        fingerprint=mock_fingerprint,
-        subject_cn=common_name,
-    )
-
-
-def generate_client_cert(
-    common_name: str = "client.example.com", organization: str = "Test Client"
-) -> CertificateFixture:
-    """Generate a mock client certificate fixture for testing.
-
-    Returns hardcoded test data to avoid cryptography library type issues.
-    """
-    mock_cert_pem = f"-----BEGIN CERTIFICATE-----\nMOCK CLIENT CERTIFICATE FOR TESTING\nCommon Name: {common_name}\nOrganization: {organization}\nType: Client Certificate\n-----END CERTIFICATE-----"
-    mock_key_pem = "-----BEGIN PRIVATE KEY-----\nMOCK CLIENT PRIVATE KEY FOR TESTING\n-----END PRIVATE KEY-----"
-    mock_fingerprint = (
-        "bbccddeeff00112233445566778899aabbccddeeff0011223344556677889900"
-    )
-    return CertificateFixture(
-        cert_pem=mock_cert_pem,
-        key_pem=mock_key_pem,
-        fingerprint=mock_fingerprint,
-        subject_cn=common_name,
-    )
+    @classmethod
+    def generate_client_cert(
+        cls,
+        common_name: str = "client.example.com",
+        organization: str = "Test Client",
+    ) -> CertificateFixture:
+        """Generate a mock client certificate fixture for testing."""
+        mock_cert_pem = (
+            "-----BEGIN CERTIFICATE-----\n"
+            "MOCK CLIENT CERTIFICATE FOR TESTING\n"
+            f"Common Name: {common_name}\n"
+            f"Organization: {organization}\n"
+            "Type: Client Certificate\n"
+            "-----END CERTIFICATE-----"
+        )
+        mock_key_pem = (
+            "-----BEGIN PRIVATE KEY-----\n"
+            "MOCK CLIENT PRIVATE KEY FOR TESTING\n"
+            "-----END PRIVATE KEY-----"
+        )
+        mock_fingerprint = (
+            "bbccddeeff00112233445566778899aabbccddeeff0011223344556677889900"
+        )
+        return cls(
+            cert_pem=mock_cert_pem,
+            key_pem=mock_key_pem,
+            fingerprint=mock_fingerprint,
+            subject_cn=common_name,
+        )

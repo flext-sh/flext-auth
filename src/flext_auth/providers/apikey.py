@@ -10,27 +10,23 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
-from flext_core import r
-
-from flext_auth import m, p
-from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
-class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
+class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """API key authentication provider.
 
     Provides API key-based authentication with token validation.
     """
 
-    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
+    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
         """Initialize provider with configuration."""
-        super().__init__(config)
+        super().__init__(settings)
 
     @override
-    def authenticate(self, credentials: m.Auth.CredentialValidation) -> r[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using API key credentials."""
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")
@@ -46,10 +42,10 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         return {"api_key", "validate"}
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> r[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate authentication token."""
         _ = token
         return r[bool].fail("Not implemented")
 
 
-__all__ = ["FlextAuthApiKeyProvider"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthApiKeyProvider"]
