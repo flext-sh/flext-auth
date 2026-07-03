@@ -12,7 +12,7 @@ from flext_api import r
 from flext_auth import m, p, t
 from flext_auth._utilities._managers.user_extras import FlextAuthUserIdentityExtras
 from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
-from flext_core import u
+from flext_auth.utilities import u
 
 
 class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):

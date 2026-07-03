@@ -9,7 +9,7 @@ from flext_api import r
 
 from flext_auth import m, p, t
 from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
-from flext_core import u
+from flext_auth.utilities import u
 
 
 class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):

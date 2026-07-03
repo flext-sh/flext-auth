@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING, ClassVar
 from flext_auth import p, t
 from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
 from flext_auth._utilities._managers.user_extras import FlextAuthUserIdentityExtras
-from flext_core import FlextContext, u
+from flext_auth.utilities import u
+from flext_core import FlextContext
 
 if TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings
