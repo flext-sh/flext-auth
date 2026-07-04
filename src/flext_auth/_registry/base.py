@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, TypeIs
+from typing import TypeIs
 
 from flext_auth import c, p, r, t, u
 from flext_auth._registry.plugins import FlextAuthRegistryPlugins
@@ -11,7 +11,6 @@ from flext_auth._registry.plugins import FlextAuthRegistryPlugins
 class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
     """Auth provider registry backed by `p.Registry`."""
 
-    PROVIDERS: ClassVar[str] = "auth_providers"
     _registry: p.Registry
 
     @staticmethod
@@ -33,7 +32,7 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
 
     def get(self, data: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name."""
-        result = self.fetch_plugin(self.PROVIDERS, data)
+        result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, data)
         if result.failure:
             return r[p.Auth.FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{data}' not registered",

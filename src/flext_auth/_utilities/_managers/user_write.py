@@ -5,11 +5,10 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from datetime import datetime
 
-from flext_api import r
+from flext_api import r, u
 
 from flext_auth import m, p, t
 from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
-from flext_auth.utilities import u
 
 
 class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):

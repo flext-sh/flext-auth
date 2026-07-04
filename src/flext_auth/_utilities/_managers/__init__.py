@@ -20,9 +20,6 @@ if TYPE_CHECKING:
     from flext_auth._utilities._managers.user_create import (
         FlextAuthUserManagerCreate as FlextAuthUserManagerCreate,
     )
-    from flext_auth._utilities._managers.user_extras import (
-        FlextAuthUserIdentityExtras as FlextAuthUserIdentityExtras,
-    )
     from flext_auth._utilities._managers.user_read import (
         FlextAuthUserManagerRead as FlextAuthUserManagerRead,
     )
@@ -35,7 +32,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".rate_limiter": ("FlextAuthRateLimiterManagers",),
         ".user": ("FlextAuthUserManagers",),
         ".user_create": ("FlextAuthUserManagerCreate",),
-        ".user_extras": ("FlextAuthUserIdentityExtras",),
         ".user_read": ("FlextAuthUserManagerRead",),
         ".user_write": ("FlextAuthUserManagerWrite",),
     },

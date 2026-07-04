@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol, runtime_checkable
 
 from flext_api import p
@@ -77,6 +78,18 @@ class FlextAuthProtocolsAuthIdentity:
 
         def record_successful_login(self) -> None:
             """Record successful login and reset failed attempts."""
+            ...
+
+    @runtime_checkable
+    class IdentityManager(Protocol):
+        """Protocol for identity manager mutation used by identity services."""
+
+        def update_user(
+            self,
+            user_id: str,
+            **updates: t.Scalar | t.StrSequence | datetime | None,
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]:
+            """Update an identity and return the resulting identity."""
             ...
 
 

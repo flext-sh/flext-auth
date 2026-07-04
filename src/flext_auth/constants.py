@@ -8,7 +8,10 @@ from flext_auth import t
 from flext_auth._constants.auth import FlextAuthConstantsAuth
 
 
-class FlextAuthConstants(c):
+class FlextAuthConstants(
+    c,
+    FlextAuthConstantsAuth,
+):
     """FlextAuth domain constants extending the API constants namespace."""
 
     class Auth(FlextAuthConstantsAuth):

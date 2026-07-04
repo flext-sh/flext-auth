@@ -8,8 +8,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r, u
 
-from flext_auth import t
-from flext_auth.protocols import p
+from flext_auth import p, t
 from flext_core import FlextContext
 
 if TYPE_CHECKING:

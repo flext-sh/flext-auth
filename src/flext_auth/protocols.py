@@ -7,7 +7,10 @@ from flext_api import p
 from flext_auth._protocols.auth import FlextAuthProtocolsAuth
 
 
-class FlextAuthProtocols(p):
+class FlextAuthProtocols(
+    p,
+    FlextAuthProtocolsAuth,
+):
     """Unified authentication protocols following FLEXT domain extension pattern."""
 
     class Auth(FlextAuthProtocolsAuth):

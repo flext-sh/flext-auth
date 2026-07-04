@@ -7,8 +7,8 @@ from typing import override
 from flext_api import r
 
 from flext_auth import FlextAuthSettings, c, m, p, s, t
+from flext_auth._utilities.identity_audit import FlextAuthIdentityAudit
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
-from flext_auth.services._identity_audit import FlextAuthIdentityAudit
 
 
 class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
@@ -186,4 +186,6 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityService"]
+__all__: t.MutableSequenceOf[str] = [
+    "FlextAuthIdentityService",
+]

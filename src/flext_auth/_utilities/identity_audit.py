@@ -2,21 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Protocol
+from datetime import timedelta
+from typing import TYPE_CHECKING
 
-from flext_auth import c, m, p, t, u
+from flext_api import u
 
-
-class _IdentityManager(Protocol):
-    def update_user(
-        self,
-        user_id: str,
-        **updates: t.Scalar | t.StrSequence | datetime | None,
-    ) -> p.Result[m.Auth.AuthIdentity]: ...
+from flext_auth import c, m, p
 
 
 class FlextAuthIdentityAudit:
+    """Identity service audit and lockout helpers."""
+
     if TYPE_CHECKING:
 
         @property
@@ -25,7 +21,7 @@ class FlextAuthIdentityAudit:
             raise NotImplementedError
 
         @property
-        def identity_manager(self) -> _IdentityManager:
+        def identity_manager(self) -> p.Auth.IdentityManager:
             """Identity manager supplied by the concrete service facade."""
             raise NotImplementedError
 
@@ -81,4 +77,4 @@ class FlextAuthIdentityAudit:
         return True
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityAudit"]
+__all__: list[str] = ["FlextAuthIdentityAudit"]

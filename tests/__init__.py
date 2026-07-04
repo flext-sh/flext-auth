@@ -33,8 +33,11 @@ if TYPE_CHECKING:
         TestsFlextAuthConstants as TestsFlextAuthConstants,
         c as c,
     )
-    from tests.fixtures.certificates import CertificateFixture as CertificateFixture
-    from tests.models import TestsFlextAuthModels as TestsFlextAuthModels, m as m
+    from tests.models import (
+        CertificateFixture as CertificateFixture,
+        TestsFlextAuthModels as TestsFlextAuthModels,
+        m as m,
+    )
     from tests.protocols import (
         TestsFlextAuthProtocols as TestsFlextAuthProtocols,
         p as p,
@@ -109,8 +112,8 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "c",
             ),
             ".fixtures": ("fixtures",),
-            ".fixtures.certificates": ("CertificateFixture",),
             ".models": (
+                "CertificateFixture",
                 "TestsFlextAuthModels",
                 "m",
             ),

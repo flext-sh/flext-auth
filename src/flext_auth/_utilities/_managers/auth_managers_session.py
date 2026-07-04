@@ -11,8 +11,7 @@ from uuid import uuid4
 
 from flext_api import r, u
 
-from flext_auth import e, m, t
-from flext_auth.protocols import p
+from flext_auth import e, m, p, t
 from flext_core import FlextContainer, FlextContext
 
 if TYPE_CHECKING:

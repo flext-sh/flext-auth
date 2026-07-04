@@ -8,6 +8,9 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from examples._utilities.example_utilities import (
+        FlextAuthExampleUtilities as FlextAuthExampleUtilities,
+    )
     from examples.advanced_features_02 import (
         FlextAuthAdvancedFeaturesExample as FlextAuthAdvancedFeaturesExample,
     )
@@ -42,7 +45,6 @@ if TYPE_CHECKING:
     from examples.simple_usage_08 import (
         FlextAuthSimpleUsageExample as FlextAuthSimpleUsageExample,
     )
-    from examples.utils import FlextAuthExampleUtilities as FlextAuthExampleUtilities
     from flext_core import (
         c as c,
         d as d,
@@ -70,7 +72,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".flext_config_usage": ("FlextAuthConfigUsageExample",),
         ".refactored_system_showcase_04": ("FlextAuthRefactoredSystemShowcaseExample",),
         ".simple_usage_08": ("FlextAuthSimpleUsageExample",),
-        ".utils": ("FlextAuthExampleUtilities",),
+        "._utilities.example_utilities": ("FlextAuthExampleUtilities",),
         "flext_core": (
             "c",
             "d",

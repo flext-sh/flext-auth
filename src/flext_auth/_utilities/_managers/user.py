@@ -6,10 +6,10 @@ from collections.abc import MutableMapping
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_auth import p, t
+from flext_api import u
+
+from flext_auth import m, p, t
 from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
-from flext_auth._utilities._managers.user_extras import FlextAuthUserIdentityExtras
-from flext_auth.utilities import u
 from flext_core import FlextContext
 
 if TYPE_CHECKING:
@@ -30,8 +30,8 @@ class FlextAuthUserManagers:
         _users: MutableMapping[str, t.Auth.ManagersUserData]
         _DATETIME_ADAPTER: ClassVar[u.TypeAdapter[datetime]] = u.TypeAdapter(datetime)
         _MIN_DATETIME: ClassVar[datetime] = datetime.min.replace(tzinfo=UTC)
-        IdentityExtras: ClassVar[type[FlextAuthUserIdentityExtras]] = (
-            FlextAuthUserIdentityExtras
+        IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
+            m.Auth.UserIdentityExtras
         )
 
         def __init__(self, settings: FlextAuthSettings) -> None:

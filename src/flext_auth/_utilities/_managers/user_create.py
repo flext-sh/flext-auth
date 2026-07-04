@@ -7,17 +7,15 @@ from datetime import datetime
 from typing import ClassVar
 from uuid import uuid4
 
-from flext_api import r
+from flext_api import r, u
 
 from flext_auth import m, p, t
-from flext_auth._utilities._managers.user_extras import FlextAuthUserIdentityExtras
 from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
-from flext_auth.utilities import u
 
 
 class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
-    IdentityExtras: ClassVar[type[FlextAuthUserIdentityExtras]] = (
-        FlextAuthUserIdentityExtras
+    IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
+        m.Auth.UserIdentityExtras
     )
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
