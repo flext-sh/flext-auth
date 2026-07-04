@@ -5,14 +5,16 @@ Public entrypoint kept as a strict facade over service classes.
 
 from __future__ import annotations
 
-from flext_auth import t
+from typing import TYPE_CHECKING
+
 from flext_auth.services.auth_service import FlextAuthApplicationService
+
+if TYPE_CHECKING:
+    from flext_auth import t
 
 
 class FlextAuth(FlextAuthApplicationService):
     """Authentication facade composing identity, token, session, and provider services."""
-
-    pass
 
 
 auth = FlextAuth.fetch_global()

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-import http.client
 from collections.abc import Mapping
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from flext_auth import e, m, t
 from flext_auth.providers.oauth2_tokens import FlextAuthOAuth2Tokens
+
+if TYPE_CHECKING:
+    import http.client
 
 
 class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
@@ -28,7 +30,7 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
             )
         )
         normalized_config: t.ScalarMapping = t.scalar_mapping_adapter().validate_python(
-            raw_config
+            raw_config,
         )
         scalar_config = self.project_to_scalar_config(normalized_config) or {}
         super().__init__(scalar_config)

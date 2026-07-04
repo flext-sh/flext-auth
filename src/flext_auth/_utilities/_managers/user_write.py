@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 from flext_api import r, u
 
-from flext_auth import m, p, t
 from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+    from datetime import datetime
+
+    from flext_auth import m, p, t
 
 
 class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):

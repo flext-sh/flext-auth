@@ -57,7 +57,8 @@ class FlextAuthUtilitiesAuthToken:
             return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}")
         except c.ValidationError as exc:
             return r[t.Auth.TokensClaimMap].fail_op(
-                "Decoded token payload validation", exc
+                "Decoded token payload validation",
+                exc,
             )
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[t.Auth.TokensClaimMap].fail_op("Decoding", exc)

@@ -36,7 +36,8 @@ class TestsFlextAuthApiCase03:
         )
         auth_custom: FlextAuth = FlextAuth(settings=custom_config)
         u.Tests.Matchers.that(
-            auth_custom.config.auth_secret.get_secret_value(), eq=custom_secret
+            auth_custom.config.auth_secret.get_secret_value(),
+            eq=custom_secret,
         )
         u.Tests.Matchers.that(auth_custom.config.hash_rounds, eq=custom_rounds)
         u.Tests.Matchers.that(auth_custom.config.expiry_minutes, eq=custom_expiry)

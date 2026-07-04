@@ -21,11 +21,11 @@ class TestsFlextAuthApiCase02:
         u.Tests.Matchers.that(auth_result.success, eq=True)
         user = auth_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            user.unique_id
+            user.unique_id,
         )
         u.Tests.Matchers.that(sessions_result.success, eq=True)
         revoke_result = auth.session_service.session_manager.end_session_by_id(
-            "nonexistent_session_id"
+            "nonexistent_session_id",
         )
         u.Tests.Matchers.that(not revoke_result.success, eq=True)
 
@@ -34,7 +34,7 @@ class TestsFlextAuthApiCase02:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("tokenuser", "token@example.com", "TokenPass123!")
         user_result = auth.identity_service.identity_manager.get_user_by_username(
-            "tokenuser"
+            "tokenuser",
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -79,7 +79,7 @@ class TestsFlextAuthApiCase02:
         """Test retrieving non-existent user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.identity_service.identity_manager.get_user_by_username(
-            "nonexistent"
+            "nonexistent",
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
@@ -116,7 +116,8 @@ class TestsFlextAuthApiCase02:
         """Test validate_assignment configuration."""
         settings = FlextAuthSettings.fetch_global()
         u.Tests.Matchers.that(
-            settings.model_config.get("validate_assignment", False) is True, eq=True
+            settings.model_config.get("validate_assignment", False) is True,
+            eq=True,
         )
 
 

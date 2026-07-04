@@ -31,7 +31,7 @@ class FlextAuthOAuth2Tokens(
         }
         token_model = m.Auth.AuthToken(
             identity_id=str(
-                credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user"
+                credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user",
             ),
             token=str(credential_payload.get("access_token") or ""),
             token_type="Bearer",
@@ -83,7 +83,7 @@ class FlextAuthOAuth2Tokens(
         token_text = self._extract_token_string(token)
         refresh_token_value = getattr(token, "refresh_token", "")
         has_refresh_token = isinstance(refresh_token_value, str) and bool(
-            refresh_token_value
+            refresh_token_value,
         )
         refresh_source = refresh_token_value if has_refresh_token else token_text
         identity_id_result = (
@@ -135,7 +135,7 @@ class FlextAuthOAuth2Tokens(
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(
             on_failure=lambda exc: r[bool].fail(
-                exc or "OAuth2 token validation failed"
+                exc or "OAuth2 token validation failed",
             ),
             on_success=lambda _: r[bool].ok(value=True),
         )

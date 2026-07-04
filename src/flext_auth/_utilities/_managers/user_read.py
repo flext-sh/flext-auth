@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 from flext_api import r
 
 from flext_auth import e, m, p, t
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+    from datetime import datetime
 
 
 class FlextAuthUserManagerRead:
@@ -80,7 +83,9 @@ class FlextAuthUserManagerRead:
                     user_data,
                 ))
         return e.fail_not_found(
-            "User", "", result_type=r[tuple[str, t.Auth.ManagersUserData]]
+            "User",
+            "",
+            result_type=r[tuple[str, t.Auth.ManagersUserData]],
         )
 
 

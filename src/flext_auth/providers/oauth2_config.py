@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Collection
+from typing import TYPE_CHECKING
 
 from flext_auth import c, m, p, r
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 
 class FlextAuthOAuth2Config:

@@ -24,7 +24,7 @@ class FlextAuthProviderCodecMixin:
         settings = self._provider_config
         if not settings:
             return r[t.Auth.TokensClaimMap].fail(
-                "Provider configuration required for token decoding"
+                "Provider configuration required for token decoding",
             )
         decoded: p.Result[t.Auth.TokensClaimMap] = u.Auth.decode_token(
             token,
@@ -41,7 +41,9 @@ class FlextAuthProviderCodecMixin:
         """Encode token payload using JWT with canonical result flow."""
         normalized_payload = t.json_dict_adapter().validate_python(payload)
         encoded: p.Result[str] = u.Auth.encode_token(
-            normalized_payload, secret, algorithm
+            normalized_payload,
+            secret,
+            algorithm,
         )
         return encoded
 
@@ -67,7 +69,7 @@ class FlextAuthProviderCodecMixin:
                 return r[str].ok(value)
         return r[str].fail(
             "No identity field found in token claims "
-            f"(checked: {', '.join(c.Auth.TOKEN_IDENTITY_KEYS)})"
+            f"(checked: {', '.join(c.Auth.TOKEN_IDENTITY_KEYS)})",
         )
 
     def _extract_token_string(self, token: str | p.Auth.Token) -> str:

@@ -37,7 +37,7 @@ class TestsFlextAuthApiCase07:
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         get_result = auth.identity_service.identity_manager.get_user_by_username(
-            "test_username_lookup"
+            "test_username_lookup",
         )
         u.Tests.Matchers.that(get_result.success, is_=bool)
 
@@ -67,14 +67,14 @@ class TestsFlextAuthApiCase07:
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            user.unique_id
+            user.unique_id,
         )
         if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.session_service.session_manager.end_session_by_id(
-                    session_id
+                    session_id,
                 )
                 u.Tests.Matchers.that(logout_result.success, is_=bool)
 
@@ -82,7 +82,7 @@ class TestsFlextAuthApiCase07:
         """Test revoke_session method functionality."""
         auth = FlextAuth()
         revoke_result = auth.session_service.session_manager.end_session_by_id(
-            "test_session_id"
+            "test_session_id",
         )
         u.Tests.Matchers.that(revoke_result.success, is_=bool)
 
@@ -90,7 +90,7 @@ class TestsFlextAuthApiCase07:
         """Test get_user_sessions method functionality."""
         auth = FlextAuth()
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            "test_user_id"
+            "test_user_id",
         )
         u.Tests.Matchers.that(sessions_result.success, is_=bool)
 

@@ -50,7 +50,7 @@ class TestsFlextAuthApiCase05:
         """Test logout with invalid session ID."""
         auth: FlextAuth = FlextAuth()
         logout_result = auth.session_service.session_manager.end_session_by_id(
-            "invalid_session_id"
+            "invalid_session_id",
         )
         u.Tests.Matchers.that(not logout_result.success, eq=True)
         u.Tests.Matchers.that(not logout_result.success, eq=True)
@@ -69,7 +69,7 @@ class TestsFlextAuthApiCase05:
         assert isinstance(auth, FlextAuth)
         nonexistent_result = (
             auth.identity_service.identity_manager.get_user_by_username(
-                "nonexistent_user"
+                "nonexistent_user",
             )
         )
         u.Tests.Matchers.that(not nonexistent_result.success, eq=True)

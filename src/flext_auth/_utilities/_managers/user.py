@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, ClassVar
 
@@ -13,6 +12,8 @@ from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCrea
 from flext_core import FlextContext
 
 if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+
     from flext_auth.settings import FlextAuthSettings
 
 

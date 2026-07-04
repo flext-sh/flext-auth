@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from flext_api import m, u
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class FlextAuthModelsAuthSession:
@@ -22,7 +24,7 @@ class FlextAuthModelsAuthSession:
         ip_address: Annotated[str, u.Field(description="IP address")] = ""
         user_agent: Annotated[str, u.Field(description="User agent")] = ""
         last_accessed: datetime = u.Field(
-            default_factory=lambda: u.now(),
+            default_factory=u.now,
             description="Last access",
         )
 

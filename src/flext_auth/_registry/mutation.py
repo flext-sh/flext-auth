@@ -76,7 +76,9 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         return r[bool].ok(value=True)
 
     def update_config(
-        self, name: str, settings: t.ConfigurationMapping
+        self,
+        name: str,
+        settings: t.ConfigurationMapping,
     ) -> p.Result[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):

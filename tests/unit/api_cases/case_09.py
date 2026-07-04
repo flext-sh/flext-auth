@@ -98,14 +98,14 @@ class TestsFlextAuthApiCase09:
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            identity.unique_id
+            identity.unique_id,
         )
         if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 result = auth.session_service.session_manager.end_session_by_id(
-                    session_id
+                    session_id,
                 )
                 u.Tests.Matchers.that(result, is_=r)
                 u.Tests.Matchers.that(result.success, eq=True)

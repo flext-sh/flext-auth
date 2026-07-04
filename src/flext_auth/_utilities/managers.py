@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r
 
-from flext_auth import p, t
 from flext_auth._utilities._managers.auth_managers_session import (
     FlextAuthSessionManagers,
 )
@@ -15,6 +14,7 @@ from flext_auth._utilities._managers.user import FlextAuthUserManagers
 from flext_core import FlextContext
 
 if TYPE_CHECKING:
+    from flext_auth import p, t
     from flext_auth.settings import FlextAuthSettings
 
 
@@ -39,16 +39,18 @@ class FlextAuthUtilitiesManagers(
         )
 
         def __init__(
-            self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
+            self,
+            settings: FlextAuthSettings,
+            dispatcher: p.Dispatcher,
         ) -> None:
             """Initialize all standard managers used by services."""
             self.settings = settings
             self.dispatcher = dispatcher
             self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager(
-                settings
+                settings,
             )
             self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager(
-                settings
+                settings,
             )
             self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
                 settings,

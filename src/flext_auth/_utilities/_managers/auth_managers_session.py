@@ -115,7 +115,8 @@ class FlextAuthSessionManagers:
             return fail_result
 
         def get_active_sessions(
-            self, user_id: str
+            self,
+            user_id: str,
         ) -> p.Result[Sequence[m.Auth.Session]]:
             sessions: MutableSequence[m.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
@@ -146,7 +147,7 @@ class FlextAuthSessionManagers:
                     case _:
                         continue
             result: p.Result[Sequence[m.Auth.Session]] = r[Sequence[m.Auth.Session]].ok(
-                sessions
+                sessions,
             )
             return result
 

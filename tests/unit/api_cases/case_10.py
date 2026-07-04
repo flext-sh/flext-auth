@@ -27,7 +27,7 @@ class TestsFlextAuthApiCase10:
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.identity_service.identity_manager.get_user_by_username(
-            "non_existent_user"
+            "non_existent_user",
         )
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(not result.success, eq=True)

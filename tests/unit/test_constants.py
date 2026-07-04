@@ -49,7 +49,8 @@ class TestsFlextAuthConstantsUnit:
 
     def test_error_codes_constants(self) -> None:
         u.Tests.Matchers.that(
-            c.Auth.ERROR_INVALID_CREDENTIALS, eq="INVALID_CREDENTIALS"
+            c.Auth.ERROR_INVALID_CREDENTIALS,
+            eq="INVALID_CREDENTIALS",
         )
         u.Tests.Matchers.that(c.Auth.ERROR_ACCOUNT_LOCKED, eq="ACCOUNT_LOCKED")
         u.Tests.Matchers.that(c.Auth.ERROR_ACCOUNT_DISABLED, eq="ACCOUNT_DISABLED")
@@ -144,7 +145,8 @@ class TestsFlextAuthConstantsUnit:
         u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_ROLE_DESCRIPTION_LENGTH, eq=500)
         u.Tests.Matchers.that(c.Auth.VALIDATION_MAX_PERMISSION_NAME_LENGTH, eq=100)
         u.Tests.Matchers.that(
-            c.Auth.VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH, eq=500
+            c.Auth.VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH,
+            eq=500,
         )
 
     def test_oauth2_constants(self) -> None:

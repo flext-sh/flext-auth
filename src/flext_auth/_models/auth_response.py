@@ -124,7 +124,8 @@ class FlextAuthModelsAuthResponse:
                 u.Field(description="Provider version"),
             ] = "1.0.0"
             capabilities: t.VariadicTuple[str] = u.Field(
-                default_factory=tuple, description="Provider capabilities"
+                default_factory=tuple,
+                description="Provider capabilities",
             )
             extras: t.JsonMapping = u.Field(
                 default_factory=MappingProxyType,

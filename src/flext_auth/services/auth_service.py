@@ -140,7 +140,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
                             err,
                         ),
                         None,
-                    )[-1]
+                    )[-1],
                 )
         return auth_result
 

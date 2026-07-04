@@ -39,7 +39,8 @@ class FlextAuthModelsAuthUserIdentityExtras:
             if value is None:
                 return None
             if isinstance(value, Sequence) and not isinstance(
-                value, t.STR_BINARY_TYPES
+                value,
+                t.STR_BINARY_TYPES,
             ):
                 return list(value)
             return []

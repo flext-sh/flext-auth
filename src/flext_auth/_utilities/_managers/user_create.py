@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
-from datetime import datetime
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
 from flext_api import r, u
 
 from flext_auth import m, p, t
 from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+    from datetime import datetime
 
 
 class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
@@ -39,7 +41,7 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         user_id = str(uuid4())
         now = u.now()
         normalized_identity_extras = self.IdentityExtras.model_validate(
-            extra_fields
+            extra_fields,
         ).model_dump(exclude_none=True)
         user = m.Auth.AuthIdentity.model_validate(
             {

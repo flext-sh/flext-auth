@@ -127,7 +127,8 @@ class FlextAuthKerberosSupport:
         ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             raw_payload = validator_candidate(ticket)
             if isinstance(
-                raw_payload, (m.Auth.AuthIdentity, m.Auth.KerberosTicketData)
+                raw_payload,
+                (m.Auth.AuthIdentity, m.Auth.KerberosTicketData),
             ):
                 return raw_payload
             if isinstance(raw_payload, Mapping):
