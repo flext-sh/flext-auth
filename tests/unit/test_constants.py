@@ -14,6 +14,7 @@ avoid poking implementation internals such as ``__mro__``.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from enum import StrEnum
 
 import pytest
@@ -243,10 +244,10 @@ class TestsFlextAuthConstants:
     )
     def test_exposed_mappings_reject_mutation(
         self,
-        mapping: object,
+        mapping: Mapping[str, object],
     ) -> None:
-        with pytest.raises(TypeError):
-            mapping["injected"] = 1  # type: ignore[index]  # Why: MappingProxyType is read-only; asserting immutability.
+        with pytest.raises((TypeError, AttributeError)):
+            getattr(mapping, "__setitem__")("injected", 1)
 
     # ----- Mapping contract: required keys and payload shape -----
 
