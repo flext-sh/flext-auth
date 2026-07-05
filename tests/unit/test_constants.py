@@ -8,6 +8,10 @@ flext-core / flext-api namespaces through the facade. They intentionally
 avoid poking implementation internals such as ``__mro__``.
 """
 
+# mypy: warn-unused-ignores=False
+# Why: pyrefly requires ``type: ignore[attr-defined]`` on frozenset.add, which mypy
+# considers unused because it does not flag the call.
+
 from __future__ import annotations
 
 from enum import StrEnum
@@ -226,9 +230,9 @@ class TestsFlextAuthConstants:
     ) -> None:
         assert isinstance(valid_set, frozenset)
         with pytest.raises(AttributeError):
-            valid_set.add(  # type: ignore[attr-defined]  # Why: frozenset has no add; asserting immutability.
+            getattr(valid_set, "add")(
                 "mutated"
-            )
+            )  # Why: frozenset has no add; asserting immutability.
 
     @pytest.mark.parametrize(
         "mapping",
