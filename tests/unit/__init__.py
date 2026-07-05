@@ -28,9 +28,9 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".api_cases.support": ("FlextAuthApiTestDataHelper",),
             ".test_api": ("TestsFlextAuthApi",),
             ".test_config": ("TestsFlextAuthConfig",),
-            ".test_constants": ("TestsFlextAuthConstantsUnit",),
+            ".test_constants": ("TestsFlextAuthConstants",),
             ".test_token_real_flows": ("TestsFlextAuthTokenRealFlows",),
-            ".test_typings": ("TestsFlextAuthTypesUnit",),
+            ".test_typings": ("TestsFlextAuthTypings",),
             "flext_tests": (
                 "c",
                 "d",

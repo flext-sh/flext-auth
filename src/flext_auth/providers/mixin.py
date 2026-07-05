@@ -31,7 +31,7 @@ class FlextAuthProviderMixin(
 
     @property
     def settings(self) -> t.ScalarMapping | None:
-        """Get provider configuration."""
+        """Provider configuration mapping."""
         return self._provider_config
 
 

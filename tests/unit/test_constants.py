@@ -226,7 +226,9 @@ class TestsFlextAuthConstants:
     ) -> None:
         assert isinstance(valid_set, frozenset)
         with pytest.raises(AttributeError):
-            valid_set.add("mutated")  # type: ignore[attr-defined]  # Why: frozenset has no add; asserting immutability.
+            valid_set.add(  # type: ignore[attr-defined]  # Why: frozenset has no add; asserting immutability.
+                "mutated"
+            )
 
     @pytest.mark.parametrize(
         "mapping",

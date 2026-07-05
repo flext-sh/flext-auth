@@ -22,6 +22,8 @@ from flext_auth._exports import (
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_api import d as d, e as e, h as h, r as r, x as x
+
     from flext_auth.api import FlextAuth as FlextAuth, auth as auth
     from flext_auth.base import FlextAuthServiceBase as FlextAuthServiceBase, s as s
     from flext_auth.constants import FlextAuthConstants as FlextAuthConstants, c as c
@@ -72,7 +74,6 @@ if TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings as FlextAuthSettings
     from flext_auth.typings import FlextAuthTypes as FlextAuthTypes, t as t
     from flext_auth.utilities import FlextAuthUtilities as FlextAuthUtilities, u as u
-    from flext_core._root_typing_parts import d as d, e as e, h as h, r as r, x as x
 
 
 _LAZY_IMPORTS = {

@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from examples.simple_usage_08 import (
         FlextAuthSimpleUsageExample as FlextAuthSimpleUsageExample,
     )
-    from flext_core._root_typing_parts import (
+    from flext_auth import (
         c as c,
         d as d,
         e as e,
@@ -82,7 +82,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextAuthRefactoredSystemShowcaseExample",
             ),
             ".simple_usage_08": ("FlextAuthSimpleUsageExample",),
-            "flext_core._root_typing_parts": (
+            "flext_auth": (
                 "c",
                 "d",
                 "e",

@@ -31,7 +31,7 @@ class FlextAuthProtocolsAuthProvider:
 
         @property
         def settings(self) -> t.ScalarMapping | None:
-            """Get provider configuration."""
+            """Provider configuration mapping."""
             ...
 
         def authenticate(

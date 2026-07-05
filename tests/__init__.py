@@ -82,15 +82,10 @@ if TYPE_CHECKING:
     )
     from tests.unit.test_api import TestsFlextAuthApi as TestsFlextAuthApi
     from tests.unit.test_config import TestsFlextAuthConfig as TestsFlextAuthConfig
-    from tests.unit.test_constants import (
-        TestsFlextAuthConstantsUnit as TestsFlextAuthConstantsUnit,
-    )
     from tests.unit.test_token_real_flows import (
         TestsFlextAuthTokenRealFlows as TestsFlextAuthTokenRealFlows,
     )
-    from tests.unit.test_typings import (
-        TestsFlextAuthTypesUnit as TestsFlextAuthTypesUnit,
-    )
+    from tests.unit.test_typings import TestsFlextAuthTypings as TestsFlextAuthTypings
     from tests.utilities import (
         TestsFlextAuthUtilities as TestsFlextAuthUtilities,
         u as u,
@@ -141,9 +136,8 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".unit.api_cases.support": ("FlextAuthApiTestDataHelper",),
             ".unit.test_api": ("TestsFlextAuthApi",),
             ".unit.test_config": ("TestsFlextAuthConfig",),
-            ".unit.test_constants": ("TestsFlextAuthConstantsUnit",),
             ".unit.test_token_real_flows": ("TestsFlextAuthTokenRealFlows",),
-            ".unit.test_typings": ("TestsFlextAuthTypesUnit",),
+            ".unit.test_typings": ("TestsFlextAuthTypings",),
             ".utilities": (
                 "TestsFlextAuthUtilities",
                 "u",
