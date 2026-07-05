@@ -189,8 +189,14 @@ class TestsFlextAuthConstants:
     @pytest.mark.parametrize(
         ("low", "high"),
         [
-            (c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH, c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH),
-            (c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH, c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH),
+            (
+                c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH,
+                c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH,
+            ),
+            (
+                c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH,
+                c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH,
+            ),
             (c.Auth.JWT_DEFAULT_EXPIRY_MINUTES, c.Auth.JWT_MAX_EXPIRY_MINUTES),
             (c.Auth.SESSION_DEFAULT_EXPIRY_MINUTES, c.Auth.SESSION_MAX_EXPIRY_MINUTES),
         ],
