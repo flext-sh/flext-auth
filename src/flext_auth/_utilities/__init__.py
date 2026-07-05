@@ -42,6 +42,9 @@ if TYPE_CHECKING:
     from flext_auth._utilities.auth_validation import (
         FlextAuthUtilitiesAuthValidation as FlextAuthUtilitiesAuthValidation,
     )
+    from flext_auth._utilities.identity_audit import (
+        FlextAuthIdentityAudit as FlextAuthIdentityAudit,
+    )
     from flext_auth._utilities.managers import (
         FlextAuthUtilitiesManagers as FlextAuthUtilitiesManagers,
     )
@@ -60,6 +63,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".auth_response": ("FlextAuthUtilitiesAuthResponse",),
             ".auth_token": ("FlextAuthUtilitiesAuthToken",),
             ".auth_validation": ("FlextAuthUtilitiesAuthValidation",),
+            ".identity_audit": ("FlextAuthIdentityAudit",),
             ".managers": ("FlextAuthUtilitiesManagers",),
         },
     ),

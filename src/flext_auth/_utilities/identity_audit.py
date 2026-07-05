@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from flext_api import u
 
@@ -47,11 +47,14 @@ class FlextAuthIdentityAudit:
                 provider="internal",
                 reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
             )
-        return self.identity_manager.update_user(
-            identity.unique_id,
-            failed_attempts=identity.failed_attempts,
-            locked_until=identity.locked_until,
-        ).map(lambda _: True)
+        return cast(
+            "p.Result[bool]",
+            self.identity_manager.update_user(
+                identity.unique_id,
+                failed_attempts=identity.failed_attempts,
+                locked_until=identity.locked_until,
+            ).map(lambda _: True),
+        )
 
     def _log_authorization_result(
         self,

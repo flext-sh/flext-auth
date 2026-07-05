@@ -30,6 +30,9 @@ if TYPE_CHECKING:
     from flext_auth._models.auth_token import (
         FlextAuthModelsAuthToken as FlextAuthModelsAuthToken,
     )
+    from flext_auth._models.auth_user_identity_extras import (
+        FlextAuthModelsAuthUserIdentityExtras as FlextAuthModelsAuthUserIdentityExtras,
+    )
 _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".auth": ("FlextAuthModelsAuth",),
@@ -40,6 +43,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".auth_response": ("FlextAuthModelsAuthResponse",),
         ".auth_session": ("FlextAuthModelsAuthSession",),
         ".auth_token": ("FlextAuthModelsAuthToken",),
+        ".auth_user_identity_extras": ("FlextAuthModelsAuthUserIdentityExtras",),
     },
 )
 

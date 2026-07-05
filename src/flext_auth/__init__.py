@@ -72,7 +72,7 @@ if TYPE_CHECKING:
     from flext_auth.settings import FlextAuthSettings as FlextAuthSettings
     from flext_auth.typings import FlextAuthTypes as FlextAuthTypes, t as t
     from flext_auth.utilities import FlextAuthUtilities as FlextAuthUtilities, u as u
-    from flext_core import d as d, e as e, h as h, r as r, x as x
+    from flext_core._root_typing_parts import d as d, e as e, h as h, r as r, x as x
 
 
 _LAZY_IMPORTS = {
@@ -95,6 +95,55 @@ _EAGER_EXPORTS = (
 
 
 _PUBLIC_EXPORTS: tuple[str, ...] = FLEXT_AUTH_PUBLIC_EXPORTS
+
+__all__: tuple[str, ...] = (
+    "FlextAuth",
+    "FlextAuthApiKeyProvider",
+    "FlextAuthApplicationService",
+    "FlextAuthBasicProvider",
+    "FlextAuthCertificateProvider",
+    "FlextAuthConstants",
+    "FlextAuthIdentityService",
+    "FlextAuthJwtProvider",
+    "FlextAuthJwtTokenValidator",
+    "FlextAuthKerberosProvider",
+    "FlextAuthLdapProvider",
+    "FlextAuthModels",
+    "FlextAuthOAuth2Provider",
+    "FlextAuthOidcProvider",
+    "FlextAuthProtocols",
+    "FlextAuthProviderMixin",
+    "FlextAuthProviderService",
+    "FlextAuthRegistry",
+    "FlextAuthRfcProvider",
+    "FlextAuthSamlProvider",
+    "FlextAuthServiceBase",
+    "FlextAuthSessionService",
+    "FlextAuthSettings",
+    "FlextAuthTokenService",
+    "FlextAuthTypes",
+    "FlextAuthUtilities",
+    "__author__",
+    "__author_email__",
+    "__description__",
+    "__license__",
+    "__title__",
+    "__url__",
+    "__version__",
+    "__version_info__",
+    "auth",
+    "c",
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "u",
+    "x",
+)
 
 
 install_lazy_exports(
