@@ -8,11 +8,21 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth._constants.auth import FlextAuthConstantsAuth
-    from flext_auth._constants.auth_claims import FlextAuthConstantsAuthClaims
-    from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
-    from flext_auth._constants.auth_security import FlextAuthConstantsAuthSecurity
-    from flext_auth._constants.auth_values import FlextAuthConstantsAuthValues
+    from flext_auth._constants.auth import (
+        FlextAuthConstantsAuth as FlextAuthConstantsAuth,
+    )
+    from flext_auth._constants.auth_claims import (
+        FlextAuthConstantsAuthClaims as FlextAuthConstantsAuthClaims,
+    )
+    from flext_auth._constants.auth_enums import (
+        FlextAuthConstantsAuthEnums as FlextAuthConstantsAuthEnums,
+    )
+    from flext_auth._constants.auth_security import (
+        FlextAuthConstantsAuthSecurity as FlextAuthConstantsAuthSecurity,
+    )
+    from flext_auth._constants.auth_values import (
+        FlextAuthConstantsAuthValues as FlextAuthConstantsAuthValues,
+    )
 _LAZY_IMPORTS = build_lazy_import_map(
     {
         ".auth": ("FlextAuthConstantsAuth",),

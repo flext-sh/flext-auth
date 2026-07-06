@@ -12,22 +12,56 @@ from flext_core.lazy import (
 )
 
 if TYPE_CHECKING:
-    from examples._utilities.example_utilities import FlextAuthExampleUtilities
-    from examples.advanced_features_02 import FlextAuthAdvancedFeaturesExample
-    from examples.basic_auth_05 import FlextAuthBasicAuthExample
-    from examples.basic_refactored_usage_06 import FlextAuthDemo
-    from examples.basic_usage_01 import FlextAuthBasicUsageExample
-    from examples.basic_usage_07 import FlextAuthBasicUsagePortugueseExample
-    from examples.basic_usage_flows import FlextAuthBasicUsageFlows
-    from examples.basic_usage_workflow import FlextAuthBasicUsageWorkflow
-    from examples.comprehensive_demo_03 import FlextAuthComprehensiveDemo
-    from examples.debug_auth_issues_09 import FlextAuthDebugIssuesExample
-    from examples.flext_config_usage import FlextAuthConfigUsageExample
-    from examples.refactored_system_showcase_04 import (
-        FlextAuthRefactoredSystemShowcaseExample,
+    from examples._utilities.example_utilities import (
+        FlextAuthExampleUtilities as FlextAuthExampleUtilities,
     )
-    from examples.simple_usage_08 import FlextAuthSimpleUsageExample
-    from flext_auth import c, d, e, h, m, p, r, s, t, u, x
+    from examples.advanced_features_02 import (
+        FlextAuthAdvancedFeaturesExample as FlextAuthAdvancedFeaturesExample,
+    )
+    from examples.basic_auth_05 import (
+        FlextAuthBasicAuthExample as FlextAuthBasicAuthExample,
+    )
+    from examples.basic_refactored_usage_06 import FlextAuthDemo as FlextAuthDemo
+    from examples.basic_usage_01 import (
+        FlextAuthBasicUsageExample as FlextAuthBasicUsageExample,
+    )
+    from examples.basic_usage_07 import (
+        FlextAuthBasicUsagePortugueseExample as FlextAuthBasicUsagePortugueseExample,
+    )
+    from examples.basic_usage_flows import (
+        FlextAuthBasicUsageFlows as FlextAuthBasicUsageFlows,
+    )
+    from examples.basic_usage_workflow import (
+        FlextAuthBasicUsageWorkflow as FlextAuthBasicUsageWorkflow,
+    )
+    from examples.comprehensive_demo_03 import (
+        FlextAuthComprehensiveDemo as FlextAuthComprehensiveDemo,
+    )
+    from examples.debug_auth_issues_09 import (
+        FlextAuthDebugIssuesExample as FlextAuthDebugIssuesExample,
+    )
+    from examples.flext_config_usage import (
+        FlextAuthConfigUsageExample as FlextAuthConfigUsageExample,
+    )
+    from examples.refactored_system_showcase_04 import (
+        FlextAuthRefactoredSystemShowcaseExample as FlextAuthRefactoredSystemShowcaseExample,
+    )
+    from examples.simple_usage_08 import (
+        FlextAuthSimpleUsageExample as FlextAuthSimpleUsageExample,
+    )
+    from flext_auth import (
+        c as c,
+        d as d,
+        e as e,
+        h as h,
+        m as m,
+        p as p,
+        r as r,
+        s as s,
+        t as t,
+        u as u,
+        x as x,
+    )
 _LAZY_IMPORTS = merge_lazy_imports(
     ("._utilities",),
     build_lazy_import_map(

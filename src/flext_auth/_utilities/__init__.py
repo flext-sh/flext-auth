@@ -13,21 +13,41 @@ from flext_core.lazy import (
 
 if TYPE_CHECKING:
     from flext_auth._utilities._managers.auth_managers_session import (
-        FlextAuthSessionManagers,
+        FlextAuthSessionManagers as FlextAuthSessionManagers,
     )
     from flext_auth._utilities._managers.rate_limiter import (
-        FlextAuthRateLimiterManagers,
+        FlextAuthRateLimiterManagers as FlextAuthRateLimiterManagers,
     )
-    from flext_auth._utilities._managers.user import FlextAuthUserManagers
-    from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
-    from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
-    from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
-    from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
-    from flext_auth._utilities.auth_response import FlextAuthUtilitiesAuthResponse
-    from flext_auth._utilities.auth_token import FlextAuthUtilitiesAuthToken
-    from flext_auth._utilities.auth_validation import FlextAuthUtilitiesAuthValidation
-    from flext_auth._utilities.identity_audit import FlextAuthIdentityAudit
-    from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
+    from flext_auth._utilities._managers.user import (
+        FlextAuthUserManagers as FlextAuthUserManagers,
+    )
+    from flext_auth._utilities._managers.user_create import (
+        FlextAuthUserManagerCreate as FlextAuthUserManagerCreate,
+    )
+    from flext_auth._utilities._managers.user_read import (
+        FlextAuthUserManagerRead as FlextAuthUserManagerRead,
+    )
+    from flext_auth._utilities._managers.user_write import (
+        FlextAuthUserManagerWrite as FlextAuthUserManagerWrite,
+    )
+    from flext_auth._utilities.auth import (
+        FlextAuthUtilitiesAuth as FlextAuthUtilitiesAuth,
+    )
+    from flext_auth._utilities.auth_response import (
+        FlextAuthUtilitiesAuthResponse as FlextAuthUtilitiesAuthResponse,
+    )
+    from flext_auth._utilities.auth_token import (
+        FlextAuthUtilitiesAuthToken as FlextAuthUtilitiesAuthToken,
+    )
+    from flext_auth._utilities.auth_validation import (
+        FlextAuthUtilitiesAuthValidation as FlextAuthUtilitiesAuthValidation,
+    )
+    from flext_auth._utilities.identity_audit import (
+        FlextAuthIdentityAudit as FlextAuthIdentityAudit,
+    )
+    from flext_auth._utilities.managers import (
+        FlextAuthUtilitiesManagers as FlextAuthUtilitiesManagers,
+    )
 _LAZY_IMPORTS = merge_lazy_imports(
     ("._managers",),
     build_lazy_import_map(
