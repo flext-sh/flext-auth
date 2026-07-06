@@ -24,11 +24,27 @@ from flext_core.lazy import (
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, x
 
-    from flext_auth.api import FlextAuth
+    from flext_auth.api import FlextAuth, auth
     from flext_auth.base import FlextAuthServiceBase, s
     from flext_auth.constants import FlextAuthConstants, c
     from flext_auth.models import FlextAuthModels, m
     from flext_auth.protocols import FlextAuthProtocols, p
+    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
+    from flext_auth.providers.basic import FlextAuthBasicProvider
+    from flext_auth.providers.certificate import FlextAuthCertificateProvider
+    from flext_auth.providers.jwt import FlextAuthJwtProvider
+    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
+    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
+    from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
+    from flext_auth.providers.ldap import FlextAuthLdapProvider
+    from flext_auth.providers.mixin import FlextAuthProviderMixin
+    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+    from flext_auth.providers.oauth2_config import FlextAuthOAuth2Config
+    from flext_auth.providers.oauth2_introspection import FlextAuthOAuth2Introspection
+    from flext_auth.providers.oauth2_tokens import FlextAuthOAuth2Tokens
+    from flext_auth.providers.oidc import FlextAuthOidcProvider
+    from flext_auth.providers.rfc import FlextAuthRfcProvider
+    from flext_auth.providers.saml import FlextAuthSamlProvider
     from flext_auth.registry import FlextAuthRegistry
     from flext_auth.services.auth_service import FlextAuthApplicationService
     from flext_auth.services.identity_service import FlextAuthIdentityService
@@ -41,6 +57,7 @@ if TYPE_CHECKING:
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         "._registry",
+        ".providers",
         ".services",
     ),
     build_lazy_import_map(
@@ -70,6 +87,25 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "FlextAuthProtocols",
                 "p",
             ),
+            ".providers._mixins.codec": ("FlextAuthProviderCodecMixin",),
+            ".providers._mixins.tokens": ("FlextAuthProviderTokenMixin",),
+            ".providers._mixins.validation": ("FlextAuthProviderValidationMixin",),
+            ".providers.apikey": ("FlextAuthApiKeyProvider",),
+            ".providers.basic": ("FlextAuthBasicProvider",),
+            ".providers.certificate": ("FlextAuthCertificateProvider",),
+            ".providers.jwt": ("FlextAuthJwtProvider",),
+            ".providers.jwt_token_validator": ("FlextAuthJwtTokenValidator",),
+            ".providers.kerberos": ("FlextAuthKerberosProvider",),
+            ".providers.kerberos_support": ("FlextAuthKerberosSupport",),
+            ".providers.ldap": ("FlextAuthLdapProvider",),
+            ".providers.mixin": ("FlextAuthProviderMixin",),
+            ".providers.oauth2": ("FlextAuthOAuth2Provider",),
+            ".providers.oauth2_config": ("FlextAuthOAuth2Config",),
+            ".providers.oauth2_introspection": ("FlextAuthOAuth2Introspection",),
+            ".providers.oauth2_tokens": ("FlextAuthOAuth2Tokens",),
+            ".providers.oidc": ("FlextAuthOidcProvider",),
+            ".providers.rfc": ("FlextAuthRfcProvider",),
+            ".providers.saml": ("FlextAuthSamlProvider",),
             ".registry": ("FlextAuthRegistry",),
             ".services.auth_service": ("FlextAuthApplicationService",),
             ".services.identity_service": ("FlextAuthIdentityService",),
@@ -95,6 +131,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
         },
     ),
     exclude_names=(
+        "_mixins",
         "cleanup_submodule_namespace",
         "install_lazy_exports",
         "lazy_getattr",
@@ -119,13 +156,29 @@ _LAZY_IMPORTS = merge_lazy_imports(
 
 __all__: tuple[str, ...] = (
     "FlextAuth",
+    "FlextAuthApiKeyProvider",
     "FlextAuthApplicationService",
+    "FlextAuthBasicProvider",
+    "FlextAuthCertificateProvider",
     "FlextAuthConstants",
     "FlextAuthIdentityService",
+    "FlextAuthJwtProvider",
+    "FlextAuthJwtTokenValidator",
+    "FlextAuthKerberosProvider",
+    "FlextAuthKerberosSupport",
+    "FlextAuthLdapProvider",
     "FlextAuthModels",
+    "FlextAuthOAuth2Config",
+    "FlextAuthOAuth2Introspection",
+    "FlextAuthOAuth2Provider",
+    "FlextAuthOAuth2Tokens",
+    "FlextAuthOidcProvider",
     "FlextAuthProtocols",
+    "FlextAuthProviderMixin",
     "FlextAuthProviderService",
     "FlextAuthRegistry",
+    "FlextAuthRfcProvider",
+    "FlextAuthSamlProvider",
     "FlextAuthServiceBase",
     "FlextAuthSessionService",
     "FlextAuthSettings",
