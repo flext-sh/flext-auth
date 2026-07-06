@@ -12,84 +12,31 @@ from flext_core.lazy import (
 )
 
 if TYPE_CHECKING:
-    from flext_tests import (
-        d as d,
-        e as e,
-        h as h,
-        r as r,
-        td as td,
-        tf as tf,
-        tk as tk,
-        tm as tm,
-        tv as tv,
-        x as x,
-    )
+    from flext_tests import d, e, h, r, td, tf, tk, tm, tv, x
 
-    from tests.base import (
-        TestsFlextAuthServiceBase as TestsFlextAuthServiceBase,
-        s as s,
-    )
-    from tests.constants import (
-        TestsFlextAuthConstants as TestsFlextAuthConstants,
-        c as c,
-    )
-    from tests.models import (
-        CertificateFixture as CertificateFixture,
-        TestsFlextAuthModels as TestsFlextAuthModels,
-        m as m,
-    )
-    from tests.protocols import (
-        TestsFlextAuthProtocols as TestsFlextAuthProtocols,
-        p as p,
-    )
-    from tests.settings import TestsFlextAuthSettings as TestsFlextAuthSettings
-    from tests.typings import TestsFlextAuthTypes as TestsFlextAuthTypes, t as t
-    from tests.unit.api_cases.case_01 import (
-        TestsFlextAuthApiCase01 as TestsFlextAuthApiCase01,
-    )
-    from tests.unit.api_cases.case_02 import (
-        TestsFlextAuthApiCase02 as TestsFlextAuthApiCase02,
-    )
-    from tests.unit.api_cases.case_03 import (
-        TestsFlextAuthApiCase03 as TestsFlextAuthApiCase03,
-    )
-    from tests.unit.api_cases.case_04 import (
-        TestsFlextAuthApiCase04 as TestsFlextAuthApiCase04,
-    )
-    from tests.unit.api_cases.case_05 import (
-        TestsFlextAuthApiCase05 as TestsFlextAuthApiCase05,
-    )
-    from tests.unit.api_cases.case_06 import (
-        TestsFlextAuthApiCase06 as TestsFlextAuthApiCase06,
-    )
-    from tests.unit.api_cases.case_07 import (
-        TestsFlextAuthApiCase07 as TestsFlextAuthApiCase07,
-    )
-    from tests.unit.api_cases.case_08 import (
-        TestsFlextAuthApiCase08 as TestsFlextAuthApiCase08,
-    )
-    from tests.unit.api_cases.case_09 import (
-        TestsFlextAuthApiCase09 as TestsFlextAuthApiCase09,
-    )
-    from tests.unit.api_cases.case_10 import (
-        TestsFlextAuthApiCase10 as TestsFlextAuthApiCase10,
-    )
-    from tests.unit.api_cases.case_11 import (
-        TestsFlextAuthApiCase11 as TestsFlextAuthApiCase11,
-    )
-    from tests.unit.api_cases.support import (
-        FlextAuthApiTestDataHelper as FlextAuthApiTestDataHelper,
-    )
-    from tests.unit.test_api import TestsFlextAuthApi as TestsFlextAuthApi
-    from tests.unit.test_config import TestsFlextAuthConfig as TestsFlextAuthConfig
-    from tests.unit.test_token_real_flows import (
-        TestsFlextAuthTokenRealFlows as TestsFlextAuthTokenRealFlows,
-    )
-    from tests.unit.test_typings import TestsFlextAuthTypings as TestsFlextAuthTypings
-    from tests.utilities import (
-        TestsFlextAuthUtilities as TestsFlextAuthUtilities,
-        u as u,
-    )
+    from tests.base import TestsFlextAuthServiceBase, s
+    from tests.constants import TestsFlextAuthConstants, c
+    from tests.models import CertificateFixture, TestsFlextAuthModels, m
+    from tests.protocols import TestsFlextAuthProtocols, p
+    from tests.settings import TestsFlextAuthSettings
+    from tests.typings import TestsFlextAuthTypes, t
+    from tests.unit.api_cases.case_01 import TestsFlextAuthApiCase01
+    from tests.unit.api_cases.case_02 import TestsFlextAuthApiCase02
+    from tests.unit.api_cases.case_03 import TestsFlextAuthApiCase03
+    from tests.unit.api_cases.case_04 import TestsFlextAuthApiCase04
+    from tests.unit.api_cases.case_05 import TestsFlextAuthApiCase05
+    from tests.unit.api_cases.case_06 import TestsFlextAuthApiCase06
+    from tests.unit.api_cases.case_07 import TestsFlextAuthApiCase07
+    from tests.unit.api_cases.case_08 import TestsFlextAuthApiCase08
+    from tests.unit.api_cases.case_09 import TestsFlextAuthApiCase09
+    from tests.unit.api_cases.case_10 import TestsFlextAuthApiCase10
+    from tests.unit.api_cases.case_11 import TestsFlextAuthApiCase11
+    from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+    from tests.unit.test_api import TestsFlextAuthApi
+    from tests.unit.test_config import TestsFlextAuthConfig
+    from tests.unit.test_token_real_flows import TestsFlextAuthTokenRealFlows
+    from tests.unit.test_typings import TestsFlextAuthTypings
+    from tests.utilities import TestsFlextAuthUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         ".fixtures",
