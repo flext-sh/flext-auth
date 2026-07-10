@@ -24,6 +24,10 @@ from flext_core.lazy import (
 if TYPE_CHECKING:
     from flext_api import d as d, e as e, h as h, r as r, x as x
 
+    from flext_auth._settings import (
+        FlextAuthSettings as FlextAuthSettings,
+        settings as settings,
+    )
     from flext_auth.api import FlextAuth as FlextAuth, auth as auth
     from flext_auth.base import FlextAuthServiceBase as FlextAuthServiceBase, s as s
     from flext_auth.constants import FlextAuthConstants as FlextAuthConstants, c as c
