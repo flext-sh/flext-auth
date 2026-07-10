@@ -83,7 +83,6 @@ if TYPE_CHECKING:
     from flext_auth.services.token_service import (
         FlextAuthTokenService as FlextAuthTokenService,
     )
-    from flext_auth.settings import FlextAuthSettings as FlextAuthSettings
     from flext_auth.typings import FlextAuthTypes as FlextAuthTypes, t as t
     from flext_auth.utilities import FlextAuthUtilities as FlextAuthUtilities, u as u
 _LAZY_IMPORTS = merge_lazy_imports(
@@ -94,6 +93,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
     ),
     build_lazy_import_map(
         {
+            "._settings": ("FlextAuthSettings", "settings"),
             "._registry.base": ("FlextAuthRegistryBase",),
             "._registry.lookup": ("FlextAuthRegistryLookup",),
             "._registry.metadata": ("FlextAuthRegistryMetadata",),
@@ -144,7 +144,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
             ".services.provider_service": ("FlextAuthProviderService",),
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
-            ".settings": ("FlextAuthSettings",),
             ".typings": (
                 "FlextAuthTypes",
                 "t",
@@ -187,6 +186,8 @@ _LAZY_IMPORTS = merge_lazy_imports(
 
 
 __all__: tuple[str, ...] = (
+    "FlextAuthSettings",
+    "settings",
     "FlextAuth",
     "FlextAuthApiKeyProvider",
     "FlextAuthApplicationService",
@@ -213,7 +214,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthSamlProvider",
     "FlextAuthServiceBase",
     "FlextAuthSessionService",
-    "FlextAuthSettings",
     "FlextAuthTokenService",
     "FlextAuthTypes",
     "FlextAuthUtilities",

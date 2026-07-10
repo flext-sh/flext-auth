@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, FlextAuthSettings
+from flext_auth import settings
 
 
 class FlextAuthConfigUsageExample:
@@ -11,13 +11,8 @@ class FlextAuthConfigUsageExample:
     @staticmethod
     def main() -> None:
         """Demonstrate settings overrides and service wiring."""
-        base = FlextAuthSettings.fetch_global()
-        if base.expiry_minutes < 1:
+        if settings.expiry_minutes < 1:
             return
-        production = FlextAuthSettings.fetch_global()
-        if production.expiry_minutes < 1:
-            return
-        _ = FlextAuth(settings=production)
 
 
 if __name__ == "__main__":

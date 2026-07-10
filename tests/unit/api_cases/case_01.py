@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, FlextAuthSettings
+from flext_auth import FlextAuth
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 from tests.utilities import u
 
@@ -112,7 +112,6 @@ class TestsFlextAuthApiCase01:
 
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
-        custom_config = FlextAuthSettings.fetch_global()
         auth = FlextAuth(settings=custom_config)
         u.Tests.Matchers.that(auth.settings, eq=custom_config)
 

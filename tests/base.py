@@ -17,7 +17,6 @@ class TestsFlextAuthServiceBase(tests_s):
     @override
     def fetch_settings(cls) -> TestsFlextAuthSettings:
         """Return the typed Auth+Tests settings singleton."""
-        return TestsFlextAuthSettings.fetch_global()
 
     @classmethod
     @override

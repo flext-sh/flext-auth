@@ -21,7 +21,9 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
     ) -> None:
         """Flexible initialization with automatic provider registration."""
         super().__init__()
-        self._auth_config = settings if settings is not None else FlextAuthSettings()
+        self._auth_config = (
+            settings if settings is not None else FlextAuthSettings.fetch_global()
+        )
         self._providers = registry if registry is not None else FlextAuthRegistry()
         self._register_builtin_providers()
 

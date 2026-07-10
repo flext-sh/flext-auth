@@ -15,7 +15,7 @@ from flext_core import FlextContext
 
 if TYPE_CHECKING:
     from flext_auth import p, t
-    from flext_auth.settings import FlextAuthSettings
+    from flext_auth._settings import FlextAuthSettings
 
 
 class FlextAuthUtilitiesManagers(
@@ -44,7 +44,6 @@ class FlextAuthUtilitiesManagers(
             dispatcher: p.Dispatcher,
         ) -> None:
             """Initialize all standard managers used by services."""
-            self.settings = settings
             self.dispatcher = dispatcher
             self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager(
                 settings,

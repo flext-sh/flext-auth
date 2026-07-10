@@ -20,7 +20,6 @@ class FlextAuthServiceBase(s[bool], ABC):
     @override
     def settings(self) -> FlextAuthSettings:
         """Typed auth settings namespace."""
-        return FlextAuthSettings.fetch_global()
 
 
 s = FlextAuthServiceBase

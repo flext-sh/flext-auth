@@ -34,7 +34,6 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
         )
         scalar_config = self.project_to_scalar_config(normalized_config) or {}
         super().__init__(scalar_config)
-        self.config = normalized_config
         self._oauth2_config: t.MappingKV[str, t.Primitives] = scalar_config
         # Pydantic-typed view of the OAuth2 config — eliminates dict.get + isinstance
         # narrowing at every access site. ProviderConfig owns the field-typing

@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     )
 
     from flext_auth import p, t
-    from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthRateLimiterManagers:
@@ -22,11 +21,9 @@ class FlextAuthRateLimiterManagers:
     class FlextAuthRateLimiter:
         def __init__(
             self,
-            settings: FlextAuthSettings,
             dispatcher: p.Dispatcher,
         ) -> None:
             super().__init__()
-            self.config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
             self.context = FlextAuthRateLimiterManagers._context_type.create()

@@ -1,0 +1,3 @@
+Auth:
+  name: flext-auth
+  version: "0.12.0-dev"

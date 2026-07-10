@@ -15,7 +15,7 @@ from flext_auth import e, m, p, t
 from flext_core import FlextContainer, FlextContext
 
 if TYPE_CHECKING:
-    from flext_auth.settings import FlextAuthSettings
+    from flext_auth._settings import FlextAuthSettings
 
 
 class FlextAuthSessionManagers:
@@ -25,7 +25,6 @@ class FlextAuthSessionManagers:
     class FlextAuthSessionManager:
         def __init__(self, settings: FlextAuthSettings) -> None:
             super().__init__()
-            self.config = settings
             self.logger = u.fetch_logger(__name__)
             self.context = FlextAuthSessionManagers._context_type.create()
             self._dispatcher: p.Dispatcher = (

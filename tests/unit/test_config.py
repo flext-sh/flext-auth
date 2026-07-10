@@ -30,7 +30,6 @@ class TestsFlextAuthConfig:
     @pytest.fixture
     def settings(self) -> FlextAuthSettings:
         """Provide the current global settings instance."""
-        return FlextAuthSettings.fetch_global()
 
     def test_default_settings_expose_positive_expiry_and_string_algorithm(
         self,

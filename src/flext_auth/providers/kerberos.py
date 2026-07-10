@@ -12,14 +12,13 @@ from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
 class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     """Kerberos authentication provider."""
 
-    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
+    def __init__(self) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
         """
-        super().__init__(self.project_to_scalar_config(settings))
-        self.config = settings
+        super().__init__()
         validation_result = self._validate_kerberos_configuration()
         if validation_result.failure:
             msg = f"Kerberos configuration validation failed: {validation_result.error}"
