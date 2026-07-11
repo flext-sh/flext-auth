@@ -2,7 +2,8 @@
 
 Exercises observable settings behavior (defaults, validation, immutability,
 env overrides, secret handling) and the token flow that consumes the
-configured expiry, all through the public API only.
+configured expiry, all through the public API only. Every project field is
+accessed through the canonical nested namespace ``settings.Auth.*``.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -30,6 +31,7 @@ class TestsFlextAuthConfig:
     @pytest.fixture
     def settings(self) -> FlextAuthSettings:
         """Provide the current global settings instance."""
+        return FlextAuthSettings.fetch_global()
 
     def test_default_settings_expose_positive_expiry_and_string_algorithm(
         self,
@@ -37,10 +39,10 @@ class TestsFlextAuthConfig:
     ) -> None:
         """Default settings satisfy the documented value invariants."""
         u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
-        u.Tests.Matchers.that(settings.expiry_minutes, gt=0)
-        u.Tests.Matchers.that(settings.session_expiry_minutes, gt=0)
-        u.Tests.Matchers.that(settings.max_sessions_per_user, gt=0)
-        u.Tests.Matchers.that(settings.algorithm, is_=str)
+        u.Tests.Matchers.that(settings.Auth.expiry_minutes, gt=0)
+        u.Tests.Matchers.that(settings.Auth.session_expiry_minutes, gt=0)
+        u.Tests.Matchers.that(settings.Auth.max_sessions_per_user, gt=0)
+        u.Tests.Matchers.that(settings.Auth.algorithm, is_=str)
 
     @pytest.mark.parametrize(
         ("field_name", "expected"),
@@ -61,20 +63,20 @@ class TestsFlextAuthConfig:
     ) -> None:
         """Freshly constructed settings default each field to its constant."""
         settings = FlextAuthSettings()
-        u.Tests.Matchers.that(getattr(settings, field_name), eq=expected)
+        u.Tests.Matchers.that(getattr(settings.Auth, field_name), eq=expected)
 
     def test_clone_returns_new_instance_and_leaves_original_unchanged(
         self,
         settings: FlextAuthSettings,
     ) -> None:
         """Cloning produces an independent copy with the requested override."""
-        original_expiry = settings.expiry_minutes
+        original_expiry = settings.Auth.expiry_minutes
 
-        clone = settings.clone(expiry_minutes=original_expiry + 5)
+        clone = settings.clone(Auth={"expiry_minutes": original_expiry + 5})
 
         u.Tests.Matchers.that(clone is settings, eq=False)
-        u.Tests.Matchers.that(clone.expiry_minutes, eq=original_expiry + 5)
-        u.Tests.Matchers.that(settings.expiry_minutes, eq=original_expiry)
+        u.Tests.Matchers.that(clone.Auth.expiry_minutes, eq=original_expiry + 5)
+        u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=original_expiry)
 
     def test_model_copy_applies_multiple_overrides(
         self,
@@ -82,10 +84,14 @@ class TestsFlextAuthConfig:
     ) -> None:
         """model_copy overrides all requested fields in the returned copy."""
         updated = settings.model_copy(
-            update={"expiry_minutes": 60, "hash_rounds": 12},
+            update={
+                "Auth": settings.Auth.model_copy(
+                    update={"expiry_minutes": 60, "hash_rounds": 12},
+                ),
+            },
         )
-        u.Tests.Matchers.that(updated.expiry_minutes, eq=60)
-        u.Tests.Matchers.that(updated.hash_rounds, eq=12)
+        u.Tests.Matchers.that(updated.Auth.expiry_minutes, eq=60)
+        u.Tests.Matchers.that(updated.Auth.hash_rounds, eq=12)
 
     @pytest.mark.parametrize(
         "overrides",
@@ -103,41 +109,45 @@ class TestsFlextAuthConfig:
     ) -> None:
         """Values outside the declared bounds fail model validation."""
         with pytest.raises(m.ValidationError):
-            FlextAuthSettings.model_validate(overrides)
+            FlextAuthSettings.model_validate({"Auth": overrides})
 
     def test_auth_secret_property_wraps_secret_key_as_secret_str(self) -> None:
         """auth_secret exposes the secret_key as a SecretStr round-trip."""
         secret_value = "x" * (c.Auth.SECRET_MIN_LENGTH + 4)
 
-        settings = FlextAuthSettings(secret_key=secret_value)
+        settings = FlextAuthSettings.model_validate(
+            {"Auth": {"secret_key": secret_value}},
+        )
 
-        u.Tests.Matchers.that(settings.auth_secret, is_=t.SecretStr)
+        u.Tests.Matchers.that(settings.Auth.auth_secret, is_=t.SecretStr)
         u.Tests.Matchers.that(
-            settings.auth_secret.get_secret_value(),
-            eq=settings.secret_key,
+            settings.Auth.auth_secret.get_secret_value(),
+            eq=settings.Auth.secret_key,
         )
 
     def test_secret_str_input_is_normalized_to_plain_string_field(self) -> None:
         """A SecretStr passed for secret_key is stored as its plain value."""
         raw = "y" * (c.Auth.SECRET_MIN_LENGTH + 8)
 
-        settings = FlextAuthSettings.model_validate({"secret_key": t.SecretStr(raw)})
+        settings = FlextAuthSettings.model_validate(
+            {"Auth": {"secret_key": t.SecretStr(raw)}},
+        )
 
-        u.Tests.Matchers.that(settings.secret_key, is_=str)
-        u.Tests.Matchers.that(settings.secret_key, eq=raw)
+        u.Tests.Matchers.that(settings.Auth.secret_key, is_=str)
+        u.Tests.Matchers.that(settings.Auth.secret_key, eq=raw)
 
     def test_environment_prefix_overrides_defaults(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """FLEXT_AUTH_ prefixed env vars override the field defaults."""
-        monkeypatch.setenv("FLEXT_AUTH_EXPIRY_MINUTES", "123")
-        monkeypatch.setenv("FLEXT_AUTH_ALGORITHM", "HS512")
+        monkeypatch.setenv("FLEXT_AUTH_AUTH__EXPIRY_MINUTES", "123")
+        monkeypatch.setenv("FLEXT_AUTH_AUTH__ALGORITHM", "HS512")
 
         settings = FlextAuthSettings()
 
-        u.Tests.Matchers.that(settings.expiry_minutes, eq=123)
-        u.Tests.Matchers.that(settings.algorithm, eq="HS512")
+        u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=123)
+        u.Tests.Matchers.that(settings.Auth.algorithm, eq="HS512")
 
     def test_create_token_fails_for_unknown_identity(
         self,
