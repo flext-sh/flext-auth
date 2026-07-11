@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, FlextAuthSettings
 from tests.models import m
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 from tests.utilities import u
@@ -115,7 +115,7 @@ class TestsFlextAuthApiCase02:
     def test_model_config_validate_assignment(self) -> None:
         """Test validate_assignment configuration."""
         u.Tests.Matchers.that(
-            settings.model_config.get("validate_assignment", False) is True,
+            FlextAuthSettings.model_config.get("validate_assignment", False) is True,
             eq=True,
         )
 

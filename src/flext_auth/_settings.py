@@ -15,6 +15,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import secrets
 from typing import TYPE_CHECKING, Annotated, Final
 
 from pydantic import BaseModel, Field, SecretStr, computed_field, field_validator
@@ -76,7 +77,10 @@ class FlextAuthSettings(FlextSettings):
 
         secret_key: Annotated[
             str,
-            Field(default="", description="JWT signing secret (env-provided)"),
+            Field(
+                default_factory=lambda: secrets.token_urlsafe(_SECRET_MIN_LENGTH),
+                description="JWT signing secret (env-provided; auto-generated).",
+            ),
         ]
         algorithm: Annotated[
             str,
