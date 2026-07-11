@@ -11,7 +11,7 @@ class FlextAuthConfigUsageExample:
     @staticmethod
     def main() -> None:
         """Demonstrate settings overrides and service wiring."""
-        if settings.expiry_minutes < 1:
+        if settings.Auth.expiry_minutes < 1:
             return
 
 

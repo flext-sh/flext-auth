@@ -21,9 +21,9 @@ class FlextAuthBasicUsageFlows:
         settings = FlextAuthSettings()
         cls.logger.info(
             "Authentication configuration loaded",
-            expiry_minutes=settings.expiry_minutes,
-            hash_rounds=settings.hash_rounds,
-            max_sessions_per_user=settings.max_sessions_per_user,
+            expiry_minutes=settings.Auth.expiry_minutes,
+            hash_rounds=settings.Auth.hash_rounds,
+            max_sessions_per_user=settings.Auth.max_sessions_per_user,
         )
 
     @classmethod
