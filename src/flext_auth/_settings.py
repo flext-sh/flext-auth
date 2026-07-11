@@ -123,11 +123,7 @@ class FlextAuthSettings(FlextSettings):
         @classmethod
         def _normalize_secret_key(cls, value: str | SecretStr) -> str:
             """Unwrap a SecretStr input and enforce the min length when set."""
-            plain = (
-                value.get_secret_value()
-                if isinstance(value, SecretStr)
-                else value
-            )
+            plain = value.get_secret_value() if isinstance(value, SecretStr) else value
             if plain and len(plain) < _SECRET_MIN_LENGTH:
                 msg = "secret_key must be at least 32 characters when provided"
                 raise ValueError(msg)
@@ -138,6 +134,7 @@ class FlextAuthSettings(FlextSettings):
         def auth_secret(self) -> SecretStr:
             """The JWT signing secret wrapped as a SecretStr."""
             return SecretStr(self.secret_key)
+
         kerberos: Annotated[
             _Kerberos,
             Field(

@@ -43,9 +43,7 @@ class FlextAuthUtilitiesManagers(
             """Initialize all standard managers used by services."""
             self.dispatcher = dispatcher
             self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager()
-            self.session_manager = (
-                FlextAuthUtilitiesManagers.FlextAuthSessionManager()
-            )
+            self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager()
             self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
                 dispatcher,
             )

@@ -23,9 +23,7 @@ class FlextAuthKerberosSupport:
         """Railway-oriented validation of the typed Kerberos settings namespace."""
         kerberos = settings.Auth.kerberos
         missing = [
-            field
-            for field in self._KERBEROS_REQUIRED
-            if not getattr(kerberos, field)
+            field for field in self._KERBEROS_REQUIRED if not getattr(kerberos, field)
         ]
         if missing:
             return r[bool].fail(
