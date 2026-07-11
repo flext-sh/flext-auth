@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from types import MappingProxyType
 from typing import ClassVar
 
 from flext_auth import m, p, r, settings, t
@@ -17,34 +16,21 @@ class FlextAuthKerberosSupport:
         "kdc",
         "service_principal",
     )
-    _KERBEROS_FIELD_TYPES: ClassVar[t.MappingKV[str, tuple[type, ...]]] = (
-        MappingProxyType({
-            "realm": (str,),
-            "kdc": (str,),
-            "service_principal": (str,),
-            "keytab_path": (str, type(None)),
-            "clockskew_tolerance": (int, type(None)),
-            "ticket_lifetime": (int, type(None)),
-            "renew_lifetime": (int, type(None)),
-            "forwardable": (bool, type(None)),
-            "proxiable": (bool, type(None)),
-        })
-    )
 
-    def _validate_kerberos_settingsuration(self) -> p.Result[bool]:
-        """Railway-oriented Kerberos settingsuration validation."""
-        missing = [f for f in self._KERBEROS_REQUIRED if f not in settings]
+    _external_ticket_validator: t.Auth.KerberosTicketValidator | None = None
+
+    def _validate_kerberos_configuration(self) -> p.Result[bool]:
+        """Railway-oriented validation of the typed Kerberos settings namespace."""
+        kerberos = settings.Auth.kerberos
+        missing = [
+            field
+            for field in self._KERBEROS_REQUIRED
+            if not getattr(kerberos, field)
+        ]
         if missing:
             return r[bool].fail(
-                f"Missing required Kerberos settingsuration fields: {', '.join(missing)}",
+                f"Missing required Kerberos configuration fields: {', '.join(missing)}",
             )
-        for field, expected_types in self._KERBEROS_FIELD_TYPES.items():
-            value = settings.get(field)
-            if value is not None and not isinstance(value, expected_types):
-                return r[bool].fail(
-                    f"Kerberos {field!r}: expected {expected_types}, "
-                    f"got {type(value).__name__}",
-                )
         return r[bool].ok(value=True)
 
     class _KerberosTicketValidator:
@@ -111,8 +97,8 @@ class FlextAuthKerberosSupport:
         ]
         | None
     ):
-        validator_candidate = settings.get("ticket_validator")
-        if not callable(validator_candidate):
+        validator_candidate = self._external_ticket_validator
+        if validator_candidate is None:
             return None
 
         def validated(

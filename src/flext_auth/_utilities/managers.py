@@ -15,7 +15,6 @@ from flext_core import FlextContext
 
 if TYPE_CHECKING:
     from flext_auth import p, t
-    from flext_auth._settings import FlextAuthSettings
 
 
 class FlextAuthUtilitiesManagers(
@@ -34,25 +33,20 @@ class FlextAuthUtilitiesManagers(
             "dispatcher",
             "rate_limiter",
             "session_manager",
-            "settings",
             "user_manager",
         )
 
         def __init__(
             self,
-            settings: FlextAuthSettings,
             dispatcher: p.Dispatcher,
         ) -> None:
             """Initialize all standard managers used by services."""
             self.dispatcher = dispatcher
-            self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager(
-                settings,
-            )
-            self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager(
-                settings,
+            self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager()
+            self.session_manager = (
+                FlextAuthUtilitiesManagers.FlextAuthSessionManager()
             )
             self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
-                settings,
                 dispatcher,
             )
 

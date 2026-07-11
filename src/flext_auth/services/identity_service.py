@@ -6,7 +6,7 @@ from typing import override
 
 from flext_api import r
 
-from flext_auth import FlextAuthSettings, c, m, p, s, t
+from flext_auth import c, m, p, s, t
 from flext_auth._utilities.identity_audit import FlextAuthIdentityAudit
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
@@ -17,7 +17,6 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
     def __init__(
         self,
         *,
-        settings: FlextAuthSettings,
         dispatcher: p.Dispatcher,
         managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
     ) -> None:
@@ -26,7 +25,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         self._managers = (
             managers
             if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(settings, dispatcher)
+            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
         )
 
     @property

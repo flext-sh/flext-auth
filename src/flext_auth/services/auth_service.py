@@ -41,30 +41,29 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         settings: FlextAuthSettings | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
+        resolved_settings = (
+            settings if settings is not None else FlextAuthSettings.fetch_global()
+        )
         self._registry = FlextAuthRegistry()
         self._dispatcher = self._container_type.shared().dispatcher().unwrap()
         self.logger = u.fetch_logger(__name__)
         shared_managers = FlextAuthUtilitiesManagers.ServiceManagers(
-            settings,
             self._dispatcher,
         )
         self._provider_service = FlextAuthProviderService(
-            settings=settings,
+            settings=resolved_settings,
             registry=self._registry,
         )
         self._identity_service = FlextAuthIdentityService(
-            settings=settings,
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
         self._token_service = FlextAuthTokenService(
-            settings=settings,
             provider_service=self._provider_service,
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
         self._session_service = FlextAuthSessionService(
-            settings=settings,
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )

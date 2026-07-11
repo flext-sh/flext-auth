@@ -6,7 +6,7 @@ from collections.abc import (
     Sequence,
 )
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 from uuid import uuid4
 
 from flext_api import r, u
@@ -14,16 +14,13 @@ from flext_api import r, u
 from flext_auth import e, m, p, t
 from flext_core import FlextContainer, FlextContext
 
-if TYPE_CHECKING:
-    from flext_auth._settings import FlextAuthSettings
-
 
 class FlextAuthSessionManagers:
     _container_type: ClassVar[p.ContainerType] = FlextContainer
     _context_type: ClassVar[p.ContextType] = FlextContext
 
     class FlextAuthSessionManager:
-        def __init__(self, settings: FlextAuthSettings) -> None:
+        def __init__(self) -> None:
             super().__init__()
             self.logger = u.fetch_logger(__name__)
             self.context = FlextAuthSessionManagers._context_type.create()

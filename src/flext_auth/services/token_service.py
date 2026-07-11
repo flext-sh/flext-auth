@@ -16,7 +16,6 @@ from flext_api import r
 
 from flext_auth import (
     FlextAuthProviderService,
-    FlextAuthSettings,
     c,
     m,
     p,
@@ -36,7 +35,6 @@ class FlextAuthTokenService(s):
     def __init__(
         self,
         *,
-        settings: FlextAuthSettings,
         provider_service: FlextAuthProviderService,
         dispatcher: p.Dispatcher,
         managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
@@ -46,7 +44,7 @@ class FlextAuthTokenService(s):
         self._managers = (
             managers
             if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(settings, dispatcher)
+            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
         )
         self._provider_service = provider_service
         self._jwt_provider_cache: p.Auth.FlextAuthBaseProvider | None = None

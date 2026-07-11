@@ -35,6 +35,43 @@ class FlextAuthSettings(FlextSettings):
     class _Auth(BaseModel):
         """Namespaced auth settings (JWT + session + hashing)."""
 
+        class _Kerberos(BaseModel):
+            """Namespaced Kerberos provider settings (realm/KDC/ticket policy)."""
+
+            realm: Annotated[str, Field(default="", description="Kerberos realm")]
+            kdc: Annotated[
+                str,
+                Field(default="", description="Key Distribution Center host"),
+            ]
+            service_principal: Annotated[
+                str,
+                Field(default="", description="Service principal name (SPN)"),
+            ]
+            keytab_path: Annotated[
+                str | None,
+                Field(default=None, description="Path to the keytab file"),
+            ]
+            clockskew_tolerance: Annotated[
+                int | None,
+                Field(default=None, description="Allowed clock skew in seconds"),
+            ]
+            ticket_lifetime: Annotated[
+                int | None,
+                Field(default=None, description="Ticket lifetime in seconds"),
+            ]
+            renew_lifetime: Annotated[
+                int | None,
+                Field(default=None, description="Renewable ticket lifetime in seconds"),
+            ]
+            forwardable: Annotated[
+                bool | None,
+                Field(default=None, description="Whether tickets are forwardable"),
+            ]
+            proxiable: Annotated[
+                bool | None,
+                Field(default=None, description="Whether tickets are proxiable"),
+            ]
+
         secret_key: Annotated[
             str,
             Field(default="", description="JWT signing secret (env-provided)"),
@@ -66,6 +103,13 @@ class FlextAuthSettings(FlextSettings):
         hash_rounds: Annotated[
             int,
             Field(default=12, description="Password hash rounds (bcrypt)"),
+        ]
+        kerberos: Annotated[
+            _Kerberos,
+            Field(
+                default_factory=lambda: FlextAuthSettings._Auth._Kerberos(),
+                description="Kerberos realm/KDC settings.",
+            ),
         ]
 
     if TYPE_CHECKING:

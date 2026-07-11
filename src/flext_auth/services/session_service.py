@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthSettings, p, r, s, t, u
+from flext_auth import p, r, s, t, u
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
@@ -18,7 +18,6 @@ class FlextAuthSessionService(s):
 
     def __init__(
         self,
-        settings: FlextAuthSettings,
         dispatcher: p.Dispatcher,
         managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
     ) -> None:
@@ -27,7 +26,7 @@ class FlextAuthSessionService(s):
         self._managers = (
             managers
             if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(settings, dispatcher)
+            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
         )
 
     @property
