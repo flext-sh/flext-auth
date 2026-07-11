@@ -15,12 +15,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, Final
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr, computed_field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_core import FlextSettings
+
+_SECRET_MIN_LENGTH: Final[int] = 32
 
 
 class FlextAuthSettings(FlextSettings):
@@ -86,24 +88,52 @@ class FlextAuthSettings(FlextSettings):
         ]
         audience: Annotated[
             str,
-            Field(default="flext-users", description="Token audience claim"),
+            Field(
+                default="flext-auth-users",
+                description="Token audience claim",
+            ),
         ]
         expiry_minutes: Annotated[
             int,
-            Field(default=30, description="Access token expiry in minutes"),
+            Field(default=1440, gt=0, description="Access token expiry in minutes"),
         ]
         session_expiry_minutes: Annotated[
             int,
-            Field(default=120, description="Session expiry in minutes"),
+            Field(default=1440, gt=0, description="Session expiry in minutes"),
         ]
         max_sessions_per_user: Annotated[
             int,
-            Field(default=5, description="Max parallel sessions per user"),
+            Field(default=5, gt=0, description="Max parallel sessions per user"),
         ]
         hash_rounds: Annotated[
             int,
-            Field(default=12, description="Password hash rounds (bcrypt)"),
+            Field(
+                default=12,
+                ge=4,
+                le=31,
+                description="Password hash rounds (bcrypt)",
+            ),
         ]
+
+        @field_validator("secret_key", mode="before")
+        @classmethod
+        def _normalize_secret_key(cls, value: str | SecretStr) -> str:
+            """Unwrap a SecretStr input and enforce the min length when set."""
+            plain = (
+                value.get_secret_value()
+                if isinstance(value, SecretStr)
+                else value
+            )
+            if plain and len(plain) < _SECRET_MIN_LENGTH:
+                msg = "secret_key must be at least 32 characters when provided"
+                raise ValueError(msg)
+            return plain
+
+        @computed_field
+        @property
+        def auth_secret(self) -> SecretStr:
+            """The JWT signing secret wrapped as a SecretStr."""
+            return SecretStr(self.secret_key)
         kerberos: Annotated[
             _Kerberos,
             Field(

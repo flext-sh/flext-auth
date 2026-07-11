@@ -35,6 +35,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     _identity_service: FlextAuthIdentityService
     _token_service: FlextAuthTokenService
     _session_service: FlextAuthSessionService
+    _auth_settings: FlextAuthSettings
 
     def __init__(
         self,
@@ -44,6 +45,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         resolved_settings = (
             settings if settings is not None else FlextAuthSettings.fetch_global()
         )
+        self._auth_settings = resolved_settings
         self._registry = FlextAuthRegistry()
         self._dispatcher = self._container_type.shared().dispatcher().unwrap()
         self.logger = u.fetch_logger(__name__)
@@ -67,6 +69,16 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
+
+    @property
+    def settings(self) -> FlextAuthSettings:
+        """The resolved auth settings bound to this facade."""
+        return self._auth_settings
+
+    @property
+    def config(self) -> FlextAuthSettings._Auth:
+        """The namespaced auth configuration (``settings.Auth``)."""
+        return self._auth_settings.Auth
 
     @property
     def identity_service(self) -> FlextAuthIdentityService:

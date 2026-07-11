@@ -49,7 +49,7 @@ class FlextAuthProviderBuiltinRegistration:
         if not hasattr(self, "_auth_config"):
             self.logger.error("Configuration is required for provider registration")
             return
-        provider_config = self._auth_config.model_dump()
+        provider_config = self._auth_config.Auth.model_dump()
         providers: t.SequenceOf[
             t.Triple[
                 t.Auth.ProvidersKey,
