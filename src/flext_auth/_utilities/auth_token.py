@@ -16,7 +16,7 @@ class FlextAuthUtilitiesAuthToken:
         *,
         verify: bool = True,
     ) -> p.Result[t.Auth.TokensClaimMap]:
-        """Generic JWT token decoding.
+        """Decode a JWT token.
 
         Args:
             token: JWT token to decode
@@ -69,7 +69,7 @@ class FlextAuthUtilitiesAuthToken:
         secret: str,
         algorithm: str = c.Auth.JWT_DEFAULT_ALGORITHM,
     ) -> p.Result[str]:
-        """Generic JWT token encoding.
+        """Encode a JWT token.
 
         Args:
         payload: Token payload

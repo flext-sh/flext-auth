@@ -20,7 +20,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         dispatcher: p.Dispatcher,
         managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
     ) -> None:
-        """Generic initialization with dependency injection."""
+        """Initialize with dependency injection."""
         super().__init__()
         self._managers = (
             managers
