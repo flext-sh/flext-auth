@@ -18,6 +18,7 @@ class FlextAuth(FlextAuthApplicationService):
 
 
 auth = FlextAuth.fetch_global()
+"""Process-wide FlextAuth facade singleton resolved from the global container."""
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuth", "auth"]
