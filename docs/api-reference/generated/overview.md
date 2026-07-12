@@ -9,7 +9,7 @@
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`, `security`, `typed`
 - Main facades: _none_
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextAuthOAuth2Config`, `FlextAuthOAuth2Provider`, `FlextAuthOAuth2Introspection`, `FlextAuthCertificateProvider`, `FlextAuthLdapProvider`, `FlextAuthApiKeyProvider`, `FlextAuthIdentityService`, `FlextAuthServiceBase`, `FlextAuthBasicProvider`, `FlextAuthProtocols` (+22 more)
+- Public symbol exports: `FlextAuthApiKeyProvider`, `FlextAuthModels`, `FlextAuthApplicationService`, `FlextAuthKerberosProvider`, `FlextAuthRegistry`, `FlextAuthJwtProvider`, `FlextAuthProviderService`, `FlextAuthSessionService`, `FlextAuthOAuth2Tokens`, `FlextAuthSamlProvider` (+22 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `29`
 
