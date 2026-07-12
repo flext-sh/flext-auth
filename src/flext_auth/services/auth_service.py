@@ -76,7 +76,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         return self._auth_settings
 
     @property
-    def config(self) -> FlextAuthSettings._Auth:
+    def config(self) -> FlextAuthSettings.AuthSettings:
         """The namespaced auth configuration (``settings.Auth``)."""
         return self._auth_settings.Auth
 

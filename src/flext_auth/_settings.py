@@ -35,7 +35,8 @@ class FlextAuthSettings(FlextSettings):
         extra="ignore",
     )
 
-    class _Auth(BaseModel):
+    # mro-wkii.17.25: publish the owned settings model used by service contracts.
+    class AuthSettings(BaseModel):
         """Namespaced auth settings (JWT + session + hashing)."""
 
         class _Kerberos(BaseModel):
@@ -144,9 +145,9 @@ class FlextAuthSettings(FlextSettings):
         ]
 
     if TYPE_CHECKING:
-        Auth: _Auth
+        Auth: AuthSettings
     else:
-        Auth: _Auth = Field(
+        Auth: AuthSettings = Field(
             default_factory=_Auth,
             description="Namespaced auth settings.",
         )
