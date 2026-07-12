@@ -5,11 +5,13 @@
 - Package: `flext_auth`
 - Version: `0.12.0-dev`
 - Description: FLEXT Auth - Enterprise Authentication & Authorization Service
+- Doc summary: Flext Auth package.
+- Classifiers: `Development Status :: 4 - Beta`, `Development Status :: 5 - Production/Stable`, `Intended Audience :: Developers`, `Operating System :: OS Independent`, `Programming Language :: Python :: 3 :: Only`, `Programming Language :: Python :: 3.13` (+3 more)
 - Project class: `platform`
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`, `security`, `typed`
 - Main facades: _none_
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextAuthApiKeyProvider`, `FlextAuthModels`, `FlextAuthApplicationService`, `FlextAuthKerberosProvider`, `FlextAuthRegistry`, `FlextAuthJwtProvider`, `FlextAuthProviderService`, `FlextAuthSessionService`, `FlextAuthOAuth2Tokens`, `FlextAuthSamlProvider` (+22 more)
+- Public symbol exports: `FlextAuthTokenService`, `FlextAuthKerberosProvider`, `FlextAuthApplicationService`, `FlextAuth`, `auth`, `FlextAuthSettings`, `FlextAuthServiceBase`, `FlextAuthCertificateProvider`, `FlextAuthJwtTokenValidator`, `FlextAuthOidcProvider` (+22 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `29`
 
