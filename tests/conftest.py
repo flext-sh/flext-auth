@@ -10,14 +10,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from flext_tests import reset_settings as _shared_reset_settings
 
 from flext_auth import FlextAuth
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-
-reset_settings = _shared_reset_settings
 
 
 @pytest.fixture
