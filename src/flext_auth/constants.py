@@ -12,10 +12,7 @@ if TYPE_CHECKING:
     from flext_auth import t
 
 
-class FlextAuthConstants(
-    c,
-    FlextAuthConstantsAuth,
-):
+class FlextAuthConstants(c):
     """FlextAuth domain constants extending the API constants namespace."""
 
     class Auth(FlextAuthConstantsAuth):

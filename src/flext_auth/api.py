@@ -5,12 +5,8 @@ Public entrypoint kept as a strict facade over service classes.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+from flext_auth import t
 from flext_auth.services.auth_service import FlextAuthApplicationService
-
-if TYPE_CHECKING:
-    from flext_auth import t
 
 
 class FlextAuth(FlextAuthApplicationService):

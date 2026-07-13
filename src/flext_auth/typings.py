@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import (
+    Callable,
     MutableMapping,
     MutableSequence,
 )
@@ -18,8 +19,6 @@ from flext_api import t, u
 from flext_auth import c
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from flext_auth import m
 
 
