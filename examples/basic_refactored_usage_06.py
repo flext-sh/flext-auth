@@ -59,7 +59,7 @@ class FlextAuthDemo:
         )
 
     def _print_token_info(self, auth_data: m.Auth.AuthIdentity) -> None:
-        """Helper: Print token information."""
+        """Print token information."""
         token_length = len(auth_data.token) if auth_data.token else 0
         _emit(f"Token length: {token_length}")
 
