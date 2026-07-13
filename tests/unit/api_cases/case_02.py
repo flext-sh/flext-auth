@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from flext_tests import tm
+
 from flext_auth import FlextAuth, FlextAuthSettings
 from tests import m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
@@ -93,7 +95,7 @@ class TestsFlextAuthApiCase02:
     def test_handler_registration_logging(self) -> None:
         """Test that handler registration is logged."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        assert auth is not None
+        tm.that(auth, none=False)
 
     def test_provider_registry_initialization(self) -> None:
         """Test provider registry is initialized."""

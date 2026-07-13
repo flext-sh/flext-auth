@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from flext_tests import tm
+
 from flext_auth import FlextAuth
 from tests import u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
@@ -103,7 +105,7 @@ class TestsFlextAuthApiCase07:
     def test_quick_start_without_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method without REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
         u.Tests.Matchers.that(auth.settings, none=False)
 
     def test_get_config_method(self) -> None:
