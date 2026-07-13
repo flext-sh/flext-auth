@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth
-from tests.utilities import u
+from tests import u
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 

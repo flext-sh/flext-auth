@@ -17,7 +17,7 @@ import pytest
 from flext_api import FlextApiTypes
 
 from flext_auth import FlextAuthTypes
-from tests.typings import t
+from tests import t
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 

@@ -6,8 +6,8 @@ import threading
 from threading import Thread
 
 from flext_auth import FlextAuth
+from tests import u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase11:

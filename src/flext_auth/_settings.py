@@ -139,7 +139,8 @@ class FlextAuthSettings(FlextSettings):
         kerberos: Annotated[
             _Kerberos,
             Field(
-                default_factory=lambda: FlextAuthSettings._Auth._Kerberos(),
+                # mro-j47u: close the AuthSettings rename without a legacy alias.
+                default_factory=lambda: FlextAuthSettings.AuthSettings._Kerberos(),
                 description="Kerberos realm/KDC settings.",
             ),
         ]
@@ -148,7 +149,7 @@ class FlextAuthSettings(FlextSettings):
         Auth: AuthSettings
     else:
         Auth: AuthSettings = Field(
-            default_factory=_Auth,
+            default_factory=AuthSettings,
             description="Namespaced auth settings.",
         )
 

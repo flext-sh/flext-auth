@@ -19,7 +19,7 @@ from enum import StrEnum
 
 import pytest
 
-from tests.constants import c
+from tests import c
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 

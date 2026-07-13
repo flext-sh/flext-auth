@@ -5,9 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from flext_auth import FlextAuth
-from tests.models import m
+from tests import m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase06:
