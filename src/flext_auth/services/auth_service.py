@@ -27,7 +27,6 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     """Authentication application service used by the API composition."""
 
     _container_type: ClassVar[p.ContainerType] = FlextContainer
-    logger: p.Logger
     _registry: FlextAuthRegistry
     _dispatcher: p.Dispatcher
     _provider_service: FlextAuthProviderService
