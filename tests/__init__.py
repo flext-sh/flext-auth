@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     )
     from tests.protocols import (
         TestsFlextAuthProtocols as TestsFlextAuthProtocols,
-        p as p,
+        p,
     )
     from tests.settings import TestsFlextAuthSettings as TestsFlextAuthSettings
     from tests.typings import TestsFlextAuthTypes as TestsFlextAuthTypes, t as t
@@ -88,7 +88,7 @@ if TYPE_CHECKING:
     from tests.unit.test_typings import TestsFlextAuthTypings as TestsFlextAuthTypings
     from tests.utilities import (
         TestsFlextAuthUtilities as TestsFlextAuthUtilities,
-        u as u,
+        u,
     )
 _LAZY_IMPORTS = merge_lazy_imports(
     (
