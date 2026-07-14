@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
 from flext_auth import FlextAuthRfcProvider, c, m, p, r, t
@@ -83,24 +82,20 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 },
                 m.Auth.AuthIdentity,
             )
-        if isinstance(validator_payload, Mapping):
-            try:
-                parsed_claims = t.json_mapping_adapter().validate_python(
-                    validator_payload,
-                )
-            except c.ValidationError as exc:
-                return r[m.Auth.AuthIdentity].fail(
-                    f"Kerberos ticket validator mapping payload is invalid: {exc}",
-                )
-            return r[m.Auth.AuthIdentity].from_validation(
-                {
-                    **parsed_claims,
-                    c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
-                },
-                m.Auth.AuthIdentity,
+        try:
+            parsed_claims = t.json_mapping_adapter().validate_python(
+                validator_payload,
             )
-        return r[m.Auth.AuthIdentity].fail(
-            "Kerberos ticket validator returned unsupported payload",
+        except c.ValidationError as exc:
+            return r[m.Auth.AuthIdentity].fail(
+                f"Kerberos ticket validator mapping payload is invalid: {exc}",
+            )
+        return r[m.Auth.AuthIdentity].from_validation(
+            {
+                **parsed_claims,
+                c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
+            },
+            m.Auth.AuthIdentity,
         )
 
 
