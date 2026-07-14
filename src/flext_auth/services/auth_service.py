@@ -17,7 +17,6 @@ from flext_auth import (
     r,
     settings,
     t,
-    u,
 )
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
@@ -48,7 +47,6 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         self._auth_settings = resolved_settings
         self._registry = FlextAuthRegistry()
         self._dispatcher = self._container_type.shared().dispatcher().unwrap()
-        self.logger = u.fetch_logger(__name__)
         shared_managers = FlextAuthUtilitiesManagers.ServiceManagers(
             self._dispatcher,
         )
