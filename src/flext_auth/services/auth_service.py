@@ -170,7 +170,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         )
 
     def create_token(self, identity_id: str) -> p.Result[str]:
-        """Create a token applying the settingsured default expiry."""
+        """Create a token applying the configured default expiry."""
         match identity_id:
             case str() as identity if identity:
                 identity_id = identity
