@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, override, runtime_checkable
+from typing import Protocol, override, runtime_checkable
 
 from flext_api import p
 
-if TYPE_CHECKING:
-    from flext_auth import t
+from flext_auth import t
 
 
 class FlextAuthProtocolsAuthSession:

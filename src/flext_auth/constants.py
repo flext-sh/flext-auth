@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_api import c
 
+from flext_auth import t
 from flext_auth._constants.auth import FlextAuthConstantsAuth
-
-if TYPE_CHECKING:
-    from flext_auth import t
 
 
 class FlextAuthConstants(c):

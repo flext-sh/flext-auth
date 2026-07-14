@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from flext_auth import (
@@ -19,11 +20,7 @@ from flext_auth import (
     t,
 )
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from flext_auth.registry import FlextAuthRegistry
+from flext_auth.registry import FlextAuthRegistry
 
 
 class FlextAuthProviderBuiltinRegistration:

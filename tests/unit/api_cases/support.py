@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from tests import t
+from tests import t
 
 
 class FlextAuthApiTestDataHelper:

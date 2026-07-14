@@ -12,14 +12,11 @@ from collections.abc import (
     MutableSequence,
 )
 from datetime import datetime
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from flext_api import t, u
 
-from flext_auth import c
-
-if TYPE_CHECKING:
-    from flext_auth import m
+from flext_auth import c, m
 
 
 class FlextAuthTypes(t):

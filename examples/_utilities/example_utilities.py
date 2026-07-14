@@ -9,14 +9,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import (
+    Callable,
+)
 
-if TYPE_CHECKING:
-    from collections.abc import (
-        Callable,
-    )
-
-    from flext_auth import t
+from flext_auth import t
 
 
 class FlextAuthExampleUtilities:
