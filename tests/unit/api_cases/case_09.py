@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_tests import r
+from flext_tests import r, tm
 
 from flext_auth import FlextAuth
 from tests import m, u
@@ -114,7 +114,7 @@ class TestsFlextAuthApiCase09:
         auth = FlextAuth()
         test_user_data = self._TestDataHelper.create_test_user_data()
         test_auth_data = self._TestDataHelper.create_test_auth_data()
-        assert auth is not None
+        tm.that(auth, none=False)
         register_result = auth.register_user(
             username=str(test_user_data["username"]),
             email=str(test_user_data["email"]),

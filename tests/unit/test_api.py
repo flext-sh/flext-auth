@@ -9,6 +9,7 @@ attribute, internal collaborator, or implementation detail is asserted.
 from __future__ import annotations
 
 import pytest
+from flext_tests import tm
 
 from flext_auth import FlextAuth, FlextAuthSettings
 
@@ -29,10 +30,10 @@ class TestsFlextAuthApi:
         """quick_start yields a facade whose public services are available."""
         auth = _fresh_auth()
 
-        assert auth.identity_service is not None
-        assert auth.token_service is not None
-        assert auth.session_service is not None
-        assert auth.registry is not None
+        tm.that(auth.identity_service, none=False)
+        tm.that(auth.token_service, none=False)
+        tm.that(auth.session_service, none=False)
+        tm.that(auth.registry, none=False)
 
     def test_settings_property_returns_injected_settings(self) -> None:
         """The settings property returns the exact settings instance supplied."""
@@ -55,7 +56,7 @@ class TestsFlextAuthApi:
 
         providers = auth.registry.list_providers()
 
-        assert isinstance(providers, list)
+        tm.that(providers, is_=list)
 
     def test_register_user_succeeds_and_returns_identity(self) -> None:
         """Registering a valid user succeeds and returns the new identity."""
@@ -63,9 +64,9 @@ class TestsFlextAuthApi:
 
         result = auth.register_user("validuser", "user@example.com", _VALID_PASSWORD)
 
-        assert result.success
+        tm.ok(result)
         identity = result.value
-        assert identity.name == "validuser"
+        tm.that(identity.name, eq="validuser")
         assert identity.unique_id
 
     def test_register_user_normalizes_email_to_lowercase(self) -> None:
@@ -74,8 +75,8 @@ class TestsFlextAuthApi:
 
         result = auth.register_user("mixeduser", "MixED@Example.COM", _VALID_PASSWORD)
 
-        assert result.success
-        assert result.value.contact == "mixed@example.com"
+        tm.ok(result)
+        tm.that(result.value.contact, eq="mixed@example.com")
 
     @pytest.mark.parametrize(
         ("roles", "role"),
@@ -101,7 +102,7 @@ class TestsFlextAuthApi:
             role=role,
         )
 
-        assert result.success
+        tm.ok(result)
 
     def test_register_user_rejects_too_short_username(self) -> None:
         """A username below the minimum length fails with an error message."""
@@ -109,7 +110,7 @@ class TestsFlextAuthApi:
 
         result = auth.register_user("ab", "short@example.com", _VALID_PASSWORD)
 
-        assert not result.success
+        tm.fail(result)
         assert result.error
 
     def test_register_user_rejects_weak_password(self) -> None:
@@ -118,7 +119,7 @@ class TestsFlextAuthApi:
 
         result = auth.register_user("weakuser", "weak@example.com", "weak")
 
-        assert not result.success
+        tm.fail(result)
         error_text = (result.error or "").lower()
         assert "at least 8 characters" in error_text or "credential" in error_text
 
@@ -129,8 +130,8 @@ class TestsFlextAuthApi:
         first = auth.register_user("dupuser", "dup1@example.com", _VALID_PASSWORD)
         second = auth.register_user("dupuser", "dup2@example.com", _VALID_PASSWORD)
 
-        assert first.success
-        assert not second.success
+        tm.ok(first)
+        tm.fail(second)
         assert second.error
 
     def test_authenticate_with_valid_credentials_returns_identity(self) -> None:
@@ -142,8 +143,8 @@ class TestsFlextAuthApi:
             {"username": "authuser", "password": _VALID_PASSWORD},
         )
 
-        assert result.success
-        assert result.value.name == "authuser"
+        tm.ok(result)
+        tm.that(result.value.name, eq="authuser")
 
     def test_authenticate_with_wrong_password_fails(self) -> None:
         """Authenticating with an incorrect password fails with an error."""
@@ -154,7 +155,7 @@ class TestsFlextAuthApi:
             {"username": "authuser", "password": "WrongPass123!"},
         )
 
-        assert not result.success
+        tm.fail(result)
         assert result.error
 
     @pytest.mark.parametrize(
@@ -174,8 +175,8 @@ class TestsFlextAuthApi:
 
         result = auth.authenticate(credentials)
 
-        assert not result.success
-        assert "username and password required" in (result.error or "")
+        tm.fail(result)
+        tm.that((result.error or ""), has="username and password required")
 
     def test_create_token_for_registered_user_returns_jwt(self) -> None:
         """create_token mints a three-segment JWT for a valid identity id."""
@@ -185,12 +186,12 @@ class TestsFlextAuthApi:
             "token@example.com",
             _VALID_PASSWORD,
         )
-        assert registered.success
+        tm.ok(registered)
 
         token_result = auth.create_token(registered.value.unique_id)
 
-        assert token_result.success
-        assert token_result.value.count(".") == 2
+        tm.ok(token_result)
+        tm.that(token_result.value.count("."), eq=2)
 
     def test_create_token_rejects_empty_identity_id(self) -> None:
         """create_token fails for an empty identity id with a clear error."""
@@ -198,8 +199,8 @@ class TestsFlextAuthApi:
 
         result = auth.create_token("")
 
-        assert not result.success
-        assert result.error == "Identity ID must be a non-empty string"
+        tm.fail(result)
+        tm.that(result.error, eq="Identity ID must be a non-empty string")
 
 
 __all__: list[str] = ["TestsFlextAuthApi"]

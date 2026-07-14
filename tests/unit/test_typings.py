@@ -15,6 +15,7 @@ from datetime import datetime
 
 import pytest
 from flext_api import FlextApiTypes
+from flext_tests import tm
 
 from flext_auth import FlextAuthTypes
 from tests import t
@@ -60,7 +61,7 @@ class TestsFlextAuthTypings:
         alias = getattr(t.Auth, alias_name)
 
         # Assert: resolving its value must not raise and must yield a type form.
-        assert alias.__value__ is not None
+        tm.that(alias.__value__, none=False)
 
     @pytest.mark.parametrize(
         "inherited_type",
@@ -104,4 +105,4 @@ class TestsFlextAuthTypings:
         literal_alias = getattr(t.Tests, literal_name)
 
         # Assert: the allowed value set matches the published contract.
-        assert typing.get_args(literal_alias.__value__) == expected_values
+        tm.that(typing.get_args(literal_alias.__value__), eq=expected_values)

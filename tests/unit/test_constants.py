@@ -18,6 +18,7 @@ from collections.abc import Mapping
 from enum import StrEnum
 
 import pytest
+from flext_tests import tm
 
 from tests import c
 
@@ -32,10 +33,12 @@ class TestsFlextAuthConstants:
     def test_core_namespace_constant_is_reachable_through_facade(self) -> None:
         # A flext-core/flext-api constant must be visible via the auth facade,
         # proving the namespaces are composed (behavior, not __mro__ inspection).
-        assert c.DEFAULT_TIMEOUT_SECONDS == 30
+        tm.that(c.DEFAULT_TIMEOUT_SECONDS, eq=30)
 
     def test_auth_default_timeout_is_derived_from_core_timeout(self) -> None:
-        assert pytest.approx(float(c.DEFAULT_TIMEOUT_SECONDS)) == c.Auth.DEFAULT_TIMEOUT
+        tm.that(
+            pytest.approx(float(c.DEFAULT_TIMEOUT_SECONDS)), eq=c.Auth.DEFAULT_TIMEOUT
+        )
 
     # ----- Published scalar values (the public contract) -----
 
@@ -89,7 +92,7 @@ class TestsFlextAuthConstants:
         value: str | float | bool,
         expected: str | float | bool,
     ) -> None:
-        assert value == expected
+        tm.that(value, eq=expected)
 
     @pytest.mark.parametrize(
         ("code", "expected"),
@@ -106,7 +109,7 @@ class TestsFlextAuthConstants:
         code: str,
         expected: str,
     ) -> None:
-        assert code == expected
+        tm.that(code, eq=expected)
 
     # ----- StrEnum behavior: string identity + membership -----
 
@@ -144,9 +147,9 @@ class TestsFlextAuthConstants:
         expected: str,
     ) -> None:
         # StrEnum contract: a member is interchangeable with its string value.
-        assert isinstance(member, str)
-        assert member == expected
-        assert member.value == expected
+        tm.that(member, is_=str)
+        tm.that(member, eq=expected)
+        tm.that(member.value, eq=expected)
 
     @pytest.mark.parametrize(
         "enum_cls",
@@ -181,13 +184,13 @@ class TestsFlextAuthConstants:
         valid_set: frozenset[str],
         enum_cls: type[StrEnum],
     ) -> None:
-        assert valid_set == {member.value for member in enum_cls}
+        tm.that(valid_set, eq={member.value for member in enum_cls})
 
     def test_default_jwt_algorithm_is_a_supported_algorithm(self) -> None:
-        assert c.Auth.JWT_DEFAULT_ALGORITHM in {a.value for a in c.Auth.Algorithms}
+        tm.that({a.value for a in c.Auth.Algorithms}, has=c.Auth.JWT_DEFAULT_ALGORITHM)
 
     def test_default_oauth2_flow_is_a_supported_flow(self) -> None:
-        assert c.Auth.OAUTH2_FLOW_DEFAULT in c.Auth.OAUTH2_FLOWS
+        tm.that(c.Auth.OAUTH2_FLOWS, has=c.Auth.OAUTH2_FLOW_DEFAULT)
 
     # ----- Ordering invariants between related bounds -----
 
@@ -229,7 +232,7 @@ class TestsFlextAuthConstants:
         self,
         valid_set: frozenset[str],
     ) -> None:
-        assert isinstance(valid_set, frozenset)
+        tm.that(valid_set, is_=frozenset)
         with pytest.raises(AttributeError):
             getattr(valid_set, "add")(
                 "mutated"
@@ -256,9 +259,9 @@ class TestsFlextAuthConstants:
         ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"],
     )
     def test_validation_limits_publishes_required_keys(self, key: str) -> None:
-        assert key in c.Auth.VALIDATION_LIMITS
+        tm.that(c.Auth.VALIDATION_LIMITS, has=key)
 
     def test_success_response_template_reports_success_status(self) -> None:
         response = c.Auth.SUCCESS_AUTH_RESPONSE
-        assert response["status"] == "success"
-        assert response["message"] == "Authentication successful"
+        tm.that(response["status"], eq="success")
+        tm.that(response["message"], eq="Authentication successful")

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from flext_tests import tm
+
 from flext_auth import FlextAuth
 from tests import c, m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
@@ -93,22 +95,22 @@ class TestsFlextAuthApiCase04:
     def test_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start with default parameters."""
         auth = FlextAuth.quick_start()
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with REDACTED_LDAP_BIND_PASSWORD user creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start without REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
 
     def test_account_lockout_on_failed_attempts(self) -> None:
         """Test account lockout after multiple failed login attempts."""
