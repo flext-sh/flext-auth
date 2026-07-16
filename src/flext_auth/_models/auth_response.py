@@ -90,7 +90,7 @@ class FlextAuthModelsAuthResponse:
     class ProviderWrapper(m.Value):
         """Wrapper for auth provider instances."""
 
-        model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
+        model_config: ClassVar[p.ConfigDict] = m.ConfigDict(
             arbitrary_types_allowed=True,
         )
 
@@ -110,7 +110,7 @@ class FlextAuthModelsAuthResponse:
         """Protocol-conformant wrapper for metadata."""
 
         category: Annotated[str, u.Field(description="Metadata category")]
-        data: Annotated[m.Value, u.Field(description="Metadata")]
+        data: Annotated[p.Value, u.Field(description="Metadata")]
 
     class Providers:
         """Provider-related models namespace."""

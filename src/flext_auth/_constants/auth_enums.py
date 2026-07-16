@@ -15,7 +15,7 @@ class FlextAuthConstantsAuthEnums:
         """Token type enumeration - automatic Pydantic validation.
 
         PYDANTIC MODELS:
-            model_config: ClassVar[m.ConfigDict] = ConfigDict(use_enum_values=True)
+            model_config: ClassVar[p.ConfigDict] = ConfigDict(use_enum_values=True)
             token_type: FlextAuthConstants.Auth.TokenTypes
 
         Result:

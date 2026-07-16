@@ -42,15 +42,15 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             return r[t.ScalarMapping].fail("Invalid settings format")
         return r[t.ScalarMapping].ok(settings)
 
-    def get_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
+    def get_metadata(self, name: str) -> p.Result[p.Auth.Providers.Metadata]:
         """Get provider metadata."""
         if not self.has_provider(name):
-            return r[m.Auth.Providers.Metadata].fail(
+            return r[p.Auth.Providers.Metadata].fail(
                 f"Provider '{name}' not registered",
             )
         metadata_result = self.fetch_plugin(c.Auth.REGISTRY_METADATA_CATEGORY, name)
         if metadata_result.failure:
-            return r[m.Auth.Providers.Metadata].ok(
+            return r[p.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
                     name=name,
                     version="1.0.0",
@@ -61,7 +61,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         wrapper = metadata_result.value
         metadata = getattr(wrapper, "data", None)
         if metadata is None:
-            return r[m.Auth.Providers.Metadata].ok(
+            return r[p.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
                     name=name,
                     version="1.0.0",
@@ -69,7 +69,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
                     extras={},
                 ),
             )
-        return r[m.Auth.Providers.Metadata].ok(metadata)
+        return r[p.Auth.Providers.Metadata].ok(metadata)
 
     def has_capability(self, name: str, capability: str) -> p.Result[bool]:
         """Check if provider has capability."""

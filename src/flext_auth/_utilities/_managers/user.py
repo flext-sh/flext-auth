@@ -27,7 +27,7 @@ class FlextAuthUserManagers:
         _users: MutableMapping[str, t.Auth.ManagersUserData]
         _DATETIME_ADAPTER: ClassVar[u.TypeAdapter[datetime]] = u.TypeAdapter(datetime)
         _MIN_DATETIME: ClassVar[datetime] = datetime.min.replace(tzinfo=UTC)
-        IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
+        IdentityExtras: ClassVar[type[p.Auth.UserIdentityExtras]] = (
             m.Auth.UserIdentityExtras
         )
 

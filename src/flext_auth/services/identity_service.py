@@ -38,28 +38,28 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         self,
         name: str,
         credential: str,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         identity_result = self.identity_manager.get_user_by_username(name)
         if identity_result.failure:
-            return r[m.Auth.AuthIdentity].fail(identity_result.error)
+            return r[p.Auth.AuthIdentity].fail(identity_result.error)
         identity = identity_result.value
         if identity.locked():
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.AuthIdentity].fail(
                 "Account is locked due to too many failed attempts",
             )
         verification_result = identity.verify_credential(credential)
         if verification_result.success and verification_result.value:
-            return r[m.Auth.AuthIdentity].ok(identity.with_successful_access())
+            return r[p.Auth.AuthIdentity].ok(identity.with_successful_access())
         if verification_result.failure:
-            return r[m.Auth.AuthIdentity].fail(verification_result.error)
+            return r[p.Auth.AuthIdentity].fail(verification_result.error)
         failed_attempt_result = self._handle_failed_attempt(identity)
         error_message = (
             failed_attempt_result.error
             if failed_attempt_result.failure
             else "Invalid credentials"
         )
-        return r[m.Auth.AuthIdentity].fail(error_message)
+        return r[p.Auth.AuthIdentity].fail(error_message)
 
     def authorize_identity(
         self,
@@ -120,7 +120,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         contact: str,
         credential: str,
         roles: t.StrSequence | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: t.StrSequence = []
@@ -140,11 +140,11 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
                 for error in exc.errors()
             ]
             error_msg = "; ".join(error_messages) if error_messages else str(exc)
-            return r[m.Auth.AuthIdentity].fail(error_msg)
+            return r[p.Auth.AuthIdentity].fail(error_msg)
         except c.EXC_BROAD_IO_TYPE as exc:
-            return r[m.Auth.AuthIdentity].fail(str(exc))
+            return r[p.Auth.AuthIdentity].fail(str(exc))
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.AuthIdentity].fail(
                 f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
             )
         return (

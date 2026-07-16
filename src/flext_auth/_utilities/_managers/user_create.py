@@ -14,7 +14,7 @@ from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
 
 
 class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
-    IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
+    IdentityExtras: ClassVar[type[p.Auth.UserIdentityExtras]] = (
         m.Auth.UserIdentityExtras
     )
     _users: MutableMapping[str, t.Auth.ManagersUserData]
@@ -25,7 +25,7 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         email: str,
         password_hash: str,
         **extra_fields: t.Scalar | t.StrSequence | datetime | None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Create a new user."""
         normalized_email = email.lower()
         duplicate_identity_exists = username in self._users or any(
@@ -34,7 +34,7 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
             for existing_user_data in self._users.values()
         )
         if duplicate_identity_exists:
-            return r[m.Auth.AuthIdentity].fail("Identity already exists")
+            return r[p.Auth.AuthIdentity].fail("Identity already exists")
 
         user_id = str(uuid4())
         now = u.now()
@@ -70,7 +70,7 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
             "updated_at": now,
         }
         self._users[username] = storage_data
-        return r[m.Auth.AuthIdentity].ok(user)
+        return r[p.Auth.AuthIdentity].ok(user)
 
 
 __all__: list[str] = ["FlextAuthUserManagerCreate"]

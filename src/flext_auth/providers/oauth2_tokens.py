@@ -55,7 +55,7 @@ class FlextAuthOAuth2Tokens(
             expiry_minutes=expiry_minutes,
         )
 
-    def get_metadata(self) -> m.Auth.Providers.Metadata:
+    def get_metadata(self) -> p.Auth.Providers.Metadata:
         """Get OAuth2 provider metadata using composition."""
         return m.Auth.Providers.Metadata(
             name="oauth2",
@@ -140,21 +140,21 @@ class FlextAuthOAuth2Tokens(
             on_success=lambda _: r[bool].ok(value=True),
         )
 
-    def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
+    def validate_token(self, token: str) -> p.Result[p.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user."""
         introspection_endpoint_result = self._introspection_endpoint()
         if introspection_endpoint_result.success:
             introspection_result = self._introspect_token(token)
             if introspection_result.failure:
-                return r[m.Auth.AuthIdentity].fail(
+                return r[p.Auth.AuthIdentity].fail(
                     introspection_result.error
                     or "OAuth2 introspection token validation failed",
                 )
             active_value = introspection_result.value.get("active")
             is_active = active_value if isinstance(active_value, bool) else False
             if not is_active:
-                return r[m.Auth.AuthIdentity].fail("OAuth2 token is inactive")
-            return r[m.Auth.AuthIdentity].from_validation(
+                return r[p.Auth.AuthIdentity].fail("OAuth2 token is inactive")
+            return r[p.Auth.AuthIdentity].from_validation(
                 {
                     **introspection_result.value,
                     c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN,
@@ -163,10 +163,10 @@ class FlextAuthOAuth2Tokens(
             )
         claims_result = self._decode_token_claims(token)
         if claims_result.failure:
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.AuthIdentity].fail(
                 claims_result.error or "OAuth2 token validation failed",
             )
-        return r[m.Auth.AuthIdentity].from_validation(
+        return r[p.Auth.AuthIdentity].from_validation(
             {
                 **claims_result.value,
                 c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN,

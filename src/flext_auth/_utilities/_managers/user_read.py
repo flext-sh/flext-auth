@@ -13,30 +13,30 @@ from flext_auth import e, m, p, t
 class FlextAuthUserManagerRead:
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
-    def get_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
+    def get_user(self, user_id: str) -> p.Result[p.Auth.AuthIdentity]:
         """Get user by ID."""
         return self._find_user_by_id(user_id).map(
             lambda ud: self._create_identity_from_storage(ud[1]),
         )
 
-    def get_user_by_id(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
+    def get_user_by_id(self, user_id: str) -> p.Result[p.Auth.AuthIdentity]:
         """Get a user by their ID."""
         return self._find_user_by_id(user_id).map(
             lambda ud: self._create_identity_from_storage(ud[1]),
         )
 
-    def get_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
+    def get_user_by_username(self, username: str) -> p.Result[p.Auth.AuthIdentity]:
         """Get user by username."""
         if username not in self._users:
-            return e.fail_not_found("User", "", result_type=r[m.Auth.AuthIdentity])
+            return e.fail_not_found("User", "", result_type=r[p.Auth.AuthIdentity])
         storage_data = self._users[username]
         user = self._create_identity_from_storage(storage_data)
-        return r[m.Auth.AuthIdentity].ok(user)
+        return r[p.Auth.AuthIdentity].ok(user)
 
     def _create_identity_from_storage(
         self,
         storage_data: t.Auth.ManagersUserData,
-    ) -> m.Auth.AuthIdentity:
+    ) -> p.Auth.AuthIdentity:
         """Create Identity model from storage data, filtering out non-model fields."""
         identity_data: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
             field: storage_data[field]

@@ -12,7 +12,6 @@ from flext_auth import (
     FlextAuthSettings,
     FlextAuthTokenService,
     c,
-    m,
     p,
     r,
     settings,
@@ -100,12 +99,12 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     def authenticate(
         self,
         credentials: t.StrMapping,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Validate credentials mapping and dispatch to the identity service."""
         username = credentials.get("username") or ""
         password = credentials.get("password") or ""
         if not username or not password:
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.AuthIdentity].fail(
                 "Invalid credentials: username and password required",
             )
         return self._identity_service.authenticate_identity(username, password)
@@ -116,7 +115,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         password: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Authenticate and provision token + session for the user."""
         auth_result = self._identity_service.authenticate_identity(username, password)
         if auth_result.success:
@@ -154,7 +153,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         password: str,
         roles: t.StrSequence | None = None,
         role: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Register user with default USER role if none provided."""
         if roles is not None:
             user_roles = roles

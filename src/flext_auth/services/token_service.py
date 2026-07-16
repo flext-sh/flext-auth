@@ -114,7 +114,7 @@ class FlextAuthTokenService(s):
         )
         return r[str].ok(token_value)
 
-    def refresh_token(self, token: str) -> p.Result[m.Auth.AuthToken]:
+    def refresh_token(self, token: str) -> p.Result[p.Auth.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token),
@@ -127,7 +127,7 @@ class FlextAuthTokenService(s):
                 old_token_id=self._short_token(token),
                 reason=error or "",
             )
-            return r[m.Auth.AuthToken].fail(error or "Token refresh failed")
+            return r[p.Auth.AuthToken].fail(error or "Token refresh failed")
         refreshed = result.value
         auth_token = m.Auth.AuthToken(
             identity_id=refreshed.user_id,
@@ -140,7 +140,7 @@ class FlextAuthTokenService(s):
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(auth_token.token),
         )
-        return r[m.Auth.AuthToken].ok(auth_token)
+        return r[p.Auth.AuthToken].ok(auth_token)
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Railway-oriented token validation with audit logging."""

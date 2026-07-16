@@ -12,7 +12,7 @@ class FlextAuthRegistryMetadata(FlextAuthRegistryMutation):
         name: str,
         service: p.Auth.FlextAuthBaseProvider,
         provided: m.Auth.Providers.Metadata | None,
-    ) -> m.Auth.Providers.Metadata:
+    ) -> p.Auth.Providers.Metadata:
         """Build metadata from provider and provided data."""
         try:
             caps = tuple(c for c in service.supports())

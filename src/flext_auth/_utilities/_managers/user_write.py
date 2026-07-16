@@ -7,7 +7,7 @@ from datetime import datetime
 
 from flext_api import r, u
 
-from flext_auth import m, p, t
+from flext_auth import p, t
 from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
 
 
@@ -53,7 +53,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         self,
         user_id: str,
         **updates: t.Scalar | t.StrSequence | datetime | None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Update user data."""
         filtered_updates: t.Auth.ManagersUserData = {
             k: v for k, v in updates.items() if v is not None

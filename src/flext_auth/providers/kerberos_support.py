@@ -44,13 +44,13 @@ class FlextAuthKerberosSupport:
         def validate_ticket(
             self,
             _ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
+        ) -> p.Result[p.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             result = m.Auth.KerberosTicketData(
                 ticket="validated_ticket",
                 principal="kerberos_user",
             )
-            return r[m.Auth.KerberosTicketData].ok(result)
+            return r[p.Auth.KerberosTicketData].ok(result)
 
     ticket_validator: _KerberosTicketValidator
 
@@ -64,10 +64,10 @@ class FlextAuthKerberosSupport:
             """Initialize service handler."""
             self.provider = provider
 
-    def handle_service_ticket(self, ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
+    def handle_service_ticket(self, ticket: str) -> p.Result[p.Auth.KerberosTicketData]:
         """Handle Kerberos service ticket."""
         result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
-        return r[m.Auth.KerberosTicketData].ok(result)
+        return r[p.Auth.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
@@ -82,7 +82,7 @@ class FlextAuthKerberosSupport:
         def authenticate_ticket(
             self,
             ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
+        ) -> p.Result[p.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
@@ -101,7 +101,7 @@ class FlextAuthKerberosSupport:
 
         def validated(
             ticket: str,
-        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+        ) -> p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             raw_payload = validator_candidate(ticket)
             if isinstance(
                 raw_payload,

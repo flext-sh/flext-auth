@@ -31,11 +31,11 @@ class FlextAuthDemo:
         super().__init__()
         self.auth = FlextAuth()
 
-    def demo_user_authentication(self) -> p.Result[m.Auth.AuthIdentity]:
+    def demo_user_authentication(self) -> p.Result[p.Auth.AuthIdentity]:
         """Extract Method: User authentication demo.
 
         Returns:
-            r[m.AuthToken]: Authentication result
+            r[p.AuthToken]: Authentication result
 
         """
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
@@ -44,11 +44,11 @@ class FlextAuthDemo:
             self._print_token_info(auth_data)
         return result
 
-    def demo_user_registration(self) -> p.Result[m.Auth.AuthIdentity]:
+    def demo_user_registration(self) -> p.Result[p.Auth.AuthIdentity]:
         """Extract Method: User registration demo.
 
         Returns:
-            r[m.Identity]: Registration result
+            r[p.Identity]: Registration result
 
         """
         return self.auth.register_user(

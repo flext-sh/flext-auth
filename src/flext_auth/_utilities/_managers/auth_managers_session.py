@@ -48,7 +48,7 @@ class FlextAuthSessionManagers:
             expires_in_minutes: int = 60,
             ip_address: str | None = None,
             user_agent: str | None = None,
-        ) -> p.Result[m.Auth.Session]:
+        ) -> p.Result[p.Auth.Session]:
             session_id = str(uuid4())
             expires_at = u.now() + timedelta(minutes=expires_in_minutes)
             session_data: t.Auth.ManagersSessionData = {
@@ -77,7 +77,7 @@ class FlextAuthSessionManagers:
                 and isinstance(session_data["last_accessed"], datetime)
                 else u.now(),
             )
-            result: p.Result[m.Auth.Session] = r[m.Auth.Session].ok(session)
+            result: p.Result[p.Auth.Session] = r[p.Auth.Session].ok(session)
             return result
 
         def end_session(self, user_id: str) -> p.Result[bool]:
@@ -113,8 +113,8 @@ class FlextAuthSessionManagers:
         def get_active_sessions(
             self,
             user_id: str,
-        ) -> p.Result[Sequence[m.Auth.Session]]:
-            sessions: MutableSequence[m.Auth.Session] = []
+        ) -> p.Result[Sequence[p.Auth.Session]]:
+            sessions: MutableSequence[p.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 match identity_id_value:
@@ -142,7 +142,7 @@ class FlextAuthSessionManagers:
                         sessions.append(session)
                     case _:
                         continue
-            result: p.Result[Sequence[m.Auth.Session]] = r[Sequence[m.Auth.Session]].ok(
+            result: p.Result[Sequence[p.Auth.Session]] = r[Sequence[p.Auth.Session]].ok(
                 sessions,
             )
             return result
