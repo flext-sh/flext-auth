@@ -7,7 +7,7 @@ from base64 import b64encode
 from http import HTTPStatus
 from urllib.parse import urlencode, urlparse
 
-from flext_auth import c, m, p, r, t
+from flext_auth import c, p, r, t
 
 
 class FlextAuthOAuth2Introspection:
@@ -15,7 +15,7 @@ class FlextAuthOAuth2Introspection:
 
     _oauth2_config: t.MappingKV[str, t.Primitives]
     _token_endpoint_auth_method: str
-    provider_config: m.Auth.ProviderConfig
+    provider_config: p.Auth.ProviderConfig
 
     def _build_introspection_form_data(self, token: str) -> p.Result[str]:
         if not token.strip():

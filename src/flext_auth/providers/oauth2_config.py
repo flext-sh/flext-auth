@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Collection
 
-from flext_auth import c, m, p, r
+from flext_auth import c, p, r
 
 
 class FlextAuthOAuth2Config:
     """OAuth2 provider configuration helper owner."""
 
-    provider_config: m.Auth.ProviderConfig
+    provider_config: p.Auth.ProviderConfig
 
     @staticmethod
     def _validated_choice(

@@ -7,7 +7,7 @@ from typing import Protocol, runtime_checkable
 
 from flext_api import p
 
-from flext_auth import t
+from flext_auth import p, t
 
 
 class FlextAuthProtocolsAuthIdentity:

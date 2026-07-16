@@ -42,7 +42,7 @@ class FlextAuthOAuth2Tokens(
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | t.JsonMapping,
+        user: p.Auth.AuthIdentity | t.JsonMapping,
         token_kind: str = "oauth2_access",
         token_type: str | None = None,
         expiry_minutes: int | None = None,

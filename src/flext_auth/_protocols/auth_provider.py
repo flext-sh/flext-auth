@@ -6,7 +6,7 @@ from typing import Protocol, runtime_checkable
 
 from flext_api import p
 
-from flext_auth import c, t
+from flext_auth import c, p, t
 from flext_auth._protocols.auth_token import FlextAuthProtocolsAuthToken
 
 

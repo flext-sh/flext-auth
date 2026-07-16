@@ -43,7 +43,7 @@ class FlextAuthKerberosSupport:
 
         def validate_ticket(
             self,
-            _ticket_data: m.Auth.KerberosTicketData,
+            _ticket_data: p.Auth.KerberosTicketData,
         ) -> p.Result[p.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             result = m.Auth.KerberosTicketData(
@@ -81,7 +81,7 @@ class FlextAuthKerberosSupport:
 
         def authenticate_ticket(
             self,
-            ticket_data: m.Auth.KerberosTicketData,
+            ticket_data: p.Auth.KerberosTicketData,
         ) -> p.Result[p.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)

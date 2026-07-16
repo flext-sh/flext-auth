@@ -19,7 +19,7 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         self,
         name: str,
         provider: p.Auth.FlextAuthBaseProvider,
-        metadata: m.Auth.Providers.Metadata | None = None,
+        metadata: p.Auth.Providers.Metadata | None = None,
         configuration: t.ConfigurationMapping | None = None,
     ) -> p.Result[bool]:
         """Register auth provider with optional settings and metadata."""

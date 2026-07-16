@@ -11,7 +11,7 @@ class FlextAuthRegistryMetadata(FlextAuthRegistryMutation):
         self,
         name: str,
         service: p.Auth.FlextAuthBaseProvider,
-        provided: m.Auth.Providers.Metadata | None,
+        provided: p.Auth.Providers.Metadata | None,
     ) -> p.Auth.Providers.Metadata:
         """Build metadata from provider and provided data."""
         try:

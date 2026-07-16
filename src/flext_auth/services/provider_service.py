@@ -50,7 +50,7 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
 
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity,
+        user: p.Auth.AuthIdentity,
         provider: str = "jwt",
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from flext_api import u
 
-from flext_auth import c, m, p
+from flext_auth import c, p
 
 
 class FlextAuthIdentityAudit:
@@ -25,7 +25,7 @@ class FlextAuthIdentityAudit:
             """Identity manager supplied by the concrete service facade."""
             raise NotImplementedError
 
-    def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
+    def _handle_failed_attempt(self, identity: p.Auth.AuthIdentity) -> p.Result[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
         max_attempts = c.Auth.SECURITY_MAX_LOGIN_ATTEMPTS
@@ -57,7 +57,7 @@ class FlextAuthIdentityAudit:
 
     def _log_authorization_result(
         self,
-        identity: m.Auth.AuthIdentity,
+        identity: p.Auth.AuthIdentity,
         permission: str,
         resource: str | None,
         *,
