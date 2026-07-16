@@ -90,7 +90,7 @@ class FlextAuthModelsAuthResponse:
     class ProviderWrapper(m.Value):
         """Wrapper for auth provider instances."""
 
-        model_config: ClassVar[p.ConfigDict] = m.ConfigDict(
+        model_config: ClassVar[t.ConfigDict] = m.ConfigDict(
             arbitrary_types_allowed=True,
         )
 

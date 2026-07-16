@@ -6,7 +6,7 @@ import http.client
 from collections.abc import Mapping
 from typing import override
 
-from flext_auth import e, m, t
+from flext_auth import e, m, p, t
 from flext_auth.providers.oauth2_tokens import FlextAuthOAuth2Tokens
 
 
