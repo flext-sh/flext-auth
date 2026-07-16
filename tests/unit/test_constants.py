@@ -37,7 +37,7 @@ class TestsFlextAuthConstants:
 
     def test_auth_default_timeout_is_derived_from_core_timeout(self) -> None:
         tm.that(
-            pytest.approx(float(c.DEFAULT_TIMEOUT_SECONDS)), eq=c.Auth.DEFAULT_TIMEOUT
+            float(c.DEFAULT_TIMEOUT_SECONDS), eq=pytest.approx(c.Auth.DEFAULT_TIMEOUT)
         )
 
     # ----- Published scalar values (the public contract) -----
