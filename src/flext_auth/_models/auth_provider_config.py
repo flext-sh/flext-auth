@@ -124,7 +124,7 @@ class FlextAuthModelsAuthProviderConfig:
 
         @property
         def configured(self) -> bool:
-            """Check if configured."""
+            """Whether configured."""
             return bool(self.name and self.type)
 
 

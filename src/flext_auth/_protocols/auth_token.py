@@ -28,7 +28,7 @@ class FlextAuthProtocolsAuthToken:
 
         @property
         def expired(self) -> bool:
-            """Check if token is expired."""
+            """Whether token is expired."""
             ...
 
         @property
