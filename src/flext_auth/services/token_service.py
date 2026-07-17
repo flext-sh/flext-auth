@@ -60,9 +60,9 @@ class FlextAuthTokenService(s):
         return f"{token[:length]}..."
 
     @override
-    def execute(self) -> p.Result[p.ModelBase]:
+    def execute(self) -> p.Result[p.BaseModel]:
         """Railway-oriented execute with focused service pattern."""
-        return r[p.ModelBase].fail(
+        return r[p.BaseModel].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc.",
         )
 

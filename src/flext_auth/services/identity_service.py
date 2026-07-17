@@ -161,9 +161,9 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         )
 
     @override
-    def execute(self) -> p.Result[p.ModelBase]:
+    def execute(self) -> p.Result[p.BaseModel]:
         """Railway-oriented execute with focused service pattern."""
-        return r[p.ModelBase].fail(
+        return r[p.BaseModel].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
 
