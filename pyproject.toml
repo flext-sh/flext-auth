@@ -20,14 +20,14 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-    "bcrypt>=5.0.0",
-    "cryptography>=47.0.0",
-    "flext-api @ git+https://github.com/flext-sh/flext-api.git@0.20.0-dev",
-    "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.20.0-dev",
-    "pydantic-core>=2.46.3",
-    "pydantic-settings>=2.14.0",
-    "pydantic>=2.13.3",
-    "pyjwt>=2.12.1",
+  "bcrypt>=5.0.0",
+  "cryptography>=47.0.0",
+  "flext-api @ git+https://github.com/flext-sh/flext-api.git@0.12.0-dev",
+  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
+  "pydantic-core>=2.46.3",
+  "pydantic-settings>=2.14.0",
+  "pydantic>=2.13.3",
+  "pyjwt>=2.12.1",
 ]
 description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
 keywords = [ "authentication", "authorization", "enterprise", "flext", "jwt", "security", "typed" ]
@@ -213,7 +213,6 @@ project-excludes = [
   "**/typings/**",
   "**/vendor/**",
   "**/venv/**",
-  ".flext-deps/**",
   ".venv/**",
   "typings/**",
   "vendor/**",
@@ -223,14 +222,12 @@ python-interpreter-path = "../.venv/bin/python"
 python-version = "3.13"
 search-path = [
   ".",
-  # mro-f1fe (agent: kimi-sweep): removed stale search-path to migrated examples (legado/)
+  "../flext-api/src",
   "../flext-cli/src",
-  "../flext-core/examples",
-  "../flext-core/scripts",
   "../flext-core/src",
   "../flext-infra/src",
-  "../flext-infra/tmp_flow_test",
   "../flext-tests/src",
+  "../flext-web/src",
   "src",
 ]
 use-ignore-files = false
