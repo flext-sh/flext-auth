@@ -1,0 +1,48 @@
+Auth:
+  jwt:
+    default_algorithm: "HS256"
+    default_expiry_minutes: 30
+    max_expiry_minutes: 1440
+    issuer_claim: "flext-auth"
+    audience_claim: "flext-users"
+    min_secret_key_length: 32
+    default_token_type: "Bearer"
+  oauth2:
+    default_scope: "openid profile email"
+    flows:
+      - authorization_code
+      - client_credentials
+      - implicit
+    default_flow: "authorization_code"
+    use_pkce_default: true
+    token_endpoint_auth_methods:
+      - client_secret_basic
+      - client_secret_post
+      - none
+    default_token_endpoint_auth_method: "client_secret_basic"
+  credentials:
+    username_min_length: 3
+    username_max_length: 50
+    password_min_length: 8
+    password_max_length: 128
+    password_min_score: 3
+    password_min_bcrypt_hash_length: 60
+    password_bcrypt_rounds: 12
+  session:
+    default_expiry_minutes: 120
+    max_expiry_minutes: 1440
+    max_sessions_per_user: 5
+    min_token_length: 32
+  security:
+    max_login_attempts: 5
+    lockout_duration_minutes: 15
+    max_requests_per_minute: 60
+    max_requests_per_hour: 1000
+  validation:
+    short_name_max: 64
+    bcrypt_rounds: 12
+    default_token_expiry_minutes: 60
+    max_role_name_length: 50
+    max_role_description_length: 500
+    max_permission_name_length: 100
+    max_permission_description_length: 500
