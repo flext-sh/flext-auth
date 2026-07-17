@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-import http.client
 from collections.abc import Mapping
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from flext_auth import e, m, p, t
 from flext_auth.providers.oauth2_tokens import FlextAuthOAuth2Tokens
+
+if TYPE_CHECKING:
+    import http.client
 
 
 class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):

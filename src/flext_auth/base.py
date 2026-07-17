@@ -7,9 +7,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC
+from typing import TYPE_CHECKING
 
-from flext_auth import t
 from flext_core import s
+
+if TYPE_CHECKING:
+    from flext_auth import t
 
 
 class FlextAuthServiceBase(s[bool], ABC):

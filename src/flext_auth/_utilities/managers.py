@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r
 
-from flext_auth import p, t
 from flext_auth._utilities._managers.auth_managers_session import (
     FlextAuthSessionManagers,
 )
 from flext_auth._utilities._managers.rate_limiter import FlextAuthRateLimiterManagers
 from flext_auth._utilities._managers.user import FlextAuthUserManagers
 from flext_core import FlextContext
+
+if TYPE_CHECKING:
+    from flext_auth import p, t
 
 
 class FlextAuthUtilitiesManagers(

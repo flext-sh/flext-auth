@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from flext_api import m, u
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class FlextAuthModelsAuthSession:

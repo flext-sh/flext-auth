@@ -37,13 +37,13 @@ class FlextAuthSessionService(s):
         return self.session_manager.cleanup_expired_sessions()
 
     @override
-    def execute(self) -> p.Result[p.Base]:
+    def execute(self) -> p.Result[p.ModelBase]:
         """Execute method for s interface.
 
         Session service doesn't use generic execute pattern.
         Use specific session methods instead.
         """
-        return r[p.Base].fail(
+        return r[p.ModelBase].fail(
             "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()",
         )
 

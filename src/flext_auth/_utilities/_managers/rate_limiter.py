@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import (
-    MutableMapping,
-)
 from datetime import datetime, timedelta
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r, u
 
-from flext_auth import p, t
 from flext_core import FlextContext
+
+if TYPE_CHECKING:
+    from collections.abc import (
+        MutableMapping,
+    )
+
+    from flext_auth import p, t
 
 
 class FlextAuthRateLimiterManagers:
