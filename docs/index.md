@@ -2,7 +2,7 @@
 
 # flext-auth Documentation
 
-- Version: `0.12.0`
+- Version: `0.20.0`
 - Project class: `platform`
 - Package: `flext_auth`
 - Description: FLEXT Auth - Enterprise Authentication & Authorization Service
