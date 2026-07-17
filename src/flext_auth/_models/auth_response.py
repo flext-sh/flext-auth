@@ -110,7 +110,7 @@ class FlextAuthModelsAuthResponse:
         """Protocol-conformant wrapper for metadata."""
 
         category: Annotated[str, u.Field(description="Metadata category")]
-        data: Annotated[p.Value, u.Field(description="Metadata")]
+        data: Annotated[p.Auth.Providers.Metadata, u.Field(description="Metadata")]
 
     class Providers:
         """Provider-related models namespace."""
