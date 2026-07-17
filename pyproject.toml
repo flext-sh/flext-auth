@@ -22,8 +22,8 @@ classifiers = [
 dependencies = [
   "bcrypt>=5.0.0",
   "cryptography>=47.0.0",
-  "flext-api @ git+https://github.com/flext-sh/flext-api.git@0.12.0-dev",
-  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
+  "flext-api @ git+https://github.com/flext-sh/flext-api.git@0.20.0-dev",
+  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.20.0-dev",
   "pydantic-core>=2.46.3",
   "pydantic-settings>=2.14.0",
   "pydantic>=2.13.3",

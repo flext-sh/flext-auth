@@ -22,7 +22,6 @@ from flext_auth import (
     s,
     u,
 )
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
 class FlextAuthTokenService(s):
@@ -37,20 +36,18 @@ class FlextAuthTokenService(s):
         *,
         provider_service: FlextAuthProviderService,
         dispatcher: p.Dispatcher,
-        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
+        managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
         self._managers = (
-            managers
-            if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
+            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
         self._provider_service = provider_service
         self._jwt_provider_cache: p.Auth.FlextAuthBaseProvider | None = None
 
     @property
-    def user_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
+    def user_manager(self) -> u.Auth.FlextAuthUserManager:
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 

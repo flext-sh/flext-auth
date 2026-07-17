@@ -91,7 +91,7 @@ class FlextAuthKerberosSupport:
     ) -> (
         Callable[
             [str],
-            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
+            m.Auth.AuthIdentity | t.JsonMapping | p.Auth.KerberosTicketData,
         ]
         | None
     ):
@@ -101,7 +101,7 @@ class FlextAuthKerberosSupport:
 
         def validated(
             ticket: str,
-        ) -> p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+        ) -> p.Auth.AuthIdentity | t.JsonMapping | p.Auth.KerberosTicketData:
             raw_payload = validator_candidate(ticket)
             if isinstance(
                 raw_payload,

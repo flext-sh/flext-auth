@@ -12,11 +12,14 @@ from collections.abc import (
     MutableSequence,
 )
 from datetime import datetime
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from flext_api import t, u
 
-from flext_auth import c, m
+from flext_auth import c
+
+if TYPE_CHECKING:
+    from flext_auth import p
 
 
 class FlextAuthTypes(t):
@@ -49,7 +52,7 @@ class FlextAuthTypes(t):
 
         type KerberosTicketValidator = Callable[
             [str],
-            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
+            p.Auth.AuthIdentity | t.JsonMapping | p.Auth.KerberosTicketData,
         ]
 
 

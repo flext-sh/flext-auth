@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import p, r, s, t, u
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
 class FlextAuthSessionService(s):
@@ -19,18 +18,16 @@ class FlextAuthSessionService(s):
     def __init__(
         self,
         dispatcher: p.Dispatcher,
-        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
+        managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._managers = (
-            managers
-            if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
+            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
 
     @property
-    def session_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthSessionManager:
+    def session_manager(self) -> u.Auth.FlextAuthSessionManager:
         """Direct access to session manager for client orchestration."""
         return self._managers.session_manager
 
