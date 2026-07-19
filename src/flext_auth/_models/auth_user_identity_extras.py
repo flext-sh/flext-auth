@@ -42,7 +42,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
                 value,
                 t.STR_BINARY_TYPES,
             ):
-                return list(value)
+                return [str(item) for item in value]
             return []
 
         @u.field_validator("failed_attempts", mode="before")
