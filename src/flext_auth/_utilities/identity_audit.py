@@ -47,13 +47,11 @@ class FlextAuthIdentityAudit:
                 provider="internal",
                 reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
             )
-        return (
-            self.identity_manager.update_user(
-                identity.unique_id,
-                failed_attempts=identity.failed_attempts,
-                locked_until=identity.locked_until,
-            ).map(lambda _: True),
-        )
+        return self.identity_manager.update_user(
+            identity.unique_id,
+            failed_attempts=identity.failed_attempts,
+            locked_until=identity.locked_until,
+        ).map(lambda _: True)
 
     def _log_authorization_result(
         self,
