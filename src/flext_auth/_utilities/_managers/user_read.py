@@ -47,7 +47,10 @@ class FlextAuthUserManagerRead:
             if field in storage_data
         }
         identity_data["unique_id"] = self._extract_identity_id(storage_data)
-        return m.Auth.AuthIdentity.model_validate(identity_data)
+        identity: m.Auth.AuthIdentity = m.Auth.AuthIdentity.model_validate(
+            identity_data,
+        )
+        return identity
 
     def _extract_identity_id(
         self,
