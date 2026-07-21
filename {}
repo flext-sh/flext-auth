@@ -1,0 +1,320 @@
+from __future__ import annotations
+
+from collections.abc import (
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+from datetime import UTC, datetime, timedelta
+
+from flext_api import r, u
+
+from flext_auth import FlextAuthSettings, p, t
+from flext_core import FlextContext
+
+
+class FlextAuthRateLimiterManagers:
+    class FlextAuthRateLimiter:
+        def __init__(
+            self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
+        ) -> None:
+            super().__init__()
+            self._config = settings
+            self._dispatcher = dispatcher
+            self.logger = u.fetch_logger(__name__)
+            self._context = FlextContext()
+            self._attempts: MutableMapping[str, t.Auth.Managers.AttemptData] = {}
+            self._max_attempts = 5
+            self._window_minutes = 15
+
+        def check_rate_limit(self, username: str) -> p.Result[bool]:
+            now = datetime.now(UTC)
+            if username not in self._attempts:
+                return r[bool].ok(value=True)
+            recent_attempts = self._cleanup_window(username, now)
+            if username not in self._attempts:
+                self._attempts[username] = {"attempts": recent_attempts}
+
+            if len(recent_attempts) >= self._max_attempts:
+                return r[bool].fail("Too many failed attempts. Please try again later.")
+            return r[bool].ok(value=True)
+
+        def get_total_failed_attempts(self) -> int:
+            return sum(len(attempts) for attempts in self._attempts.values())
+
+        def record_failed_attempt(self, username: str) -> None:
+            now = datetime.now(UTC)
+            if username not in self._attempts:
+                self._attempts[username] = {"attempts": []}
+            attempts_raw = self._attempts[username].get("attempts")
+            attempts_list: MutableSequence[t.ContainerValue]
+            if isinstance(attempts_raw, list):
+                attempts_list = [
+                    attempt for attempt in attempts_raw if isinstance(attempt, datetime)
+                ]
+            else:
+                attempts_list = list[t.ContainerValue]()
+                self._attempts[username]["attempts"] = attempts_list
+            attempts_list.append(now)
+            recent_attempts = self._cleanup_window(username, now)
+            self._attempts[username]["attempts"] = recent_attempts
+
+        def _cleanup_window(
+            self,
+            username: str,
+            now: datetime,
+        ) -> Sequence[t.ContainerValue]:
+            window_start = now - timedelta(minutes=self._window_minutes)
+            attempt_data = self._attempts.get(username)
+            if not isinstance(attempt_data, Mapping):
+                return []
+            attempts_value = attempt_data.get("attempts")
+            if not isinstance(attempts_value, list):
+                return []
+            recent_attempts: Sequence[t.ContainerValue] = [
+                attempt
+                for attempt in attempts_value
+                if isinstance(attempt, datetime) and attempt > window_start
+            ]
+            return recent_attempts
+"""FLEXT Auth Types - Type definitions and aliases.
+
+Uses Pydantic models from flext_auth for consolidated type definitions.
+Maintains backward compatibility where possible while enforcing new patterns.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+from collections.abc import (
+    MutableMapping,
+)
+from typing import Annotated, Literal, override
+
+from flext_api import m, t, u
+
+from flext_auth import c
+
+
+class FlextAuthTypes(t):
+    """Authentication-specific type definitions extending t with composition."""
+
+    class Auth:
+        """Authentication-related type definitions."""
+
+        type AuthMethod = c.Auth.AuthMethod
+        type AuthStatus = c.Auth.AuthStatus
+        type CoercedTokenTypes = Annotated[
+            c.Auth.TokenTypes,
+            m.BeforeValidator(lambda x: x),
+        ]
+        type CoercedProviderTypes = Annotated[
+            c.Auth.ProviderTypes,
+            m.BeforeValidator(lambda x: x),
+        ]
+        type CoercedRoleTypes = Annotated[
+            c.Auth.RoleTypes,
+            m.BeforeValidator(lambda x: x),
+        ]
+
+        class UserManagement:
+            """User management type definitions."""
+
+            type UserStatus = c.Auth.UserStatus
+            type UserAction = c.Auth.UserAction
+
+        class SessionManagement:
+            """Session management type definitions."""
+
+            type SessionStatus = c.Auth.SessionStatus
+            type SessionAction = c.Auth.SessionAction
+
+        class TokenManagement:
+            """Token management type definitions."""
+
+            type TokenType = c.Auth.AuthTokenType
+            type TokenStatus = c.Auth.TokenStatus
+
+        class Authorization:
+            """Authorization type definitions."""
+
+            type Permission = c.Auth.Permission
+            type Role = c.Auth.Role
+
+        class Security:
+            """Security-related type definitions."""
+
+            type SecurityEvent = c.Auth.SecurityEvent
+            type ThreatLevel = c.Auth.ThreatLevel
+
+        class Providers:
+            """Provider-oriented type definitions."""
+
+            type Key = Annotated[
+                str,
+                u.Field(
+                    min_length=1,
+                    max_length=c.Auth.Validation.SHORT_NAME_MAX,
+                    pattern="^[a-z0-9](?:[a-z0-9\\-_.]{0,62}[a-z0-9])?$",
+                    description="Provider registry key",
+                ),
+            ]
+            type Capability = Annotated[
+                str,
+                u.Field(
+                    min_length=1,
+                    max_length=c.Auth.Validation.SHORT_NAME_MAX,
+                    pattern="^[a-z][a-z0-9_:-]*$",
+                    description="Provider capability identifier",
+                ),
+            ]
+            type CapabilitySet = Annotated[
+                frozenset[Capability],
+                u.Field(min_length=1, description="Declared capabilities"),
+            ]
+
+        class Credentials:
+            """Credential payload type definitions."""
+
+            type Username = Annotated[
+                str,
+                u.Field(
+                    min_length=1,
+                    max_length=c.Auth.Validation.LONG_NAME_MAX,
+                    description="Identity username",
+                ),
+            ]
+            type Password = Annotated[
+                str,
+                u.Field(
+                    min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
+                    max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
+                    description="Raw credential string",
+                ),
+            ]
+            type Secret = Annotated[
+                t.SecretStr,
+                u.Field(
+                    min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
+                    max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
+                    description="Protected credential value",
+                ),
+            ]
+
+        type TokenRequestType = Literal["access", "refresh", "id", "bearer"]
+        "Allowed token types for token generation requests."
+
+        class Tokens:
+            """Token-related type definitions."""
+
+            type TokenType = c.Auth.TokenTypes
+            type ClaimMap = MutableMapping[str, t.ContainerValue]
+            type Claims = MutableMapping[str, t.ContainerValue]
+            type Introspection = MutableMapping[str, t.ContainerValue]
+
+        class Sessions:
+            """Session-related type definitions."""
+
+            type Activity = MutableMapping[str, t.ContainerValue]
+
+        class Responses:
+            """Response payload abstractions."""
+
+            type AuthenticationPayload = MutableMapping[
+                str,
+                t.ContainerValue,
+            ]
+
+        class Managers:
+            """Manager-specific supporting types."""
+
+            type UserData = MutableMapping[str, t.ContainerValue]
+            type SessionData = MutableMapping[str, t.ContainerValue]
+            type LogEntry = MutableMapping[str, t.ContainerValue]
+            type AuditEntry = MutableMapping[str, t.ContainerValue]
+            type AttemptData = MutableMapping[str, t.ContainerValue]
+            type AttemptWindow = tuple[int, int]
+
+        class Domain:
+            """Domain-level literals and shortcuts."""
+
+            type ProviderType = c.Auth.ProviderTypes
+            type Role = c.Auth.RoleTypes
+            type Permission = c.Auth.PermissionTypes
+            type AccessTokens = c.Auth.AccessTokens
+            "Access token types for operations."
+            type RefreshTokens = Literal["refresh"]
+            "Refresh token types."
+            type BearerTokens = c.Auth.BearerTokens
+            "Bearer token types."
+            type AdminRoles = Literal["REDACTED_LDAP_BIND_PASSWORD"]
+            "Admin role types."
+            type UserRoles = c.Auth.UserRoles
+            "User role types."
+            type WritePermissions = c.Auth.WritePermissions
+            "Write permission types."
+            type AdminPermissions = Literal["REDACTED_LDAP_BIND_PASSWORD"]
+            "Admin permission types."
+            type TokenTypeLiteral = c.Auth.TokenTypeLiteral
+            "Token type literal - references TokenTypes StrEnum members."
+            type ProviderTypeLiteral = c.Auth.ProviderTypeLiteral
+            "Provider type literal - references ProviderTypes StrEnum members."
+            type RoleTypeLiteral = c.Auth.RoleTypeLiteral
+            "Role type literal - matches RoleTypes StrEnum values exactly."
+            type PermissionTypeLiteral = c.Auth.PermissionTypeLiteral
+            "Permission type literal - matches PermissionTypes StrEnum values exactly."
+            type AlgorithmLiteral = c.Auth.AlgorithmLiteral
+            "Algorithm literal - matches Algorithms StrEnum values exactly."
+
+        class Unit:
+            """Unit type for operations that return nothing but may fail."""
+
+            class UnitType:
+                """Singleton unit type for void operations."""
+
+                __slots__: tuple[()] = ()
+
+                @override
+                def __repr__(self) -> str:
+                    """Return string representation of Unit type."""
+                    return "Unit"
+
+            UNIT = UnitType()
+
+        class Project:
+            """Auth project namespace."""
+
+            type ProjectType = c.Auth.ProjectType
+
+        CONFIGURATION_MAPPING_ADAPTER: u.TypeAdapter[t.ConfigurationMapping] = (
+            u.TypeAdapter(t.ConfigurationMapping)
+        )
+        STR_SEQUENCE_ADAPTER: u.TypeAdapter[t.StrSequence] = u.TypeAdapter(
+            t.StrSequence
+        )
+        CONTAINER_VALUE_MAPPING_ADAPTER: u.TypeAdapter[t.ContainerValueMapping] = (
+            u.TypeAdapter(t.ContainerValueMapping)
+        )
+
+        COERCED_PROVIDER_TYPE = Annotated[
+            c.Auth.ProviderTypes,
+            u.Api.Pydantic.coerced_enum_validator(c.Auth.ProviderTypes),
+        ]
+
+        COERCED_ROLE_TYPE = Annotated[
+            c.Auth.RoleTypes,
+            u.Api.Pydantic.coerced_enum_validator(c.Auth.RoleTypes),
+        ]
+
+        COERCED_TOKEN_TYPE = Annotated[
+            c.Auth.TokenTypes,
+            u.Api.Pydantic.coerced_enum_validator(c.Auth.TokenTypes),
+        ]
+
+
+t = FlextAuthTypes
+
+__all__: list[str] = ["FlextAuthTypes", "t"]
