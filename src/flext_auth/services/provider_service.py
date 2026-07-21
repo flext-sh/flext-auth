@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import override
 
 from flext_api import r
-
 from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, s, t
 from flext_auth.services._provider_builtin import FlextAuthProviderBuiltinRegistration
 

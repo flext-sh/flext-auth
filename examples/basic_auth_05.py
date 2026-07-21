@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import os
 
-from flext_cli import u as cli_u
-
 from flext_auth import FlextAuth, FlextAuthSettings
+from flext_cli import u as cli_u
 
 
 def _emit(message: str) -> None:

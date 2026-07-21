@@ -13,9 +13,8 @@ import os
 import secrets
 import string
 
-from flext_cli import u as cli_u
-
 from flext_auth import FlextAuth, m, p
+from flext_cli import u as cli_u
 
 
 def _emit(message: str) -> None:

@@ -13,15 +13,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_api import r
-
-from flext_auth import (
-    FlextAuthProviderService,
-    c,
-    m,
-    p,
-    s,
-    u,
-)
+from flext_auth import FlextAuthProviderService, c, m, p, s, u
 
 
 class FlextAuthTokenService(s):

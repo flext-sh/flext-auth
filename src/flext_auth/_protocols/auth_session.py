@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Protocol, override, runtime_checkable
 
-from flext_api import p
-
 from flext_auth import p, t
 
 

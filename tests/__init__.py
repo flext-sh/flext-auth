@@ -38,10 +38,7 @@ if TYPE_CHECKING:
         TestsFlextAuthModels as TestsFlextAuthModels,
         m as m,
     )
-    from tests.protocols import (
-        TestsFlextAuthProtocols as TestsFlextAuthProtocols,
-        p,
-    )
+    from tests.protocols import TestsFlextAuthProtocols as TestsFlextAuthProtocols, p
     from tests.settings import TestsFlextAuthSettings as TestsFlextAuthSettings
     from tests.typings import TestsFlextAuthTypes as TestsFlextAuthTypes, t as t
     from tests.unit.api_cases.case_01 import (
@@ -86,10 +83,7 @@ if TYPE_CHECKING:
         TestsFlextAuthTokenRealFlows as TestsFlextAuthTokenRealFlows,
     )
     from tests.unit.test_typings import TestsFlextAuthTypings as TestsFlextAuthTypings
-    from tests.utilities import (
-        TestsFlextAuthUtilities as TestsFlextAuthUtilities,
-        u,
-    )
+    from tests.utilities import TestsFlextAuthUtilities as TestsFlextAuthUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         ".fixtures",

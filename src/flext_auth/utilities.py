@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flext_api import u
-
 from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 

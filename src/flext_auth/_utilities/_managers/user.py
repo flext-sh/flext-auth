@@ -6,7 +6,6 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import u
-
 from flext_auth import FlextAuthSettings, m, p, t
 from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
 from flext_core import FlextContext

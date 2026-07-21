@@ -5,7 +5,7 @@ from typing import Annotated, ClassVar
 from flext_tests import FlextTestsModels
 from testes import u
 
-from flext_auth import m
+from flext_auth import m, t
 
 
 class TestsFlextAuthModels(FlextTestsModels, m):

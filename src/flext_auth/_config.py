@@ -28,7 +28,7 @@ class FlextAuthConfig(FlextConfig):
     )
 
     @cached_property
-    def Auth(self) -> FlextAuthConfigModels.Auth:  # noqa: N802
+    def Auth(self) -> FlextAuthConfigModels.Auth:
         """Validated ``Auth`` business-rule config namespace."""
         root = FlextAuthConfigModels.Root.model_validate(
             dict(self.model_extra or {}),

@@ -13,13 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import (
-    FlextAuth,
-    FlextAuthSettings,
-    c,
-    m,
-    t,
-)
+from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
 from tests import u
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")

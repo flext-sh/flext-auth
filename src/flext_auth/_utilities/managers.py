@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r
-
 from flext_auth._utilities._managers.auth_managers_session import (
     FlextAuthSessionManagers,
 )

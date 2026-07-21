@@ -6,7 +6,6 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from flext_api import u
-
 from flext_auth import c, p
 
 

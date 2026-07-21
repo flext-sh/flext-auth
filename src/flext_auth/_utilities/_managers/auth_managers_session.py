@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import (
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import MutableMapping, MutableSequence, Sequence
 from datetime import datetime, timedelta
 from typing import ClassVar
 from uuid import uuid4
 
 from flext_api import r, u
-
 from flext_auth import e, m, p, t
 from flext_core import FlextContainer, FlextContext
 
