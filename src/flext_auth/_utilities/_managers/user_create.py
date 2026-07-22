@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
 from flext_api import r, u
-
 from flext_auth import m, p, t
 from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
 
@@ -41,17 +40,15 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         user_id = str(uuid4())
         now = u.now()
         normalized_identity_extras = self.IdentityExtras.model_validate(
-            extra_fields,
+            extra_fields
         ).model_dump(exclude_none=True)
-        user = m.Auth.AuthIdentity.model_validate(
-            {
-                "unique_id": user_id,
-                "name": username,
-                "contact": normalized_email,
-                "credential_hash": password_hash,
-                **normalized_identity_extras,
-            },
-        )
+        user = m.Auth.AuthIdentity.model_validate({
+            "unique_id": user_id,
+            "name": username,
+            "contact": normalized_email,
+            "credential_hash": password_hash,
+            **normalized_identity_extras,
+        })
         storage_data: t.Auth.ManagersUserData = {
             "unique_id": user.unique_id,
             "name": user.name,

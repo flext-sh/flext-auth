@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from flext_tests import FlextTestsModels, u
-
 from flext_auth import FlextAuthModels
+from flext_tests import FlextTestsModels, u
 
 
 class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
@@ -60,9 +59,7 @@ class CertificateFixture(m.BaseModel):
 
     @classmethod
     def generate_client_cert(
-        cls,
-        common_name: str = "client.example.com",
-        organization: str = "Test Client",
+        cls, common_name: str = "client.example.com", organization: str = "Test Client"
     ) -> CertificateFixture:
         """Generate a mock client certificate fixture for testing."""
         mock_cert_pem = (

@@ -13,13 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import (
-    FlextAuth,
-    FlextAuthSettings,
-    c,
-    m,
-    t,
-)
+from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
 from tests import u
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
@@ -34,8 +28,7 @@ class TestsFlextAuthConfig:
         return FlextAuthSettings.fetch_global()
 
     def test_default_settings_expose_positive_expiry_and_string_algorithm(
-        self,
-        settings: FlextAuthSettings,
+        self, settings: FlextAuthSettings
     ) -> None:
         """Default settings satisfy the documented value invariants."""
         u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
@@ -57,17 +50,14 @@ class TestsFlextAuthConfig:
         ],
     )
     def test_field_defaults_match_declared_constants(
-        self,
-        field_name: str,
-        expected: str | int,
+        self, field_name: str, expected: str | int
     ) -> None:
         """Freshly constructed settings default each field to its constant."""
         settings = FlextAuthSettings()
         u.Tests.Matchers.that(getattr(settings.Auth, field_name), eq=expected)
 
     def test_clone_returns_new_instance_and_leaves_original_unchanged(
-        self,
-        settings: FlextAuthSettings,
+        self, settings: FlextAuthSettings
     ) -> None:
         """Cloning produces an independent copy with the requested override."""
         original_expiry = settings.Auth.expiry_minutes
@@ -79,16 +69,15 @@ class TestsFlextAuthConfig:
         u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=original_expiry)
 
     def test_model_copy_applies_multiple_overrides(
-        self,
-        settings: FlextAuthSettings,
+        self, settings: FlextAuthSettings
     ) -> None:
         """model_copy overrides all requested fields in the returned copy."""
         updated = settings.model_copy(
             update={
                 "Auth": settings.Auth.model_copy(
-                    update={"expiry_minutes": 60, "hash_rounds": 12},
-                ),
-            },
+                    update={"expiry_minutes": 60, "hash_rounds": 12}
+                )
+            }
         )
         u.Tests.Matchers.that(updated.Auth.expiry_minutes, eq=60)
         u.Tests.Matchers.that(updated.Auth.hash_rounds, eq=12)
@@ -104,8 +93,7 @@ class TestsFlextAuthConfig:
         ],
     )
     def test_construction_rejects_out_of_contract_values(
-        self,
-        overrides: dict[str, str | int],
+        self, overrides: dict[str, str | int]
     ) -> None:
         """Values outside the declared bounds fail model validation."""
         with pytest.raises(m.ValidationError):
@@ -115,30 +103,28 @@ class TestsFlextAuthConfig:
         """auth_secret exposes the secret_key as a SecretStr round-trip."""
         secret_value = "x" * (c.Auth.SECRET_MIN_LENGTH + 4)
 
-        settings = FlextAuthSettings.model_validate(
-            {"Auth": {"secret_key": secret_value}},
-        )
+        settings = FlextAuthSettings.model_validate({
+            "Auth": {"secret_key": secret_value}
+        })
 
         u.Tests.Matchers.that(settings.Auth.auth_secret, is_=t.SecretStr)
         u.Tests.Matchers.that(
-            settings.Auth.auth_secret.get_secret_value(),
-            eq=settings.Auth.secret_key,
+            settings.Auth.auth_secret.get_secret_value(), eq=settings.Auth.secret_key
         )
 
     def test_secret_str_input_is_normalized_to_plain_string_field(self) -> None:
         """A SecretStr passed for secret_key is stored as its plain value."""
         raw = "y" * (c.Auth.SECRET_MIN_LENGTH + 8)
 
-        settings = FlextAuthSettings.model_validate(
-            {"Auth": {"secret_key": t.SecretStr(raw)}},
-        )
+        settings = FlextAuthSettings.model_validate({
+            "Auth": {"secret_key": t.SecretStr(raw)}
+        })
 
         u.Tests.Matchers.that(settings.Auth.secret_key, is_=str)
         u.Tests.Matchers.that(settings.Auth.secret_key, eq=raw)
 
     def test_environment_prefix_overrides_defaults(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
+        self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """FLEXT_AUTH_ prefixed env vars override the field defaults."""
         monkeypatch.setenv("FLEXT_AUTH_AUTH__EXPIRY_MINUTES", "123")
@@ -150,8 +136,7 @@ class TestsFlextAuthConfig:
         u.Tests.Matchers.that(settings.Auth.algorithm, eq="HS512")
 
     def test_create_token_fails_for_unknown_identity(
-        self,
-        settings: FlextAuthSettings,
+        self, settings: FlextAuthSettings
     ) -> None:
         """Token creation fails for an unregistered identity."""
         auth = FlextAuth(settings=settings)
@@ -164,9 +149,7 @@ class TestsFlextAuthConfig:
 
     @pytest.mark.parametrize("identity_id", ["", "   "])
     def test_create_token_rejects_blank_identity(
-        self,
-        settings: FlextAuthSettings,
-        identity_id: str,
+        self, settings: FlextAuthSettings, identity_id: str
     ) -> None:
         """Blank identity ids are rejected before any token is produced."""
         auth = FlextAuth(settings=settings)
@@ -177,22 +160,17 @@ class TestsFlextAuthConfig:
         u.Tests.Matchers.that(result.error, none=False)
 
     def test_create_token_succeeds_for_registered_identity(
-        self,
-        settings: FlextAuthSettings,
+        self, settings: FlextAuthSettings
     ) -> None:
         """A registered identity yields a well-formed JWT via the public API."""
         auth = FlextAuth(settings=settings)
 
         register_result = auth.register_user(
-            "config-token-user",
-            "config-token-user@example.com",
-            "ConfigTokenPass123!",
+            "config-token-user", "config-token-user@example.com", "ConfigTokenPass123!"
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
 
-        token_result = auth.create_token(
-            identity_id=register_result.value.unique_id,
-        )
+        token_result = auth.create_token(identity_id=register_result.value.unique_id)
 
         u.Tests.Matchers.that(token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.value, is_=str)

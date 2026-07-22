@@ -17,7 +17,7 @@ class FlextAuthServiceBase(s[bool], ABC):
     """Base class for auth services with typed configuration access."""
 
     _auth_config: FlextAuthSettings = m.PrivateAttr(
-        default_factory=lambda: FlextAuthSettings.model_validate({}),
+        default_factory=lambda: FlextAuthSettings.model_validate({})
     )
 
     @property

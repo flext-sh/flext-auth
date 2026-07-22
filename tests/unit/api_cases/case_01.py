@@ -24,9 +24,7 @@ class TestsFlextAuthApiCase01:
         """Test username validation through processor."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result_valid = auth.register_user(
-            "validuser",
-            "test@example.com",
-            "ValidPass123!",
+            "validuser", "test@example.com", "ValidPass123!"
         )
         u.Tests.Matchers.that(result_valid.success, eq=True)
         result_short = auth.register_user("ab", "test2@example.com", "ValidPass123!")
@@ -39,7 +37,7 @@ class TestsFlextAuthApiCase01:
         result = auth.register_user("testuser", "TEST@EXAMPLE.COM", "ValidPass123!")
         u.Tests.Matchers.that(result.success, eq=True)
         user_result = auth.identity_service.identity_manager.get_user_by_username(
-            "testuser",
+            "testuser"
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -68,7 +66,7 @@ class TestsFlextAuthApiCase01:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("queryuser", "query@example.com", "QueryPass123!")
         result = auth.identity_service.identity_manager.get_user_by_username(
-            "queryuser",
+            "queryuser"
         )
         u.Tests.Matchers.that(result.success, eq=True)
 
@@ -83,7 +81,7 @@ class TestsFlextAuthApiCase01:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("indexuser", "index@example.com", "IndexPass123!")
         user_result = auth.identity_service.identity_manager.get_user_by_username(
-            "indexuser",
+            "indexuser"
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
 
@@ -92,7 +90,7 @@ class TestsFlextAuthApiCase01:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("emailuser", "email@example.com", "EmailPass123!")
         user_result = auth.identity_service.identity_manager.get_user_by_username(
-            "emailuser",
+            "emailuser"
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -106,7 +104,7 @@ class TestsFlextAuthApiCase01:
         u.Tests.Matchers.that(auth_result.success, eq=True)
         user = auth_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            user.unique_id,
+            user.unique_id
         )
         u.Tests.Matchers.that(sessions_result.success, eq=True)
 
@@ -123,12 +121,12 @@ class TestsFlextAuthApiCase01:
         auth_result = auth.authenticate_user("sessuser", "SessPass123!")
         u.Tests.Matchers.that(auth_result.success, eq=True)
         user_result = auth.identity_service.identity_manager.get_user_by_username(
-            "sessuser",
+            "sessuser"
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            user.unique_id,
+            user.unique_id
         )
         u.Tests.Matchers.that(sessions_result.success, eq=True)
 

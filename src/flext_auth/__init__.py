@@ -184,10 +184,7 @@ if TYPE_CHECKING:
 
 
 _LAZY_MODULES: dict[str, tuple[str, ...]] = {
-    "._config": (
-        "FlextAuthConfig",
-        "config",
-    ),
+    "._config": ("FlextAuthConfig", "config"),
     "._constants.auth": ("FlextAuthConstantsAuth",),
     "._constants.auth_claims": ("FlextAuthConstantsAuthClaims",),
     "._constants.auth_enums": ("FlextAuthConstantsAuthEnums",),
@@ -214,10 +211,7 @@ _LAZY_MODULES: dict[str, tuple[str, ...]] = {
     "._registry.metadata": ("FlextAuthRegistryMetadata",),
     "._registry.mutation": ("FlextAuthRegistryMutation",),
     "._registry.plugins": ("FlextAuthRegistryPlugins",),
-    "._settings": (
-        "FlextAuthSettings",
-        "settings",
-    ),
+    "._settings": ("FlextAuthSettings", "settings"),
     "._utilities._managers.auth_managers_session": ("FlextAuthSessionManagers",),
     "._utilities._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
     "._utilities._managers.user": ("FlextAuthUserManagers",),
@@ -230,26 +224,11 @@ _LAZY_MODULES: dict[str, tuple[str, ...]] = {
     "._utilities.auth_validation": ("FlextAuthUtilitiesAuthValidation",),
     "._utilities.identity_audit": ("FlextAuthIdentityAudit",),
     "._utilities.managers": ("FlextAuthUtilitiesManagers",),
-    ".api": (
-        "FlextAuth",
-        "auth",
-    ),
-    ".base": (
-        "FlextAuthServiceBase",
-        "s",
-    ),
-    ".constants": (
-        "FlextAuthConstants",
-        "c",
-    ),
-    ".models": (
-        "FlextAuthModels",
-        "m",
-    ),
-    ".protocols": (
-        "FlextAuthProtocols",
-        "p",
-    ),
+    ".api": ("FlextAuth", "auth"),
+    ".base": ("FlextAuthServiceBase", "s"),
+    ".constants": ("FlextAuthConstants", "c"),
+    ".models": ("FlextAuthModels", "m"),
+    ".protocols": ("FlextAuthProtocols", "p"),
     ".providers._mixins.codec": ("FlextAuthProviderCodecMixin",),
     ".providers._mixins.tokens": ("FlextAuthProviderTokenMixin",),
     ".providers._mixins.validation": ("FlextAuthProviderValidationMixin",),
@@ -275,21 +254,9 @@ _LAZY_MODULES: dict[str, tuple[str, ...]] = {
     ".services.provider_service": ("FlextAuthProviderService",),
     ".services.session_service": ("FlextAuthSessionService",),
     ".services.token_service": ("FlextAuthTokenService",),
-    ".typings": (
-        "FlextAuthTypes",
-        "t",
-    ),
-    ".utilities": (
-        "FlextAuthUtilities",
-        "u",
-    ),
-    "flext_api": (
-        "d",
-        "e",
-        "h",
-        "r",
-        "x",
-    ),
+    ".typings": ("FlextAuthTypes", "t"),
+    ".utilities": ("FlextAuthUtilities", "u"),
+    "flext_api": ("d", "e", "h", "r", "x"),
 }
 
 
@@ -297,9 +264,7 @@ _LAZY_ALIAS_GROUPS: dict[str, tuple[tuple[str, str], ...]] = {}
 
 
 _LAZY_IMPORTS = build_lazy_import_map(
-    _LAZY_MODULES,
-    alias_groups=_LAZY_ALIAS_GROUPS,
-    sort_keys=False,
+    _LAZY_MODULES, alias_groups=_LAZY_ALIAS_GROUPS, sort_keys=False
 )
 
 _DIRECT_IMPORTS: tuple[str, ...] = (
@@ -456,9 +421,4 @@ __all__: tuple[str, ...] = (
 )
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    public_exports=__all__,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

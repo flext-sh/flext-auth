@@ -23,9 +23,7 @@ class FlextAuthSimpleUsageExample:
         try:
             test_password = "SecureDemoPassword123!"
             FlextAuthModels.Auth.AuthIdentityRequest(
-                name="testuser",
-                contact="test@example.com",
-                credential=test_password,
+                name="testuser", contact="test@example.com", credential=test_password
             )
             auth.register_user("testuser", "test@example.com", test_password)
         except Exception as error:

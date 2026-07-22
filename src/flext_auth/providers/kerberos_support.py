@@ -11,11 +11,7 @@ from flext_auth import m, p, r, settings, t
 class FlextAuthKerberosSupport:
     """Kerberos validation and ticket helper owner."""
 
-    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = (
-        "realm",
-        "kdc",
-        "service_principal",
-    )
+    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = ("realm", "kdc", "service_principal")
 
     _external_ticket_validator: t.Auth.KerberosTicketValidator | None = None
 
@@ -27,7 +23,7 @@ class FlextAuthKerberosSupport:
         ]
         if missing:
             return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing)}",
+                f"Missing required Kerberos configuration fields: {', '.join(missing)}"
             )
         return r[bool].ok(value=True)
 
@@ -42,13 +38,11 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def validate_ticket(
-            self,
-            _ticket_data: m.Auth.KerberosTicketData,
+            self, _ticket_data: m.Auth.KerberosTicketData
         ) -> p.Result[m.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             result = m.Auth.KerberosTicketData(
-                ticket="validated_ticket",
-                principal="kerberos_user",
+                ticket="validated_ticket", principal="kerberos_user"
             )
             return r[m.Auth.KerberosTicketData].ok(result)
 
@@ -80,8 +74,7 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def authenticate_ticket(
-            self,
-            ticket_data: m.Auth.KerberosTicketData,
+            self, ticket_data: m.Auth.KerberosTicketData
         ) -> p.Result[m.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
@@ -89,10 +82,7 @@ class FlextAuthKerberosSupport:
     def _ticket_validator_callable(
         self,
     ) -> (
-        Callable[
-            [str],
-            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
-        ]
+        Callable[[str], m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData]
         | None
     ):
         validator_candidate = self._external_ticket_validator
@@ -104,8 +94,7 @@ class FlextAuthKerberosSupport:
         ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             raw_payload = validator_candidate(ticket)
             if isinstance(
-                raw_payload,
-                (m.Auth.AuthIdentity, m.Auth.KerberosTicketData),
+                raw_payload, (m.Auth.AuthIdentity, m.Auth.KerberosTicketData)
             ):
                 return raw_payload
             if isinstance(raw_payload, Mapping):

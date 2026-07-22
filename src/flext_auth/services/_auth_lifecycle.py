@@ -64,8 +64,7 @@ class FlextAuthApplicationLifecycle(ABC):
             )
             if result.failure and result.error is not None:
                 auth.logger.warning(
-                    "Quick start admin user provisioning failed: %s",
-                    result.error,
+                    "Quick start admin user provisioning failed: %s", result.error
                 )
         return auth
 

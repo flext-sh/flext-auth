@@ -14,10 +14,10 @@ import typing
 from datetime import datetime
 
 import pytest
-from flext_api import FlextApiTypes
-from flext_tests import tm
 
+from flext_api import FlextApiTypes
 from flext_auth import FlextAuthTypes
+from flext_tests import tm
 from tests import t
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")

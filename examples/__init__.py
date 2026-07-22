@@ -64,39 +64,23 @@ if TYPE_CHECKING:
     )
 _LAZY_IMPORTS = merge_lazy_imports(
     ("._utilities",),
-    build_lazy_import_map(
-        {
-            "._utilities": ("_utilities",),
-            "._utilities.example_utilities": ("FlextAuthExampleUtilities",),
-            ".advanced_features_02": ("FlextAuthAdvancedFeaturesExample",),
-            ".basic_auth_05": ("FlextAuthBasicAuthExample",),
-            ".basic_refactored_usage_06": ("FlextAuthDemo",),
-            ".basic_usage_01": ("FlextAuthBasicUsageExample",),
-            ".basic_usage_07": ("FlextAuthBasicUsagePortugueseExample",),
-            ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
-            ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
-            ".comprehensive_demo_03": ("FlextAuthComprehensiveDemo",),
-            ".debug_auth_issues_09": ("FlextAuthDebugIssuesExample",),
-            ".flext_config_usage": ("FlextAuthConfigUsageExample",),
-            ".refactored_system_showcase_04": (
-                "FlextAuthRefactoredSystemShowcaseExample",
-            ),
-            ".simple_usage_08": ("FlextAuthSimpleUsageExample",),
-            "flext_auth": (
-                "c",
-                "d",
-                "e",
-                "h",
-                "m",
-                "p",
-                "r",
-                "s",
-                "t",
-                "u",
-                "x",
-            ),
-        },
-    ),
+    build_lazy_import_map({
+        "._utilities": ("_utilities",),
+        "._utilities.example_utilities": ("FlextAuthExampleUtilities",),
+        ".advanced_features_02": ("FlextAuthAdvancedFeaturesExample",),
+        ".basic_auth_05": ("FlextAuthBasicAuthExample",),
+        ".basic_refactored_usage_06": ("FlextAuthDemo",),
+        ".basic_usage_01": ("FlextAuthBasicUsageExample",),
+        ".basic_usage_07": ("FlextAuthBasicUsagePortugueseExample",),
+        ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
+        ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
+        ".comprehensive_demo_03": ("FlextAuthComprehensiveDemo",),
+        ".debug_auth_issues_09": ("FlextAuthDebugIssuesExample",),
+        ".flext_config_usage": ("FlextAuthConfigUsageExample",),
+        ".refactored_system_showcase_04": ("FlextAuthRefactoredSystemShowcaseExample",),
+        ".simple_usage_08": ("FlextAuthSimpleUsageExample",),
+        "flext_auth": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x"),
+    }),
     exclude_names=(
         "cleanup_submodule_namespace",
         "install_lazy_exports",
@@ -120,9 +104,4 @@ _LAZY_IMPORTS = merge_lazy_imports(
 )
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

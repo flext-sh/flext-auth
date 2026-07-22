@@ -18,8 +18,8 @@ from collections.abc import Mapping
 from enum import StrEnum
 
 import pytest
-from flext_tests import tm
 
+from flext_tests import tm
 from tests import c
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
@@ -88,9 +88,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_published_scalar_constants_hold_their_contract_value(
-        self,
-        value: str | float | bool,
-        expected: str | float | bool,
+        self, value: str | float | bool, expected: str | float | bool
     ) -> None:
         tm.that(value, eq=expected)
 
@@ -105,9 +103,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_error_codes_expose_stable_machine_readable_strings(
-        self,
-        code: str,
-        expected: str,
+        self, code: str, expected: str
     ) -> None:
         tm.that(code, eq=expected)
 
@@ -142,9 +138,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_enum_members_are_str_equal_to_their_wire_value(
-        self,
-        member: StrEnum,
-        expected: str,
+        self, member: StrEnum, expected: str
     ) -> None:
         # StrEnum contract: a member is interchangeable with its string value.
         tm.that(member, is_=str)
@@ -162,8 +156,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_enum_construction_round_trips_from_wire_value(
-        self,
-        enum_cls: type[StrEnum],
+        self, enum_cls: type[StrEnum]
     ) -> None:
         for member in enum_cls:
             assert enum_cls(member.value) is member
@@ -180,9 +173,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_valid_value_set_is_exactly_the_enum_value_set(
-        self,
-        valid_set: frozenset[str],
-        enum_cls: type[StrEnum],
+        self, valid_set: frozenset[str], enum_cls: type[StrEnum]
     ) -> None:
         tm.that(valid_set, eq={member.value for member in enum_cls})
 
@@ -210,9 +201,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_lower_bound_never_exceeds_its_paired_upper_bound(
-        self,
-        low: int,
-        high: int,
+        self, low: int, high: int
     ) -> None:
         assert low <= high
 
@@ -229,8 +218,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_exposed_membership_sets_are_immutable(
-        self,
-        valid_set: frozenset[str],
+        self, valid_set: frozenset[str]
     ) -> None:
         tm.that(valid_set, is_=frozenset)
         with pytest.raises(AttributeError):
@@ -239,15 +227,10 @@ class TestsFlextAuthConstants:
             )  # Why: frozenset has no add; asserting immutability.
 
     @pytest.mark.parametrize(
-        "mapping",
-        [
-            c.Auth.VALIDATION_LIMITS,
-            c.Auth.SUCCESS_AUTH_RESPONSE,
-        ],
+        "mapping", [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE]
     )
     def test_exposed_mappings_reject_mutation(
-        self,
-        mapping: Mapping[str, object],
+        self, mapping: Mapping[str, object]
     ) -> None:
         with pytest.raises((TypeError, AttributeError)):
             getattr(mapping, "__setitem__")("injected", 1)
@@ -255,8 +238,7 @@ class TestsFlextAuthConstants:
     # ----- Mapping contract: required keys and payload shape -----
 
     @pytest.mark.parametrize(
-        "key",
-        ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"],
+        "key", ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"]
     )
     def test_validation_limits_publishes_required_keys(self, key: str) -> None:
         tm.that(c.Auth.VALIDATION_LIMITS, has=key)

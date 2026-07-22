@@ -13,15 +13,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_api import r
-
-from flext_auth import (
-    FlextAuthProviderService,
-    c,
-    m,
-    p,
-    s,
-    u,
-)
+from flext_auth import FlextAuthProviderService, c, m, p, s, u
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
@@ -66,7 +58,7 @@ class FlextAuthTokenService(s):
     def execute(self) -> p.Result[p.Base]:
         """Railway-oriented execute with focused service pattern."""
         return r[p.Base].fail(
-            "Use specific token methods: validate_token, generate_jwt_token, etc.",
+            "Use specific token methods: validate_token, generate_jwt_token, etc."
         )
 
     def generate_jwt_token(
@@ -91,10 +83,8 @@ class FlextAuthTokenService(s):
         user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.generate_token_for_user(
-                user_dict,
-                token_kind=token_kind,
-                expiry_minutes=expires_in_minutes,
-            ),
+                user_dict, token_kind=token_kind, expiry_minutes=expires_in_minutes
+            )
         )
         if token_result.failure:
             error = token_result.error
@@ -108,16 +98,14 @@ class FlextAuthTokenService(s):
             return r[str].fail(error or "Token generation failed")
         token_value = token_result.value
         u.fetch_logger(__name__).debug(
-            "Token creation successful",
-            user_id=user_id,
-            token_type=token_kind,
+            "Token creation successful", user_id=user_id, token_type=token_kind
         )
         return r[str].ok(token_value)
 
     def refresh_token(self, token: str) -> p.Result[m.Auth.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.refresh(token),
+            lambda provider: provider.refresh(token)
         )
         if result.failure:
             error = result.error

@@ -12,8 +12,7 @@ if TYPE_CHECKING:
 
 
 class FlextAuthProviderMixin(
-    FlextAuthProviderTokenMixin,
-    FlextAuthProviderValidationMixin,
+    FlextAuthProviderTokenMixin, FlextAuthProviderValidationMixin
 ):
     """Common functionality for authentication providers."""
 

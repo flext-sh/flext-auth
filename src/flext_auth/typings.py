@@ -6,16 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Callable,
-    MutableMapping,
-    MutableSequence,
-)
+from collections.abc import Callable, MutableMapping, MutableSequence
 from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
 from flext_api import t, u
-
 from flext_auth import c
 
 if TYPE_CHECKING:
@@ -51,8 +46,7 @@ class FlextAuthTypes(t):
         type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
 
         type KerberosTicketValidator = Callable[
-            [str],
-            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
+            [str], m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData
         ]
 
 

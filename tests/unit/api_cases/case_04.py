@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from flext_tests import tm
-
 from flext_auth import FlextAuth
+from flext_tests import tm
 from tests import c, m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 
@@ -35,16 +34,13 @@ class TestsFlextAuthApiCase04:
         password = "SessionPassword123!"
         auth.register_user(username, "session@example.com", password)
         auth_result = auth.authenticate_user(
-            username,
-            password,
-            "127.0.0.1",
-            "test-user-agent",
+            username, password, "127.0.0.1", "test-user-agent"
         )
         u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            identity.unique_id,
+            identity.unique_id
         )
         u.Tests.Matchers.that(sessions_result.success, eq=True)
         sessions = sessions_result.value
@@ -62,14 +58,14 @@ class TestsFlextAuthApiCase04:
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            identity.unique_id,
+            identity.unique_id
         )
         if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.session_service.session_manager.end_session_by_id(
-                    session_id,
+                    session_id
                 )
                 u.Tests.Matchers.that(logout_result.success, eq=True)
 

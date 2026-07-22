@@ -46,28 +46,22 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         """Get provider metadata."""
         if not self.has_provider(name):
             return r[m.Auth.Providers.Metadata].fail(
-                f"Provider '{name}' not registered",
+                f"Provider '{name}' not registered"
             )
         metadata_result = self.fetch_plugin(c.Auth.REGISTRY_METADATA_CATEGORY, name)
         if metadata_result.failure:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name,
-                    version="1.0.0",
-                    capabilities=(),
-                    extras={},
-                ),
+                    name=name, version="1.0.0", capabilities=(), extras={}
+                )
             )
         wrapper = metadata_result.value
         metadata = getattr(wrapper, "data", None)
         if metadata is None:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name,
-                    version="1.0.0",
-                    capabilities=(),
-                    extras={},
-                ),
+                    name=name, version="1.0.0", capabilities=(), extras={}
+                )
             )
         return r[m.Auth.Providers.Metadata].ok(metadata)
 

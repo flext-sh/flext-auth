@@ -47,7 +47,7 @@ class FlextAuthSessionService(s):
         Use specific session methods instead.
         """
         return r[p.Base].fail(
-            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()",
+            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()"
         )
 
 

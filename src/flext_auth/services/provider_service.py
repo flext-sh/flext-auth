@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import override
 
 from flext_api import r
-
 from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, s, t
 from flext_auth.services._provider_builtin import FlextAuthProviderBuiltinRegistration
 
@@ -28,24 +27,21 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
         self._register_builtin_providers()
 
     def authenticate_user(
-        self,
-        username: str,
-        password: str,
-        provider: str = "basic",
+        self, username: str, password: str, provider: str = "basic"
     ) -> p.Result[p.Auth.Token]:
         """Railway-oriented user authentication with provider selection."""
         credentials = m.Auth.CredentialValidation(username=username, password=password)
         return self._providers.get(provider).flat_map(
             lambda auth_provider: auth_provider.authenticate(
-                credentials.model_dump(exclude_none=True),
-            ),
+                credentials.model_dump(exclude_none=True)
+            )
         )
 
     @override
     def execute(self) -> p.Result[p.Base]:
         """Railway-oriented execute with focused service pattern."""
         return r[p.Base].fail(
-            "Use specific provider methods: get_provider, authenticate_user, etc.",
+            "Use specific provider methods: get_provider, authenticate_user, etc."
         )
 
     def generate_token_for_user(
@@ -64,7 +60,7 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
                 token_kind,
                 effective_token_type,
                 expiry_minutes,
-            ),
+            )
         )
 
     def fetch_jwt_provider(self) -> p.Result[p.Auth.FlextAuthBaseProvider]:
@@ -80,9 +76,7 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
         return self._providers.list_providers()
 
     def register_provider(
-        self,
-        name: str,
-        provider: p.Auth.FlextAuthBaseProvider,
+        self, name: str, provider: p.Auth.FlextAuthBaseProvider
     ) -> p.Result[bool]:
         """Register custom provider.
 

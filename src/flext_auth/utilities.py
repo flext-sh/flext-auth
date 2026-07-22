@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from flext_api import u
-
 from flext_auth import t
 from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers

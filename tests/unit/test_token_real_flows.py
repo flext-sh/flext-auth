@@ -51,9 +51,7 @@ class TestsFlextAuthTokenRealFlows:
         username = "sequence-user"
         password = "SequencePass123!"
         register_result = auth.register_user(
-            username=username,
-            email="sequence-user@example.com",
-            password=password,
+            username=username, email="sequence-user@example.com", password=password
         )
         u.Tests.Matchers.ok(register_result)
 

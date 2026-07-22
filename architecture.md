@@ -508,19 +508,13 @@ class BaseTransportAdapter(Protocol):
     """Base protocol for transport adapters."""
 
     def send_auth_request(
-        self,
-        endpoint: str,
-        credentials: dict,
-        metadata: t.JsonMapping | None = None,
+        self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send authentication request over transport."""
         ...
 
     def send_validate_request(
-        self,
-        endpoint: str,
-        token: str,
-        metadata: t.JsonMapping | None = None,
+        self, endpoint: str, token: str, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send token validation request over transport."""
         ...
@@ -565,10 +559,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
-        self,
-        endpoint: str,
-        credentials: dict,
-        metadata: t.JsonMapping | None = None,
+        self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(url=endpoint, json=credentials, headers=metadata)
@@ -614,10 +605,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
-        self,
-        endpoint: str,
-        credentials: dict,
-        metadata: t.JsonMapping | None = None,
+        self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
@@ -644,10 +632,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self.logger = u.fetch_logger(__name__)
 
     def send_auth_request(
-        self,
-        endpoint: str,
-        credentials: dict,
-        metadata: t.JsonMapping | None = None,
+        self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
@@ -885,10 +870,7 @@ class CredentialManager:
         self.logger = u.fetch_logger(__name__)
 
     def store_credential(
-        self,
-        identifier: str,
-        credential: dict,
-        metadata: t.JsonMapping | None = None,
+        self, identifier: str, credential: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[bool]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)

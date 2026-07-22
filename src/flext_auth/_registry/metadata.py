@@ -18,14 +18,11 @@ class FlextAuthRegistryMetadata(FlextAuthRegistryMutation):
             caps = tuple(c for c in service.supports())
         except c.EXC_ATTR_TYPE as exc:
             u.fetch_logger(__name__).warning(
-                f"Provider {name} does not support capabilities introspection: {exc}",
+                f"Provider {name} does not support capabilities introspection: {exc}"
             )
             caps = ()
         base = m.Auth.Providers.Metadata(
-            name=name,
-            version="1.0.0",
-            capabilities=caps,
-            extras={},
+            name=name, version="1.0.0", capabilities=caps, extras={}
         )
         if provided:
             return provided
@@ -36,7 +33,7 @@ class FlextAuthRegistryMetadata(FlextAuthRegistryMutation):
                 return m.Auth.Providers.Metadata.model_validate(raw)
             except c.EXC_BASIC_TYPE as exc:
                 u.fetch_logger(__name__).debug(
-                    f"Provider {name} metadata extraction failed, using base: {exc}",
+                    f"Provider {name} metadata extraction failed, using base: {exc}"
                 )
                 return base
         return base

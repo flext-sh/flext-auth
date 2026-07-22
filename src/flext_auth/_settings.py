@@ -30,9 +30,7 @@ class FlextAuthSettings(FlextSettings):
     """Auth settings; all project fields under ``settings.Auth.*``."""
 
     model_config = SettingsConfigDict(
-        env_prefix="FLEXT_AUTH_",
-        env_nested_delimiter="__",
-        extra="ignore",
+        env_prefix="FLEXT_AUTH_", env_nested_delimiter="__", extra="ignore"
     )
 
     # mro-wkii.17.25: publish the owned settings model used by service contracts.
@@ -44,16 +42,13 @@ class FlextAuthSettings(FlextSettings):
 
             realm: Annotated[str, Field(default="", description="Kerberos realm")]
             kdc: Annotated[
-                str,
-                Field(default="", description="Key Distribution Center host"),
+                str, Field(default="", description="Key Distribution Center host")
             ]
             service_principal: Annotated[
-                str,
-                Field(default="", description="Service principal name (SPN)"),
+                str, Field(default="", description="Service principal name (SPN)")
             ]
             keytab_path: Annotated[
-                str | None,
-                Field(default=None, description="Path to the keytab file"),
+                str | None, Field(default=None, description="Path to the keytab file")
             ]
             clockskew_tolerance: Annotated[
                 int | None,
@@ -84,40 +79,26 @@ class FlextAuthSettings(FlextSettings):
             ),
         ]
         algorithm: Annotated[
-            str,
-            Field(default="HS256", description="JWT signing algorithm"),
+            str, Field(default="HS256", description="JWT signing algorithm")
         ]
         issuer: Annotated[
-            str,
-            Field(default="flext-auth", description="Token issuer claim"),
+            str, Field(default="flext-auth", description="Token issuer claim")
         ]
         audience: Annotated[
-            str,
-            Field(
-                default="flext-auth-users",
-                description="Token audience claim",
-            ),
+            str, Field(default="flext-auth-users", description="Token audience claim")
         ]
         expiry_minutes: Annotated[
-            int,
-            Field(default=1440, gt=0, description="Access token expiry in minutes"),
+            int, Field(default=1440, gt=0, description="Access token expiry in minutes")
         ]
         session_expiry_minutes: Annotated[
-            int,
-            Field(default=1440, gt=0, description="Session expiry in minutes"),
+            int, Field(default=1440, gt=0, description="Session expiry in minutes")
         ]
         max_sessions_per_user: Annotated[
-            int,
-            Field(default=5, gt=0, description="Max parallel sessions per user"),
+            int, Field(default=5, gt=0, description="Max parallel sessions per user")
         ]
         hash_rounds: Annotated[
             int,
-            Field(
-                default=12,
-                ge=4,
-                le=31,
-                description="Password hash rounds (bcrypt)",
-            ),
+            Field(default=12, ge=4, le=31, description="Password hash rounds (bcrypt)"),
         ]
 
         @field_validator("secret_key", mode="before")
@@ -149,8 +130,7 @@ class FlextAuthSettings(FlextSettings):
         Auth: AuthSettings
     else:
         Auth: AuthSettings = Field(
-            default_factory=AuthSettings,
-            description="Namespaced auth settings.",
+            default_factory=AuthSettings, description="Namespaced auth settings."
         )
 
 

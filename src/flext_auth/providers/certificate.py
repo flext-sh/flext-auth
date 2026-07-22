@@ -14,8 +14,7 @@ from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
 class FlextAuthCertificateProvider(
-    FlextAuthProviderMixin,
-    p.Auth.FlextAuthBaseProvider,
+    FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
 ):
     """Certificate-based authentication provider."""
 

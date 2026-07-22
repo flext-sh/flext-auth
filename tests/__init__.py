@@ -24,7 +24,6 @@ if TYPE_CHECKING:
         tv as tv,
         x as x,
     )
-
     from tests.base import (
         TestsFlextAuthServiceBase as TestsFlextAuthServiceBase,
         s as s,
@@ -38,10 +37,7 @@ if TYPE_CHECKING:
         TestsFlextAuthModels as TestsFlextAuthModels,
         m as m,
     )
-    from tests.protocols import (
-        TestsFlextAuthProtocols as TestsFlextAuthProtocols,
-        p,
-    )
+    from tests.protocols import TestsFlextAuthProtocols as TestsFlextAuthProtocols, p
     from tests.settings import TestsFlextAuthSettings as TestsFlextAuthSettings
     from tests.typings import TestsFlextAuthTypes as TestsFlextAuthTypes, t as t
     from tests.unit.api_cases.case_01 import (
@@ -86,76 +82,38 @@ if TYPE_CHECKING:
         TestsFlextAuthTokenRealFlows as TestsFlextAuthTokenRealFlows,
     )
     from tests.unit.test_typings import TestsFlextAuthTypings as TestsFlextAuthTypings
-    from tests.utilities import (
-        TestsFlextAuthUtilities as TestsFlextAuthUtilities,
-        u,
-    )
+    from tests.utilities import TestsFlextAuthUtilities as TestsFlextAuthUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
-    (
-        ".fixtures",
-        ".unit",
-    ),
-    build_lazy_import_map(
-        {
-            ".base": (
-                "TestsFlextAuthServiceBase",
-                "s",
-            ),
-            ".conftest": ("conftest",),
-            ".constants": (
-                "TestsFlextAuthConstants",
-                "c",
-            ),
-            ".fixtures": ("fixtures",),
-            ".models": (
-                "CertificateFixture",
-                "TestsFlextAuthModels",
-                "m",
-            ),
-            ".protocols": (
-                "TestsFlextAuthProtocols",
-                "p",
-            ),
-            ".settings": ("TestsFlextAuthSettings",),
-            ".typings": (
-                "TestsFlextAuthTypes",
-                "t",
-            ),
-            ".unit": ("unit",),
-            ".unit.api_cases.case_01": ("TestsFlextAuthApiCase01",),
-            ".unit.api_cases.case_02": ("TestsFlextAuthApiCase02",),
-            ".unit.api_cases.case_03": ("TestsFlextAuthApiCase03",),
-            ".unit.api_cases.case_04": ("TestsFlextAuthApiCase04",),
-            ".unit.api_cases.case_05": ("TestsFlextAuthApiCase05",),
-            ".unit.api_cases.case_06": ("TestsFlextAuthApiCase06",),
-            ".unit.api_cases.case_07": ("TestsFlextAuthApiCase07",),
-            ".unit.api_cases.case_08": ("TestsFlextAuthApiCase08",),
-            ".unit.api_cases.case_09": ("TestsFlextAuthApiCase09",),
-            ".unit.api_cases.case_10": ("TestsFlextAuthApiCase10",),
-            ".unit.api_cases.case_11": ("TestsFlextAuthApiCase11",),
-            ".unit.api_cases.support": ("FlextAuthApiTestDataHelper",),
-            ".unit.test_api": ("TestsFlextAuthApi",),
-            ".unit.test_config": ("TestsFlextAuthConfig",),
-            ".unit.test_token_real_flows": ("TestsFlextAuthTokenRealFlows",),
-            ".unit.test_typings": ("TestsFlextAuthTypings",),
-            ".utilities": (
-                "TestsFlextAuthUtilities",
-                "u",
-            ),
-            "flext_tests": (
-                "d",
-                "e",
-                "h",
-                "r",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-                "x",
-            ),
-        },
-    ),
+    (".fixtures", ".unit"),
+    build_lazy_import_map({
+        ".base": ("TestsFlextAuthServiceBase", "s"),
+        ".conftest": ("conftest",),
+        ".constants": ("TestsFlextAuthConstants", "c"),
+        ".fixtures": ("fixtures",),
+        ".models": ("CertificateFixture", "TestsFlextAuthModels", "m"),
+        ".protocols": ("TestsFlextAuthProtocols", "p"),
+        ".settings": ("TestsFlextAuthSettings",),
+        ".typings": ("TestsFlextAuthTypes", "t"),
+        ".unit": ("unit",),
+        ".unit.api_cases.case_01": ("TestsFlextAuthApiCase01",),
+        ".unit.api_cases.case_02": ("TestsFlextAuthApiCase02",),
+        ".unit.api_cases.case_03": ("TestsFlextAuthApiCase03",),
+        ".unit.api_cases.case_04": ("TestsFlextAuthApiCase04",),
+        ".unit.api_cases.case_05": ("TestsFlextAuthApiCase05",),
+        ".unit.api_cases.case_06": ("TestsFlextAuthApiCase06",),
+        ".unit.api_cases.case_07": ("TestsFlextAuthApiCase07",),
+        ".unit.api_cases.case_08": ("TestsFlextAuthApiCase08",),
+        ".unit.api_cases.case_09": ("TestsFlextAuthApiCase09",),
+        ".unit.api_cases.case_10": ("TestsFlextAuthApiCase10",),
+        ".unit.api_cases.case_11": ("TestsFlextAuthApiCase11",),
+        ".unit.api_cases.support": ("FlextAuthApiTestDataHelper",),
+        ".unit.test_api": ("TestsFlextAuthApi",),
+        ".unit.test_config": ("TestsFlextAuthConfig",),
+        ".unit.test_token_real_flows": ("TestsFlextAuthTokenRealFlows",),
+        ".unit.test_typings": ("TestsFlextAuthTypings",),
+        ".utilities": ("TestsFlextAuthUtilities", "u"),
+        "flext_tests": ("d", "e", "h", "r", "td", "tf", "tk", "tm", "tv", "x"),
+    }),
     exclude_names=(
         "cleanup_submodule_namespace",
         "install_lazy_exports",
@@ -179,9 +137,4 @@ _LAZY_IMPORTS = merge_lazy_imports(
 )
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

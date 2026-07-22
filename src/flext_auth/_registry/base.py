@@ -35,12 +35,12 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
         result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, data)
         if result.failure:
             return r[p.Auth.FlextAuthBaseProvider].fail(
-                result.error or f"Provider '{data}' not registered",
+                result.error or f"Provider '{data}' not registered"
             )
         wrapped = result.unwrap()
         if wrapped is None:
             return r[p.Auth.FlextAuthBaseProvider].fail(
-                f"Provider '{data}' is not registered",
+                f"Provider '{data}' is not registered"
             )
         inner = getattr(wrapped, "provider", None)
         if inner is not None and self._is_auth_provider(inner):
@@ -48,7 +48,7 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
         if self._is_auth_provider(wrapped):
             return r[p.Auth.FlextAuthBaseProvider].ok(wrapped)
         return r[p.Auth.FlextAuthBaseProvider].fail(
-            f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider",
+            f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider"
         )
 
     def get_capabilities(self, name: str) -> p.Result[set[str]]:
@@ -62,7 +62,7 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
             return r[set[str]].ok(set(caps))
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[set[str]].fail(
-                f"Provider '{name}' capabilities resolution failed: {exc}",
+                f"Provider '{name}' capabilities resolution failed: {exc}"
             )
 
 

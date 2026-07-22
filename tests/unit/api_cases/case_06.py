@@ -18,8 +18,7 @@ class TestsFlextAuthApiCase06:
         """Test authenticate_user method failure scenarios."""
         auth = FlextAuth()
         result = auth.authenticate_user(
-            username="nonexistent_user",
-            password="any_password",
+            username="nonexistent_user", password="any_password"
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, is_=str)
@@ -102,9 +101,7 @@ class TestsFlextAuthApiCase06:
         """Test that create_token fails via alternative path — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser",
-            "test@example.com",
-            "TestPassword123!",
+            "testuser", "test@example.com", "TestPassword123!"
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
@@ -118,9 +115,7 @@ class TestsFlextAuthApiCase06:
         """Test that validate_token fails — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser",
-            "test@example.com",
-            "TestPassword123!",
+            "testuser", "test@example.com", "TestPassword123!"
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value

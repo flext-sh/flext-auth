@@ -34,7 +34,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
         settings = self._provider_config
         if not settings:
             return r[str].fail(
-                "Provider configuration is required for token generation",
+                "Provider configuration is required for token generation"
             )
         secret_key_value = settings.get("secret_key")
         if not isinstance(secret_key_value, str) or not secret_key_value:
@@ -113,19 +113,19 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
         claims_result = self._decode_token_claims(token_text)
         if claims_result.failure:
             return r[p.Auth.Token].fail(
-                claims_result.error or "Token decode failed during refresh",
+                claims_result.error or "Token decode failed during refresh"
             )
         claims = claims_result.value
         identity_result = self._extract_identity_id(claims)
         if identity_result.failure:
             return r[p.Auth.Token].fail(
-                identity_result.error or "Identity extraction failed during refresh",
+                identity_result.error or "Identity extraction failed during refresh"
             )
         identity_id = identity_result.value
         new_token_result = self.generate_token(claims, "access")
         if new_token_result.failure:
             return r[p.Auth.Token].fail(
-                new_token_result.error or "Token generation failed during refresh",
+                new_token_result.error or "Token generation failed during refresh"
             )
         settings = self._provider_config
         expiry_config_value = settings.get("expiry_minutes") if settings else None
