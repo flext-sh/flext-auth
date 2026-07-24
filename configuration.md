@@ -34,7 +34,9 @@ ______________________________________________________________________
 
 ## Overview
 
-flext-auth uses FlextAuthSettings class extending [flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md) FlextSettings patterns for environment-aware configuration management.
+flext-auth uses `FlextAuthSettings` extending
+[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)
+`FlextSettings` patterns for environment-aware configuration management.
 
 ______________________________________________________________________
 
@@ -44,24 +46,23 @@ ______________________________________________________________________
 
 ```python
 from flext_auth import FlextAuthSettings
+from flext_cli import u
 
 settings = FlextAuthSettings()
-u.Cli.print(f"JWT Expiry: {settings.jwt_expiry_minutes} minutes")
-u.Cli.print(f"Bcrypt Rounds: {settings.bcrypt_rounds}")
+u.Cli.info(f"JWT Expiry: {settings.Auth.expiry_minutes} minutes")
+u.Cli.info(f"Bcrypt Rounds: {settings.Auth.hash_rounds}")
 ```
 
 ### Environment-Specific Configuration
 
 ```python
+from flext_auth import FlextAuthSettings
+
 # Development configuration
-dev_config = FlextAuthSettings()
-if dev_config.success:
-    settings = dev_config.unwrap()
+dev_settings = FlextAuthSettings()
 
 # Production configuration
-prod_config = FlextAuthSettings()
-if prod_config.success:
-    settings = prod_config.unwrap()
+prod_settings = FlextAuthSettings()
 ```
 
 ______________________________________________________________________
@@ -72,28 +73,28 @@ ______________________________________________________________________
 
 | Parameter            | Type | Default          | Description                      |
 | -------------------- | ---- | ---------------- | -------------------------------- |
-| `jwt_secret_key`     | str  | "dev-secret-key" | Secret key for JWT signing       |
-| `jwt_expiry_minutes` | int  | 60               | Token expiration time in minutes |
-| `jwt_algorithm`      | str  | c.Auth.Algorithms.HS256          | JWT signing algorithm            |
+| `secret_key`         | str  | generated        | Secret key for JWT signing       |
+| `expiry_minutes`     | int  | 1440             | Token expiration time in minutes |
+| `algorithm`          | str  | HS256            | JWT signing algorithm            |
 
 ### Security Settings
 
 | Parameter                 | Type | Default | Description                |
 | ------------------------- | ---- | ------- | -------------------------- |
-| `bcrypt_rounds`           | int  | 12      | Bcrypt hashing rounds      |
-| `max_failed_attempts`     | int  | 5       | Max failed login attempts  |
-| `session_timeout_minutes` | int  | 120     | Session timeout in minutes |
+| `hash_rounds`             | int  | 12      | Bcrypt hashing rounds      |
+| `max_sessions_per_user`   | int  | 5       | Max sessions per user      |
+| `session_expiry_minutes`  | int  | 1440    | Session timeout in minutes |
 
 ### Environment Variables
 
 Configure via environment variables with `AUTH_` prefix:
 
 ```bash
-export AUTH_JWT_SECRET_KEY="your-secure-secret-key"
-export AUTH_JWT_EXPIRY_MINUTES=30
-export AUTH_BCRYPT_ROUNDS=14
-export AUTH_MAX_FAILED_ATTEMPTS=3
-export AUTH_SESSION_TIMEOUT_MINUTES=60
+export AUTH_SECRET_KEY="your-secure-secret-key-with-at-least-32-chars"
+export AUTH_EXPIRY_MINUTES=30
+export AUTH_HASH_ROUNDS=14
+export AUTH_MAX_SESSIONS_PER_USER=5
+export AUTH_SESSION_EXPIRY_MINUTES=60
 ```
 
 ______________________________________________________________________
@@ -103,11 +104,14 @@ ______________________________________________________________________
 ### Override Specific Parameters
 
 ```python
+from flext_auth import FlextAuth, FlextAuthSettings
+
 settings = FlextAuthSettings(
-    jwt_expiry_minutes=30,  # 30-minute tokens
-    bcrypt_rounds=14,  # Higher security
-    max_failed_attempts=3,  # Stricter lockout
-    session_timeout_minutes=60,  # 1-hour sessions
+    Auth={
+        "secret_key": "your-secure-secret-key-with-at-least-32-chars",
+        "expiry_minutes": 30,  # 30-minute tokens
+        "hash_rounds": 14,  # Higher security
+    }
 )
 
 auth = FlextAuth(settings=settings)
@@ -116,12 +120,15 @@ auth = FlextAuth(settings=settings)
 ### Production Security Settings
 
 ```python
+from flext_auth import FlextAuthSettings
+
 prod_config = FlextAuthSettings(
-    jwt_secret_key="your-production-secret-key",
-    jwt_expiry_minutes=15,  # Short-lived tokens
-    bcrypt_rounds=14,  # High security
-    max_failed_attempts=3,  # Account lockout
-    session_timeout_minutes=30,  # Short sessions
+    Auth={
+        "secret_key": "your-production-secret-key-with-at-least-32-chars",
+        "expiry_minutes": 15,  # Short-lived tokens
+        "hash_rounds": 14,  # High security
+        "session_expiry_minutes": 30,  # Short sessions
+    }
 )
 ```
 
@@ -132,9 +139,14 @@ ______________________________________________________________________
 ### Validate Configuration
 
 ```python
-config_result = FlextAuthSettings()
-if config_result.failure:
-    u.Cli.print(f"Configuration error: {config_result.error}")
+from flext_auth import FlextAuthSettings
+from flext_cli import u
+
+try:
+    settings = FlextAuthSettings()
+    u.Cli.info("Configuration valid")
+except Exception as e:
+    u.Cli.info(f"Configuration error: {e}")
 ```
 
 ### CLI Validation
@@ -153,12 +165,14 @@ ______________________________________________________________________
 
 ### Singleton Pattern
 
-FlextAuthSettings follows FLEXT singleton pattern for global configuration:
+FlextAuthSettings follows the FLEXT singleton pattern for global configuration:
 
 ```python
+from flext_auth import FlextAuth, FlextAuthSettings
+
 # Set global configuration
 settings = FlextAuthSettings()
-FlextAuthSettings.set_global_instance(settings)
+FlextAuthSettings.update_global(settings)
 
 # Use global configuration
 auth = FlextAuth()  # Uses global settings automatically
@@ -167,9 +181,12 @@ auth = FlextAuth()  # Uses global settings automatically
 ### Global Instance Access
 
 ```python
+from flext_auth import FlextAuthSettings
+from flext_cli import u
+
 # Get current global configuration
-global_config = FlextAuthSettings.get_global_instance()
-u.Cli.print(f"Current JWT expiry: {global_config.jwt_expiry_minutes}")
+global_config = FlextAuthSettings.fetch_global()
+u.Cli.info(f"Current JWT expiry: {global_config.Auth.expiry_minutes}")
 ```
 
 ______________________________________________________________________
@@ -181,12 +198,15 @@ ______________________________________________________________________
 For production environments:
 
 ```python
+from flext_auth import FlextAuthSettings
+
 FlextAuthSettings(
-    jwt_secret_key="strong-random-secret-256-bits",
-    jwt_expiry_minutes=15,  # Short token lifetime
-    bcrypt_rounds=14,  # High security hashing
-    max_failed_attempts=3,  # Account protection
-    session_timeout_minutes=30,  # Session security
+    Auth={
+        "secret_key": "strong-random-secret-256-bits-minimum",
+        "expiry_minutes": 15,  # Short token lifetime
+        "hash_rounds": 14,  # High security hashing
+        "session_expiry_minutes": 30,  # Session security
+    }
 )
 ```
 
@@ -195,12 +215,15 @@ FlextAuthSettings(
 For development environments:
 
 ```python
+from flext_auth import FlextAuthSettings
+
 FlextAuthSettings(
-    jwt_secret_key="dev-secret-key",
-    jwt_expiry_minutes=60,  # Convenient for testing
-    bcrypt_rounds=12,  # Balanced performance
-    max_failed_attempts=5,  # Less restrictive
-    session_timeout_minutes=120,  # Extended sessions
+    Auth={
+        "secret_key": "dev-secret-key-with-at-least-32-characters",
+        "expiry_minutes": 60,  # Convenient for testing
+        "hash_rounds": 12,  # Balanced performance
+        "session_expiry_minutes": 120,  # Extended sessions
+    }
 )
 ```
 
@@ -219,6 +242,7 @@ ______________________________________________________________________
 
 ```python
 import os
+from flext_auth import FlextAuthSettings
 
 env = os.getenv("FLEXT_ENV", "development")
 settings = FlextAuthSettings()
@@ -226,4 +250,5 @@ settings = FlextAuthSettings()
 
 ______________________________________________________________________
 
-This configuration guide covers the current implementation as of April 14, 2026. For usage examples, see Getting Started.
+This configuration guide covers the current implementation as of April 14, 2026.
+For usage examples, see Getting Started.
