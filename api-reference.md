@@ -2,14 +2,14 @@
 
 <!-- TOC START -->
 - [Core API](#core-api)
-  - [flext_auth_quick_start()](#flextauthquickstart)
+  - [FlextAuth.quick_start()](#flextauthquick_start)
 - [FlextAuth Service](#flextauth-service)
   - [Constructor](#constructor)
-  - [register_user()](#registeruser)
-  - [authenticate_user()](#authenticateuser)
-  - [validate_token()](#validatetoken)
+  - [register_user()](#register_user)
+  - [authenticate_user()](#authenticate_user)
+  - [authenticate()](#authenticate)
 - [Domain Models](#domain-models)
-  - [User](#user)
+  - [AuthIdentity](#authidentity)
   - [Session](#session)
   - [UserCreationRequest](#usercreationrequest)
 - [Configuration](#configuration)
@@ -31,31 +31,31 @@
 - [Related Documentation](#related-documentation)
 <!-- TOC END -->
 
-**Version**: 1.0.0 Current | **Updated**: October 1, 2025
+**Version**: 0.12.0-dev Current | **Updated**: April 14, 2026
 
-Complete API documentation for flext-auth enterprise authentication service with s and h architecture.
+Complete API documentation for the flext-auth enterprise authentication service.
 
-For general FLEXT patterns and r usage, see **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** documentation.
-
-**Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the h refactoring.
+For general FLEXT patterns and `r` usage, see the
+**[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)**
+documentation.
 
 ______________________________________________________________________
 
 ## Core API
 
-### flext_auth_quick_start()
+### FlextAuth.quick_start()
 
-Initialize authentication service for development and testing.
+Initialize the authentication service for development and testing.
 
 ```python
-from flext_auth import flext_auth_quick_start
+from flext_auth import FlextAuth
 
-auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+auth = FlextAuth.quick_start(create_admin_user=False)
 ```
 
 **Parameters**:
 
-- `create_REDACTED_LDAP_BIND_PASSWORD` (bool): Create default REDACTED_LDAP_BIND_PASSWORD user (default: False)
+- `create_admin_user` (bool): Create the default admin user (default: True)
 
 **Returns**: `FlextAuth` instance
 
@@ -76,14 +76,18 @@ auth = FlextAuth(settings=settings)
 
 Register a new user with username, email, and password.
 
-```python
+```python notest
 from __future__ import annotations
+
 def register_user(
     self,
     username: str,
     email: str,
-    password: str
-) -> p.Result[User]:
+    password: str,
+    roles: t.StrSequence | None = None,
+    role: str | None = None,
+) -> p.Result[m.Auth.AuthIdentity]:
+    ...
 ```
 
 **Parameters**:
@@ -91,90 +95,104 @@ def register_user(
 - `username` (str): Unique username
 - `email` (str): Valid email address
 - `password` (str): User password (will be hashed with bcrypt)
+- `roles` (t.StrSequence | None): Optional role sequence
+- `role` (str | None): Optional single role
 
-**Returns**: `r[User]` - Created user or error
+**Returns**: `r[m.Auth.AuthIdentity]` - Created identity or error
 
 **Example**:
 
 ```python
+from flext_auth import FlextAuth
+from flext_cli import u
+
+auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
-    u.Cli.print(f"User created: {user.username}")
+    u.Cli.info(f"User created: {user.name}")
 ```
 
 ### authenticate_user()
 
-Authenticate user with username and password.
+Authenticate a user with username and password.
 
-```python
+```python notest
 from __future__ import annotations
+
 def authenticate_user(
     self,
     username: str,
-    password: str
-) -> p.Result[m.Dict]:
+    password: str,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+) -> p.Result[m.Auth.AuthIdentity]:
+    ...
 ```
 
 **Parameters**:
 
 - `username` (str): Username to authenticate
 - `password` (str): User password
+- `ip_address` (str | None): Optional client IP
+- `user_agent` (str | None): Optional client user agent
 
-**Returns**: `r[m.Dict]` with session and token data
+**Returns**: `r[m.Auth.AuthIdentity]` with identity and token data
 
 **Example**:
 
 ```python
+from flext_auth import FlextAuth
+
+auth = FlextAuth.quick_start(create_admin_user=False)
 auth_result = auth.authenticate_user("demo", "secure123")
 if auth_result.success:
-    session_data = auth_result.unwrap()
-    token = session_data["token"]
-    session = session_data["session"]
+    identity = auth_result.unwrap()
+    token = identity.token
+    session_id = identity.session_id
 ```
 
-### validate_token()
+### authenticate()
 
-Validate JWT token and extract user information.
+Authenticate with a credentials mapping.
 
-```python
+```python notest
 from __future__ import annotations
-def validate_token(self, token: str) -> p.Result[m.Dict]:
+
+def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]:
+    ...
 ```
-
-**Parameters**:
-
-- `token` (str): JWT token (with or without Bearer prefix)
-
-**Returns**: `r[m.Dict]` with token payload or error
 
 **Example**:
 
 ```python
-validation_result = auth.validate_token(token)
-if validation_result.success:
-    token_data = validation_result.unwrap()
-    username = token_data["username"]
+from flext_auth import FlextAuth
+
+auth = FlextAuth.quick_start(create_admin_user=False)
+result = auth.authenticate({"username": "demo", "password": "secure123"})
+if result.success:
+    identity = result.unwrap()
+    u.Cli.info(f"Authenticated: {identity.name}")
 ```
 
 ______________________________________________________________________
 
 ## Domain Models
 
-### User
+### AuthIdentity
 
-User entity extending FlextModels.Entity.
+Authentication identity extending `FlextModels.Entity`.
 
-```python
+```python notest
 from __future__ import annotations
+from flext_auth import m
 
 
-class User(FlextModels.Entity):
-    username: str
-    email: str
-    password_hash: str
-    roles: t.StringList
-    created_at: datetime
+class AuthIdentity(m.BaseModel):
+    name: str
+    contact: str
+    credential_hash: str
+    roles: t.StrSequence
     is_active: bool = True
 ```
 
@@ -182,31 +200,36 @@ class User(FlextModels.Entity):
 
 #### set_password()
 
-```python
+```python notest
 from __future__ import annotations
+
 def set_password(self, password: str) -> p.Result[bool]:
+    ...
 ```
 
-Hash and set user password using bcrypt.
+Hash and set the user password using bcrypt.
 
 #### verify_password()
 
-```python
+```python notest
 from __future__ import annotations
+
 def verify_password(self, password: str) -> p.Result[bool]:
+    ...
 ```
 
-Verify password against stored hash.
+Verify the password against the stored hash.
 
 ### Session
 
-Session entity for managing user sessions.
+Session model for managing user sessions.
 
-```python
+```python notest
 from __future__ import annotations
+from flext_auth import m
 
 
-class Session(FlextModels.Entity):
+class Session(m.BaseModel):
     user_id: str
     session_token: str
     expires_at: datetime
@@ -217,8 +240,10 @@ class Session(FlextModels.Entity):
 
 Request model for user registration.
 
-```python
+```python notest
 from __future__ import annotations
+from flext_core import m, t
+from flext_cli import u
 
 
 class UserCreationRequest(m.BaseModel):
@@ -226,7 +251,7 @@ class UserCreationRequest(m.BaseModel):
     email: str
     password: str
     full_name: str | None = None
-    roles: t.StringList = u.Field(default_factory=list)
+    roles: t.StrSequence = u.Field(default_factory=list)
 ```
 
 ______________________________________________________________________
@@ -235,33 +260,38 @@ ______________________________________________________________________
 
 ### FlextAuthSettings
 
-Configuration class extending FlextSettings.
+Configuration class extending `FlextSettings`.
 
-```python
+```python notest
 from __future__ import annotations
+from flext_core import m
+from flext_cli import u
 
 
 class FlextAuthSettings(FlextSettings):
-    # JWT Settings
-    jwt_secret_key: str = "dev-secret-key"
-    jwt_expiry_minutes: int = 60
-    jwt_algorithm: str = c.Auth.Algorithms.HS256
-
-    # Security Settings
-    bcrypt_rounds: int = 12
-    max_failed_attempts: int = 5
-    session_timeout_minutes: int = 120
+    Auth: AuthSettings
 ```
+
+JWT and security settings are available under `settings.Auth`:
+
+- `secret_key` (str): JWT signing secret
+- `algorithm` (str): JWT signing algorithm
+- `expiry_minutes` (int): Access token lifetime in minutes
+- `session_expiry_minutes` (int): Session lifetime in minutes
+- `hash_rounds` (int): Bcrypt hashing rounds
+- `max_sessions_per_user` (int): Maximum sessions per user
 
 #### create_for_environment()
 
-```python
+```python notest
 from __future__ import annotations
+
 @classmethod
 def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]:
+    ...
 ```
 
-Create configuration for specific environment.
+Create configuration for a specific environment.
 
 **Parameters**:
 
@@ -270,9 +300,9 @@ Create configuration for specific environment.
 **Example**:
 
 ```python
-config_result = FlextAuthSettings()
-if config_result.success:
-    settings = config_result.unwrap()
+from flext_auth import FlextAuthSettings
+
+settings = FlextAuthSettings()
 ```
 
 ______________________________________________________________________
@@ -281,7 +311,7 @@ ______________________________________________________________________
 
 ### create-user
 
-Create user via command line.
+Create a user via the command line.
 
 ```bash
 flext-auth create-user \
@@ -302,7 +332,7 @@ flext-auth authenticate \
 
 ### validate-settings
 
-Validate current configuration.
+Validate the current configuration.
 
 ```bash
 flext-auth validate-settings
@@ -317,35 +347,31 @@ All operations return `r[T]` for type-safe error handling.
 ### Success Pattern
 
 ```python
+from flext_auth import FlextAuth
+from flext_cli import u
+
+auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
-    # Use user t.JsonValue
+    u.Cli.info(f"User created: {user.name}")
 else:
-    u.Cli.print(f"Error: {result.error}")
+    u.Cli.info(f"Error: {result.error}")
 ```
 
 ### Chaining Pattern
 
 ```python
 from __future__ import annotations
-from flext_cli import u
-from flext_core import FlextSettings
+from flext_auth import FlextAuth
+from flext_core import m, p, r
 
 
-def complete_auth_flow(username: str, password: str) -> p.Result[m.Dict]:
-    return (
-        auth
-        .authenticate_user(username, password)
-        .flat_map(lambda auth_data: auth.validate_token(auth_data["token"]))
-        .map(
-            lambda token_data: {
-                "user": token_data["username"],
-                "authenticated": True,
-                "expires": token_data["exp"],
-            }
-        )
-    )
+auth = FlextAuth.quick_start(create_admin_user=False)
+
+
+def complete_auth_flow(username: str, password: str) -> p.Result[m.Auth.AuthIdentity]:
+    return auth.authenticate_user(username, password)
 ```
 
 ______________________________________________________________________
@@ -355,24 +381,27 @@ ______________________________________________________________________
 ### Container Integration
 
 ```python
+from flext_auth import FlextAuth, FlextAuthSettings
+from flext_core import FlextContainer
 from flext_cli import u
-from flext_core import FlextSettings
 
-container = FlextContainer.get_global()
+auth = FlextAuth(settings=FlextAuthSettings())
+container = FlextContainer()
 container.bind("auth_service", auth)
 
 auth_result = container.resolve("auth_service")
 if auth_result.success:
-    auth = auth_result.unwrap()
+    service = auth_result.unwrap()
+    u.Cli.info("Authentication service resolved")
 ```
 
 ### r Usage
 
-All flext-auth operations follow r pattern from flext-core:
+All flext-auth operations follow the `r` pattern from flext-core:
 
 - Use `.success` to check success
-- Use `.unwrap()` to extract value on success
-- Use `.error` to get error message on failure
+- Use `.unwrap()` to extract the value on success
+- Use `.error` to get the error message on failure
 - Chain operations with `.flat_map()` and `.map()`
 
 ______________________________________________________________________
@@ -381,26 +410,27 @@ ______________________________________________________________________
 
 ### Password Security
 
-- Passwords are hashed using bcrypt with 12 rounds
+- Passwords are hashed using bcrypt with configurable rounds
 - Original passwords are never stored
 - Password verification uses constant-time comparison
 
 ### JWT Security
 
-- Tokens signed with HMAC SHA-256 algorithm
+- Tokens are signed with HMAC SHA-256 by default
 - Configurable expiration times
 - Bearer token format support
 - Signature validation on all token operations
 
 ### Session Management
 
-- Sessions have configurable timeout
+- Sessions have configurable timeouts
 - Session tokens are cryptographically secure
 - Expired sessions are automatically invalid
 
 ______________________________________________________________________
 
-This API reference covers the current implementation as of April 14, 2026. For usage examples, see Getting Started.
+This API reference covers the current implementation as of April 14, 2026.
+For usage examples, see Getting Started.
 
 ## Related Documentation
 
