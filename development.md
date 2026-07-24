@@ -155,16 +155,15 @@ def authenticate_user_legacy(username: str, password: str) -> m.Auth.AuthIdentit
 
 ### Domain Model Patterns
 
-```python
+```text
 from __future__ import annotations
-
 from flext_auth import m, p, r
 
 
 # ✅ Correct - Extend the canonical auth identity model
 class User(m.Auth.AuthIdentity):
-    username: str
-    email: str
+    username: str = m.Field(description="Unique username")
+    email: str = m.Field(description="User email address")
 
     def verify_password(self, password: str) -> p.Result[bool]:
         # Business logic returning r
