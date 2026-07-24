@@ -67,7 +67,7 @@ result = auth.register_user("user", "invalid-email", "weak")
    # Check if user already exists
    existing_user = auth._find_user("username")  # Internal method
    if existing_user.success:
-       print("User already exists")
+       u.Cli.print("User already exists")
    ```
 
 ### Authentication Failures
@@ -85,12 +85,12 @@ auth_result = auth.authenticate_user("user", "password")
 # Check if user exists
 user_result = auth._find_user("user")
 if user_result.failure:
-    print("User not found")
+    u.Cli.print("User not found")
 else:
     user = user_result.unwrap()
     # Check password verification
     verify_result = user.verify_password("password")
-    print(f"Password verification: {verify_result.success}")
+    u.Cli.print(f"Password verification: {verify_result.success}")
 ```
 
 **Common Causes**:
@@ -127,9 +127,9 @@ validation_result = auth.validate_token(token)
    # Check token expiration without validation
    try:
        payload = jwt.decode(token, options={"verify_signature": False})
-       print(f"Token expires at: {payload.get('exp')}")
+       u.Cli.print(f"Token expires at: {payload.get('exp')}")
    except jwt.InvalidTokenError as e:
-       print(f"Token error: {e}")
+       u.Cli.print(f"Token error: {e}")
    ```
 
 1. **Secret Key Mismatch**:
@@ -137,7 +137,7 @@ validation_result = auth.validate_token(token)
    ```python notest
    # Ensure same secret key is used for generation and validation
    settings = FlextAuthSettings()
-   print(f"JWT Secret: {settings.jwt_secret_key}")
+   u.Cli.print(f"JWT Secret: {settings.jwt_secret_key}")
    ```
 
 ______________________________________________________________________
@@ -151,7 +151,7 @@ ______________________________________________________________________
 ```python notest
 settings = FlextAuthSettings()
 if settings.failure:
-    print(f"Config error: {settings.error}")
+    u.Cli.print(f"Config error: {settings.error}")
 ```
 
 **Solutions**:
@@ -186,9 +186,9 @@ if settings.failure:
 
 ```python notest
 settings = FlextAuthSettings()
-print(f"JWT Algorithm: {settings.jwt_algorithm}")
-print(f"JWT Expiry: {settings.jwt_expiry_minutes}")
-print(f"Secret Key Length: {len(settings.jwt_secret_key)}")
+u.Cli.print(f"JWT Algorithm: {settings.jwt_algorithm}")
+u.Cli.print(f"JWT Expiry: {settings.jwt_expiry_minutes}")
+u.Cli.print(f"Secret Key Length: {len(settings.jwt_secret_key)}")
 ```
 
 **Recommendations**:
@@ -274,11 +274,11 @@ import time
 start = time.time()
 user.set_password("test_password")
 bcrypt_time = time.time() - start
-print(f"Bcrypt hashing took: {bcrypt_time:.3f}s")
+u.Cli.print(f"Bcrypt hashing took: {bcrypt_time:.3f}s")
 
 # Check bcrypt rounds
 settings = FlextAuthSettings()
-print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
+u.Cli.print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
 ```
 
 **Solutions**:
@@ -309,12 +309,12 @@ import psutil
 # Monitor memory usage
 process = psutil.Process()
 memory_mb = process.memory_info().rss / 1024 / 1024
-print(f"Memory usage: {memory_mb:.1f} MB")
+u.Cli.print(f"Memory usage: {memory_mb:.1f} MB")
 
 # Check session count
 auth = FlextAuth()
 session_count = len(auth._sessions)  # Internal attribute
-print(f"Active sessions: {session_count}")
+u.Cli.print(f"Active sessions: {session_count}")
 ```
 
 **Mitigation**:
@@ -399,9 +399,9 @@ bandit -r src/flext_auth/
 python -c "
 from flext_auth import FlextAuthSettings
 settings = FlextAuthSettings()
-print(f'Bcrypt rounds: {settings.bcrypt_rounds}')  # Should be >= 12
-print(f'JWT expiry: {settings.jwt_expiry_minutes}')  # Should be <= 60
-print(f'Max attempts: {settings.max_failed_attempts}')  # Should be <= 5
+u.Cli.print(f'Bcrypt rounds: {settings.bcrypt_rounds}')  # Should be >= 12
+u.Cli.print(f'JWT expiry: {settings.jwt_expiry_minutes}')  # Should be <= 60
+u.Cli.print(f'Max attempts: {settings.max_failed_attempts}')  # Should be <= 5
 "
 ```
 
@@ -456,8 +456,8 @@ Extract detailed error information:
 ```python notest
 result = auth.authenticate_user("user", "wrong_password")
 if result.failure:
-    print(f"Error: {result.error}")
-    print(f"Error type: {type(result.error)}")
+    u.Cli.print(f"Error: {result.error}")
+    u.Cli.print(f"Error type: {type(result.error)}")
     # Additional debugging information
 ```
 

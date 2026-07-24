@@ -26,7 +26,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
         >>> result = provider.authenticate({"id_token": "oidc-token"})
         >>> if result.success:
         ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
+        ...     u.Cli.print(f"Authenticated with token: {token.token}")
 
     """
 

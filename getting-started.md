@@ -53,7 +53,7 @@ cd flext-auth
 poetry install
 
 # Verify installation
-python -c "from flext_auth import flext_auth_quick_start; print('flext-auth ready')"
+python -c "from flext_auth import flext_auth_quick_start; u.Cli.print('flext-auth ready')"
 ```
 
 ______________________________________________________________________
@@ -82,9 +82,9 @@ result = auth.register_user(
 
 if result.success:
     user = result.unwrap()
-    print(f"User created: {user.username}")
+    u.Cli.print(f"User created: {user.username}")
 else:
-    print(f"Registration failed: {result.error}")
+    u.Cli.print(f"Registration failed: {result.error}")
 ```
 
 ### User Authentication
@@ -95,11 +95,11 @@ auth_result = auth.authenticate_user("alice", "secure123")
 
 if auth_result.success:
     session_data = auth_result.unwrap()
-    print("Authentication successful")
-    print(f"Session: {session_data['session']['id']}")
-    print(f"Token: {session_data['token']}")
+    u.Cli.print("Authentication successful")
+    u.Cli.print(f"Session: {session_data['session']['id']}")
+    u.Cli.print(f"Token: {session_data['token']}")
 else:
-    print(f"Authentication failed: {auth_result.error}")
+    u.Cli.print(f"Authentication failed: {auth_result.error}")
 ```
 
 ### Token Validation
@@ -111,9 +111,9 @@ validation_result = auth.validate_token(token)
 
 if validation_result.success:
     token_data = validation_result.unwrap()
-    print(f"Token valid for user: {token_data['username']}")
+    u.Cli.print(f"Token valid for user: {token_data['username']}")
 else:
-    print(f"Token invalid: {validation_result.error}")
+    u.Cli.print(f"Token invalid: {validation_result.error}")
 ```
 
 ______________________________________________________________________
@@ -130,8 +130,8 @@ settings = FlextAuthSettings()
 
 if settings.success:
     dev_config = settings.unwrap()
-    print(f"JWT expiry: {dev_config.jwt_expiry_minutes} minutes")
-    print(f"bcrypt rounds: {dev_config.bcrypt_rounds}")
+    u.Cli.print(f"JWT expiry: {dev_config.jwt_expiry_minutes} minutes")
+    u.Cli.print(f"bcrypt rounds: {dev_config.bcrypt_rounds}")
 ```
 
 ### Custom Configuration
@@ -232,7 +232,7 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[m.
 result = process_authentication_workflow("alice", "secure123")
 if result.success:
     data = result.unwrap()
-    print(f"User {data['user']} authenticated until {data['expires']}")
+    u.Cli.print(f"User {data['user']} authenticated until {data['expires']}")
 ```
 
 ### Container Integration
@@ -293,12 +293,12 @@ user = FlextAuthModels.User(
 # Set password (bcrypt hashing)
 password_result = user.set_password("mypassword")
 if password_result.success:
-    print("Password set successfully")
+    u.Cli.print("Password set successfully")
 
 # Verify password
 verification_result = user.verify_password("mypassword")
 if verification_result.success and verification_result.unwrap():
-    print("Password verification successful")
+    u.Cli.print("Password verification successful")
 ```
 
 ### Session Management
@@ -315,7 +315,7 @@ session = FlextAuthModels.Session(
 
 # Check session validity
 if session.is_active and datetime.utcnow() < session.expires_at:
-    print("Session is valid")
+    u.Cli.print("Session is valid")
 ```
 
 ______________________________________________________________________

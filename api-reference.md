@@ -99,7 +99,7 @@ def register_user(
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
-    print(f"User created: {user.username}")
+    u.Cli.print(f"User created: {user.username}")
 ```
 
 ### authenticate_user()
@@ -304,7 +304,7 @@ if result.success:
     user = result.unwrap()
     # Use user t.JsonValue
 else:
-    print(f"Error: {result.error}")
+    u.Cli.print(f"Error: {result.error}")
 ```
 
 ### Chaining Pattern

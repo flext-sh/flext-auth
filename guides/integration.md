@@ -57,17 +57,17 @@ auth = FlextAuth()
 auth_result = auth.authenticate_user("username", "password")
 if auth_result.success:
     session_data = auth_result.unwrap()
-    print(f"Authentication successful: {session_data['user']['username']}")
+    u.Cli.print(f"Authentication successful: {session_data['user']['username']}")
 else:
-    print(f"Authentication failed: {auth_result.error}")
+    u.Cli.print(f"Authentication failed: {auth_result.error}")
 
 # Usage
 result = authenticate_user_safely("demo", "password123")
 if result.success:
     auth_info = result.unwrap()
-    print(f"Authenticated user: {auth_info['user']}")
+    u.Cli.print(f"Authenticated user: {auth_info['user']}")
 else:
-    print(f"Authentication failed: {result.error}")
+    u.Cli.print(f"Authentication failed: {result.error}")
 ```
 
 ### FlextContainer Integration
@@ -147,7 +147,7 @@ user = FlextAuthModels.User(username="demo", email="demo@example.com")
 # Business logic returns r
 password_result = user.set_password("secure123")
 if password_result.success:
-    print("Password set successfully")
+    u.Cli.print("Password set successfully")
 ```
 
 ______________________________________________________________________

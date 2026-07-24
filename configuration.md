@@ -46,8 +46,8 @@ ______________________________________________________________________
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
-print(f"JWT Expiry: {settings.jwt_expiry_minutes} minutes")
-print(f"Bcrypt Rounds: {settings.bcrypt_rounds}")
+u.Cli.print(f"JWT Expiry: {settings.jwt_expiry_minutes} minutes")
+u.Cli.print(f"Bcrypt Rounds: {settings.bcrypt_rounds}")
 ```
 
 ### Environment-Specific Configuration
@@ -134,7 +134,7 @@ ______________________________________________________________________
 ```python notest
 config_result = FlextAuthSettings()
 if config_result.failure:
-    print(f"Configuration error: {config_result.error}")
+    u.Cli.print(f"Configuration error: {config_result.error}")
 ```
 
 ### CLI Validation
@@ -169,7 +169,7 @@ auth = FlextAuth()  # Uses global settings automatically
 ```python notest
 # Get current global configuration
 global_config = FlextAuthSettings.get_global_instance()
-print(f"Current JWT expiry: {global_config.jwt_expiry_minutes}")
+u.Cli.print(f"Current JWT expiry: {global_config.jwt_expiry_minutes}")
 ```
 
 ______________________________________________________________________

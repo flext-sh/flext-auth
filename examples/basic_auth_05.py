@@ -11,7 +11,7 @@ from flext_auth import FlextAuth, FlextAuthSettings
 
 def _emit(message: str) -> None:
     """Emit example output through the canonical CLI facade."""
-    cli_u.Cli.formatters_print(message)
+    cli_u.Cli.formatters_u.Cli.print(message)
 
 
 class FlextAuthBasicAuthExample:

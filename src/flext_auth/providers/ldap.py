@@ -22,7 +22,7 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         >>> result = provider.authenticate({"username": "user", "password": "password"})
         >>> if result.success:
         ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
+        ...     u.Cli.print(f"Authenticated with token: {token.token}")
 
     """
 

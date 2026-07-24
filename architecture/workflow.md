@@ -57,7 +57,7 @@ This document outlines the complete workflow for maintaining and updating FLEXT 
 find src -name "*.py" -exec wc -l {} + | sort -nr | head -10
 
 # Check dependencies
-python -c "import flext_auth; print(flext_auth.__version__)"
+python -c "import flext_auth; u.Cli.print(flext_auth.__version__)"
 
 # Review current architecture
 cat docs/architecture/README.md

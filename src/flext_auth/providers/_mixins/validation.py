@@ -59,7 +59,7 @@ class FlextAuthProviderValidationMixin:
 
         Example:
             >>> metadata = provider._get_capability_metadata()
-            >>> print(f"Capabilities: {', '.join(metadata['capabilities'])}")
+            >>> u.Cli.print(f"Capabilities: {', '.join(metadata['capabilities'])}")
 
         """
         capabilities: t.JsonValueList = list(self.supports())

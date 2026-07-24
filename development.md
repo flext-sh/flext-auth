@@ -61,7 +61,7 @@ poetry install
 make setup
 
 # Verify setup
-python -c "from flext_auth import FlextAuth; print('Development setup complete')"
+python -c "from flext_auth import FlextAuth; u.Cli.print('Development setup complete')"
 ```
 
 ______________________________________________________________________
@@ -419,7 +419,7 @@ logging.basicConfig(level=logging.DEBUG)
 # Test specific functionality
 auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 result = auth.register_user("test", "test@example.com", "password123")
-print(f"Registration result: {result}")
+u.Cli.print(f"Registration result: {result}")
 ```
 
 ______________________________________________________________________
