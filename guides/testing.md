@@ -324,7 +324,7 @@ def test_file_migration(ldif_service, temp_directories):
 from __future__ import annotations
 from unittest.mock import Mock, patch
 
-from flext_core import r
+from flext_core import p, r
 
 
 def test_with_mocked_dependency():
@@ -341,9 +341,9 @@ def test_with_mocked_dependency():
         assert result.success
 
 
-def my_function() -> r.Result:
+def my_function() -> p.Result[str]:
     """Placeholder function for the mock example."""
-    return r.ok("ok")
+    return r[str].ok("ok")
 ```
 
 ### Integration Test Stubbing
@@ -352,7 +352,7 @@ def my_function() -> r.Result:
 from __future__ import annotations
 from unittest.mock import Mock
 
-from flext_core import FlextContainer, r
+from flext_core import FlextContainer, p, r
 
 
 def test_with_stubbed_service():
@@ -371,9 +371,9 @@ def test_with_stubbed_service():
     assert result.success
 
 
-def integration_function() -> r.Result:
+def integration_function() -> p.Result[str]:
     """Placeholder function for the integration example."""
-    return r.ok("ok")
+    return r[str].ok("ok")
 ```
 
 ## Performance Testing

@@ -445,23 +445,23 @@ logger.error("Error message")
 ```python
 from __future__ import annotations
 from flext_cli import u
-from flext_core import FlextSettings, c, r
+from flext_core import FlextSettings, c, p, r, t
 
 
 logger = u.fetch_logger(__name__)
 
 
-def safe_operation(data: dict) -> r.Result:
+def safe_operation(data: dict) -> p.Result[t.JsonMapping]:
     try:
         # Your operation here
         result = process_data(data)
-        return r.ok(result)
+        return r[t.JsonMapping].ok(result)
     except c.ValidationError as e:
         logger.error(f"Validation error: {e}")
-        return r.fail(f"Validation failed: {e}")
+        return r[t.JsonMapping].fail(f"Validation failed: {e}")
     except Exception as e:
         logger.error(f"Unexpected error: {e}", exc_info=True)
-        return r.fail(f"Operation failed: {e}")
+        return r[t.JsonMapping].fail(f"Operation failed: {e}")
 ```
 
 ### 3. Debug Mode

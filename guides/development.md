@@ -256,7 +256,7 @@ uv run pytest --cov=src --cov-report=html
 from __future__ import annotations
 
 import pytest
-from flext_core import r
+from flext_core import p, r, t
 from flext_cli import u
 
 
@@ -277,10 +277,10 @@ class TestDataProcessing:
         assert "Data required" in result.error
 
 
-def process_data(data: dict | None) -> r.Result:
+def process_data(data: dict | None) -> p.Result[t.JsonMapping]:
     if not data:
-        return r.fail("Data required")
-    return r.ok(data)
+        return r[t.JsonMapping].fail("Data required")
+    return r[t.JsonMapping].ok(data)
 ```
 
 ## Quality Gates
