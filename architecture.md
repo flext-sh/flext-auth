@@ -2,56 +2,56 @@
 
 <!-- TOC START -->
 - [Generic Authentication API Framework](#generic-authentication-api-framework)
-- [📋 TABLE OF CONTENTS](#table-of-contents)
-- [🎯 EXECUTIVE SUMMARY](#executive-summary)
+- [TABLE OF CONTENTS](#table-of-contents)
+- [EXECUTIVE SUMMARY](#executive-summary)
   - [Mission](#mission)
   - [Current State (v1.0.0)](#current-state-v100)
   - [Target State (v2.0.0)](#target-state-v200)
-- [🏗️ ARCHITECTURAL VISION](#architectural-vision)
+- [ARCHITECTURAL VISION](#architectural-vision)
   - [Design Principles](#design-principles)
   - [Architectural Layers](#architectural-layers)
-- [🔧 CORE COMPONENTS](#core-components)
+- [CORE COMPONENTS](#core-components)
   - [1. FlextAuth Facade (`api.py`)](#1-flextauth-facade-apipy)
   - [2. FlextAuthRegistry (`registry.py`)](#2-flextauthregistry-registrypy)
   - [3. Base Provider Protocol (`providers/base.py`)](#3-base-provider-protocol-providersbasepy)
-- [🔌 PROVIDER ECOSYSTEM](#provider-ecosystem)
+- [PROVIDER ECOSYSTEM](#provider-ecosystem)
   - [Provider Categories](#provider-categories)
   - [Provider Implementation Pattern](#provider-implementation-pattern)
-- [🚀 TRANSPORT LAYER](#transport-layer)
+- [TRANSPORT LAYER](#transport-layer)
   - [Transport Abstraction (`transports/base.py`)](#transport-abstraction-transportsbasepy)
   - [HTTP Transport (`transports/http.py`)](#http-transport-transportshttppy)
   - [gRPC Transport (`transports/grpc.py`)](#grpc-transport-transportsgrpcpy)
   - [WebSocket Transport (`transports/websocket.py`)](#websocket-transport-transportswebsocketpy)
-- [📡 PROTOCOL HANDLERS](#protocol-handlers)
+- [PROTOCOL HANDLERS](#protocol-handlers)
   - [Protocol Handler Base (`protocol_handlers/base.py`)](#protocol-handler-base-protocolhandlersbasepy)
   - [REST Protocol Handler (`protocol_handlers/rest.py`)](#rest-protocol-handler-protocolhandlersrestpy)
   - [SOAP Protocol Handler (`protocol_handlers/soap.py`)](#soap-protocol-handler-protocolhandlerssoappy)
-- [🎫 TOKEN MANAGEMENT](#token-management)
+- [TOKEN MANAGEMENT](#token-management)
   - [Token Manager (`tokens/manager.py`)](#token-manager-tokensmanagerpy)
   - [Token Retry Logic (`tokens/retry.py`)](#token-retry-logic-tokensretrypy)
   - [Token Cache (`tokens/cache.py`)](#token-cache-tokenscachepy)
-- [🔐 SECURITY ARCHITECTURE](#security-architecture)
+- [SECURITY ARCHITECTURE](#security-architecture)
   - [Security Principles](#security-principles)
   - [Credential Management (`credentials/manager.py`)](#credential-management-credentialsmanagerpy)
   - [Security Validations](#security-validations)
-- [🔗 FLEXT INTEGRATION](#flext-integration)
+- [FLEXT INTEGRATION](#flext-integration)
   - [Mandatory FLEXT Domain Library Usage](#mandatory-flext-domain-library-usage)
   - [s Integration](#s-integration)
-- [📘 API DESIGN](#api-design)
+- [API DESIGN](#api-design)
   - [Public API Patterns](#public-api-patterns)
-- [🏗️ IMPLEMENTATION PHASES](#implementation-phases)
-  - [Phase 1: Foundation & Registry (Week 1) ✅ COMPLETE](#phase-1-foundation-registry-week-1-complete)
-  - [Phase 2: Core Providers (Week 2) ✅ COMPLETE](#phase-2-core-providers-week-2-complete)
-  - [Phase 3: Advanced Providers (Week 3) ✅ MOSTLY COMPLETE](#phase-3-advanced-providers-week-3-mostly-complete)
-  - [Phase 4: Transport & Protocol (Week 4) ⚠️ PARTIALLY COMPLETE](#phase-4-transport-protocol-week-4-partially-complete)
+- [IMPLEMENTATION PHASES](#implementation-phases)
+  - [Phase 1: Foundation & Registry (Week 1) COMPLETE](#phase-1-foundation-registry-week-1-complete)
+  - [Phase 2: Core Providers (Week 2) COMPLETE](#phase-2-core-providers-week-2-complete)
+  - [Phase 3: Advanced Providers (Week 3) MOSTLY COMPLETE](#phase-3-advanced-providers-week-3-mostly-complete)
+  - [Phase 4: Transport & Protocol (Week 4) PARTIALLY COMPLETE](#phase-4-transport-protocol-week-4-partially-complete)
   - [Phase 5: Token & Credential Management (Week 5)](#phase-5-token-credential-management-week-5)
   - [Phase 6: Documentation (Week 6)](#phase-6-documentation-week-6)
   - [Phase 7: QA & Release (Week 7)](#phase-7-qa-release-week-7)
-- [✅ QUALITY STANDARDS](#quality-standards)
+- [QUALITY STANDARDS](#quality-standards)
   - [Quality Gates (MANDATORY after each phase)](#quality-gates-mandatory-after-each-phase)
   - [Coverage Requirements](#coverage-requirements)
   - [Performance Standards](#performance-standards)
-- [📝 APPENDIX](#appendix)
+- [APPENDIX](#appendix)
   - [Technology Stack Summary](#technology-stack-summary)
   - [Backward Compatibility Timeline](#backward-compatibility-timeline)
 - [Related Documentation](#related-documentation)
@@ -66,7 +66,7 @@
 
 ______________________________________________________________________
 
-## 📋 TABLE OF CONTENTS
+## TABLE OF CONTENTS
 
 1. Executive Summary
 1. Architectural Vision
@@ -84,7 +84,7 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## 🎯 EXECUTIVE SUMMARY
+## EXECUTIVE SUMMARY
 
 ### Mission
 
@@ -109,7 +109,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 
 ______________________________________________________________________
 
-## 🏗️ ARCHITECTURAL VISION
+## ARCHITECTURAL VISION
 
 ### Design Principles
 
@@ -124,7 +124,7 @@ ______________________________________________________________________
 
 ### Architectural Layers
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                   APPLICATION LAYER                          │
 │              (User Code / FLEXT Applications)                │
@@ -152,22 +152,22 @@ ______________________________________________________________________
 │              PROVIDER ECOSYSTEM LAYER                        │
 ├─────────────────────────────────────────────────────────────┤
 │  Base Provider Protocol                                      │
-│  ├── authenticate(credentials) -> p.Result[Token]         │
-│  ├── validate(token) -> p.Result[bool]                    │
-│  ├── refresh(token) -> p.Result[Token]                    │
-│  ├── revoke(token) -> p.Result[bool]                      │
+│  ├── authenticate(credentials) -> p.Result[Token]           │
+│  ├── validate(token) -> p.Result[bool]                     │
+│  ├── refresh(token) -> p.Result[Token]                      │
+│  ├── revoke(token) -> p.Result[bool]                       │
 │  └── supports() -> set[str]                                  │
 ├─────────────────────────────────────────────────────────────┤
 │  Concrete Providers:                                         │
-│  • FlextAuthJwtProvider (JWT tokens)                              │
-│  • FlextAuthOAuth2Provider (OAuth 2.0)                            │
-│  • FlextAuthOidcProvider (OpenID Connect)                         │
-│  • FlextAuthSamlProvider (SAML 2.0)                               │
-│  • FlextAuthApiKeyProvider (API keys)                             │
-│  • FlextAuthBasicProvider (HTTP Basic)                            │
-│  • FlextAuthCertificateProvider (X.509 certs)                     │
-│  • FlextAuthLdapProvider (LDAP bind - uses flext-ldap)            │
-│  • FlextAuthKerberosProvider (Kerberos/GSSAPI)                    │
+│  • FlextAuthJwtProvider (JWT tokens)                       │
+│  • FlextAuthOAuth2Provider (OAuth 2.0)                      │
+│  • FlextAuthOidcProvider (OpenID Connect)                   │
+│  • FlextAuthSamlProvider (SAML 2.0)                       │
+│  • FlextAuthApiKeyProvider (API keys)                       │
+│  • FlextAuthBasicProvider (HTTP Basic)                      │
+│  • FlextAuthCertificateProvider (X.509 certs)             │
+│  • FlextAuthLdapProvider (LDAP bind - uses flext-ldap)      │
+│  • FlextAuthKerberosProvider (Kerberos/GSSAPI)              │
 └───────────────────────┬─────────────────────────────────────┘
                         │
             ┌───────────┼───────────┐
@@ -186,7 +186,7 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## 🔧 CORE COMPONENTS
+## CORE COMPONENTS
 
 ### 1. FlextAuth Facade (`api.py`)
 
@@ -200,44 +200,49 @@ ______________________________________________________________________
 
 **Public API**:
 
-```python
+```python notest
 from __future__ import annotations
-class FlextAuth(s[AuthenticationResponseDict]):
+from typing import Protocol
+from flext_core import c, m, p, r, s, t
+from flext_auth import m as auth_m
+
+
+class FlextAuth(s):
     # Factory methods
     @classmethod
-    def quick_start(cls, create_REDACTED_LDAP_BIND_PASSWORD: bool = False) -> FlextAuth
+    def quick_start(cls, create_admin_user: bool = False) -> FlextAuth:
+        ...
 
     @classmethod
-    def with_jwt(cls, secret_key: str, **kwargs) -> FlextAuth
+    def with_jwt(cls, secret_key: str, **kwargs) -> FlextAuth:
+        ...
 
     @classmethod
-    def with_oauth2(cls, client_id: str, client_secret: str, **kwargs) -> FlextAuth
-
-    @classmethod
-    def with_provider(cls, provider: FlextAuthBaseProvider, **kwargs) -> FlextAuth
+    def with_provider(cls, provider: FlextAuthBaseProvider, **kwargs) -> FlextAuth:
+        ...
 
     # Core operations
     def authenticate(
         self,
         credentials: dict,
-        provider: str | None = None
-    ) -> p.Result[AuthToken]
-
-    def validate_token(
-        self,
-        token: str,
-        provider: str | None = None
-    ) -> p.Result[bool]
+        provider: str | None = None,
+    ) -> p.Result[auth_m.Auth.AuthToken]:
+        ...
 
     # Registry operations
-    def list_providers(self) -> t.StringList
-    def get_provider(self, name: str) -> p.Result[FlextAuthBaseProvider]
-    def get_provider_capabilities(self, name: str) -> p.Result[set[str]]
+    def list_providers(self) -> t.StrSequence:
+        ...
 
-    # Token/Session management
-    def get_token_manager(self) -> TokenManager
-    def get_session_manager(self) -> SessionManager
-    def get_credential_manager(self) -> CredentialManager
+    def get_provider(self, name: str) -> p.Result[FlextAuthBaseProvider]:
+        ...
+
+    def get_provider_capabilities(self, name: str) -> p.Result[t.StrSequence]:
+        ...
+
+
+class FlextAuthBaseProvider(Protocol):
+    def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]:
+        ...
 ```
 
 ### 2. FlextAuthRegistry (`registry.py`)
@@ -251,64 +256,75 @@ class FlextAuth(s[AuthenticationResponseDict]):
 
 **Interface**:
 
-```python
+```python notest
 from __future__ import annotations
-class FlextAuthRegistry:
+from flext_core import c, m, p, r, s, t
+
+
+class FlextAuthRegistry(s):
     """Registry for managing authentication providers."""
 
-    def register(
+    def register_provider(
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-        settings: t.JsonMapping | None = None
-    ) -> p.Result[bool]
+        settings: t.JsonMapping | None = None,
+    ) -> p.Result[bool]:
+        ...
 
-    def unregister(self, name: str) -> p.Result[bool]
+    def unregister(self, name: str) -> p.Result[bool]:
+        ...
 
-    def get(self, name: str) -> p.Result[FlextAuthBaseProvider]
+    def get(self, name: str) -> p.Result[FlextAuthBaseProvider]:
+        ...
 
-    def list_providers(self) -> t.StringList
+    def list_providers(self) -> t.StrSequence:
+        ...
 
-    def discover_providers(self) -> t.MappingKV[str, type[FlextAuthBaseProvider]]
-
-    def get_capabilities(self, name: str) -> p.Result[set[str]]
-
-    def validate_config(
-        self,
-        name: str,
-        settings: dict
-    ) -> p.Result[bool]
+    def get_capabilities(self, name: str) -> p.Result[t.StrSequence]:
+        ...
 ```
 
 ### 3. Base Provider Protocol (`providers/base.py`)
 
 **Protocol Definition**:
 
-```python
+```python notest
 from __future__ import annotations
+from typing import Protocol
+from flext_core import c, m, p, r, t
+from flext_auth import m as auth_m
 
 
 class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers."""
 
-    def authenticate(self, credentials: dict) -> p.Result[AuthToken]:
+    def authenticate(
+        self, credentials: dict
+    ) -> p.Result[auth_m.Auth.AuthToken]:
         """Authenticate user with provided credentials."""
         ...
 
-    def validate(self, token: str | AuthToken) -> p.Result[bool]:
+    def validate(
+        self, token: str | auth_m.Auth.AuthToken
+    ) -> p.Result[bool]:
         """Validate authentication token."""
         ...
 
-    def refresh(self, token: str | AuthToken) -> p.Result[AuthToken]:
+    def refresh(
+        self, token: str | auth_m.Auth.AuthToken
+    ) -> p.Result[auth_m.Auth.AuthToken]:
         """Refresh authentication token."""
         ...
 
-    def revoke(self, token: str | AuthToken) -> p.Result[bool]:
+    def revoke(
+        self, token: str | auth_m.Auth.AuthToken
+    ) -> p.Result[bool]:
         """Revoke authentication token."""
         ...
 
-    def supports(self) -> set[str]:
-        """Return set of supported capabilities."""
+    def supports(self) -> t.StrSequence:
+        """Return supported capabilities."""
         ...
 
     def get_metadata(self) -> t.JsonMapping:
@@ -318,7 +334,7 @@ class FlextAuthBaseProvider(Protocol):
 
 ______________________________________________________________________
 
-## 🔌 PROVIDER ECOSYSTEM
+## PROVIDER ECOSYSTEM
 
 ### Provider Categories
 
@@ -329,14 +345,14 @@ ______________________________________________________________________
 - **Technology**: PyJWT
 - **Capabilities**: `{"token", "refresh", "expiration", "claims"}`
 - **Configuration**: secret_key, algorithm, expiration
-- **Status**: ✅ Extracted from v1.0.0 (Phase 1)
+- **Status**: Extracted from v1.0.0 (Phase 1)
 
 **API Key Provider** (`providers/apikey.py`)
 
 - **Technology**: Custom + cryptography
 - **Capabilities**: `{"token", "rotation", "scopes"}`
 - **Configuration**: key_length, hash_algorithm, rotation_policy
-- **Status**: 🔄 Implementation (Phase 2)
+- **Status**: Implementation (Phase 2)
 
 #### 2. OAuth/OIDC Providers
 
@@ -345,14 +361,14 @@ ______________________________________________________________________
 - **Technology**: authlib
 - **Capabilities**: `{"oauth2", "authorization_code", "client_credentials", "password_grant", "refresh"}`
 - **Configuration**: client_id, client_secret, authorization_url, token_url
-- **Status**: 🔄 Implementation (Phase 2)
+- **Status**: Implementation (Phase 2)
 
 **OIDC Provider** (`providers/oidc.py`)
 
 - **Technology**: authlib (extends OAuth2)
 - **Capabilities**: `{"oidc", "id_token", "userinfo", "discovery"}`
 - **Configuration**: extends OAuth2 + discovery_url
-- **Status**: 🔄 Implementation (Phase 2)
+- **Status**: Implementation (Phase 2)
 
 #### 3. Enterprise SSO Providers
 
@@ -361,15 +377,15 @@ ______________________________________________________________________
 - **Technology**: python3-saml
 - **Capabilities**: `{"saml", "sso", "slo", "metadata", "sp_initiated", "idp_initiated"}`
 - **Configuration**: idp_metadata, sp_entity_id, assertion_consumer_service
-- **Status**: 🔄 Implementation (Phase 3)
+- **Status**: Implementation (Phase 3)
 
 **LDAP Provider** (`providers/ldap.py`)
 
 - **Technology**: **flext-ldap** (MANDATORY)
 - **Capabilities**: `{"ldap", "bind", "attribute_mapping", "group_sync"}`
 - **Configuration**: ldap_uri, base_dn, bind_dn, bind_password
-- **Status**: 🔄 Implementation (Phase 3)
-- **⚠️ CRITICAL**: MUST use flext-ldap, NOT direct ldap3
+- **Status**: Implementation (Phase 3)
+- **CRITICAL**: MUST use flext-ldap, NOT direct ldap3
 
 #### 4. Credential-Based Providers
 
@@ -378,14 +394,14 @@ ______________________________________________________________________
 - **Technology**: bcrypt (existing utilities)
 - **Capabilities**: `{"basic_auth", "password_hash"}`
 - **Configuration**: hash_rounds, pepper
-- **Status**: 🔄 Implementation (Phase 2)
+- **Status**: Implementation (Phase 2)
 
 **Certificate Provider** (`providers/certificate.py`)
 
 - **Technology**: cryptography + pyOpenSSL
 - **Capabilities**: `{"certificate", "x509", "mtls", "ocsp", "crl"}`
 - **Configuration**: ca_cert, crl_url, ocsp_url
-- **Status**: 🔄 Implementation (Phase 3)
+- **Status**: Implementation (Phase 3)
 
 #### 5. Kerberos Provider (Stub)
 
@@ -394,86 +410,72 @@ ______________________________________________________________________
 - **Technology**: gssapi
 - **Capabilities**: `{"kerberos", "gssapi", "spnego"}`
 - **Configuration**: realm, kdc, keytab
-- **Status**: 📝 Stub (Phase 3 - extensible but not fully implemented)
+- **Status**: Stub (Phase 3 - extensible but not fully implemented)
 
 ### Provider Implementation Pattern
 
-```python
+```python notest
 from __future__ import annotations
-
-from collections.abc import Mapping, Sequence
-from flext_core import FlextBus
-
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
-
+from typing import Protocol
+from flext_core import c, m, p, r, s, t
 from flext_cli import u
-from flext_core import FlextSettings
-from flext_auth import FlextAuthBaseProvider
-from flext_auth import FlextAuthModels
+from flext_auth import m as auth_m
 
 
-class FlextAuthExampleProvider(FlextAuthBaseProvider):
+class FlextAuthBaseProvider(Protocol):
+    """Base provider protocol."""
+
+    def authenticate(
+        self, credentials: dict
+    ) -> p.Result[auth_m.Auth.AuthToken]:
+        ...
+
+
+class FlextAuthExampleProvider(s):
     """Example authentication provider implementation."""
 
     def __init__(self, settings: dict) -> None:
         self.config = settings
         self.logger = u.fetch_logger(__name__)
 
-    def authenticate(self, credentials: dict) -> p.Result[FlextAuthModels.AuthToken]:
+    def authenticate(
+        self, credentials: dict
+    ) -> p.Result[auth_m.Auth.AuthToken]:
         """Authenticate using provider-specific logic."""
-        # Validation
         if not credentials.get("username"):
-            return r[FlextAuthModels.AuthToken].fail("Username required")
+            return r[auth_m.Auth.AuthToken].fail("Username required")
 
-        # Provider-specific authentication
         try:
-            # Actual authentication logic
             token = self._generate_token(credentials)
-            return r[FlextAuthModels.AuthToken].ok(token)
+            return r[auth_m.Auth.AuthToken].ok(token)
         except Exception as e:
-            return r[FlextAuthModels.AuthToken].fail(f"Authentication failed: {e}")
+            return r[auth_m.Auth.AuthToken].fail(f"Authentication failed: {e}")
 
-    def validate(self, token: str | FlextAuthModels.AuthToken) -> p.Result[bool]:
+    def validate(
+        self, token: str | auth_m.Auth.AuthToken
+    ) -> p.Result[bool]:
         """Validate token using provider-specific logic."""
-        # Implementation
         ...
 
     def refresh(
-        self, token: str | FlextAuthModels.AuthToken
-    ) -> p.Result[FlextAuthModels.AuthToken]:
+        self, token: str | auth_m.Auth.AuthToken
+    ) -> p.Result[auth_m.Auth.AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self.supports():
-            return r[FlextAuthModels.AuthToken].fail(
+            return r[auth_m.Auth.AuthToken].fail(
                 "Refresh not supported by this provider"
             )
-        # Implementation
         ...
 
-    def revoke(self, token: str | FlextAuthModels.AuthToken) -> p.Result[bool]:
+    def revoke(
+        self, token: str | auth_m.Auth.AuthToken
+    ) -> p.Result[bool]:
         """Revoke token if provider supports it."""
-        # Implementation
         ...
 
-    def supports(self) -> set[str]:
+    def supports(self) -> t.StrSequence:
         """Return provider capabilities."""
-        return {"token", "validate", "refresh"}
+        return ["token", "validate", "refresh"]
 
     def get_metadata(self) -> t.JsonMapping:
         """Return provider metadata."""
@@ -481,18 +483,24 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
             "name": "example",
             "version": "1.0.0",
             "capabilities": list(self.supports()),
-            "config_schema": {...},
+            "config_schema": {},
         }
+
+    def _generate_token(self, credentials: dict) -> auth_m.Auth.AuthToken:
+        """Generate a token from credentials."""
+        ...
 ```
 
 ______________________________________________________________________
 
-## 🚀 TRANSPORT LAYER
+## TRANSPORT LAYER
 
 ### Transport Abstraction (`transports/base.py`)
 
-```python
+```python notest
 from __future__ import annotations
+from typing import Protocol
+from flext_core import c, m, p, r, t
 
 
 class BaseTransportAdapter(Protocol):
@@ -517,13 +525,13 @@ class BaseTransportAdapter(Protocol):
 
 ### HTTP Transport (`transports/http.py`)
 
-**⚠️ MANDATORY**: Uses **flext-api** (NOT direct httpx/requests)
+**CRITICAL**: Uses **flext-api** (NOT direct httpx/requests)
 
-```python
+```python notest
 from __future__ import annotations
 from flext_api import FlextApi
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import c, m, p, r, t
 
 
 class FlextWebTransportAdapter(BaseTransportAdapter):
@@ -547,13 +555,13 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 
 ### gRPC Transport (`transports/grpc.py`)
 
-**⚠️ MANDATORY**: Uses **flext-grpc** (NOT direct grpc/grpcio)
+**CRITICAL**: Uses **flext-grpc** (NOT direct grpc/grpcio)
 
-```python
+```python notest
 from __future__ import annotations
 from flext_grpc import FlextGrpc
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import c, m, p, r, t
 
 
 class GrpcTransportAdapter(BaseTransportAdapter):
@@ -582,8 +590,10 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 ### WebSocket Transport (`transports/websocket.py`)
 
-```python
+```python notest
 from __future__ import annotations
+from flext_cli import u
+from flext_core import c, m, p, r, t
 
 
 class WebSocketTransportAdapter(BaseTransportAdapter):
@@ -597,18 +607,19 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send authentication request via WebSocket."""
-        # Implementation using websockets library
         ...
 ```
 
 ______________________________________________________________________
 
-## 📡 PROTOCOL HANDLERS
+## PROTOCOL HANDLERS
 
 ### Protocol Handler Base (`protocol_handlers/base.py`)
 
-```python
+```python notest
 from __future__ import annotations
+from typing import Protocol
+from flext_core import c, m, p, r, t
 
 
 class BaseProtocolHandler(Protocol):
@@ -627,8 +638,10 @@ class BaseProtocolHandler(Protocol):
 
 ### REST Protocol Handler (`protocol_handlers/rest.py`)
 
-```python
+```python notest
 from __future__ import annotations
+import json
+from flext_core import c, m, p, r, t
 
 
 class RestProtocolHandler(BaseProtocolHandler):
@@ -638,8 +651,6 @@ class RestProtocolHandler(BaseProtocolHandler):
         self, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[str]:
         """Format as JSON REST request."""
-        import json
-
         try:
             formatted = json.dumps(credentials)
             return r[str].ok(formatted)
@@ -648,8 +659,6 @@ class RestProtocolHandler(BaseProtocolHandler):
 
     def parse_auth_response(self, response: str) -> p.Result[m.Dict]:
         """Parse JSON REST response."""
-        import json
-
         try:
             parsed = json.loads(response)
             return r[m.Dict].ok(parsed)
@@ -659,8 +668,9 @@ class RestProtocolHandler(BaseProtocolHandler):
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
 
-```python
+```python notest
 from __future__ import annotations
+from flext_core import c, m, p, r, t
 
 
 class SoapProtocolHandler(BaseProtocolHandler):
@@ -670,18 +680,16 @@ class SoapProtocolHandler(BaseProtocolHandler):
         self, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[str]:
         """Format as SOAP XML request."""
-        # Implementation for SOAP envelope creation
         ...
 
     def parse_auth_response(self, response: str) -> p.Result[m.Dict]:
         """Parse SOAP XML response."""
-        # Implementation for SOAP envelope parsing
         ...
 ```
 
 ______________________________________________________________________
 
-## 🎫 TOKEN MANAGEMENT
+## TOKEN MANAGEMENT
 
 ### Token Manager (`tokens/manager.py`)
 
@@ -695,11 +703,14 @@ ______________________________________________________________________
 
 **Interface**:
 
-```python
+```python notest
 from __future__ import annotations
+from typing import Callable
+from flext_core import c, m, p, r, s, t
+from flext_auth import m as auth_m
 
 
-class TokenManager:
+class TokenManager(s):
     """Unified token management across providers."""
 
     def __init__(
@@ -715,12 +726,12 @@ class TokenManager:
 
     def get_token(
         self, credentials: dict, use_cache: bool = True
-    ) -> p.Result[AuthToken]:
+    ) -> p.Result[auth_m.Auth.AuthToken]:
         """Get token with caching."""
         if use_cache:
             cached = self._cache.get(credentials)
             if cached:
-                return r[AuthToken].ok(cached)
+                return r[auth_m.Auth.AuthToken].ok(cached)
 
         result = self._provider.authenticate(credentials)
 
@@ -735,7 +746,7 @@ class TokenManager:
         max_retries: int = 3,
         backoff_factor: float = 2.0,
         retry_on: t.SequenceOf[type[Exception]] | None = None,
-    ) -> p.Result[AuthToken]:
+    ) -> p.Result[auth_m.Auth.AuthToken]:
         """Get token with automatic retry on failure."""
         return self._retry.execute(
             func=self._provider.authenticate,
@@ -745,22 +756,29 @@ class TokenManager:
             retry_on=retry_on or [],
         )
 
-    def refresh_token(self, token: AuthToken) -> p.Result[AuthToken]:
+    def refresh_token(
+        self, token: auth_m.Auth.AuthToken
+    ) -> p.Result[auth_m.Auth.AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self._provider.supports():
-            return r[AuthToken].fail("Provider does not support token refresh")
+            return r[auth_m.Auth.AuthToken].fail(
+                "Provider does not support token refresh"
+            )
 
         return self._provider.refresh(token)
 
-    def validate_token(self, token: AuthToken) -> p.Result[bool]:
+    def validate_token(self, token: auth_m.Auth.AuthToken) -> p.Result[bool]:
         """Validate token."""
         return self._provider.validate(token)
 ```
 
 ### Token Retry Logic (`tokens/retry.py`)
 
-```python
+```python notest
 from __future__ import annotations
+from collections.abc import Callable
+from time import sleep
+from flext_core import c, m, p, r, t
 
 
 class RetryPolicy:
@@ -773,7 +791,7 @@ class RetryPolicy:
         backoff_factor: float = 2.0,
         retry_on: t.SequenceOf[type[Exception]] | None = None,
         **kwargs,
-    ) -> p.Result[T]:
+    ) -> p.Result[t.JsonValue]:
         """Execute function with retry logic."""
         retry_on = retry_on or [ConnectionError, TimeoutError]
 
@@ -783,10 +801,12 @@ class RetryPolicy:
                 return result
             except Exception as e:
                 if attempt == max_retries:
-                    return r[T].fail(f"Max retries ({max_retries}) exceeded: {e}")
+                    return r[t.JsonValue].fail(
+                        f"Max retries ({max_retries}) exceeded: {e}"
+                    )
 
                 if not any(isinstance(e, exc) for exc in retry_on):
-                    return r[T].fail(f"Non-retryable error: {e}")
+                    return r[t.JsonValue].fail(f"Non-retryable error: {e}")
 
                 wait_time = backoff_factor**attempt
                 sleep(wait_time)
@@ -794,8 +814,11 @@ class RetryPolicy:
 
 ### Token Cache (`tokens/cache.py`)
 
-```python
+```python notest
 from __future__ import annotations
+from flext_cli import u
+from flext_core import c, m, p, r, t
+from flext_auth import m as auth_m
 
 
 class TokenCache:
@@ -809,12 +832,14 @@ class TokenCache:
         self._backend = self._create_backend(backend, settings)
         self.logger = u.fetch_logger(__name__)
 
-    def get(self, key: dict) -> AuthToken | None:
+    def get(self, key: dict) -> auth_m.Auth.AuthToken | None:
         """Get token from cache."""
         cache_key = self._hash_credentials(key)
         return self._backend.get(cache_key)
 
-    def set(self, key: dict, token: AuthToken, ttl: int | None = None) -> None:
+    def set(
+        self, key: dict, token: auth_m.Auth.AuthToken, ttl: int | None = None
+    ) -> None:
         """Set token in cache."""
         cache_key = self._hash_credentials(key)
         self._backend.set(cache_key, token, ttl=ttl)
@@ -823,11 +848,17 @@ class TokenCache:
         """Delete token from cache."""
         cache_key = self._hash_credentials(key)
         self._backend.delete(cache_key)
+
+    def _hash_credentials(self, key: dict) -> str:
+        ...
+
+    def _create_backend(self, backend: str, settings: t.JsonMapping | None) -> object:
+        ...
 ```
 
 ______________________________________________________________________
 
-## 🔐 SECURITY ARCHITECTURE
+## SECURITY ARCHITECTURE
 
 ### Security Principles
 
@@ -840,8 +871,10 @@ ______________________________________________________________________
 
 ### Credential Management (`credentials/manager.py`)
 
-```python
+```python notest
 from __future__ import annotations
+from flext_cli import u
+from flext_core import c, m, p, r, t
 
 
 class CredentialManager:
@@ -873,47 +906,51 @@ class CredentialManager:
         self, identifier: str, new_credential: dict
     ) -> p.Result[bool]:
         """Rotate credential with old credential backup."""
-        # Archive old credential
         old_result = self.retrieve_credential(identifier)
         if old_result.success:
             self._storage.archive(identifier, old_result.unwrap())
 
-        # Store new credential
         return self.store_credential(identifier, new_credential)
+
+    def _init_cipher(self, encryption_key: bytes) -> object:
+        ...
 ```
 
 ### Security Validations
 
-```python
+```python notest
 from __future__ import annotations
+from datetime import datetime, timezone
+from flext_core import c, m, p, r, t
+from flext_auth import m as auth_m
 
 
 class SecurityValidator:
     """Security validation for authentication operations."""
 
     @staticmethod
-    def validate_token_expiration(token: AuthToken) -> p.Result[bool]:
+    def validate_token_expiration(
+        token: auth_m.Auth.AuthToken,
+    ) -> p.Result[bool]:
         """Validate token has not expired."""
-        if token.expires_at < datetime.now(UTC):
+        if token.expires_at < datetime.now(timezone.utc):
             return r[bool].fail("Token expired")
         return r[bool].ok(True)
 
     @staticmethod
     def validate_token_signature(token: str, secret: str) -> p.Result[bool]:
         """Validate token signature."""
-        # Implementation
         ...
 
     @staticmethod
     def validate_certificate(cert: bytes) -> p.Result[bool]:
         """Validate X.509 certificate."""
-        # Implementation
         ...
 ```
 
 ______________________________________________________________________
 
-## 🔗 FLEXT INTEGRATION
+## FLEXT INTEGRATION
 
 ### Mandatory FLEXT Domain Library Usage
 
@@ -927,33 +964,31 @@ ______________________________________________________________________
 | gRPC Operations      | **flext-grpc**      | MANDATORY | gRPC transport adapter   |
 | LDAP Authentication  | **flext-ldap**      | MANDATORY | LDAP provider            |
 | Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence |
-| Foundation Patterns  | **flext-core**      | MANDATORY | r, s, FlextRegistry      |
+| Foundation Patterns  | **flext-core**      | MANDATORY | r, s, FlextContainer     |
 
 #### FORBIDDEN Direct Imports
 
-```python
-# ❌ ABSOLUTELY FORBIDDEN in flext-auth
+```python notest
+# ABSOLUTELY FORBIDDEN in flext-auth
 import httpx  # Use flext-api instead
 import requests  # Use flext-api instead
 import grpc  # Use flext-grpc instead
-import grpcio  # Use flext-grpc instead
 import ldap3  # Use flext-ldap instead
 ```
 
 #### Correct Integration Pattern
 
-```python
+```python notest
 from __future__ import annotations
-
-# ✅ CORRECT - Using FLEXT domain libraries
-from flext_cli import u
-from flext_core import FlextSettings
-from flext_api import FlextApi  # For HTTP transport
-from flext_grpc import FlextGrpc  # For gRPC transport
-from flext_ldap import ldap  # For LDAP provider
+from flext_api import FlextApi
+from flext_ldap import ldap
+from flext_core import c, m, p, r, t
+from flext_auth import m as auth_m
 
 
 class FlextWebTransportAdapter:
+    """HTTP transport adapter using flext-api."""
+
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
@@ -962,10 +997,12 @@ class FlextWebTransportAdapter:
 
 
 class FlextAuthLdapProvider:
+    """LDAP provider using flext-ldap."""
+
     def __init__(self, settings: dict) -> None:
         self._ldap = ldap(settings)  # MANDATORY: Use flext-ldap
 
-    def authenticate(self, credentials: dict) -> p.Result[AuthToken]:
+    def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]:
         return self._ldap.bind(
             username=credentials["username"], password=credentials["password"]
         )
@@ -973,26 +1010,32 @@ class FlextAuthLdapProvider:
 
 ### s Integration
 
-All providers and managers extend s for consistency:
+All providers and managers extend `s` for consistency:
 
-```python
+```python notest
 from __future__ import annotations
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import c, m, p, r, s, t
+from flext_auth import m as auth_m
 
 
-class FlextAuthJwtProvider(s[AuthToken]):
+class FlextAuthJwtProvider(s):
     """JWT provider extending s."""
 
     def __init__(self, settings: dict) -> None:
         super().__init__()
         self.config = settings
         self.logger = u.fetch_logger(__name__)
+
+    def authenticate(
+        self, credentials: dict
+    ) -> p.Result[auth_m.Auth.AuthToken]:
+        ...
 ```
 
 ______________________________________________________________________
 
-## 📘 API DESIGN
+## API DESIGN
 
 ### Public API Patterns
 
@@ -1001,12 +1044,7 @@ ______________________________________________________________________
 ```python
 from flext_auth import FlextAuth
 
-# v1.0.0 API (deprecated but works)
-auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-
-# v2.0.0 API (recommended)
-auth = FlextAuth.with_jwt(secret_key="your-secret")
-
+auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.authenticate_user("username", "password")
 ```
 
@@ -1014,146 +1052,128 @@ result = auth.authenticate_user("username", "password")
 
 ```python
 from flext_auth import FlextAuth, FlextAuthRegistry
-from flext_auth import (
-    FlextAuthJwtProvider,
-    FlextAuthOAuth2Provider,
-    FlextAuthSamlProvider,
-)
 
-# Create registry
+
 registry = FlextAuthRegistry()
+# Providers are registered through the registry plugin mechanism
+# using the project's canonical plugin surface.
+auth = FlextAuth()
 
-# Register providers
-registry.register("jwt", FlextAuthJwtProvider(jwt_config))
-registry.register("oauth2", FlextAuthOAuth2Provider(oauth_config))
-registry.register("saml", FlextAuthSamlProvider(saml_config))
-
-# Create auth service
-auth = FlextAuth(registry=registry)
-
-# Authenticate with specific provider
-jwt_result = auth.authenticate(
-    credentials={"username": "user", "password": "pass"}, provider="jwt"
-)
-
-oauth_result = auth.authenticate(
-    credentials={"authorization_code": "code"}, provider="oauth2"
-)
+# Authenticate with default provider
+result = auth.authenticate({"username": "user", "password": "pass"})
 
 # List available providers
-providers = auth.list_providers()  # ["jwt", "oauth2", "saml"]
+providers = registry.list_providers()
 ```
 
 #### Pattern 3: Custom Transport
 
-```python
+```python notest
 from flext_auth import FlextAuth
-from flext_auth import FlextAuthOAuth2Provider
-from flext_auth import GrpcTransportAdapter
+from flext_core import c, m, p, r, t
 
-# Create provider with gRPC transport
-provider = FlextAuthOAuth2Provider(
-    settings=oauth_config, transport=GrpcTransportAdapter()
-)
 
-# Create auth service
+class GrpcTransportAdapter(BaseTransportAdapter):
+    """gRPC transport adapter stub."""
+
+    def send_auth_request(
+        self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
+    ) -> p.Result[m.Dict]:
+        ...
+
+
+provider = FlextAuthJwtProvider(settings={})
 auth = FlextAuth.with_provider(provider)
-
-result = auth.authenticate(credentials)
+result = auth.authenticate({"username": "user", "password": "pass"})
 ```
 
 #### Pattern 4: Token Retry
 
-```python
+```python notest
 from flext_auth import FlextAuth
+from flext_auth import m as auth_m
 
-auth = FlextAuth.with_oauth2(client_id="client", client_secret="secret")
 
-# Get token manager
-token_mgr = auth.get_token_manager()
-
-# Get token with retry
-token = token_mgr.get_with_retry(
-    credentials={"username": "user", "password": "pass"},
-    max_retries=3,
-    backoff_factor=2.0,
-)
+auth = FlextAuth.quick_start(create_admin_user=False)
+identity_result = auth.authenticate_user("user", "pass")
+if identity_result.success:
+    token = identity_result.unwrap().token
 ```
 
 ______________________________________________________________________
 
-## 🏗️ IMPLEMENTATION PHASES
+## IMPLEMENTATION PHASES
 
-### Phase 1: Foundation & Registry (Week 1) ✅ COMPLETE
+### Phase 1: Foundation & Registry (Week 1) COMPLETE
 
 **Deliverables**:
 
-- ✅ Create `docs/ARCHITECTURE.md` (this document)
-- ✅ Implement FlextAuthRegistry in `registry.py` (445 lines, ~85% coverage)
-- ✅ Define base provider protocol in `providers/base.py` (226 lines)
-- ✅ Extract JWT logic to `providers/jwt.py` (474 lines, production-ready)
-- ✅ Remove ALL CLI code (source, tests, docs)
-- ✅ Update `api.py` with registry integration (310 lines)
-- ✅ Update `__init__.py` exports (66 exported classes/functions)
-- ⚠️ Validate: 228/558 tests passing (significant test failures need resolution)
-- ⚠️ Quality gates: Mixed results (linting ✅, type safety ✅, tests ⚠️)
+- Create `docs/ARCHITECTURE.md` (this document)
+- Implement FlextAuthRegistry in `registry.py` (445 lines, ~85% coverage)
+- Define base provider protocol in `providers/base.py` (226 lines)
+- Extract JWT logic to `providers/jwt.py` (474 lines, production-ready)
+- Remove ALL CLI code (source, tests, docs)
+- Update `api.py` with registry integration (310 lines)
+- Update `__init__.py` exports (66 exported classes/functions)
+- Validate: 228/558 tests passing (significant test failures need resolution)
+- Quality gates: Mixed results (linting OK, type safety OK, tests pending)
 
-**Success Criteria**: Registry operational ✅, JWT provider extracted ✅, zero CLI code ✅, comprehensive provider architecture ✅
+**Success Criteria**: Registry operational, JWT provider extracted, zero CLI code, comprehensive provider architecture
 **Actual Status**: Foundation complete but test suite needs stabilization
 
-### Phase 2: Core Providers (Week 2) ✅ COMPLETE
+### Phase 2: Core Providers (Week 2) COMPLETE
 
 **Deliverables**:
 
-- ✅ Implement FlextAuthOAuth2Provider (728 lines, authlib integration)
-- ✅ Implement FlextAuthOidcProvider (418 lines, extends OAuth2)
-- ✅ Implement FlextAuthApiKeyProvider (448 lines, production-ready)
-- ✅ Implement FlextAuthBasicProvider (513 lines, bcrypt integration)
-- ✅ Provider factory pattern (via registry system)
-- ⚠️ Provider tests (~75% average coverage, individual provider issues)
-- ⚠️ Quality gates: Mixed (linting ✅, type safety ✅, integration tests ⚠️)
+- Implement FlextAuthOAuth2Provider (728 lines, authlib integration)
+- Implement FlextAuthOidcProvider (418 lines, extends OAuth2)
+- Implement FlextAuthApiKeyProvider (448 lines, production-ready)
+- Implement FlextAuthBasicProvider (513 lines, bcrypt integration)
+- Provider factory pattern (via registry system)
+- Provider tests (~75% average coverage, individual provider issues)
+- Quality gates: Mixed (linting OK, type safety OK, integration tests pending)
 
-**Success Criteria**: 4 new providers operational ✅, comprehensive architecture ✅, documentation framework ✅
+**Success Criteria**: 4 new providers operational, comprehensive architecture, documentation framework
 **Actual Status**: All core providers implemented but testing and integration need stabilization
 
-### Phase 3: Advanced Providers (Week 3) ✅ MOSTLY COMPLETE
+### Phase 3: Advanced Providers (Week 3) MOSTLY COMPLETE
 
 **Deliverables**:
 
-- ✅ Implement FlextAuthSamlProvider (408 lines, python3-saml integration)
-- ✅ Implement FlextAuthLdapProvider (331 lines, flext-ldap integration)
-- ✅ Implement FlextAuthCertificateProvider (639 lines, cryptography integration)
-- ⚠️ Kerberos provider stub (412 lines, basic structure)
-- ⚠️ Security validation per provider (partial implementation)
-- ⚠️ Quality gates: Mixed (linting ✅, type safety ✅, provider tests ⚠️)
+- Implement FlextAuthSamlProvider (408 lines, python3-saml integration)
+- Implement FlextAuthLdapProvider (331 lines, flext-ldap integration)
+- Implement FlextAuthCertificateProvider (639 lines, cryptography integration)
+- Kerberos provider stub (412 lines, basic structure)
+- Security validation per provider (partial implementation)
+- Quality gates: Mixed (linting OK, type safety OK, provider tests pending)
 
-**Success Criteria**: 3 advanced providers operational ✅, LDAP using flext-ldap ✅, comprehensive provider ecosystem ✅
+**Success Criteria**: 3 advanced providers operational, LDAP using flext-ldap, comprehensive provider ecosystem
 **Actual Status**: 4/4 advanced providers implemented but with testing and integration issues
 
-### Phase 4: Transport & Protocol (Week 4) ⚠️ PARTIALLY COMPLETE
+### Phase 4: Transport & Protocol (Week 4) PARTIALLY COMPLETE
 
 **Deliverables**:
 
-- ✅ Transport base protocol (FlextWebTransportAdapter implemented)
-- ✅ FlextWebTransportAdapter (integrated with flext-api MANDATORY)
-- ⚠️ GrpcTransportAdapter (partial implementation, flext-grpc MANDATORY)
-- ❌ WebSocket adapter (not implemented)
-- ❌ REST/SOAP/GraphQL protocol handlers (not implemented)
-- ⚠️ Provider-transport integration (basic HTTP integration only)
-- ⚠️ Quality gates: Mixed (transport tests failing)
+- Transport base protocol (FlextWebTransportAdapter implemented)
+- FlextWebTransportAdapter (integrated with flext-api MANDATORY)
+- GrpcTransportAdapter (partial implementation, flext-grpc MANDATORY)
+- WebSocket adapter (not implemented)
+- REST/SOAP/GraphQL protocol handlers (not implemented)
+- Provider-transport integration (basic HTTP integration only)
+- Quality gates: Mixed (transport tests failing)
 
-**Success Criteria**: Transport abstraction complete ⚠️, HTTP/gRPC using FLEXT libraries ⚠️ (HTTP ✅, gRPC partial)
+**Success Criteria**: Transport abstraction complete, HTTP/gRPC using FLEXT libraries (HTTP OK, gRPC partial)
 **Actual Status**: Basic HTTP transport implemented, gRPC and protocols pending
 
 ### Phase 5: Token & Credential Management (Week 5)
 
 **Deliverables**:
 
-- [ ] Token manager with retry logic
-- [ ] Token caching (Redis/Memcached)
-- [ ] Credential manager with encryption
-- [ ] Session manager refactoring
-- [ ] Quality gates: make val passing
+- Token manager with retry logic
+- Token caching (Redis/Memcached)
+- Credential manager with encryption
+- Session manager refactoring
+- Quality gates: make val passing
 
 **Success Criteria**: Advanced token/credential management operational
 
@@ -1161,12 +1181,12 @@ ______________________________________________________________________
 
 **Deliverables**:
 
-- [ ] `docs/MIGRATION.md` (v1 to v2 guide)
-- [ ] Provider documentation (`docs/providers/*.md`)
-- [ ] Transport documentation (`docs/transports/*.md`)
-- [ ] Update `docs/api-reference.md`
-- [ ] Update `README.md` (remove CLI, add multi-provider)
-- [ ] Code examples
+- `docs/MIGRATION.md` (v1 to v2 guide)
+- Provider documentation (`docs/providers/*.md`)
+- Transport documentation (`docs/transports/*.md`)
+- Update `docs/api-reference.md`
+- Update `README.md` (remove CLI, add multi-provider)
+- Code examples
 
 **Success Criteria**: Complete documentation suite, migration guide published
 
@@ -1174,26 +1194,26 @@ ______________________________________________________________________
 
 **Deliverables**:
 
-- [ ] 100% test coverage for all providers
-- [ ] Security audit for all providers
-- [ ] Performance benchmarks
-- [ ] API stability verification
-- [ ] Release candidate preparation
+- 100% test coverage for all providers
+- Security audit for all providers
+- Performance benchmarks
+- API stability verification
+- Release candidate preparation
 
 **Success Criteria**: All quality gates passing, security audit passed, ready for release
 
 ______________________________________________________________________
 
-## ✅ QUALITY STANDARDS
+## QUALITY STANDARDS
 
 ### Quality Gates (MANDATORY after each phase)
 
 ```bash
 make val          # Complete pipeline
 make lint
-make type-check       # MyPy/PyRight: ZERO errors in src/
-make security         # Bandit: ZERO critical issues
-make test             # Tests: 100% pass rate
+make type-check   # MyPy/PyRight: ZERO errors in src/
+make security     # Bandit: ZERO critical issues
+make test         # Tests: 100% pass rate
 ```
 
 ### Coverage Requirements
@@ -1205,14 +1225,14 @@ make test             # Tests: 100% pass rate
 
 ### Performance Standards
 
-- **Overhead**: \<5% performance overhead vs v1.0.0
-- **Token Operations**: \<10ms for token generation/validation
-- **Provider Switching**: \<1ms overhead for registry lookup
+- **Overhead**: <5% performance overhead vs v1.0.0
+- **Token Operations**: <10ms for token generation/validation
+- **Provider Switching**: <1ms overhead for registry lookup
 - **Memory**: No memory leaks, efficient caching
 
 ______________________________________________________________________
 
-## 📝 APPENDIX
+## APPENDIX
 
 ### Technology Stack Summary
 
@@ -1235,7 +1255,7 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Document Status**: ✅ Multi-Provider Architecture - Implementation Complete (Phases 1-3), Transport Layer In Progress (Phase 4)
+**Document Status**: Multi-Provider Architecture - Implementation Complete (Phases 1-3), Transport Layer In Progress (Phase 4)
 **Next Review**: After test suite stabilization and Phase 4 completion
 **Maintained By**: FLEXT Auth Team
 
