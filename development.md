@@ -377,7 +377,8 @@ class AuthFlow:
 
 # Or using the public facade
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.authenticate_user(username, password="SecurePass123!")
+auth.register_user("demo", "demo@example.com", "SecurePass123!")
+result = auth.authenticate_user("demo", "SecurePass123!")
 ```
 
 ______________________________________________________________________

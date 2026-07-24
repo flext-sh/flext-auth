@@ -75,7 +75,7 @@ result = auth.register_user("user", "invalid-email", "weak")
    from flext_cli import u
 
    auth = FlextAuth.quick_start(create_admin_user=False)
-   existing_user = auth.identity_service.user_manager.get_user_by_username("username")
+   existing_user = auth.identity_service.identity_manager.get_user_by_username("username")
    if existing_user.success:
        u.Cli.info("User already exists")
    ```
@@ -103,7 +103,7 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user("user", "user@example.com", "password123")
 
 # Check if user exists
-user_result = auth.identity_service.user_manager.get_user_by_username("user")
+user_result = auth.identity_service.identity_manager.get_user_by_username("user")
 if user_result.failure:
     u.Cli.info("User not found")
 else:
@@ -149,23 +149,27 @@ if registered.success:
 
 1. **Token Expiration**:
 
-   ```python
+   ```python notest
    import jwt
 
    # Check token expiration without validation
+   token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
    try:
        payload = jwt.decode(token, options={"verify_signature": False})
-       u.Cli.print(f"Token expires at: {payload.get('exp')}")
+       u.Cli.info(f"Token expires at: {payload.get('exp')}")
    except jwt.InvalidTokenError as e:
-       u.Cli.print(f"Token error: {e}")
+       u.Cli.info(f"Token error: {e}")
    ```
 
 1. **Secret Key Mismatch**:
 
    ```python
+   from flext_auth import FlextAuthSettings
+   from flext_cli import u
+
    # Ensure same secret key is used for generation and validation
    settings = FlextAuthSettings()
-   u.Cli.print(f"JWT Secret: {settings.jwt_secret_key}")
+   u.Cli.info(f"JWT Secret: {settings.Auth.secret_key}")
    ```
 
 ______________________________________________________________________
