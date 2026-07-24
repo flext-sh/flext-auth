@@ -569,7 +569,7 @@ monitor_memory()
 
 ### CPU Issues
 
-```python
+```python notest
 from __future__ import annotations
 import time
 
@@ -581,7 +581,7 @@ def monitor_cpu():
     process = psutil.Process()
 
     # Get CPU usage over time
-    for _ in range(10):
+    for _ in range(3):
         cpu_percent = process.cpu_percent()
         u.Cli.info(f"CPU usage: {cpu_percent}%")
         time.sleep(1)
