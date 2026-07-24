@@ -709,16 +709,16 @@ def process(data: dict) -> ProcessedData:
 1. **Validate Input Early**
 
    ```python
-   from flext_core import r
+   from flext_core import p, r, t
 
 
-   def process_data(data: dict) -> r.Result:
+   def process_data(data: dict) -> p.Result[t.JsonMapping]:
        if not data:
-           return r.fail("Data required")
+           return r[t.JsonMapping].fail("Data required")
 
        # Process data
        processed_data = {k: v for k, v in data.items()}
-       return r.ok(processed_data)
+       return r[t.JsonMapping].ok(processed_data)
    ```
 
 1. **Use Type Hints**
@@ -749,13 +749,13 @@ def process(data: dict) -> ProcessedData:
 1. **Test Thoroughly**
 
    ```python
-   from flext_core import r
+   from flext_core import p, r, t
 
 
-   def process_data(data: dict | None) -> r.Result:
+   def process_data(data: dict | None) -> p.Result[t.JsonMapping]:
        if not data:
-           return r.fail("Data required")
-       return r.ok(data)
+           return r[t.JsonMapping].fail("Data required")
+       return r[t.JsonMapping].ok(data)
 
 
    def test_process_data():
