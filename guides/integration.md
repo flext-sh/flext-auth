@@ -337,7 +337,7 @@ from flext_core import c, m, p, r, t
 class RedisSessionStorage:
     """Session storage using Redis."""
 
-    def __init__(self, redis_client: object) -> None:
+    def __init__(self, redis_client) -> None:
         self._redis = redis_client
 
     def store_session(self, session: auth_m.Auth.Session) -> p.Result[bool]:
