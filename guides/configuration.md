@@ -113,14 +113,11 @@ settings = FlextSettings(log_level="INFO", debug=False)
 
 # LDIF configuration
 ldif_config = FlextLdifSettings(
-    default_encoding="utf-8",
-    strict_validation=True,
-    servers_enabled=True,
-    batch_size=1000,
+    ldif={"ldif_encoding": "utf-8", "ldif_strict_validation": True}
 )
 
 u.Cli.info(f"Log level: {settings.log_level}")
-u.Cli.info(f"LDIF batch size: {ldif_config.batch_size}")
+u.Cli.info(f"LDIF encoding: {ldif_config.ldif.ldif_encoding}")
 ```
 
 ## Project-Specific Configuration

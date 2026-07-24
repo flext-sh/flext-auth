@@ -756,9 +756,9 @@ split-on-trailing-comma = false
 ]
 # Standard OAuth/JWT token type identifiers, auth-method names, and error codes
 # are not hardcoded secrets; bandit's password rules are false positives here.
-"**/src/flext_auth/_constants/auth_security.py" = ["S105"]
-"**/src/flext_auth/providers/_mixins/tokens.py" = ["S106", "S107"]
-"**/src/flext_auth/providers/oauth2_tokens.py" = ["S106", "S107"]
+"**/src/flext_auth/_constants/auth_security.py" = ["hardcoded-password-string"]
+"**/src/flext_auth/providers/_mixins/tokens.py" = ["hardcoded-password-func-arg", "hardcoded-password-default"]
+"**/src/flext_auth/providers/oauth2_tokens.py" = ["hardcoded-password-func-arg", "hardcoded-password-default"]
 
 # [MANAGED] tomlsort
 [tool.tomlsort]

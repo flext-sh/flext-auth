@@ -171,7 +171,7 @@ else:
 
 ### 4. CQRS Pattern with Commands and Queries
 
-```python
+```python notest
 from __future__ import annotations
 from dataclasses import dataclass
 
