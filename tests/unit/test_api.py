@@ -12,10 +12,9 @@ import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_tests import tm
+from tests import c
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
-
-_VALID_PASSWORD = "ValidPass123!"
 
 
 def _fresh_auth() -> FlextAuth:
@@ -62,7 +61,7 @@ class TestsFlextAuthApi:
         """Registering a valid user succeeds and returns the new identity."""
         auth = _fresh_auth()
 
-        result = auth.register_user("validuser", "user@example.com", _VALID_PASSWORD)
+        result = auth.register_user("validuser", "user@example.com", c.TEST_PASSWORD)
 
         tm.ok(result)
         identity = result.value
@@ -73,7 +72,7 @@ class TestsFlextAuthApi:
         """Email contact is normalized to lowercase on the returned identity."""
         auth = _fresh_auth()
 
-        result = auth.register_user("mixeduser", "MixED@Example.COM", _VALID_PASSWORD)
+        result = auth.register_user("mixeduser", "MixED@Example.COM", c.TEST_PASSWORD)
 
         tm.ok(result)
         tm.that(result.value.contact, eq="mixed@example.com")
@@ -88,7 +87,7 @@ class TestsFlextAuthApi:
         auth = _fresh_auth()
 
         result = auth.register_user(
-            "roleuser", "roleuser@example.com", _VALID_PASSWORD, roles=roles, role=role
+            "roleuser", "roleuser@example.com", c.TEST_PASSWORD, roles=roles, role=role
         )
 
         tm.ok(result)
@@ -97,7 +96,7 @@ class TestsFlextAuthApi:
         """A username below the minimum length fails with an error message."""
         auth = _fresh_auth()
 
-        result = auth.register_user("ab", "short@example.com", _VALID_PASSWORD)
+        result = auth.register_user("ab", "short@example.com", c.TEST_PASSWORD)
 
         tm.fail(result)
         assert result.error
@@ -116,8 +115,8 @@ class TestsFlextAuthApi:
         """Registering an already-taken username fails; the first one wins."""
         auth = _fresh_auth()
 
-        first = auth.register_user("dupuser", "dup1@example.com", _VALID_PASSWORD)
-        second = auth.register_user("dupuser", "dup2@example.com", _VALID_PASSWORD)
+        first = auth.register_user("dupuser", "dup1@example.com", c.TEST_PASSWORD)
+        second = auth.register_user("dupuser", "dup2@example.com", c.TEST_PASSWORD)
 
         tm.ok(first)
         tm.fail(second)
@@ -126,11 +125,11 @@ class TestsFlextAuthApi:
     def test_authenticate_with_valid_credentials_returns_identity(self) -> None:
         """Authenticating a registered user with the right password succeeds."""
         auth = _fresh_auth()
-        auth.register_user("authuser", "auth@example.com", _VALID_PASSWORD)
+        auth.register_user("authuser", "auth@example.com", c.TEST_PASSWORD)
 
         result = auth.authenticate({
             "username": "authuser",
-            "password": _VALID_PASSWORD,
+            "password": c.TEST_PASSWORD,
         })
 
         tm.ok(result)
@@ -139,7 +138,7 @@ class TestsFlextAuthApi:
     def test_authenticate_with_wrong_password_fails(self) -> None:
         """Authenticating with an incorrect password fails with an error."""
         auth = _fresh_auth()
-        auth.register_user("authuser", "auth@example.com", _VALID_PASSWORD)
+        auth.register_user("authuser", "auth@example.com", c.TEST_PASSWORD)
 
         result = auth.authenticate({
             "username": "authuser",
@@ -154,7 +153,7 @@ class TestsFlextAuthApi:
         [
             {"username": "", "password": ""},
             {"username": "someone", "password": ""},
-            {"username": "", "password": _VALID_PASSWORD},
+            {"username": "", "password": c.TEST_PASSWORD},
         ],
     )
     def test_authenticate_rejects_missing_credentials(
@@ -172,7 +171,7 @@ class TestsFlextAuthApi:
         """create_token mints a three-segment JWT for a valid identity id."""
         auth = _fresh_auth()
         registered = auth.register_user(
-            "tokenuser", "token@example.com", _VALID_PASSWORD
+            "tokenuser", "token@example.com", c.TEST_PASSWORD
         )
         tm.ok(registered)
 

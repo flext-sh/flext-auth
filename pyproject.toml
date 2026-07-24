@@ -754,6 +754,11 @@ split-on-trailing-comma = false
   "undocumented-public-function",
   "undocumented-public-method",
 ]
+# Standard OAuth/JWT token type identifiers, auth-method names, and error codes
+# are not hardcoded secrets; bandit's password rules are false positives here.
+"**/src/flext_auth/_constants/auth_security.py" = ["S105"]
+"**/src/flext_auth/providers/_mixins/tokens.py" = ["S106", "S107"]
+"**/src/flext_auth/providers/oauth2_tokens.py" = ["S106", "S107"]
 
 # [MANAGED] tomlsort
 [tool.tomlsort]

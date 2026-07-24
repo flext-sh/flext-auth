@@ -1,3 +1,5 @@
+"""Test utilities for the flext-auth test suite."""
+
 from __future__ import annotations
 
 from flext_auth import FlextAuthUtilities

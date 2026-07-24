@@ -6,7 +6,7 @@ import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_tests import tm
-from tests import u
+from tests import c, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 
 
@@ -118,9 +118,7 @@ class TestsFlextAuthApiCase05:
         """Test register_user method error paths."""
         auth = FlextAuth()
         result = auth.register_user(
-            username="testuser",
-            email="invalid-email-format",
-            password="ValidPassword123!",
+            username="testuser", email="invalid-email-format", password=c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         error_msg = result.error or ""

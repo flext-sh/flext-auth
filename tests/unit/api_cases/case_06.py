@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from flext_auth import FlextAuth
-from tests import m, u
+from tests import c, m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 
 
@@ -18,7 +18,7 @@ class TestsFlextAuthApiCase06:
         """Test authenticate_user method failure scenarios."""
         auth = FlextAuth()
         result = auth.authenticate_user(
-            username="nonexistent_user", password="any_password"
+            username="nonexistent_user", password=c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, is_=str)
@@ -50,7 +50,7 @@ class TestsFlextAuthApiCase06:
             locked_until=datetime.min.replace(tzinfo=UTC),
             last_access=datetime.min.replace(tzinfo=UTC),
         )
-        result = identity.update_credential("StrongTestPass123!@#")
+        result = identity.update_credential(c.TEST_PASSWORD)
         u.Tests.Matchers.that(result.success, eq=True)
         u.Tests.Matchers.that(result.value is True, eq=True)
         u.Tests.Matchers.that(identity.credential_hash, ne="StrongTestPass123!@#")
@@ -58,7 +58,7 @@ class TestsFlextAuthApiCase06:
 
     def test_verify_password_method(self) -> None:
         """Test verify_password method functionality."""
-        strong_password = "StrongTestPass123!@#"
+        strong_password = c.TEST_PASSWORD
         identity = m.Auth.AuthIdentity(
             unique_id="test-id",
             name="testuser",
@@ -79,7 +79,7 @@ class TestsFlextAuthApiCase06:
         verify_result = identity.verify_credential(strong_password)
         u.Tests.Matchers.that(verify_result.success, eq=True)
         u.Tests.Matchers.that(verify_result.value is True, eq=True)
-        wrong_result = identity.verify_credential("WrongPassword123!@")
+        wrong_result = identity.verify_credential(c.TEST_PASSWORD + "_wrong")
         u.Tests.Matchers.that(wrong_result.success, eq=True)
         u.Tests.Matchers.that(wrong_result.value is False, eq=True)
 
@@ -87,9 +87,7 @@ class TestsFlextAuthApiCase06:
         """Test that create_token succeeds for a registered user."""
         auth = FlextAuth()
         user_result = auth.register_user(
-            username="jwt_test_user",
-            email="jwt@example.com",
-            password="JWTTestPass123!@#",
+            username="jwt_test_user", email="jwt@example.com", password=c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -101,11 +99,11 @@ class TestsFlextAuthApiCase06:
         """Test that create_token fails via alternative path — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser", "test@example.com", "TestPassword123!"
+            "testuser", "test@example.com", c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
-        auth_result = auth.authenticate_user("testuser", "TestPassword123!")
+        auth_result = auth.authenticate_user("testuser", c.TEST_PASSWORD)
         u.Tests.Matchers.that(auth_result.success, eq=True)
         token_result = auth.create_token(identity_id=identity.unique_id)
         u.Tests.Matchers.that(token_result.success, eq=True)
@@ -115,11 +113,11 @@ class TestsFlextAuthApiCase06:
         """Test that validate_token fails — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser", "test@example.com", "TestPassword123!"
+            "testuser", "test@example.com", c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
-        auth_result = auth.authenticate_user("testuser", "TestPassword123!")
+        auth_result = auth.authenticate_user("testuser", c.TEST_PASSWORD)
         u.Tests.Matchers.that(auth_result.success, eq=True)
         authenticated_identity = auth_result.value
         u.Tests.Matchers.that(authenticated_identity, is_=m.Auth.AuthIdentity)

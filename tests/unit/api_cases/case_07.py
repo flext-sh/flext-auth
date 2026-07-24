@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from flext_auth import FlextAuth
 from flext_tests import tm
-from tests import u
+from tests import c, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 
 
@@ -19,7 +19,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_get_user",
             email="getuser@example.com",
-            password="GetUserPass123!@",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -34,7 +34,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_username_lookup",
             email="lookup@example.com",
-            password="LookupPass123!@",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         get_result = auth.identity_service.identity_manager.get_user_by_username(
@@ -48,7 +48,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_token_user",
             email="tokenuser@example.com",
-            password="TokenUserPass123!@",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -63,7 +63,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_logout_user",
             email="logout@example.com",
-            password="LogoutPass123!@",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -119,12 +119,12 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="lockable_user",
             email="lockable@example.com",
-            password="LockablePass123!",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         for _ in range(6):
             failed_result = auth.authenticate_user(
-                username="lockable_user", password="wrong_password"
+                username="lockable_user", password=c.TEST_PASSWORD + "_wrong"
             )
             u.Tests.Matchers.that(not failed_result.success, eq=True)
 

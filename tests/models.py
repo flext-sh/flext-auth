@@ -1,3 +1,5 @@
+"""Test models for the flext-auth test suite."""
+
 from __future__ import annotations
 
 from typing import Annotated, ClassVar

@@ -88,7 +88,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_published_scalar_constants_hold_their_contract_value(
-        self, value: str | float | bool, expected: str | float | bool
+        self, value: str | float, expected: str | float
     ) -> None:
         tm.that(value, eq=expected)
 
