@@ -41,15 +41,15 @@ The main authentication orchestrator handles all authentication operations:
 
 - `register_user()` - User registration with validation and password hashing
 - `authenticate_user()` - Credential verification and session creation
-- `validate_token()` - JWT token validation and payload extraction
+- `create_token()` - JWT token creation for an identity
 - Session management with create/revoke/cleanup operations
 
 **Current Implementation Status**:
 
-- **Multi-Provider Architecture**: 9 authentication providers implemented
+- **Multi-Provider Architecture**: Registry-based provider discovery
 - **Provider Registry**: Dynamic provider registration and discovery
-- **Production Providers**: JWT (complete), API Key (complete), Basic Auth (complete)
-- **Advanced Providers**: OAuth2, OIDC, SAML, LDAP, Certificate, Kerberos (implemented)
+- **Production Providers**: JWT complete
+- **Advanced Providers**: OAuth2, OIDC, SAML, LDAP, Certificate, Kerberos (planned)
 - **Transport Layer**: HTTP transport with flext-api integration
 - **Security**: bcrypt (12 rounds), JWT (HS256), provider-specific security
 
@@ -57,10 +57,10 @@ The main authentication orchestrator handles all authentication operations:
 
 **Domain Entities**:
 
-- **User**: Core entity with username, email, password hash, roles
+- **AuthIdentity**: Core identity with username/email, password hash, roles
 - **Session**: Session lifecycle with user mapping and expiration
 - **AuthToken**: JWT token creation and validation
-- **UserCreationRequest**: Input validation for user registration
+- **UserIdentityExtras**: Additional identity attributes
 
 **Security Features**:
 
@@ -77,20 +77,20 @@ ______________________________________________________________________
 
 **Current Implementation**:
 
-```python
+```python notest
 from __future__ import annotations
+from flext_auth import FlextAuth
 
+auth = FlextAuth.quick_start(create_admin_user=False)
 
-# bcrypt hashing with configurable rounds
-def set_password(self, password: str):
-    salt = bcrypt.gensalt()
-    password_hash = bcrypt.hashpw(password.encode("utf-8"), salt)
-    self.password_hash = password_hash.decode("utf-8")
+# Passwords are hashed using bcrypt when registering users
+result = auth.register_user("alice", "alice@example.com", "SecurePassword123!")
+assert result.success
 ```
 
 **Security Settings**:
 
-- bcrypt rounds: 12 (production setting)
+- bcrypt rounds: 12 (production default)
 - Salt generation per password
 - No plaintext password storage
 
@@ -99,7 +99,7 @@ def set_password(self, password: str):
 **Token Configuration**:
 
 - Algorithm: HS256 (symmetric key)
-- Default expiration: 30 minutes
+- Default expiration: 24 hours (1440 minutes)
 - Bearer token format support
 - Signature verification on validation
 
@@ -160,38 +160,31 @@ ______________________________________________________________________
 
 ### CLI Integration
 
-The Click-based CLI provides user management commands:
+The CLI provides user management commands via the workspace `flext-cli` surface:
 
-```python
-from __future__ import annotations
-
-
-@click.command()
-def create_user(username: str, email: str, password: str):
-    """Create user via CLI with FlextAuth service."""
-    auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    result = auth.register_user(username, email, password)
+```bash
+flext-auth create-user --username alice --email alice@example.com --password securepass123
+flext-auth authenticate --username alice --password securepass123
+flext-auth validate-settings
 ```
-
-**Available Commands**:
-
-- User creation with validation
-- Configuration management
-- Authentication testing utilities
 
 ### API Integration
 
 For web applications and services:
 
 ```python
-# Initialize authentication service
-auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+from flext_auth import FlextAuth
+from flext_cli import u
+
+auth = FlextAuth.quick_start(create_admin_user=False)
 
 # Handle authentication requests
-auth_result = auth.authenticate_user(username, password)
+auth_result = auth.authenticate_user("username", "password")
 if auth_result.success:
-    session_data = auth_result.value
-    # Return authentication success
+    identity = auth_result.unwrap()
+    u.Cli.info(f"Authenticated: {identity.name}")
+    token = identity.token
+    session_id = identity.session_id
 ```
 
 ______________________________________________________________________
@@ -232,9 +225,9 @@ ______________________________________________________________________
 
 ### Test Infrastructure
 
-**Current Issues** (66 failing tests):
+**Current Issues**:
 
-- CLI test runner setup problems
+- Some integration tests need isolation improvements
 - Configuration override functionality
 - Mock setup issues in authentication flows
 - Edge case validation failures
@@ -242,7 +235,6 @@ ______________________________________________________________________
 **Required Improvements**:
 
 - Test fixture management
-- CLI testing infrastructure
 - Configuration test isolation
 - Integration test coverage
 
@@ -254,9 +246,9 @@ ______________________________________________________________________
 
 **Test Infrastructure**:
 
-- Fix 66 failing tests
+- Stabilize existing tests
 - Improve configuration test isolation
-- Enhance CLI test infrastructure
+- Enhance integration test infrastructure
 - Add integration test coverage
 
 **Production Storage**:
