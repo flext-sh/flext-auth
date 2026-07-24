@@ -109,7 +109,7 @@ from flext_core import FlextSettings
 from flext_ldif import FlextLdifSettings
 
 # Core configuration
-settings = FlextSettings(log_level="INFO", debug=False, environment="production")
+settings = FlextSettings(log_level="INFO", debug=False)
 
 # LDIF configuration
 ldif_config = FlextLdifSettings(
@@ -236,13 +236,10 @@ FLEXT supports configuration inheritance for complex setups:
 from flext_core import FlextSettings
 
 # Base configuration
-base_config = FlextSettings(log_level="INFO", environment="production")
+base_config = FlextSettings(log_level="INFO")
 
 # Extended configuration
-extended_config = FlextSettings(
-    **base_config.model_dump(),
-    debug=True,  # Override for development
-)
+extended_config = base_config.model_copy(update={"debug": True})
 ```
 
 ## Best Practices
