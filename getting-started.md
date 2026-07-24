@@ -29,9 +29,9 @@
 - [Related Documentation](#related-documentation)
 <!-- TOC END -->
 
-**Version**: 1.0.0 Current | **Updated**: October 1, 2025
+**Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
-Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete s and h integration.
+Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FLEXT integration.
 
 ______________________________________________________________________
 
@@ -40,7 +40,7 @@ ______________________________________________________________________
 ### Prerequisites
 
 - Python 3.13+
-- Poetry for dependency management
+- uv for dependency management
 - **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** foundation library
 
 ### Installation
@@ -50,10 +50,10 @@ ______________________________________________________________________
 cd flext-auth
 
 # Install dependencies
-poetry install
+uv sync
 
 # Verify installation
-python -c "from flext_auth import flext_auth_quick_start; u.Cli.print('flext-auth ready')"
+uv run python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
 ```
 
 ______________________________________________________________________
@@ -63,57 +63,62 @@ ______________________________________________________________________
 ### Quick Start Service
 
 ```python
-from flext_auth import flext_auth_quick_start, FlextAuthModels
+from flext_auth import FlextAuth
+from flext_cli import u
 
 # Initialize authentication service
-auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+auth = FlextAuth.quick_start(create_admin_user=False)
 
-# Create user request t.JsonValue
-user_request = FlextAuthModels.UserCreationRequest(
-    username="alice", email="alice@example.com", password="secure123"
-)
-
-# Register user (r pattern)
+# Register user using the r pattern
 result = auth.register_user(
-    username=user_request.username,
-    email=user_request.email,
-    password=user_request.password,
+    username="alice",
+    email="alice@example.com",
+    password="secure123",
 )
 
 if result.success:
-    user = result.unwrap()
-    u.Cli.print(f"User created: {user.username}")
+    identity = result.unwrap()
+    u.Cli.info(f"User created: {identity.name}")
 else:
-    u.Cli.print(f"Registration failed: {result.error}")
+    u.Cli.info(f"Registration failed: {result.error}")
 ```
 
 ### User Authentication
 
 ```python
+from flext_auth import FlextAuth
+from flext_cli import u
+
+auth = FlextAuth.quick_start(create_admin_user=False)
+
 # Authenticate user
 auth_result = auth.authenticate_user("alice", "secure123")
 
 if auth_result.success:
-    session_data = auth_result.unwrap()
-    u.Cli.print("Authentication successful")
-    u.Cli.print(f"Session: {session_data['session']['id']}")
-    u.Cli.print(f"Token: {session_data['token']}")
+    identity = auth_result.unwrap()
+    u.Cli.info("Authentication successful")
+    u.Cli.info(f"Session ID: {identity.session_id}")
+    u.Cli.info(f"Token: {identity.token}")
 else:
-    u.Cli.print(f"Authentication failed: {auth_result.error}")
+    u.Cli.info(f"Authentication failed: {auth_result.error}")
 ```
 
 ### Token Validation
 
 ```python
-# Validate JWT token
-token = "your-jwt-token-here"
-validation_result = auth.validate_token(token)
+from flext_auth import FlextAuth
+from flext_cli import u
 
-if validation_result.success:
-    token_data = validation_result.unwrap()
-    u.Cli.print(f"Token valid for user: {token_data['username']}")
+auth = FlextAuth.quick_start(create_admin_user=False)
+
+# Create a token via authentication
+token_result = auth.create_token("identity-id")
+
+if token_result.success:
+    token = token_result.unwrap()
+    u.Cli.info(f"Token created: {token}")
 else:
-    u.Cli.print(f"Token invalid: {validation_result.error}")
+    u.Cli.info(f"Token creation failed: {token_result.error}")
 ```
 
 ______________________________________________________________________
@@ -124,14 +129,12 @@ ______________________________________________________________________
 
 ```python
 from flext_auth import FlextAuthSettings
+from flext_cli import u
 
-# Development configuration
 settings = FlextAuthSettings()
 
-if settings.success:
-    dev_config = settings.unwrap()
-    u.Cli.print(f"JWT expiry: {dev_config.jwt_expiry_minutes} minutes")
-    u.Cli.print(f"bcrypt rounds: {dev_config.bcrypt_rounds}")
+u.Cli.info(f"JWT expiry: {settings.Auth.expiry_minutes} minutes")
+u.Cli.info(f"bcrypt rounds: {settings.Auth.hash_rounds}")
 ```
 
 ### Custom Configuration
@@ -141,10 +144,12 @@ from flext_auth import FlextAuth, FlextAuthSettings
 
 # Custom configuration
 settings = FlextAuthSettings(
-    jwt_expiry_minutes=30,  # 30-minute tokens
-    bcrypt_rounds=14,  # Higher security
-    max_failed_attempts=3,  # Account lockout
-    session_timeout_minutes=60,  # 1-hour sessions
+    Auth={
+        "secret_key": "your-secret-key-with-at-least-32-characters",
+        "expiry_minutes": 30,  # 30-minute tokens
+        "hash_rounds": 14,  # Higher security
+        "session_expiry_minutes": 60,  # 1-hour sessions
+    }
 )
 
 # Use custom configuration
@@ -188,27 +193,30 @@ ______________________________________________________________________
 
 ```python
 from __future__ import annotations
+from flext_auth import FlextAuth
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import c, m, p, r, t
+
+auth = FlextAuth.quick_start(create_admin_user=False)
 
 
 def process_authentication_workflow(username: str, password: str) -> p.Result[m.Dict]:
     """Authentication workflow using r error handling."""
+    result = auth.authenticate_user(username, password)
+    if result.failure:
+        return r[m.Dict].fail(result.error)
 
-    auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    identity = result.unwrap()
+    token_result = auth.create_token(identity.unique_id)
+    if token_result.failure:
+        return r[m.Dict].fail(token_result.error)
 
-    # Chain operations with r
-    return (
-        auth
-        .authenticate_user(username, password)
-        .flat_map(lambda auth_data: auth.validate_token(auth_data["token"]))
-        .map(
-            lambda token_data: {
-                "authenticated": True,
-                "user": token_data["username"],
-                "expires": token_data["exp"],
-            }
-        )
+    return r[m.Dict].ok(
+        {
+            "authenticated": True,
+            "user": identity.name,
+            "token": token_result.unwrap(),
+        }
     )
 
 
@@ -216,18 +224,18 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[m.
 result = process_authentication_workflow("alice", "secure123")
 if result.success:
     data = result.unwrap()
-    u.Cli.print(f"User {data['user']} authenticated until {data['expires']}")
+    u.Cli.info(f"User {data['user']} authenticated")
 ```
 
 ### Container Integration
 
 ```python
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import FlextContainer, FlextSettings
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service in container
-container = FlextContainer.get_global()
+container = FlextContainer()
 
 # Configure and register
 settings = FlextAuthSettings()
@@ -238,7 +246,7 @@ container.bind("auth_service", auth_service)
 auth_result = container.resolve("auth_service")
 if auth_result.success:
     auth = auth_result.unwrap()
-    # Use authentication service
+    u.Cli.info("Authentication service resolved")
 ```
 
 ______________________________________________________________________
@@ -248,41 +256,42 @@ ______________________________________________________________________
 ### Working with User Entities
 
 ```python
-from flext_auth import FlextAuthModels
+from flext_auth import FlextAuth
+from flext_cli import u
 
-# Create user entity
-user = FlextAuthModels.User(
+auth = FlextAuth.quick_start(create_admin_user=False)
+
+# Create an identity through the service
+result = auth.register_user(
     username="charlie",
     email="charlie@example.com",
-    roles=["user", "REDACTED_LDAP_BIND_PASSWORD"],
+    password="secure123",
+    roles=["user"],
 )
 
-# Set password (bcrypt hashing)
-password_result = user.set_password("mypassword")
-if password_result.success:
-    u.Cli.print("Password set successfully")
-
-# Verify password
-verification_result = user.verify_password("mypassword")
-if verification_result.success and verification_result.unwrap():
-    u.Cli.print("Password verification successful")
+if result.success:
+    identity = result.unwrap()
+    u.Cli.info(f"Identity created: {identity.name}")
 ```
 
 ### Session Management
 
-```python
-from datetime import datetime, timedelta
+```python notest
+from __future__ import annotations
+from datetime import datetime, timezone
+
+from flext_auth import m as auth_m
 
 # Create session
-session = FlextAuthModels.Session(
-    user_id=user.id,
+session = auth_m.Auth.Session(
+    user_id="user-id",
     session_token="session-token-123",
-    expires_at=datetime.utcnow() + timedelta(hours=2),
+    expires_at=datetime.now(timezone.utc),
 )
 
 # Check session validity
-if session.is_active and datetime.utcnow() < session.expires_at:
-    u.Cli.print("Session is valid")
+if session.is_active:
+    u.Cli.info("Session is valid")
 ```
 
 ______________________________________________________________________
@@ -293,13 +302,14 @@ ______________________________________________________________________
 
 ```python
 from __future__ import annotations
+
 import pytest
-from flext_auth import flext_auth_quick_start
+from flext_auth import FlextAuth
 
 
 def test_authentication_workflow():
     """Test complete authentication workflow."""
-    auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    auth = FlextAuth.quick_start(create_admin_user=False)
 
     # Register test user
     register_result = auth.register_user(
@@ -307,19 +317,19 @@ def test_authentication_workflow():
     )
 
     assert register_result.success
-    user = register_result.unwrap()
-    assert user.username == "testuser"
+    identity = register_result.unwrap()
+    assert identity.name == "testuser"
 
     # Authenticate user
     auth_result = auth.authenticate_user("testuser", "testpass123")
     assert auth_result.success
 
-    session_data = auth_result.unwrap()
-    assert "token" in session_data
-    assert "session" in session_data
+    identity = auth_result.unwrap()
+    assert identity.token
+    assert identity.session_id
 
-    # Validate token
-    token_result = auth.validate_token(session_data["token"])
+    # Create token
+    token_result = auth.create_token(identity.unique_id)
     assert token_result.success
 ```
 
@@ -334,8 +344,7 @@ ______________________________________________________________________
 make test
 
 # Code quality checks
-make lint
-make type-check
+make check
 
 # Complete validation
 make val

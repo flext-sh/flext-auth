@@ -71,15 +71,8 @@ For development and testing:
 git clone https://github.com/flext-sh/flext.git
 cd flext
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
-
-# Install in development mode
-pip install -e .
-
-# Install development dependencies
-pip install -e ".[dev]"
+# Create virtual environment and sync dependencies
+uv sync
 ```
 
 ### Docker Installation
@@ -100,7 +93,7 @@ docker run -v $(pwd)/data:/app/data flext:latest
 
 ```python
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import FlextContainer, FlextSettings
 
 # Create dependency injection container
 container = FlextContainer()
@@ -108,12 +101,13 @@ container = FlextContainer()
 # Register services (example)
 # container.bind(IService, ServiceImplementation())
 
-u.Cli.print("FLEXT application initialized!")
+u.Cli.info("FLEXT application initialized!")
 ```
 
 ### 2. Using flext-ldif for LDIF Processing
 
 ```python
+from flext_cli import u
 from flext_ldif import ldif
 
 # Parse LDIF content
@@ -122,12 +116,12 @@ cn: test
 sn: user
 objectClass: inetOrgPerson"""
 
-result = ldif.parse(ldif_content)
+result = ldif.parse_string(ldif_content)
 if result.success:
-    entries = result.unwrap()
-    u.Cli.print(f"Successfully parsed {len(entries)} LDIF entries")
+    entries = result.unwrap().entries
+    u.Cli.info(f"Successfully parsed {len(entries)} LDIF entries")
 else:
-    u.Cli.print(f"Failed to parse LDIF: {result.failure()}")
+    u.Cli.info(f"Failed to parse LDIF: {result.error}")
 ```
 
 ### 3. Railway-Oriented Error Handling
@@ -135,45 +129,54 @@ else:
 ```python
 from __future__ import annotations
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import c, m, p, r, t
+from flext_ldif import ldif
 
 
-def process_ldif_data(content: str) -> p.Result[str, Exception]:
-    # Parse LDIF
-    parse_result = ldif.parse(content)
+class ProcessedLdif:
+    def __init__(self, summary: str) -> None:
+        self.summary = summary
+
+
+def process_ldif_data(content: str) -> p.Result[ProcessedLdif]:
+    """Process LDIF content using the r pattern."""
+    parse_result = ldif.parse_string(content)
     if parse_result.failure:
-        return r.failure(parse_result.failure())
+        return r[ProcessedLdif].fail(parse_result.error)
 
-    entries = parse_result.unwrap()
+    entries = parse_result.unwrap().entries
 
-    # Process entries
     try:
         processed_data = process_entries(entries)
-        return r.success(processed_data)
+        return r[ProcessedLdif].ok(processed_data)
     except Exception as e:
-        return r.failure(e)
+        return r[ProcessedLdif].fail(str(e))
 
 
-def process_entries(entries: list) -> str:
-    # Your processing logic here
-    return f"Processed {len(entries)} entries"
+def process_entries(entries: list) -> ProcessedLdif:
+    """Your processing logic here."""
+    return ProcessedLdif(f"Processed {len(entries)} entries")
 
 
 # Usage
+ldif_content = """dn: cn=test,dc=example,dc=com
+cn: test
+objectClass: inetOrgPerson"""
 result = process_ldif_data(ldif_content)
 if result.success:
-    u.Cli.print(f"Success: {result.unwrap()}")
+    u.Cli.info(f"Success: {result.unwrap().summary}")
 else:
-    u.Cli.print(f"Error: {result.failure()}")
+    u.Cli.info(f"Error: {result.error}")
 ```
 
 ### 4. CQRS Pattern with Commands and Queries
 
-```python
+```python notest
 from __future__ import annotations
-from flext_cli import u
-from flext_core import FlextSettings
 from dataclasses import dataclass
+
+from flext_cli import u
+from flext_core import c, m, p, r, t
 
 
 @dataclass
@@ -188,17 +191,28 @@ class GetUserQuery:
 
 
 class UserService:
-    def create_user(self, cmd: CreateUserCommand) -> p.Result[str, Exception]:
+    def create_user(self, cmd: CreateUserCommand) -> p.Result[str]:
         # Create user logic
-        return r.success(f"User {cmd.username} created")
+        return r[str].ok(f"User {cmd.username} created")
 
-    def get_user(self, query: GetUserQuery) -> p.Result[str, Exception]:
+    def get_user(self, query: GetUserQuery) -> p.Result[str]:
         # Get user logic
-        return r.success(f"User {query.user_id} data")
+        return r[str].ok(f"User {query.user_id} data")
 
 
 # Setup dispatcher
-dispatcher = FlextDispatcher()
+class Dispatcher:
+    def __init__(self) -> None:
+        self.handlers = {}
+
+    def register_handler(self, message_type: type, handler):
+        self.handlers[message_type] = handler
+
+    def dispatch(self, message):
+        return self.handlers[type(message)](message)
+
+
+dispatcher = Dispatcher()
 user_service = UserService()
 
 dispatcher.register_handler(CreateUserCommand, user_service.create_user)
@@ -226,6 +240,7 @@ export FLEXT_LDIF_STRICT_VALIDATION=true
 
 ```python
 from flext_ldif import FlextLdifSettings
+from flext_ldif import ldif
 
 # Create custom configuration
 settings = FlextLdifSettings(
@@ -236,7 +251,7 @@ settings = FlextLdifSettings(
 )
 
 # Use configuration
-ldif = ldif(settings=settings)
+ldif_service = ldif(settings=settings)
 ```
 
 ## Next Steps
@@ -265,10 +280,10 @@ ldif = ldif(settings=settings)
 
 ## Getting Help
 
-- 📖 **Documentation**: Browse the complete documentation
-- 🐛 **Issues**: Report bugs and request features
-- 💬 **Discussions**: Ask questions and share knowledge
-- 📧 **Support**: Contact the development team
+- **Documentation**: Browse the complete documentation
+- **Issues**: Report bugs and request features
+- **Discussions**: Ask questions and share knowledge
+- **Support**: Contact the development team
 
 ## What's Next
 
@@ -279,4 +294,4 @@ Now that you have FLEXT installed and running, explore these areas:
 1. **Project Guides**: Deep dive into specific libraries
 1. **Examples**: Real-world usage examples
 
-Happy coding with FLEXT! 🚀
+Happy coding with FLEXT!
