@@ -174,7 +174,10 @@ tests/
 
 ### Given-When-Then Pattern
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_user_authentication_with_valid_credentials():
     """Test user authentication succeeds with valid credentials."""
     # Given: A registered user with valid credentials

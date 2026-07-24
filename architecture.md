@@ -200,7 +200,8 @@ ______________________________________________________________________
 
 **Public API**:
 
-```python notest
+```python
+from __future__ import annotations
 class FlextAuth(s[AuthenticationResponseDict]):
     # Factory methods
     @classmethod
@@ -250,7 +251,8 @@ class FlextAuth(s[AuthenticationResponseDict]):
 
 **Interface**:
 
-```python notest
+```python
+from __future__ import annotations
 class FlextAuthRegistry:
     """Registry for managing authentication providers."""
 
@@ -282,7 +284,10 @@ class FlextAuthRegistry:
 
 **Protocol Definition**:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers."""
 
@@ -393,7 +398,7 @@ ______________________________________________________________________
 
 ### Provider Implementation Pattern
 
-```python notest
+```python
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
@@ -486,7 +491,10 @@ ______________________________________________________________________
 
 ### Transport Abstraction (`transports/base.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class BaseTransportAdapter(Protocol):
     """Base protocol for transport adapters."""
 
@@ -511,7 +519,8 @@ class BaseTransportAdapter(Protocol):
 
 **⚠️ MANDATORY**: Uses **flext-api** (NOT direct httpx/requests)
 
-```python notest
+```python
+from __future__ import annotations
 from flext_api import FlextApi
 from flext_cli import u
 from flext_core import FlextSettings
@@ -540,7 +549,8 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 
 **⚠️ MANDATORY**: Uses **flext-grpc** (NOT direct grpc/grpcio)
 
-```python notest
+```python
+from __future__ import annotations
 from flext_grpc import FlextGrpc
 from flext_cli import u
 from flext_core import FlextSettings
@@ -572,7 +582,10 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 ### WebSocket Transport (`transports/websocket.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class WebSocketTransportAdapter(BaseTransportAdapter):
     """WebSocket transport adapter for real-time authentication."""
 
@@ -594,7 +607,10 @@ ______________________________________________________________________
 
 ### Protocol Handler Base (`protocol_handlers/base.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class BaseProtocolHandler(Protocol):
     """Base protocol for protocol-specific handlers."""
 
@@ -611,7 +627,10 @@ class BaseProtocolHandler(Protocol):
 
 ### REST Protocol Handler (`protocol_handlers/rest.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class RestProtocolHandler(BaseProtocolHandler):
     """REST/JSON protocol handler (default)."""
 
@@ -640,7 +659,10 @@ class RestProtocolHandler(BaseProtocolHandler):
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class SoapProtocolHandler(BaseProtocolHandler):
     """SOAP/XML protocol handler (stub)."""
 
@@ -673,7 +695,10 @@ ______________________________________________________________________
 
 **Interface**:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class TokenManager:
     """Unified token management across providers."""
 
@@ -734,7 +759,10 @@ class TokenManager:
 
 ### Token Retry Logic (`tokens/retry.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class RetryPolicy:
     """Token retry policy with exponential backoff."""
 
@@ -766,7 +794,10 @@ class RetryPolicy:
 
 ### Token Cache (`tokens/cache.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class TokenCache:
     """Token caching with multiple backend support."""
 
@@ -809,7 +840,10 @@ ______________________________________________________________________
 
 ### Credential Management (`credentials/manager.py`)
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class CredentialManager:
     """Secure credential management with encryption."""
 
@@ -850,7 +884,10 @@ class CredentialManager:
 
 ### Security Validations
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class SecurityValidator:
     """Security validation for authentication operations."""
 
@@ -894,7 +931,7 @@ ______________________________________________________________________
 
 #### FORBIDDEN Direct Imports
 
-```python notest
+```python
 # ❌ ABSOLUTELY FORBIDDEN in flext-auth
 import httpx  # Use flext-api instead
 import requests  # Use flext-api instead
@@ -905,7 +942,9 @@ import ldap3  # Use flext-ldap instead
 
 #### Correct Integration Pattern
 
-```python notest
+```python
+from __future__ import annotations
+
 # ✅ CORRECT - Using FLEXT domain libraries
 from flext_cli import u
 from flext_core import FlextSettings
@@ -936,7 +975,8 @@ class FlextAuthLdapProvider:
 
 All providers and managers extend s for consistency:
 
-```python notest
+```python
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -958,7 +998,7 @@ ______________________________________________________________________
 
 #### Pattern 1: Simple JWT (Backward Compatible)
 
-```python notest
+```python
 from flext_auth import FlextAuth
 
 # v1.0.0 API (deprecated but works)
@@ -972,7 +1012,7 @@ result = auth.authenticate_user("username", "password")
 
 #### Pattern 2: Multi-Provider
 
-```python notest
+```python
 from flext_auth import FlextAuth, FlextAuthRegistry
 from flext_auth import (
     FlextAuthJwtProvider,
@@ -1006,7 +1046,7 @@ providers = auth.list_providers()  # ["jwt", "oauth2", "saml"]
 
 #### Pattern 3: Custom Transport
 
-```python notest
+```python
 from flext_auth import FlextAuth
 from flext_auth import FlextAuthOAuth2Provider
 from flext_auth import GrpcTransportAdapter
@@ -1024,7 +1064,7 @@ result = auth.authenticate(credentials)
 
 #### Pattern 4: Token Retry
 
-```python notest
+```python
 from flext_auth import FlextAuth
 
 auth = FlextAuth.with_oauth2(client_id="client", client_secret="secret")

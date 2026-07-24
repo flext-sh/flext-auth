@@ -77,7 +77,10 @@ ______________________________________________________________________
 
 **Current Implementation**:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # bcrypt hashing with configurable rounds
 def set_password(self, password: str):
     salt = bcrypt.gensalt()
@@ -159,7 +162,10 @@ ______________________________________________________________________
 
 The Click-based CLI provides user management commands:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 @click.command()
 def create_user(username: str, email: str, password: str):
     """Create user via CLI with FlextAuth service."""
@@ -177,7 +183,7 @@ def create_user(username: str, email: str, password: str):
 
 For web applications and services:
 
-```python notest
+```python
 # Initialize authentication service
 auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 

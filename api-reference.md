@@ -47,7 +47,7 @@ ______________________________________________________________________
 
 Initialize authentication service for development and testing.
 
-```python notest
+```python
 from flext_auth import flext_auth_quick_start
 
 auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
@@ -76,7 +76,8 @@ auth = FlextAuth(settings=settings)
 
 Register a new user with username, email, and password.
 
-```python notest
+```python
+from __future__ import annotations
 def register_user(
     self,
     username: str,
@@ -95,7 +96,7 @@ def register_user(
 
 **Example**:
 
-```python notest
+```python
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
@@ -106,7 +107,8 @@ if result.success:
 
 Authenticate user with username and password.
 
-```python notest
+```python
+from __future__ import annotations
 def authenticate_user(
     self,
     username: str,
@@ -123,7 +125,7 @@ def authenticate_user(
 
 **Example**:
 
-```python notest
+```python
 auth_result = auth.authenticate_user("demo", "secure123")
 if auth_result.success:
     session_data = auth_result.unwrap()
@@ -135,7 +137,8 @@ if auth_result.success:
 
 Validate JWT token and extract user information.
 
-```python notest
+```python
+from __future__ import annotations
 def validate_token(self, token: str) -> p.Result[m.Dict]:
 ```
 
@@ -147,7 +150,7 @@ def validate_token(self, token: str) -> p.Result[m.Dict]:
 
 **Example**:
 
-```python notest
+```python
 validation_result = auth.validate_token(token)
 if validation_result.success:
     token_data = validation_result.unwrap()
@@ -162,7 +165,10 @@ ______________________________________________________________________
 
 User entity extending FlextModels.Entity.
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class User(FlextModels.Entity):
     username: str
     email: str
@@ -176,7 +182,8 @@ class User(FlextModels.Entity):
 
 #### set_password()
 
-```python notest
+```python
+from __future__ import annotations
 def set_password(self, password: str) -> p.Result[bool]:
 ```
 
@@ -184,7 +191,8 @@ Hash and set user password using bcrypt.
 
 #### verify_password()
 
-```python notest
+```python
+from __future__ import annotations
 def verify_password(self, password: str) -> p.Result[bool]:
 ```
 
@@ -194,7 +202,10 @@ Verify password against stored hash.
 
 Session entity for managing user sessions.
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class Session(FlextModels.Entity):
     user_id: str
     session_token: str
@@ -206,7 +217,10 @@ class Session(FlextModels.Entity):
 
 Request model for user registration.
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class UserCreationRequest(m.BaseModel):
     username: str
     email: str
@@ -223,7 +237,10 @@ ______________________________________________________________________
 
 Configuration class extending FlextSettings.
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class FlextAuthSettings(FlextSettings):
     # JWT Settings
     jwt_secret_key: str = "dev-secret-key"
@@ -238,7 +255,8 @@ class FlextAuthSettings(FlextSettings):
 
 #### create_for_environment()
 
-```python notest
+```python
+from __future__ import annotations
 @classmethod
 def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]:
 ```
@@ -251,7 +269,7 @@ Create configuration for specific environment.
 
 **Example**:
 
-```python notest
+```python
 config_result = FlextAuthSettings()
 if config_result.success:
     settings = config_result.unwrap()
@@ -298,7 +316,7 @@ All operations return `r[T]` for type-safe error handling.
 
 ### Success Pattern
 
-```python notest
+```python
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
@@ -309,7 +327,8 @@ else:
 
 ### Chaining Pattern
 
-```python notest
+```python
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -335,7 +354,7 @@ ______________________________________________________________________
 
 ### Container Integration
 
-```python notest
+```python
 from flext_cli import u
 from flext_core import FlextSettings
 

@@ -8,7 +8,7 @@
 
 ## Target Pattern (from flext-cli)
 
-```python notest
+```python
 class FlextAuth(
     FlextAuthIdentityMixin,
     FlextAuthTokenMixin,

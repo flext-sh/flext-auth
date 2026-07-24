@@ -129,7 +129,10 @@ ______________________________________________________________________
 
 All code must follow FLEXT patterns:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # ✅ Correct - Use r for error handling
 def authenticate_user(username: str, password: str) -> p.Result[m.Dict]:
     if not username:
@@ -149,7 +152,9 @@ def authenticate_user(username: str, password: str) -> t.JsonMapping:
 
 ### Domain Model Patterns
 
-```python notest
+```python
+from __future__ import annotations
+
 # ✅ Correct - Extend FlextModels.Entity
 from flext_cli import u
 from flext_core import FlextSettings
@@ -289,7 +294,8 @@ tests/
 
 ### Adding Tests
 
-```python notest
+```python
+from __future__ import annotations
 import pytest
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_cli import u
@@ -317,7 +323,8 @@ ______________________________________________________________________
 
 Follow FLEXT service patterns:
 
-```python notest
+```python
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -337,7 +344,10 @@ class AuthenticationService(s):
 
 Use r exclusively:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # Chain operations with r
 def complete_auth_flow(username: str, password: str) -> p.Result[m.Dict]:
     return (
@@ -361,7 +371,7 @@ ______________________________________________________________________
 
 ### Debug Mode
 
-```python notest
+```python
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)
 

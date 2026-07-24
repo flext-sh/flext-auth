@@ -62,7 +62,7 @@ ______________________________________________________________________
 
 ### Quick Start Service
 
-```python notest
+```python
 from flext_auth import flext_auth_quick_start, FlextAuthModels
 
 # Initialize authentication service
@@ -89,7 +89,7 @@ else:
 
 ### User Authentication
 
-```python notest
+```python
 # Authenticate user
 auth_result = auth.authenticate_user("alice", "secure123")
 
@@ -104,7 +104,7 @@ else:
 
 ### Token Validation
 
-```python notest
+```python
 # Validate JWT token
 token = "your-jwt-token-here"
 validation_result = auth.validate_token(token)
@@ -122,7 +122,7 @@ ______________________________________________________________________
 
 ### Environment Configuration
 
-```python notest
+```python
 from flext_auth import FlextAuthSettings
 
 # Development configuration
@@ -186,7 +186,8 @@ ______________________________________________________________________
 
 ### r Error Handling
 
-```python notest
+```python
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -220,7 +221,7 @@ if result.success:
 
 ### Container Integration
 
-```python notest
+```python
 from flext_cli import u
 from flext_core import FlextSettings
 from flext_auth import FlextAuth, FlextAuthSettings
@@ -246,7 +247,7 @@ ______________________________________________________________________
 
 ### Working with User Entities
 
-```python notest
+```python
 from flext_auth import FlextAuthModels
 
 # Create user entity
@@ -269,7 +270,7 @@ if verification_result.success and verification_result.unwrap():
 
 ### Session Management
 
-```python notest
+```python
 from datetime import datetime, timedelta
 
 # Create session
@@ -290,7 +291,8 @@ ______________________________________________________________________
 
 ### Unit Testing with r
 
-```python notest
+```python
+from __future__ import annotations
 import pytest
 from flext_auth import flext_auth_quick_start
 

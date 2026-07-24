@@ -40,7 +40,7 @@ ______________________________________________________________________
 
 **Problem**: User registration fails with validation errors
 
-```python notest
+```python
 result = auth.register_user("user", "invalid-email", "weak")
 # Returns failure result
 ```
@@ -49,21 +49,21 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 1. **Email Validation**:
 
-   ```python notest
+   ```python
    # Use valid email format
    result = auth.register_user("user", "user@example.com", "password123")
    ```
 
 1. **Password Requirements**:
 
-   ```python notest
+   ```python
    # Use stronger password (current implementation has basic validation)
    result = auth.register_user("user", "user@example.com", "SecurePassword123!")
    ```
 
 1. **Username Uniqueness**:
 
-   ```python notest
+   ```python
    # Check if user already exists
    existing_user = auth._find_user("username")  # Internal method
    if existing_user.success:
@@ -74,14 +74,14 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 **Problem**: User authentication fails unexpectedly
 
-```python notest
+```python
 auth_result = auth.authenticate_user("user", "password")
 # Returns failure even with correct credentials
 ```
 
 **Debugging**:
 
-```python notest
+```python
 # Check if user exists
 user_result = auth._find_user("user")
 if user_result.failure:
@@ -103,7 +103,7 @@ else:
 
 **Problem**: JWT token validation fails
 
-```python notest
+```python
 validation_result = auth.validate_token(token)
 # Returns failure for valid tokens
 ```
@@ -121,7 +121,7 @@ validation_result = auth.validate_token(token)
 
 1. **Token Expiration**:
 
-   ```python notest
+   ```python
    import jwt
 
    # Check token expiration without validation
@@ -134,7 +134,7 @@ validation_result = auth.validate_token(token)
 
 1. **Secret Key Mismatch**:
 
-   ```python notest
+   ```python
    # Ensure same secret key is used for generation and validation
    settings = FlextAuthSettings()
    u.Cli.print(f"JWT Secret: {settings.jwt_secret_key}")
@@ -148,7 +148,7 @@ ______________________________________________________________________
 
 **Problem**: Configuration not loading correctly
 
-```python notest
+```python
 settings = FlextAuthSettings()
 if settings.failure:
     u.Cli.print(f"Config error: {settings.error}")
@@ -165,7 +165,7 @@ if settings.failure:
 
 1. **Valid Environment Names**:
 
-   ```python notest
+   ```python
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
    settings = FlextAuthSettings()
@@ -173,7 +173,7 @@ if settings.failure:
 
 1. **Manual Configuration**:
 
-   ```python notest
+   ```python
    # Create configuration manually if environment fails
    settings = FlextAuthSettings(jwt_secret_key="manual-secret-key", jwt_expiry_minutes=60)
    ```
@@ -184,7 +184,7 @@ if settings.failure:
 
 **Check Configuration**:
 
-```python notest
+```python
 settings = FlextAuthSettings()
 u.Cli.print(f"JWT Algorithm: {settings.jwt_algorithm}")
 u.Cli.print(f"JWT Expiry: {settings.jwt_expiry_minutes}")
@@ -231,7 +231,7 @@ ______________________________________________________________________
 
 1. **Mock Issues**:
 
-   ```python notest
+   ```python
    # In test fixtures
    @pytest.fixture(autouse=True)
    def reset_global_state():
@@ -267,7 +267,7 @@ ______________________________________________________________________
 
 **Investigation**:
 
-```python notest
+```python
 import time
 
 # Measure bcrypt performance
@@ -285,13 +285,13 @@ u.Cli.print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
 
 1. **Reduce bcrypt rounds for development**:
 
-   ```python notest
+   ```python
    dev_config = FlextAuthSettings(bcrypt_rounds=10)  # Faster for development
    ```
 
 1. **Use production rounds only in production**:
 
-   ```python notest
+   ```python
    prod_config = FlextAuthSettings(bcrypt_rounds=14)  # High security
    ```
 
@@ -303,7 +303,7 @@ u.Cli.print(f"Bcrypt rounds: {settings.bcrypt_rounds}")
 
 **Monitoring**:
 
-```python notest
+```python
 import psutil
 
 # Monitor memory usage
@@ -319,7 +319,10 @@ u.Cli.print(f"Active sessions: {session_count}")
 
 **Mitigation**:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 # Implement session cleanup
 def cleanup_expired_sessions():
     """Clean up expired sessions (placeholder)."""
@@ -351,7 +354,7 @@ mypy src/flext_auth/
 
 1. **Type Annotations**:
 
-   ```python notest
+   ```python
    # Always use proper type hints
    from typing import Optional
 
@@ -362,7 +365,7 @@ mypy src/flext_auth/
 
 1. **r Types**:
 
-   ```python notest
+   ```python
    # Specify generic type for r
    result: p.Result[User] = auth.register_user(...)
    ```
@@ -373,7 +376,7 @@ mypy src/flext_auth/
 
 **Solution**:
 
-```python notest
+```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
 from flext_auth import m
 
@@ -441,7 +444,7 @@ ______________________________________________________________________
 
 Enable debug logging:
 
-```python notest
+```python
 logging.basicConfig(level=logging.DEBUG)
 
 # Test authentication with debug output
@@ -453,7 +456,7 @@ result = auth.register_user("debug", "debug@example.com", "password123")
 
 Extract detailed error information:
 
-```python notest
+```python
 result = auth.authenticate_user("user", "wrong_password")
 if result.failure:
     u.Cli.print(f"Error: {result.error}")
