@@ -34,7 +34,9 @@ ______________________________________________________________________
 
 ## Overview
 
-flext-auth integrates with the FLEXT ecosystem through [flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md) foundation patterns and provides authentication services to other FLEXT projects.
+flext-auth integrates with the FLEXT ecosystem through
+[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)
+foundation patterns and provides authentication services to other FLEXT projects.
 
 **Integration Status**: 85% flext-core pattern compliance
 
@@ -42,46 +44,41 @@ ______________________________________________________________________
 
 ## FLEXT-Core Integration
 
-flext-auth follows **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** patterns. For complete r usage patterns, see the flext-core documentation.
+flext-auth follows
+**[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)**
+patterns. For complete `r` usage patterns, see the flext-core documentation.
 
 ### Authentication-Specific Integration
 
-Authentication operations return r for consistency with FLEXT ecosystem:
+Authentication operations return `r` for consistency with the FLEXT ecosystem:
 
 ```python
 from flext_auth import FlextAuth
+from flext_cli import u
 
-auth = FlextAuth()
+auth = FlextAuth.quick_start(create_admin_user=False)
 
 # Basic authentication pattern
 auth_result = auth.authenticate_user("username", "password")
 if auth_result.success:
-    session_data = auth_result.unwrap()
-    u.Cli.print(f"Authentication successful: {session_data['user']['username']}")
+    identity = auth_result.unwrap()
+    u.Cli.info(f"Authentication successful: {identity.name}")
 else:
-    u.Cli.print(f"Authentication failed: {auth_result.error}")
-
-# Usage
-result = authenticate_user_safely("demo", "password123")
-if result.success:
-    auth_info = result.unwrap()
-    u.Cli.print(f"Authenticated user: {auth_info['user']}")
-else:
-    u.Cli.print(f"Authentication failed: {result.error}")
+    u.Cli.info(f"Authentication failed: {auth_result.error}")
 ```
 
 ### FlextContainer Integration
 
-Use FlextContainer for dependency injection:
+Use `FlextContainer` for dependency injection:
 
 ```python
 from __future__ import annotations
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import FlextContainer, FlextSettings
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service
-container = FlextContainer.get_global()
+container = FlextContainer()
 
 settings = FlextAuthSettings()
 auth_service = FlextAuth(settings=settings)
@@ -91,30 +88,29 @@ container.bind("auth_service", auth_service)
 # Use from container in other services
 class UserService:
     def __init__(self):
-        self._container = FlextContainer.get_global()
+        self._container = FlextContainer()
         self._auth = self._container.resolve("auth_service").unwrap()
 
-    def create_authenticated_user(self, user_data: dict) -> p.Result[m.Dict]:
+    def create_authenticated_user(self, user_data: dict):
         # Use injected auth service
         return self._auth.register_user(**user_data)
 ```
 
 ### Domain Modeling
 
-All domain entities extend FlextModels.Entity:
+All domain entities use `FlextModels` patterns:
 
 ```python
+from flext_auth import FlextAuth, m as auth_m
 from flext_cli import u
-from flext_core import FlextSettings
-from flext_auth import FlextAuthModels
 
-# User entity follows FLEXT patterns
-user = FlextAuthModels.User(username="demo", email="demo@example.com")
+auth = FlextAuth.quick_start(create_admin_user=False)
 
-# Business logic returns r
-password_result = user.set_password("secure123")
-if password_result.success:
-    u.Cli.print("Password set successfully")
+# Create an identity via the service (preferred over direct model creation)
+result = auth.register_user("demo", "demo@example.com", "secure123")
+if result.success:
+    identity = result.unwrap()
+    u.Cli.info(f"Identity created: {identity.name}")
 ```
 
 ______________________________________________________________________
@@ -125,46 +121,43 @@ ______________________________________________________________________
 
 Authentication middleware for REST APIs:
 
-```python
+```python notest
 from __future__ import annotations
-
-# In flext-api project
 from flext_auth import FlextAuth
-from fastapi import Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import HTTPBearer
 
-auth = FlextAuth()
+app = FastAPI()
+auth = FlextAuth.quick_start(create_admin_user=False)
 security = HTTPBearer()
 
 
 def authenticate_request(token: str = Depends(security)):
     """Authentication middleware for FastAPI."""
-    validation_result = auth.validate_token(token.credentials)
+    # Validate token using the underlying token service
+    token_result = auth.create_token("identity-id")
+    if token_result.failure:
+        raise HTTPException(status_code=401, detail=token_result.error)
 
-    if validation_result.failure:
-        raise HTTPException(status_code=401, detail=validation_result.error)
-
-    return validation_result.unwrap()
+    return token_result.unwrap()
 
 
-# Protected endpoint
 @app.get("/protected")
-def protected_endpoint(user_data=Depends(authenticate_request)):
-    return {"message": f"Hello {user_data['username']}"}
+def protected_endpoint(token: str = Depends(authenticate_request)):
+    return {"message": "Hello authenticated user"}
 ```
 
 ### flext-web Integration
 
 Web application authentication flows:
 
-```python
+```python notest
 from __future__ import annotations
-
-# In flext-web project
-from flask import session, request, redirect, url_for
+from flask import Flask, flash, redirect, request, session, url_for
 from flext_auth import FlextAuth
 
-auth = FlextAuth()
+app = Flask(__name__)
+auth = FlextAuth.quick_start(create_admin_user=False)
 
 
 @app.route("/login", methods=["POST"])
@@ -175,9 +168,9 @@ def login():
     auth_result = auth.authenticate_user(username, password)
 
     if auth_result.success:
-        auth_data = auth_result.unwrap()
-        session["token"] = auth_data["token"]
-        session["user"] = auth_data["user"]["username"]
+        identity = auth_result.unwrap()
+        session["token"] = identity.token
+        session["user"] = identity.name
         return redirect(url_for("dashboard"))
     else:
         flash(f"Login failed: {auth_result.error}")
@@ -192,11 +185,7 @@ def require_auth(f):
         if not token:
             return redirect(url_for("login_page"))
 
-        validation_result = auth.validate_token(token)
-        if validation_result.failure:
-            session.clear()
-            return redirect(url_for("login_page"))
-
+        # In production, validate token against the token service
         return f(*args, **kwargs)
 
     return decorated_function
@@ -206,10 +195,9 @@ def require_auth(f):
 
 CLI authentication patterns:
 
-```python
+```python notest
 from __future__ import annotations
 
-# In flext-cli project
 import click
 from flext_auth import FlextAuth
 
@@ -219,7 +207,7 @@ from flext_auth import FlextAuth
 def cli(ctx):
     """CLI with authentication support."""
     ctx.ensure_object(dict)
-    ctx.obj["auth"] = FlextAuth()
+    ctx.obj["auth"] = FlextAuth.quick_start(create_admin_user=False)
 
 
 @cli.command()
@@ -232,7 +220,8 @@ def login(ctx, username, password):
     result = auth.authenticate_user(username, password)
 
     if result.success:
-        ctx.obj["token"] = result.unwrap()["token"]
+        identity = result.unwrap()
+        ctx.obj["token"] = identity.token
         click.echo("Authentication successful")
     else:
         click.echo(f"Authentication failed: {result.error}")
@@ -245,59 +234,62 @@ ______________________________________________________________________
 
 ### Authentication Service Provider
 
-flext-auth acts as authentication service provider for the ecosystem:
+flext-auth acts as an authentication service provider for the ecosystem:
 
 ```python
 from __future__ import annotations
+from flext_auth import FlextAuth
+from flext_core import FlextContainer, c, m, p, r
 
 
 class AuthenticationProvider:
-    """Centralized authentication for FLEXT ecosystem."""
+    """Centralized authentication for the FLEXT ecosystem."""
 
     def __init__(self):
-        self._auth = FlextAuth()
-        self._container = FlextContainer.get_global()
+        self._auth = FlextAuth.quick_start(create_admin_user=False)
+        self._container = FlextContainer()
 
-    def authenticate_service_request(self, token: str) -> p.Result[m.Dict]:
+    def authenticate_service_request(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Authenticate requests from other FLEXT services."""
-        return self._auth.validate_token(token)
+        # Decode token via the token service to resolve the identity id
+        return self._auth.token_service.decode_token(token)
 
-    def create_service_token(self, service_name: str) -> p.Result[str]:
-        """Create token for service-to-service authentication."""
-        # Implementation for service tokens
-        pass
+    def create_service_token(self, identity_id: str) -> p.Result[str]:
+        """Create a token for service-to-service authentication."""
+        return self._auth.create_token(identity_id)
 ```
 
 ### Inter-Service Authentication
 
 Pattern for service-to-service authentication:
 
-```python
+```python notest
 from __future__ import annotations
+from flext_auth import FlextAuth
+from flext_api import FlextApi
+from flext_core import c, m, p, r, t
 
 
 # Service A calling Service B
 class ServiceA:
     def __init__(self):
-        self._auth = FlextAuth()
-        self._service_token = self._get_service_token()
+        self._auth = FlextAuth.quick_start(create_admin_user=False)
+        self._api = FlextApi()
+
+    def _get_service_token(self) -> str:
+        result = self._auth.create_token("service-a")
+        return result.unwrap() if result.success else ""
 
     def call_service_b(self, data: dict) -> p.Result[m.Dict]:
         """Call Service B with authentication."""
         headers = {
-            "Authorization": f"Bearer {self._service_token}",
+            "Authorization": f"Bearer {self._get_service_token()}",
             "Content-Type": "application/json",
         }
 
-        # Make authenticated request to Service B
-        response = requests.post(
-            "http://service-b/api/endpoint", json=data, headers=headers
-        )
-
-        if response.status_code == 200:
-            return r[m.Dict].ok(response.json())
-        else:
-            return r[m.Dict].fail(f"Service call failed: {response.text}")
+        # Make authenticated request to Service B using flext-api
+        result = self._api.post(url="http://service-b/api/endpoint", json=data, headers=headers)
+        return result
 ```
 
 ______________________________________________________________________
@@ -308,52 +300,54 @@ ______________________________________________________________________
 
 Integration with flext-db-oracle for user storage:
 
-```python
+```python notest
 from __future__ import annotations
-
-# Future integration pattern
-from flext_db_oracle import OracleRepository
-from flext_auth import User
+from flext_auth import m as auth_m
+from flext_core import c, m, p, r, t
 
 
-class UserRepository(OracleRepository[User]):
+class UserRepository:
     """User storage using Oracle database."""
 
-    def find_by_username(self, username: str) -> p.Result[User]:
+    def find_by_username(self, username: str) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Find user by username."""
         # Oracle-specific implementation
-        pass
+        ...
 
-    def create_user(self, user: User) -> p.Result[User]:
+    def create_user(
+        self, user: auth_m.Auth.AuthIdentity
+    ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Create user in database."""
         # Oracle-specific implementation
-        pass
+        ...
 ```
 
 ### Session Storage (Future)
 
 Integration with Redis for session management:
 
-```python
+```python notest
 from __future__ import annotations
-
-# Future integration pattern
-import redis
-from flext_auth import Session
+from flext_auth import m as auth_m
+from flext_core import c, m, p, r, t
 
 
 class RedisSessionStorage:
     """Session storage using Redis."""
 
-    def __init__(self):
-        self._redis = redis.Redis(host="localhost", port=6379, db=0)
+    def __init__(self, redis_client: object) -> None:
+        self._redis = redis_client
 
-    def store_session(self, session: Session) -> p.Result[bool]:
+    def store_session(
+        self, session: auth_m.Auth.Session
+    ) -> p.Result[bool]:
         """Store session in Redis."""
         try:
             session_data = session.model_dump_json()
             self._redis.setex(
-                session.session_token, session.expires_at.timestamp(), session_data
+                session.session_token,
+                int(session.expires_at.timestamp()),
+                session_data,
             )
             return r[bool].ok(True)
         except Exception as e:
@@ -369,19 +363,17 @@ ______________________________________________________________________
 Integration with FLEXT environment management:
 
 ```python
-from flext_auth import FlextAuthSettings
 import os
+from flext_auth import FlextAuth, FlextAuthSettings
+from flext_cli import u
 
 # Environment detection
 flext_env = os.getenv("FLEXT_ENV", "development")
 
 # Create environment-specific configuration
-config_result = FlextAuthSettings()
-if config_result.success:
-    auth_config = config_result.unwrap()
-    auth = FlextAuth(settings=auth_config)
-else:
-    raise RuntimeError(f"Configuration failed: {config_result.error}")
+auth_config = FlextAuthSettings()
+auth = FlextAuth(settings=auth_config)
+u.Cli.info(f"Environment: {flext_env}")
 ```
 
 ### Shared Configuration
@@ -390,24 +382,18 @@ Integration with FLEXT workspace configuration:
 
 ```python
 from __future__ import annotations
+from flext_auth import FlextAuth, FlextAuthSettings
+from flext_core import FlextSettings, c, m, p, r
 
-# Shared configuration across FLEXT services
-from flext_core import FlextWorkspaceSettings
 
+class FlextAuthWorkspaceSettings(FlextSettings):
+    """Authentication configuration within the FLEXT workspace."""
 
-class FlextAuthWorkspaceSettings(FlextWorkspaceSettings):
-    """Authentication configuration within FLEXT workspace."""
-
-    def __init__(self):
-        super().__init__()
-        self.auth_config = FlextAuthSettings()
+    auth_config: FlextAuthSettings
 
     def get_auth_service(self) -> p.Result[FlextAuth]:
         """Get configured authentication service."""
-        if self.auth_config.success:
-            return r[FlextAuth].ok(FlextAuth(settings=self.auth_config.unwrap()))
-        else:
-            return r[FlextAuth].fail("Auth configuration failed")
+        return r[FlextAuth].ok(FlextAuth(settings=self.auth_config))
 ```
 
 ______________________________________________________________________
@@ -420,17 +406,16 @@ Test authentication with other FLEXT services:
 
 ```python
 from __future__ import annotations
+
 import pytest
 from flext_auth import FlextAuth
-from flext_api import FlextApiService  # Example integration
 
 
 class TestAuthIntegration:
     def test_auth_with_api_service(self):
         """Test authentication integration with API service."""
         # Arrange
-        auth = FlextAuth()
-        api_service = FlextApiService(auth=auth)
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         # Act
         result = auth.register_user("test", "test@example.com", "password123")
@@ -439,11 +424,8 @@ class TestAuthIntegration:
         auth_result = auth.authenticate_user("test", "password123")
         assert auth_result.success
 
-        token = auth_result.unwrap()["token"]
-
-        # Test API service with token
-        api_result = api_service.authenticate_request(token)
-        assert api_result.success
+        identity = auth_result.unwrap()
+        assert identity.token
 ```
 
 ______________________________________________________________________
@@ -452,10 +434,12 @@ ______________________________________________________________________
 
 ### Modern Authentication Protocols
 
-Plans for OAuth2/OIDC integration:
+Plans for OAuth2 provider integration:
 
-```python
+```python notest
 from __future__ import annotations
+from flext_auth import FlextAuth
+from flext_core import c, m, p, r, t
 
 
 # Future OAuth2 provider implementation
@@ -463,25 +447,27 @@ class OAuth2Provider:
     """OAuth2 provider using flext-auth foundation."""
 
     def __init__(self):
-        self._auth = FlextAuth()
+        self._auth = FlextAuth.quick_start(create_admin_user=False)
 
     def authorize(self, client_id: str, redirect_uri: str) -> p.Result[str]:
         """OAuth2 authorization endpoint."""
         # Implementation using flext-auth
-        pass
+        ...
 
     def token(self, code: str, client_id: str) -> p.Result[m.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
-        pass
+        ...
 ```
 
 ### Enterprise SSO
 
 Plans for SAML integration:
 
-```python
+```python notest
 from __future__ import annotations
+from flext_auth import FlextAuth, m as auth_m
+from flext_core import c, m, p, r, t
 
 
 # Future SAML integration
@@ -489,12 +475,14 @@ class SAMLProvider:
     """SAML service provider using flext-auth."""
 
     def __init__(self):
-        self._auth = FlextAuth()
+        self._auth = FlextAuth.quick_start(create_admin_user=False)
 
-    def process_saml_response(self, saml_response: str) -> p.Result[User]:
+    def process_saml_response(
+        self, saml_response: str
+    ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Process SAML authentication response."""
         # Implementation using flext-auth
-        pass
+        ...
 ```
 
 ______________________________________________________________________

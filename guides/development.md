@@ -53,7 +53,7 @@ This guide covers setting up a development environment for FLEXT contributions a
 ## Prerequisites
 
 - **Python 3.13+** (required for all FLEXT projects)
-- **Poetry** (for dependency management)
+- **uv** (for dependency management)
 - **Git** (for version control)
 - **Docker** (optional, for containerized development)
 
@@ -70,30 +70,29 @@ cd flext
 
 ```bash
 # Install all dependencies and pre-commit hooks
-make setup
+make boot
 
 # Or install manually
-poetry install
-pre-commit install
+uv sync
 ```
 
 ### 3. Verify Installation
 
 ```bash
 # Run quality gates to verify setup
-make val
+make check
 
 # Check individual components
-make lint-all
-make type-check-all
-make test-all
+make check PROJECT=flext-core
+make check PROJECT=flext-ldif
+make check PROJECT=flext-api
 ```
 
 ## Project Structure
 
 FLEXT is organized as a monorepo with the following structure:
 
-```
+```text
 flext/
 ├── flext-core/           # Foundation library
 ├── flext-api/            # HTTP client and FastAPI
@@ -122,9 +121,9 @@ git checkout -b feature/amazing-feature
 
 Follow FLEXT development standards:
 
-- **Use r[T]** for all operations
+- **Use `r[T]`** for all operations
 - **Follow Clean Architecture** principles
-- **Maintain type safety** with MyPy strict mode
+- **Maintain type safety** with Pyrefly and Mypy
 - **Write comprehensive tests**
 
 ### 3. Run Quality Gates
@@ -140,7 +139,7 @@ make val
 ### 4. Commit Changes
 
 ```bash
-git add .
+git add -p
 git commit -m "feat(component): add amazing feature"
 git push origin feature/amazing-feature
 ```
@@ -149,8 +148,14 @@ git push origin feature/amazing-feature
 
 ### Type Safety (ZERO TOLERANCE)
 
-```python
+```python notest
 from __future__ import annotations
+from flext_core import p, r, t
+
+
+class ProcessedData:
+    def __init__(self, data: t.JsonMapping) -> None:
+        self.data = data
 
 
 # ✅ CORRECT - Complete type annotations
@@ -159,7 +164,7 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
     if not data:
         return r[ProcessedData].fail("Data required")
 
-    return r[ProcessedData].ok(ProcessedData(**data))
+    return r[ProcessedData].ok(ProcessedData(data))
 
 
 # ❌ WRONG - Missing type annotations
@@ -169,18 +174,35 @@ def process_data(data):
 
 ### Railway-Oriented Programming
 
-```python
+```python notest
 from __future__ import annotations
+from flext_core import p, r, t
+
+
+class ProcessedData:
+    def __init__(self, data: t.JsonMapping) -> None:
+        self.data = data
 
 
 # ✅ CORRECT - Use r for all operations
-def validate_and_process(data: dict) -> p.Result[ProcessedData]:
+def validate_and_process(data: t.JsonMapping) -> p.Result[ProcessedData]:
     return (
         validate_data(data)
         .flat_map(transform_data)
         .map(enrich_data)
-        .map_error(handle_error)
     )
+
+
+def validate_data(data: t.JsonMapping) -> p.Result[t.JsonMapping]:
+    ...
+
+
+def transform_data(data: t.JsonMapping) -> p.Result[t.JsonMapping]:
+    ...
+
+
+def enrich_data(data: t.JsonMapping) -> ProcessedData:
+    ...
 
 
 # ❌ WRONG - Exception-based error handling
@@ -192,8 +214,10 @@ def validate_and_process(data: dict) -> ProcessedData:
 
 ### Unified Models Pattern
 
-```python
+```python notest
 from __future__ import annotations
+from flext_core import c, m, p, r, t
+from flext_cli import u
 
 
 # ✅ CORRECT - Use [Project]Models pattern
@@ -202,7 +226,7 @@ class FlextApiModels:
         data: t.JsonMapping
 
     class Response(m.BaseModel):
-        result: p.Result[t.JsonValue]
+        result: t.JsonValue
         status: int
 
 
@@ -212,7 +236,8 @@ class ApiRequest(m.BaseModel):
 
 
 class ApiResponse(m.BaseModel):
-    result
+    result: t.JsonValue
+    status: int
 ```
 
 ## Testing
@@ -224,21 +249,22 @@ class ApiResponse(m.BaseModel):
 make test
 
 # Run specific test categories
-pytest tests/unit/        # Unit tests
-pytest tests/integration/ # Integration tests
-pytest tests/e2e/         # End-to-end tests
+uv run pytest tests/unit/        # Unit tests
+uv run pytest tests/integration/ # Integration tests
+uv run pytest tests/e2e/         # End-to-end tests
 
 # Run with coverage
-pytest --cov=src --cov-report=html
+uv run pytest --cov=src --cov-report=html
 ```
 
 ### Writing Tests
 
 ```python
 from __future__ import annotations
+
 import pytest
+from flext_core import r
 from flext_cli import u
-from flext_core import FlextSettings
 
 
 class TestDataProcessing:
@@ -248,14 +274,20 @@ class TestDataProcessing:
         result = process_data(data)
 
         assert result.success
-        assert result.unwrap().key == "value"
+        assert result.unwrap() == data
 
     def test_process_invalid_data(self):
         """Test processing invalid data."""
         result = process_data(None)
 
         assert result.failure
-        assert "Data required" in result.failure()
+        assert "Data required" in result.error
+
+
+def process_data(data: dict | None) -> r.Result:
+    if not data:
+        return r.fail("Data required")
+    return r.ok(data)
 ```
 
 ## Quality Gates
@@ -266,26 +298,26 @@ FLEXT uses pre-commit hooks to enforce quality standards:
 
 ```bash
 # Install pre-commit hooks
-pre-commit install
+uv run pre-commit install
 
 # Run hooks manually
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ### Quality Checks
 
 ```bash
 # Linting (Ruff)
-make lint
+make check CHECK_GATES=lint
 
-# Type checking (MyPy)
-make type-check
+# Type checking (Pyrefly and Mypy)
+make check CHECK_GATES=pyrefly,mypy
 
 # Security scanning (Bandit)
-make security
+make check CHECK_GATES=security
 
 # All quality checks
-make val
+make check
 ```
 
 ## Adding New Projects
@@ -294,35 +326,33 @@ make val
 
 ```bash
 # Copy from existing project
-cp -r flext-api flext-newlib
-cd flext-newlib
-
-# Update project metadata
-# Edit pyproject.toml, README.md, etc.
+mkdir flext-newlib
+# Create pyproject.toml, README.md, src/flext_newlib, tests, etc.
 ```
 
 ### 2. Implement Core Patterns
 
-```python
+```python notest
 from __future__ import annotations
+from flext_cli import u
+from flext_core import c, m, p, r, s, t
+
 
 # src/flext_newlib/__init__.py
-from flext_cli import u
-from flext_core import FlextSettings
-
-
-# Main API class
-class FlextNewlib:
+class FlextNewlib(s):
     def __init__(self, settings: FlextNewlibSettings):
         self.settings = settings
 
     def process(self, data: dict) -> p.Result[dict]:
         """Process data using r pattern."""
         # Implementation here
-        pass
+        ...
 
 
-# Models class
+class FlextNewlibSettings:
+    new_setting: str = "default"
+
+
 class FlextNewlibModels:
     class Config(m.BaseModel):
         setting: str = "default"
@@ -331,7 +361,7 @@ class FlextNewlibModels:
         data: t.JsonMapping
 
     class Response(m.BaseModel):
-        result: p.Result[t.JsonValue]
+        result: t.JsonValue
 ```
 
 ### 3. Add to Workspace
@@ -347,21 +377,21 @@ class FlextNewlibModels:
 ### Type Errors
 
 ```bash
-# Run MyPy with full context
-mypy src/module.py --show-error-codes --show-traceback
+# Run Pyrefly with full context
+make check PROJECT=flext-newlib CHECK_GATES=pyrefly
 
 # Check specific error
-mypy src/ --show-error-codes | grep "error-code"
+make check PROJECT=flext-newlib CHECK_GATES=pyrefly FILES=src/flext_newlib/module.py
 ```
 
 ### Test Failures
 
 ```bash
 # Run with verbose output
-pytest tests/unit/test_module.py -vv --tb=long
+make test PROJECT=flext-newlib PYTEST_ARGS="tests/unit/test_module.py -vv --tb=long"
 
 # Debug mode
-pytest tests/unit/test_module.py --pdb
+make test PROJECT=flext-newlib PYTEST_ARGS="tests/unit/test_module.py --pdb"
 ```
 
 ### Import Issues
@@ -369,18 +399,24 @@ pytest tests/unit/test_module.py --pdb
 ```bash
 # Verify PYTHONPATH
 export PYTHONPATH=src
-python -c "import flext_core; u.Cli.print(flext_core.__file__)"
+uv run python -c "import flext_core; print(flext_core.__file__)"
 
-# Check poetry environment
-poetry env info
+# Check uv environment
+uv sync
 ```
 
 ## Documentation
 
 ### Code Documentation
 
-```python
+```python notest
 from __future__ import annotations
+from flext_core import p, t
+
+
+class ProcessedData:
+    def __init__(self, data: t.JsonMapping) -> None:
+        self.data = data
 
 
 def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
@@ -393,15 +429,13 @@ def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
     Returns:
         r containing processed data or error
 
-    Raises:
-        ValidationError: If data validation fails
-
     Example:
         >>> result = process_data({"key": "value"})
         >>> if result.success:
         ...     processed = result.unwrap()
     """
     # Implementation here
+    ...
 ```
 
 ### README Updates
@@ -410,12 +444,11 @@ Update project README.md files when adding new features:
 
 - Add a "New Feature" section with usage and configuration examples.
 
-```python
-from flext_newlib import FlextNewlib
-from flext_newlib import FlextNewlibSettings
+```python notest
+from flext_newlib import FlextNewlib, FlextNewlibSettings
 
-lib = FlextNewlib()
-result = lib.new_feature()
+lib = FlextNewlib(settings=FlextNewlibSettings())
+result = lib.process({"key": "value"})
 
 settings = FlextNewlibSettings(new_setting="value")
 ```
@@ -435,9 +468,9 @@ settings = FlextNewlibSettings(new_setting="value")
 ### Code Review Guidelines
 
 - **Follow FLEXT patterns** and architecture
-- **Maintain test coverage** above 85%
+- **Maintain test coverage** above 75% for domain libraries
 - **Update documentation** for new features
-- **Ensure type safety** with MyPy strict mode
+- **Ensure type safety** with Pyrefly and Mypy
 - **Use descriptive commit messages**
 
 ## Troubleshooting
@@ -451,30 +484,27 @@ settings = FlextNewlibSettings(new_setting="value")
    export PYTHONPATH=src
 
    # Reinstall dependencies
-   make clean && make setup
+   make clean && make boot
    ```
 
-````
-
-2. **Test Failures**
+1. **Test Failures**
 
    ```bash
    # Run with debug output
-   pytest -vv --tb=long
+   make test PROJECT=flext-newlib PYTEST_ARGS="-vv --tb=long"
 
    # Check specific test
-   pytest tests/unit/test_specific.py::test_function -v
-    ```
+   make test PROJECT=flext-newlib PYTEST_ARGS="tests/unit/test_specific.py::test_function -v"
+   ```
 
-3. **Build Issues**
+1. **Build Issues**
 
    ```bash
    # Clean and rebuild
-   make clean-all
-   make setup
-   make build-all
+   make clean
+   make boot
+   make build
    ```
-````
 
 ## Resources
 

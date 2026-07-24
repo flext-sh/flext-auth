@@ -77,7 +77,7 @@ export FLEXT_API_TIMEOUT=30
 
 Create configuration files in YAML, JSON, or TOML format:
 
-**settings.YAML:**
+**settings.yaml:**
 
 ```yaml
 # FLEXT Configuration
@@ -118,6 +118,9 @@ ldif_config = FlextLdifSettings(
     servers_enabled=True,
     batch_size=1000,
 )
+
+u.Cli.info(f"Log level: {settings.log_level}")
+u.Cli.info(f"LDIF batch size: {ldif_config.batch_size}")
 ```
 
 ## Project-Specific Configuration
@@ -132,8 +135,6 @@ settings = FlextLdifSettings(
     source_server="oid",
     target_server="oud",
     # Migration options
-    preserve_oid_modifiers=True,
-    handle_schema_extensions=True,
     validate_entries=True,
     # Performance settings
     batch_size=1000,
@@ -162,10 +163,12 @@ settings = FlextApiSettings(
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings(
-    secret_key="your-secret-key",
-    algorithm=c.Auth.Algorithms.HS256,
-    access_token_expire_minutes=30,
-    refresh_token_expire_days=7,
+    Auth={
+        "secret_key": "your-secret-key-with-at-least-32-characters",
+        "algorithm": "HS256",
+        "expiry_minutes": 30,
+        "session_expiry_minutes": 1440,
+    }
 )
 ```
 
@@ -214,13 +217,15 @@ All configuration is validated using Pydantic v2 models:
 ```python
 from flext_cli import u
 from flext_core import FlextSettings
+from flext_core import c
+
 
 try:
     settings = FlextSettings(
         log_level="INVALID_LEVEL"  # This will raise ValidationError
     )
 except c.ValidationError as e:
-    u.Cli.print(f"Configuration error: {e}")
+    u.Cli.info(f"Configuration error: {e}")
 ```
 
 ## Configuration Inheritance
@@ -228,7 +233,6 @@ except c.ValidationError as e:
 FLEXT supports configuration inheritance for complex setups:
 
 ```python
-from flext_cli import u
 from flext_core import FlextSettings
 
 # Base configuration
@@ -236,9 +240,8 @@ base_config = FlextSettings(log_level="INFO", environment="production")
 
 # Extended configuration
 extended_config = FlextSettings(
-    **base_config.dict(),
+    **base_config.model_dump(),
     debug=True,  # Override for development
-    custom_setting="value",
 )
 ```
 
@@ -260,16 +263,21 @@ from flext_cli import u
 from flext_core import FlextSettings
 
 
-def main():
-    # Validate configuration at startup
-    settings = FlextSettings()
-
-    if not settings.is_valid():
-        u.Cli.print("Invalid configuration")
+def main() -> int:
+    """Validate configuration at startup."""
+    try:
+        settings = FlextSettings()
+    except Exception as e:
+        u.Cli.info(f"Invalid configuration: {e}")
         return 1
 
+    u.Cli.info("Configuration valid")
     # Continue with application logic
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 ```
 
 ### 3. Use Configuration Classes
@@ -286,7 +294,7 @@ class MyAppConfig(FlextSettings):
 
     @u.field_validator("another_setting")
     @classmethod
-    def validate_another_setting(cls, v):
+    def validate_another_setting(cls, v: int) -> int:
         if v < 0:
             raise ValueError("another_setting must be positive")
         return v
@@ -296,6 +304,8 @@ class MyAppConfig(FlextSettings):
 
 ```python
 from __future__ import annotations
+from flext_core import m
+from flext_cli import u
 
 
 class FlextLdifSettings(m.BaseModel):
@@ -342,13 +352,10 @@ from flext_core import FlextSettings
 settings = FlextSettings(debug=True)
 
 # Print configuration
-u.Cli.print(settings.dict())
+u.Cli.info(settings.model_dump())
 
 # Validate configuration
-if settings.is_valid():
-    u.Cli.print("Configuration is valid")
-else:
-    u.Cli.print("Configuration has errors")
+u.Cli.info("Configuration loaded")
 ```
 
 ## Examples
@@ -358,9 +365,6 @@ else:
 ```python
 from __future__ import annotations
 
-#!/usr/bin/env python3
-"""Complete FLEXT configuration example."""
-
 import os
 from flext_cli import u
 from flext_core import FlextSettings
@@ -369,6 +373,7 @@ from flext_api import FlextApiSettings
 
 
 def main():
+    """Complete FLEXT configuration example."""
     # Load configuration from environment
     settings = FlextSettings()
 
@@ -385,10 +390,10 @@ def main():
         timeout=int(os.getenv("FLEXT_API_TIMEOUT", "30")),
     )
 
-    u.Cli.print("Configuration loaded successfully")
-    u.Cli.print(f"Log level: {settings.log_level}")
-    u.Cli.print(f"LDIF batch size: {ldif_config.batch_size}")
-    u.Cli.print(f"API base URL: {api_config.base_url}")
+    u.Cli.info("Configuration loaded successfully")
+    u.Cli.info(f"Log level: {settings.log_level}")
+    u.Cli.info(f"LDIF batch size: {ldif_config.batch_size}")
+    u.Cli.info(f"API base URL: {api_config.base_url}")
 
 
 if __name__ == "__main__":
