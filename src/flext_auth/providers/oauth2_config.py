@@ -17,11 +17,7 @@ class FlextAuthOAuth2Config:
 
     @staticmethod
     def _validated_choice(
-        value: str | None,
-        *,
-        key: str,
-        default: str,
-        allowed: Collection[str],
+        value: str | None, *, key: str, default: str, allowed: Collection[str]
     ) -> str:
         """Validate one ProviderConfig str field against an allowed set."""
         if not value:
@@ -71,7 +67,7 @@ class FlextAuthOAuth2Config:
         ]
         if missing:
             return r[bool].fail(
-                f"Missing required OAuth2 configuration fields: {', '.join(missing)}",
+                f"Missing required OAuth2 configuration fields: {', '.join(missing)}"
             )
         return r[bool].ok(value=True)
 

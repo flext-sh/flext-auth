@@ -26,7 +26,7 @@ class TestsFlextAuthApiCase10:
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.identity_service.identity_manager.get_user_by_username(
-            "non_existent_user",
+            "non_existent_user"
         )
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(not result.success, eq=True)
@@ -50,8 +50,7 @@ class TestsFlextAuthApiCase10:
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(result.success, eq=True)
         result = auth.authenticate_user(
-            test_auth_data["username"],
-            test_auth_data["password"],
+            test_auth_data["username"], test_auth_data["password"]
         )
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(result.success, eq=True)
@@ -95,8 +94,7 @@ class TestsFlextAuthApiCase10:
             u.Tests.Matchers.that(result.success, eq=True)
         for user_data in realistic_users:
             result = auth.authenticate_user(
-                user_data["username"],
-                user_data["password"],
+                user_data["username"], user_data["password"]
             )
             u.Tests.Matchers.that(result, is_=r)
             u.Tests.Matchers.that(result.success, eq=True)
@@ -113,8 +111,7 @@ class TestsFlextAuthApiCase10:
         )
         u.Tests.Matchers.that(register_result, is_=r, ok=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]),
-            str(test_auth_data["password"]),
+            str(test_auth_data["username"]), str(test_auth_data["password"])
         )
         u.Tests.Matchers.that(auth_result, is_=r, ok=True)
         authenticated_identity = auth_result.value

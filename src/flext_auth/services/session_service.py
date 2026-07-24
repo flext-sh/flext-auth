@@ -16,9 +16,7 @@ class FlextAuthSessionService(s):
     """Focused service for session management with complete flext-core integration."""
 
     def __init__(
-        self,
-        dispatcher: p.Dispatcher,
-        managers: u.Auth.ServiceManagers | None = None,
+        self, dispatcher: p.Dispatcher, managers: u.Auth.ServiceManagers | None = None
     ) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
@@ -44,7 +42,7 @@ class FlextAuthSessionService(s):
         Use specific session methods instead.
         """
         return r[p.BaseModel].fail(
-            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()",
+            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()"
         )
 
 

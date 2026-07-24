@@ -79,27 +79,16 @@ class TestsFlextAuthApi:
         tm.that(result.value.contact, eq="mixed@example.com")
 
     @pytest.mark.parametrize(
-        ("roles", "role"),
-        [
-            (None, "user"),
-            (["admin"], None),
-            (None, None),
-        ],
+        ("roles", "role"), [(None, "user"), (["admin"], None), (None, None)]
     )
     def test_register_user_accepts_role_variants(
-        self,
-        roles: list[str] | None,
-        role: str | None,
+        self, roles: list[str] | None, role: str | None
     ) -> None:
         """Registration succeeds whether role, roles, or neither is provided."""
         auth = _fresh_auth()
 
         result = auth.register_user(
-            "roleuser",
-            "roleuser@example.com",
-            _VALID_PASSWORD,
-            roles=roles,
-            role=role,
+            "roleuser", "roleuser@example.com", _VALID_PASSWORD, roles=roles, role=role
         )
 
         tm.ok(result)
@@ -139,9 +128,10 @@ class TestsFlextAuthApi:
         auth = _fresh_auth()
         auth.register_user("authuser", "auth@example.com", _VALID_PASSWORD)
 
-        result = auth.authenticate(
-            {"username": "authuser", "password": _VALID_PASSWORD},
-        )
+        result = auth.authenticate({
+            "username": "authuser",
+            "password": _VALID_PASSWORD,
+        })
 
         tm.ok(result)
         tm.that(result.value.name, eq="authuser")
@@ -151,9 +141,10 @@ class TestsFlextAuthApi:
         auth = _fresh_auth()
         auth.register_user("authuser", "auth@example.com", _VALID_PASSWORD)
 
-        result = auth.authenticate(
-            {"username": "authuser", "password": "WrongPass123!"},
-        )
+        result = auth.authenticate({
+            "username": "authuser",
+            "password": "WrongPass123!",
+        })
 
         tm.fail(result)
         assert result.error
@@ -167,8 +158,7 @@ class TestsFlextAuthApi:
         ],
     )
     def test_authenticate_rejects_missing_credentials(
-        self,
-        credentials: dict[str, str],
+        self, credentials: dict[str, str]
     ) -> None:
         """Empty username or password fails before any provider dispatch."""
         auth = _fresh_auth()
@@ -182,9 +172,7 @@ class TestsFlextAuthApi:
         """create_token mints a three-segment JWT for a valid identity id."""
         auth = _fresh_auth()
         registered = auth.register_user(
-            "tokenuser",
-            "token@example.com",
-            _VALID_PASSWORD,
+            "tokenuser", "token@example.com", _VALID_PASSWORD
         )
         tm.ok(registered)
 

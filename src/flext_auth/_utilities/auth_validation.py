@@ -19,9 +19,7 @@ class FlextAuthUtilitiesAuthValidation:
             return r[str].fail("Email cannot be empty")
         email = email.strip()
         if len(email) > c.Auth.MAX_EMAIL_LENGTH:
-            return r[str].fail(
-                f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)",
-            )
+            return r[str].fail(f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)")
         if "@" not in email or "." not in email.split("@")[1]:
             return r[str].fail("Invalid email format")
         return r[str].ok(email)
@@ -33,11 +31,11 @@ class FlextAuthUtilitiesAuthValidation:
             return r[str].fail("Password cannot be empty")
         if len(password) < c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH:
             return r[str].fail(
-                f"Password too short (min {c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH} chars)",
+                f"Password too short (min {c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH} chars)"
             )
         if len(password) > c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH:
             return r[str].fail(
-                f"Password too long (max {c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH} chars)",
+                f"Password too long (max {c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH} chars)"
             )
         return r[str].ok(password)
 
@@ -49,11 +47,11 @@ class FlextAuthUtilitiesAuthValidation:
         username = username.strip()
         if len(username) < c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH:
             return r[str].fail(
-                f"Username too short (min {c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH} chars)",
+                f"Username too short (min {c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH} chars)"
             )
         if len(username) > c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH:
             return r[str].fail(
-                f"Username too long (max {c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH} chars)",
+                f"Username too long (max {c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH} chars)"
             )
         return r[str].ok(username)
 

@@ -31,18 +31,14 @@ class FlextAuthUtilitiesAuthToken:
             provider_config = (
                 config
                 if isinstance(config, m.Auth.ProviderConfig)
-                else m.Auth.ProviderConfig.model_validate(
-                    {
-                        c.Auth.KEY_NAME: c.Auth.ProviderTypes.JWT.value,
-                        "type": c.Auth.ProviderTypes.JWT.value,
-                        **config,
-                    },
-                )
+                else m.Auth.ProviderConfig.model_validate({
+                    c.Auth.KEY_NAME: c.Auth.ProviderTypes.JWT.value,
+                    "type": c.Auth.ProviderTypes.JWT.value,
+                    **config,
+                })
             )
             if not provider_config.secret_key:
-                return r[t.Auth.TokensClaimMap].fail(
-                    "JWT secret_key not configured",
-                )
+                return r[t.Auth.TokensClaimMap].fail("JWT secret_key not configured")
             algorithm = provider_config.algorithm or c.Auth.JWT_DEFAULT_ALGORITHM
             payload = jwt.decode(
                 token,
@@ -57,8 +53,7 @@ class FlextAuthUtilitiesAuthToken:
             return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}")
         except c.ValidationError as exc:
             return r[t.Auth.TokensClaimMap].fail_op(
-                "Decoded token payload validation",
-                exc,
+                "Decoded token payload validation", exc
             )
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[t.Auth.TokensClaimMap].fail_op("Decoding", exc)

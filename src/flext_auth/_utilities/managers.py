@@ -17,9 +17,7 @@ if TYPE_CHECKING:
 
 
 class FlextAuthUtilitiesManagers(
-    FlextAuthSessionManagers,
-    FlextAuthRateLimiterManagers,
-    FlextAuthUserManagers,
+    FlextAuthSessionManagers, FlextAuthRateLimiterManagers, FlextAuthUserManagers
 ):
     """Namespace class for all authentication managers following FLEXT patterns."""
 
@@ -28,23 +26,15 @@ class FlextAuthUtilitiesManagers(
     class ServiceManagers:
         """Manager composition helper for auth services."""
 
-        __slots__ = (
-            "dispatcher",
-            "rate_limiter",
-            "session_manager",
-            "user_manager",
-        )
+        __slots__ = ("dispatcher", "rate_limiter", "session_manager", "user_manager")
 
-        def __init__(
-            self,
-            dispatcher: p.Dispatcher,
-        ) -> None:
+        def __init__(self, dispatcher: p.Dispatcher) -> None:
             """Initialize all standard managers used by services."""
             self.dispatcher = dispatcher
             self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager()
             self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager()
             self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
-                dispatcher,
+                dispatcher
             )
 
     def execute(self) -> p.Result[bool]:
@@ -53,7 +43,7 @@ class FlextAuthUtilitiesManagers(
         FlextAuthUtilitiesManagers is a namespace class - use specific manager classes instead.
         """
         return r[bool].fail(
-            "FlextAuthUtilitiesManagers is a namespace class - use specific manager classes like FlextAuthUserManager",
+            "FlextAuthUtilitiesManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
         )
 
 

@@ -12,26 +12,21 @@ from flext_auth.providers.oauth2_introspection import FlextAuthOAuth2Introspecti
 
 
 class FlextAuthOAuth2Tokens(
-    FlextAuthOAuth2Config,
-    FlextAuthOAuth2Introspection,
-    FlextAuthRfcProvider,
+    FlextAuthOAuth2Config, FlextAuthOAuth2Introspection, FlextAuthRfcProvider
 ):
     """OAuth2 token operation owner."""
 
     use_pkce: bool
 
     @override
-    def authenticate(
-        self,
-        credentials: t.JsonMapping,
-    ) -> p.Result[p.Auth.Token]:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: t.ConfigurationMapping = {
             k: v for k, v in credentials.items() if isinstance(v, t.PRIMITIVES_TYPES)
         }
         token_model = m.Auth.AuthToken(
             identity_id=str(
-                credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user",
+                credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user"
             ),
             token=str(credential_payload.get("access_token") or ""),
             token_type="Bearer",
@@ -83,19 +78,17 @@ class FlextAuthOAuth2Tokens(
         token_text = self._extract_token_string(token)
         refresh_token_value = getattr(token, "refresh_token", "")
         has_refresh_token = isinstance(refresh_token_value, str) and bool(
-            refresh_token_value,
+            refresh_token_value
         )
         refresh_source = refresh_token_value if has_refresh_token else token_text
         identity_id_result = (
-            self._extract_identity_id(
-                {
-                    "identity_id": getattr(token, "identity_id", ""),
-                    c.Auth.KEY_USER_ID: getattr(token, c.Auth.KEY_USER_ID, ""),
-                },
-            )
+            self._extract_identity_id({
+                "identity_id": getattr(token, "identity_id", ""),
+                c.Auth.KEY_USER_ID: getattr(token, c.Auth.KEY_USER_ID, ""),
+            })
             if has_refresh_token
             else self._decode_token_claims(token_text).flat_map(
-                self._extract_identity_id,
+                self._extract_identity_id
             )
         )
         identity_id = (
@@ -135,7 +128,7 @@ class FlextAuthOAuth2Tokens(
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(
             on_failure=lambda exc: r[bool].fail(
-                exc or "OAuth2 token validation failed",
+                exc or "OAuth2 token validation failed"
             ),
             on_success=lambda _: r[bool].ok(value=True),
         )
@@ -148,7 +141,7 @@ class FlextAuthOAuth2Tokens(
             if introspection_result.failure:
                 return r[p.Auth.AuthIdentity].fail(
                     introspection_result.error
-                    or "OAuth2 introspection token validation failed",
+                    or "OAuth2 introspection token validation failed"
                 )
             active_value = introspection_result.value.get("active")
             is_active = active_value if isinstance(active_value, bool) else False
@@ -164,7 +157,7 @@ class FlextAuthOAuth2Tokens(
         claims_result = self._decode_token_claims(token)
         if claims_result.failure:
             return r[p.Auth.AuthIdentity].fail(
-                claims_result.error or "OAuth2 token validation failed",
+                claims_result.error or "OAuth2 token validation failed"
             )
         return r[p.Auth.AuthIdentity].from_validation(
             {

@@ -68,9 +68,7 @@ class FlextAuthBasicUsageWorkflow:
         password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!")
         cls.logger.info("Step 1: User registration")
         reg_result = auth.register_user(
-            username="workflowuser",
-            email="workflow@example.com",
-            password=password,
+            username="workflowuser", email="workflow@example.com", password=password
         )
         if reg_result.failure:
             cls.logger.error("Registration failed", error=reg_result.error)
@@ -101,9 +99,7 @@ class FlextAuthBasicUsageWorkflow:
             cls.logger.error("Failed to get user information", error=user_info.error)
 
     @staticmethod
-    def generate_secure_password(
-        length: int = c.Auth.CREDENTIAL_MAX_LENGTH,
-    ) -> str:
+    def generate_secure_password(length: int = c.Auth.CREDENTIAL_MAX_LENGTH) -> str:
         """Generate a secure password."""
         chars = string.ascii_letters + string.digits + "!@#$%^&*()"
         return "".join(secrets.choice(chars) for _ in range(length))

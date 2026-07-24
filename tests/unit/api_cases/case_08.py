@@ -18,9 +18,7 @@ class TestsFlextAuthApiCase08:
         """Test that token creation fails — JWT provider not implemented."""
         auth = FlextAuth()
         user_result = auth.register_user(
-            "test_user",
-            "test@example.com",
-            "TestPassword123!",
+            "test_user", "test@example.com", "TestPassword123!"
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -37,13 +35,13 @@ class TestsFlextAuthApiCase08:
         u.Tests.Matchers.that(get_result.error, none=False)
         u.Tests.Matchers.that((get_result.error or "").lower(), has="not found")
         username_result = auth.identity_service.identity_manager.get_user_by_username(
-            "nonexistent_username",
+            "nonexistent_username"
         )
         u.Tests.Matchers.that(not username_result.success, eq=True)
         u.Tests.Matchers.that(username_result.error, none=False)
         u.Tests.Matchers.that((username_result.error or "").lower(), has="not found")
         logout_result = auth.session_service.session_manager.end_session_by_id(
-            invalid_user_id,
+            invalid_user_id
         )
         u.Tests.Matchers.that(not logout_result.success, eq=True)
 
@@ -56,7 +54,7 @@ class TestsFlextAuthApiCase08:
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            identity.unique_id,
+            identity.unique_id
         )
         if sessions_result.success:
             sessions = sessions_result.value
@@ -88,8 +86,7 @@ class TestsFlextAuthApiCase08:
         test_data = self._TestDataHelper.create_test_auth_data()
         if hasattr(auth, "authenticate_user"):
             result = auth.authenticate_user(
-                str(test_data["username"]),
-                str(test_data["password"]),
+                str(test_data["username"]), str(test_data["password"])
             )
             u.Tests.Matchers.that(result, is_=r)
 
@@ -104,7 +101,7 @@ class TestsFlextAuthApiCase08:
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         result = auth.identity_service.identity_manager.get_user_by_username(
-            str(test_data["username"]),
+            str(test_data["username"])
         )
         u.Tests.Matchers.that(result, is_=r)
 

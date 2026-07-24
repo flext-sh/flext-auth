@@ -30,9 +30,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     def get_metadata(self) -> p.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
         return m.Auth.Providers.Metadata(
-            name="kerberos",
-            version="5",
-            capabilities=tuple(self.supports()),
+            name="kerberos", version="5", capabilities=tuple(self.supports())
         )
 
     @override
@@ -44,7 +42,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         """Validate Kerberos token and return user."""
         if not token.strip():
             return r[p.Auth.AuthIdentity].fail(
-                "Kerberos token must be a non-empty string",
+                "Kerberos token must be a non-empty string"
             )
         validator = self._ticket_validator_callable()
         if validator is None:
@@ -59,15 +57,14 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 )
                 if claims_result.success
                 else r[p.Auth.AuthIdentity].fail(
-                    "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
+                    "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)"
                 )
             )
         try:
             validator_payload = validator(token)
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[p.Auth.AuthIdentity].fail_op(
-                "Kerberos ticket validator execution",
-                exc,
+                "Kerberos ticket validator execution", exc
             )
         if isinstance(validator_payload, m.Auth.AuthIdentity):
             return r[p.Auth.AuthIdentity].ok(validator_payload)
@@ -83,12 +80,10 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 m.Auth.AuthIdentity,
             )
         try:
-            parsed_claims = t.json_mapping_adapter().validate_python(
-                validator_payload,
-            )
+            parsed_claims = t.json_mapping_adapter().validate_python(validator_payload)
         except c.ValidationError as exc:
             return r[p.Auth.AuthIdentity].fail(
-                f"Kerberos ticket validator mapping payload is invalid: {exc}",
+                f"Kerberos ticket validator mapping payload is invalid: {exc}"
             )
         return r[p.Auth.AuthIdentity].from_validation(
             {

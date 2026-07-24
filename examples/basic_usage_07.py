@@ -17,9 +17,7 @@ class FlextAuthBasicUsagePortugueseExample:
         """Exemplo de uso da API atual FlextAuth."""
         auth: FlextAuth = FlextAuth()
         register_result = auth.register_user(
-            "usuario_teste",
-            "usuario@example.com",
-            "MinhaSenh@123!",
+            "usuario_teste", "usuario@example.com", "MinhaSenh@123!"
         )
         if register_result.failure:
             return

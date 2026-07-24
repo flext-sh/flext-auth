@@ -25,8 +25,7 @@ class TestsFlextAuthApiCase09:
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]),
-            str(test_data["password"]),
+            str(test_data["username"]), str(test_data["password"])
         )
         u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
@@ -46,8 +45,7 @@ class TestsFlextAuthApiCase09:
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]),
-            str(test_data["password"]),
+            str(test_data["username"]), str(test_data["password"])
         )
         u.Tests.Matchers.that(auth_result.success, eq=True)
         user = register_result.value
@@ -67,8 +65,7 @@ class TestsFlextAuthApiCase09:
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]),
-            str(test_data["password"]),
+            str(test_data["username"]), str(test_data["password"])
         )
         u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
@@ -90,21 +87,20 @@ class TestsFlextAuthApiCase09:
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]),
-            str(test_data["password"]),
+            str(test_data["username"]), str(test_data["password"])
         )
         u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            identity.unique_id,
+            identity.unique_id
         )
         if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 result = auth.session_service.session_manager.end_session_by_id(
-                    session_id,
+                    session_id
                 )
                 u.Tests.Matchers.that(result, is_=r)
                 u.Tests.Matchers.that(result.success, eq=True)
@@ -123,8 +119,7 @@ class TestsFlextAuthApiCase09:
         u.Tests.Matchers.that(register_result, is_=r)
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]),
-            str(test_auth_data["password"]),
+            str(test_auth_data["username"]), str(test_auth_data["password"])
         )
         u.Tests.Matchers.that(auth_result, is_=r)
         u.Tests.Matchers.that(auth_result.success, eq=True)

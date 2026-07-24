@@ -7,10 +7,7 @@ from examples.basic_usage_workflow import FlextAuthBasicUsageWorkflow
 from flext_auth import u
 
 
-class FlextAuthBasicUsageExample(
-    FlextAuthBasicUsageFlows,
-    FlextAuthBasicUsageWorkflow,
-):
+class FlextAuthBasicUsageExample(FlextAuthBasicUsageFlows, FlextAuthBasicUsageWorkflow):
     """Single owner for the basic usage example flow."""
 
     logger = u.fetch_logger(__name__)
@@ -36,7 +33,7 @@ class FlextAuthBasicUsageExample(
         try:
             cls._run_examples()
             cls.logger.info(
-                "All examples completed successfully - FLEXT Auth is working correctly",
+                "All examples completed successfully - FLEXT Auth is working correctly"
             )
         except Exception as exc:
             cls.logger.exception("Example execution failed", error=str(exc))

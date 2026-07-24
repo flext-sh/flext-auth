@@ -99,15 +99,12 @@ class FlextAuthSessionManagers:
                 ok_result: p.Result[bool] = r[bool].ok(value=True)
                 return ok_result
             fail_result: p.Result[bool] = e.fail_not_found(
-                "Session",
-                session_id,
-                result_type=r[bool],
+                "Session", session_id, result_type=r[bool]
             )
             return fail_result
 
         def get_active_sessions(
-            self,
-            user_id: str,
+            self, user_id: str
         ) -> p.Result[Sequence[p.Auth.Session]]:
             sessions: MutableSequence[p.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
@@ -123,7 +120,7 @@ class FlextAuthSessionManagers:
                             expires_at=session_data["expires_at"]
                             if isinstance(session_data["expires_at"], datetime)
                             else datetime.fromisoformat(
-                                str(session_data["expires_at"]),
+                                str(session_data["expires_at"])
                             ),
                             is_active=bool(session_data.get("is_active", True)),
                             ip_address=str(session_data.get("ip_address", "")),
@@ -138,7 +135,7 @@ class FlextAuthSessionManagers:
                     case _:
                         continue
             result: p.Result[Sequence[p.Auth.Session]] = r[Sequence[p.Auth.Session]].ok(
-                sessions,
+                sessions
             )
             return result
 
@@ -149,10 +146,7 @@ class FlextAuthSessionManagers:
                 if self._is_session_active(session)
             )
 
-        def _is_session_active(
-            self,
-            session_data: t.Auth.ManagersSessionData,
-        ) -> bool:
+        def _is_session_active(self, session_data: t.Auth.ManagersSessionData) -> bool:
             expires_at_value = session_data.get("expires_at")
             if not isinstance(expires_at_value, datetime):
                 return False

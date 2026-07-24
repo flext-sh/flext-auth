@@ -18,23 +18,13 @@ class FlextAuthModelsAuthToken:
         identity_id: Annotated[str, u.Field(..., description="Identity ID")]
         token: Annotated[str, u.Field(..., description="Token value", exclude=True)]
         expires_at: Annotated[datetime, u.Field(..., description="Expiration time")]
-        token_type: Annotated[
-            str,
-            u.Field(
-                description="Token type",
-            ),
-        ] = c.Auth.TokenTypes.BEARER.value
+        token_type: Annotated[str, u.Field(description="Token type")] = (
+            c.Auth.TokenTypes.BEARER.value
+        )
         session_id: Annotated[str, u.Field(description="Session ID")] = ""
-        is_revoked: Annotated[
-            bool,
-            u.Field(description="Revoked status"),
-        ] = False
+        is_revoked: Annotated[bool, u.Field(description="Revoked status")] = False
         refresh_token: Annotated[
-            str,
-            u.Field(
-                description="Refresh token",
-                exclude=True,
-            ),
+            str, u.Field(description="Refresh token", exclude=True)
         ] = ""
 
         @property

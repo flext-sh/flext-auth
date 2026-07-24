@@ -38,9 +38,7 @@ class FlextAuthRefactoredSystemShowcaseExample:
         """Demonstrate quick start behavior via FlextAuth public API."""
         auth_service = FlextAuth.quick_start(create_admin_user=False)
         quickstart_result = auth_service.register_user(
-            "quickstart_user",
-            "quickstart@example.com",
-            "QuickstartPassword123!",
+            "quickstart_user", "quickstart@example.com", "QuickstartPassword123!"
         )
         if quickstart_result.success:
             created_identity = quickstart_result.value

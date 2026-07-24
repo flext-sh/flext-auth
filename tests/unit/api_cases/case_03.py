@@ -34,8 +34,7 @@ class TestsFlextAuthApiCase03:
         )
         auth_custom: FlextAuth = FlextAuth(settings=custom_config)
         u.Tests.Matchers.that(
-            auth_custom.config.auth_secret.get_secret_value(),
-            eq=custom_secret,
+            auth_custom.config.auth_secret.get_secret_value(), eq=custom_secret
         )
         u.Tests.Matchers.that(auth_custom.config.hash_rounds, eq=custom_rounds)
         u.Tests.Matchers.that(auth_custom.config.expiry_minutes, eq=custom_expiry)
@@ -61,9 +60,7 @@ class TestsFlextAuthApiCase03:
         auth: FlextAuth = FlextAuth()
         auth.register_user("testuser", "test1@example.com", "Password123!")
         duplicate_result = auth.register_user(
-            "testuser",
-            "test2@example.com",
-            "Password123!",
+            "testuser", "test2@example.com", "Password123!"
         )
         u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")
@@ -74,9 +71,7 @@ class TestsFlextAuthApiCase03:
         first_result = auth.register_user("user1", "test@example.com", "Password123!")
         u.Tests.Matchers.that(first_result.success, eq=True)
         duplicate_result = auth.register_user(
-            "user2",
-            "test@example.com",
-            "Password123!",
+            "user2", "test@example.com", "Password123!"
         )
         u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")

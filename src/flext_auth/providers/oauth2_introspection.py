@@ -31,7 +31,7 @@ class FlextAuthOAuth2Introspection:
             case "client_secret_post":
                 if not client_id or not client_secret:
                     return r[str].fail(
-                        "OAuth2 client_id and client_secret are required for client_secret_post",
+                        "OAuth2 client_id and client_secret are required for client_secret_post"
                     )
                 form_payload["client_id"] = client_id
                 form_payload["client_secret"] = client_secret
@@ -42,7 +42,7 @@ class FlextAuthOAuth2Introspection:
                 return r[str].ok(urlencode(form_payload))
             case _:
                 return r[str].fail(
-                    f"Unsupported token endpoint auth method: {auth_method}",
+                    f"Unsupported token endpoint auth method: {auth_method}"
                 )
         return r[str].ok(urlencode(form_payload))
 
@@ -58,7 +58,7 @@ class FlextAuthOAuth2Introspection:
         client_secret = self.provider_config.client_secret or ""
         if not client_id or not client_secret:
             return r[t.StrMapping].fail(
-                "OAuth2 client_id and client_secret are required for client_secret_basic",
+                "OAuth2 client_id and client_secret are required for client_secret_basic"
             )
         auth_input = f"{client_id}:{client_secret}".encode()
         encoded_auth = b64encode(auth_input).decode("ascii")
@@ -84,9 +84,7 @@ class FlextAuthOAuth2Introspection:
 
         parsed = urlparse(endpoint_result.value)
         if parsed.scheme != "https":
-            return r[t.JsonMapping].fail(
-                f"Unsupported URL scheme: {parsed.scheme}",
-            )
+            return r[t.JsonMapping].fail(f"Unsupported URL scheme: {parsed.scheme}")
 
         request_path = parsed.path or "/"
         if parsed.query:
@@ -118,11 +116,11 @@ class FlextAuthOAuth2Introspection:
             else:
                 try:
                     parsed_mapping = t.json_mapping_adapter().validate_json(
-                        response_payload,
+                        response_payload
                     )
                 except c.EXC_VALIDATION_VALUE as exc:
                     result = r[t.JsonMapping].fail(
-                        f"OAuth2 introspection payload is not valid JSON: {exc}",
+                        f"OAuth2 introspection payload is not valid JSON: {exc}"
                     )
                 else:
                     result = r[t.JsonMapping].ok(parsed_mapping)

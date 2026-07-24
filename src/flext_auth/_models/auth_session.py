@@ -16,16 +16,14 @@ class FlextAuthModelsAuthSession:
 
         identity_id: Annotated[str, u.Field(..., description="Identity ID")]
         session_token: Annotated[
-            str,
-            u.Field(..., description="Session token", exclude=True),
+            str, u.Field(..., description="Session token", exclude=True)
         ]
         expires_at: Annotated[datetime, u.Field(..., description="Expiration time")]
         is_active: Annotated[bool, u.Field(description="Active status")] = True
         ip_address: Annotated[str, u.Field(description="IP address")] = ""
         user_agent: Annotated[str, u.Field(description="User agent")] = ""
         last_accessed: datetime = u.Field(
-            default_factory=u.now,
-            description="Last access",
+            default_factory=u.now, description="Last access"
         )
 
         @property

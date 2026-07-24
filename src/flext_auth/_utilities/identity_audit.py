@@ -30,7 +30,7 @@ class FlextAuthIdentityAudit:
         max_attempts = c.Auth.SECURITY_MAX_LOGIN_ATTEMPTS
         if identity.failed_attempts >= max_attempts:
             lockout_duration = timedelta(
-                minutes=c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES,
+                minutes=c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES
             )
             identity.locked_until = u.generate_datetime_utc() + lockout_duration
             self.logger.warning(

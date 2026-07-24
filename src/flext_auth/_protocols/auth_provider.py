@@ -20,10 +20,7 @@ class FlextAuthProtocolsAuthProvider:
         OAuth2, SAML, etc.).
         """
 
-        def __init__(
-            self,
-            settings: t.ScalarMapping | None = None,
-        ) -> None:
+        def __init__(self, settings: t.ScalarMapping | None = None) -> None:
             """Initialize provider with optional configuration."""
             ...
 
@@ -33,8 +30,7 @@ class FlextAuthProtocolsAuthProvider:
             ...
 
         def authenticate(
-            self,
-            credentials: t.JsonMapping,
+            self, credentials: t.JsonMapping
         ) -> p.Result[FlextAuthProtocolsAuthToken.Token]:
             """Authenticate user with provided credentials.
 
@@ -82,10 +78,7 @@ class FlextAuthProtocolsAuthProvider:
             """
             ...
 
-        def refresh(
-            self,
-            token: str,
-        ) -> p.Result[FlextAuthProtocolsAuthToken.Token]:
+        def refresh(self, token: str) -> p.Result[FlextAuthProtocolsAuthToken.Token]:
             """Refresh authentication token.
 
             Generate a new token based on an existing valid token. This operation
