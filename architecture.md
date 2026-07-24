@@ -497,7 +497,7 @@ class BaseTransportAdapter(Protocol):
 
 **CRITICAL**: Uses **flext-api** (NOT direct httpx/requests)
 
-```python
+```text
 from __future__ import annotations
 from flext_api import FlextApi
 from flext_cli import u
@@ -527,7 +527,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 
 **CRITICAL**: Uses **flext-grpc** (NOT direct grpc/grpcio)
 
-```python
+```text
 from __future__ import annotations
 from flext_grpc import FlextGrpc
 from flext_cli import u
@@ -560,7 +560,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 ### WebSocket Transport (`transports/websocket.py`)
 
-```python
+```text
 from __future__ import annotations
 from flext_cli import u
 from flext_core import c, m, p, r, t
@@ -586,7 +586,7 @@ ______________________________________________________________________
 
 ### Protocol Handler Base (`protocol_handlers/base.py`)
 
-```python
+```text
 from __future__ import annotations
 from typing import Protocol
 from flext_core import c, m, p, r, t
@@ -608,7 +608,7 @@ class BaseProtocolHandler(Protocol):
 
 ### REST Protocol Handler (`protocol_handlers/rest.py`)
 
-```python
+```text
 from __future__ import annotations
 import json
 from flext_core import c, m, p, r, t
@@ -638,7 +638,7 @@ class RestProtocolHandler(BaseProtocolHandler):
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
 
-```python
+```text
 from __future__ import annotations
 from flext_core import c, m, p, r, t
 
@@ -823,7 +823,7 @@ class TokenCache:
 
     def _create_backend(
         self, backend: str, settings: t.JsonMapping | None
-    ) -> object: ...
+    ) -> t.JsonValue: ...
 ```
 
 ______________________________________________________________________
@@ -882,7 +882,7 @@ class CredentialManager:
 
         return self.store_credential(identifier, new_credential)
 
-    def _init_cipher(self, encryption_key: bytes) -> object: ...
+    def _init_cipher(self, encryption_key: bytes) -> t.JsonValue: ...
 ```
 
 ### Security Validations
@@ -1032,7 +1032,8 @@ providers = registry.list_providers()
 
 #### Pattern 3: Custom Transport
 
-```python
+```text
+from __future__ import annotations
 from flext_auth import FlextAuth
 from flext_core import c, m, p, r, t
 

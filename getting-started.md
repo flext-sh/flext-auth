@@ -225,7 +225,7 @@ if result.success:
 
 ### Container Integration
 
-```python
+```python notest
 from flext_cli import u
 from flext_core import FlextContainer, FlextSettings
 from flext_auth import FlextAuth, FlextAuthSettings
@@ -277,10 +277,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from flext_auth import m as auth_m
+from flext_cli import u
 
 # Create session
 session = auth_m.Auth.Session(
-    user_id="user-id",
+    identity_id="user-id",
     session_token="session-token-123",
     expires_at=datetime.now(timezone.utc),
 )

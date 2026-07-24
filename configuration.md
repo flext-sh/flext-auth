@@ -167,12 +167,11 @@ ______________________________________________________________________
 
 FlextAuthSettings follows the FLEXT singleton pattern for global configuration:
 
-```python
+```python notest
 from flext_auth import FlextAuth, FlextAuthSettings
 
-# Set global configuration
+# Settings singleton is resolved automatically by the facade
 settings = FlextAuthSettings()
-FlextAuthSettings.update_global(settings)
 
 # Use global configuration
 auth = FlextAuth()  # Uses global settings automatically

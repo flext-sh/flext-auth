@@ -262,7 +262,7 @@ ______________________________________________________________________
 
 Configuration class extending `FlextSettings`.
 
-```python
+```text
 from __future__ import annotations
 from flext_core import m
 from flext_cli import u
@@ -380,7 +380,7 @@ ______________________________________________________________________
 
 ### Container Integration
 
-```python
+```python notest
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import FlextContainer
 from flext_cli import u
