@@ -71,9 +71,7 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 
 # Register user using the r pattern
 result = auth.register_user(
-    username="alice",
-    email="alice@example.com",
-    password="secure123",
+    username="alice", email="alice@example.com", password="secure123"
 )
 
 if result.success:
@@ -211,13 +209,11 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[m.
     if token_result.failure:
         return r[m.Dict].fail(token_result.error)
 
-    return r[m.Dict].ok(
-        {
-            "authenticated": True,
-            "user": identity.name,
-            "token": token_result.unwrap(),
-        }
-    )
+    return r[m.Dict].ok({
+        "authenticated": True,
+        "user": identity.name,
+        "token": token_result.unwrap(),
+    })
 
 
 # Usage
@@ -276,7 +272,7 @@ if result.success:
 
 ### Session Management
 
-```python notest
+```python
 from __future__ import annotations
 from datetime import datetime, timezone
 

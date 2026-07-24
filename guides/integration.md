@@ -121,7 +121,7 @@ ______________________________________________________________________
 
 Authentication middleware for REST APIs:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import FlextAuth
 from fastapi import Depends, FastAPI, HTTPException
@@ -151,7 +151,7 @@ def protected_endpoint(token: str = Depends(authenticate_request)):
 
 Web application authentication flows:
 
-```python notest
+```python
 from __future__ import annotations
 from flask import Flask, flash, redirect, request, session, url_for
 from flext_auth import FlextAuth
@@ -195,7 +195,7 @@ def require_auth(f):
 
 CLI authentication patterns:
 
-```python notest
+```python
 from __future__ import annotations
 
 import click
@@ -263,7 +263,7 @@ class AuthenticationProvider:
 
 Pattern for service-to-service authentication:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import FlextAuth
 from flext_api import FlextApi
@@ -288,7 +288,9 @@ class ServiceA:
         }
 
         # Make authenticated request to Service B using flext-api
-        result = self._api.post(url="http://service-b/api/endpoint", json=data, headers=headers)
+        result = self._api.post(
+            url="http://service-b/api/endpoint", json=data, headers=headers
+        )
         return result
 ```
 
@@ -300,7 +302,7 @@ ______________________________________________________________________
 
 Integration with flext-db-oracle for user storage:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import m as auth_m
 from flext_core import c, m, p, r, t
@@ -326,7 +328,7 @@ class UserRepository:
 
 Integration with Redis for session management:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import m as auth_m
 from flext_core import c, m, p, r, t
@@ -338,16 +340,12 @@ class RedisSessionStorage:
     def __init__(self, redis_client: object) -> None:
         self._redis = redis_client
 
-    def store_session(
-        self, session: auth_m.Auth.Session
-    ) -> p.Result[bool]:
+    def store_session(self, session: auth_m.Auth.Session) -> p.Result[bool]:
         """Store session in Redis."""
         try:
             session_data = session.model_dump_json()
             self._redis.setex(
-                session.session_token,
-                int(session.expires_at.timestamp()),
-                session_data,
+                session.session_token, int(session.expires_at.timestamp()), session_data
             )
             return r[bool].ok(True)
         except Exception as e:
@@ -436,7 +434,7 @@ ______________________________________________________________________
 
 Plans for OAuth2 provider integration:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import FlextAuth
 from flext_core import c, m, p, r, t
@@ -464,7 +462,7 @@ class OAuth2Provider:
 
 Plans for SAML integration:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import FlextAuth, m as auth_m
 from flext_core import c, m, p, r, t

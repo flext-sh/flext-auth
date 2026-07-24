@@ -76,8 +76,9 @@ auth = FlextAuth(settings=settings)
 
 Register a new user with username, email, and password.
 
-```python notest
+```python
 from __future__ import annotations
+
 
 def register_user(
     self,
@@ -86,8 +87,7 @@ def register_user(
     password: str,
     roles: t.StrSequence | None = None,
     role: str | None = None,
-) -> p.Result[m.Auth.AuthIdentity]:
-    ...
+) -> p.Result[m.Auth.AuthIdentity]: ...
 ```
 
 **Parameters**:
@@ -117,8 +117,9 @@ if result.success:
 
 Authenticate a user with username and password.
 
-```python notest
+```python
 from __future__ import annotations
+
 
 def authenticate_user(
     self,
@@ -126,8 +127,7 @@ def authenticate_user(
     password: str,
     ip_address: str | None = None,
     user_agent: str | None = None,
-) -> p.Result[m.Auth.AuthIdentity]:
-    ...
+) -> p.Result[m.Auth.AuthIdentity]: ...
 ```
 
 **Parameters**:
@@ -156,11 +156,11 @@ if auth_result.success:
 
 Authenticate with a credentials mapping.
 
-```python notest
+```python
 from __future__ import annotations
 
-def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]:
-    ...
+
+def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]: ...
 ```
 
 **Example**:
@@ -183,7 +183,7 @@ ______________________________________________________________________
 
 Authentication identity extending `FlextModels.Entity`.
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import m
 
@@ -200,22 +200,22 @@ class AuthIdentity(m.BaseModel):
 
 #### set_password()
 
-```python notest
+```python
 from __future__ import annotations
 
-def set_password(self, password: str) -> p.Result[bool]:
-    ...
+
+def set_password(self, password: str) -> p.Result[bool]: ...
 ```
 
 Hash and set the user password using bcrypt.
 
 #### verify_password()
 
-```python notest
+```python
 from __future__ import annotations
 
-def verify_password(self, password: str) -> p.Result[bool]:
-    ...
+
+def verify_password(self, password: str) -> p.Result[bool]: ...
 ```
 
 Verify the password against the stored hash.
@@ -224,7 +224,7 @@ Verify the password against the stored hash.
 
 Session model for managing user sessions.
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import m
 
@@ -240,7 +240,7 @@ class Session(m.BaseModel):
 
 Request model for user registration.
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import m, t
 from flext_cli import u
@@ -262,7 +262,7 @@ ______________________________________________________________________
 
 Configuration class extending `FlextSettings`.
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import m
 from flext_cli import u
@@ -283,12 +283,12 @@ JWT and security settings are available under `settings.Auth`:
 
 #### create_for_environment()
 
-```python notest
+```python
 from __future__ import annotations
 
+
 @classmethod
-def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]:
-    ...
+def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]: ...
 ```
 
 Create configuration for a specific environment.

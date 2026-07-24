@@ -162,9 +162,7 @@ objectClass: inetOrgPerson"""
         (input_dir / "test.ldif").write_text(sample_ldif)
 
         # Configure and run migration
-        settings = FlextLdifSettings(
-            source_server="oid", target_server="oud"
-        )
+        settings = FlextLdifSettings(source_server="oid", target_server="oud")
 
         ldif_service = ldif(settings=settings)
         result = ldif_service.migrate(str(input_dir), str(output_dir), "oid", "oud")

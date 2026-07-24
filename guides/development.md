@@ -148,7 +148,7 @@ git push origin feature/amazing-feature
 
 ### Type Safety (ZERO TOLERANCE)
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import p, r, t
 
@@ -174,7 +174,7 @@ def process_data(data):
 
 ### Railway-Oriented Programming
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import p, r, t
 
@@ -186,23 +186,16 @@ class ProcessedData:
 
 # ✅ CORRECT - Use r for all operations
 def validate_and_process(data: t.JsonMapping) -> p.Result[ProcessedData]:
-    return (
-        validate_data(data)
-        .flat_map(transform_data)
-        .map(enrich_data)
-    )
+    return validate_data(data).flat_map(transform_data).map(enrich_data)
 
 
-def validate_data(data: t.JsonMapping) -> p.Result[t.JsonMapping]:
-    ...
+def validate_data(data: t.JsonMapping) -> p.Result[t.JsonMapping]: ...
 
 
-def transform_data(data: t.JsonMapping) -> p.Result[t.JsonMapping]:
-    ...
+def transform_data(data: t.JsonMapping) -> p.Result[t.JsonMapping]: ...
 
 
-def enrich_data(data: t.JsonMapping) -> ProcessedData:
-    ...
+def enrich_data(data: t.JsonMapping) -> ProcessedData: ...
 
 
 # ❌ WRONG - Exception-based error handling
@@ -214,7 +207,7 @@ def validate_and_process(data: dict) -> ProcessedData:
 
 ### Unified Models Pattern
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import c, m, p, r, t
 from flext_cli import u
@@ -332,7 +325,7 @@ mkdir flext-newlib
 
 ### 2. Implement Core Patterns
 
-```python notest
+```python
 from __future__ import annotations
 from flext_cli import u
 from flext_core import c, m, p, r, s, t
@@ -409,7 +402,7 @@ uv sync
 
 ### Code Documentation
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import p, t
 
@@ -444,7 +437,7 @@ Update project README.md files when adding new features:
 
 - Add a "New Feature" section with usage and configuration examples.
 
-```python notest
+```python
 from flext_newlib import FlextNewlib, FlextNewlibSettings
 
 lib = FlextNewlib(settings=FlextNewlibSettings())

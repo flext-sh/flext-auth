@@ -77,7 +77,7 @@ ______________________________________________________________________
 
 **Current Implementation**:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_auth import FlextAuth
 

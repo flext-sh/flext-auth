@@ -132,22 +132,25 @@ All code must follow FLEXT patterns:
 ```python
 from __future__ import annotations
 
+from flext_auth import m, p, r
+
 
 # ✅ Correct - Use r for error handling
-def authenticate_user(username: str, password: str) -> p.Result[m.Dict]:
+def authenticate_user(username: str, password: str) -> p.Result[m.Auth.AuthIdentity]:
     if not username:
-        return r[m.Dict].fail("Username required")
+        return r[m.Auth.AuthIdentity].fail("Username required")
 
-    # Authentication logic
-    return r[m.Dict].ok(result)
+    # Authentication logic would resolve an identity here
+    identity = m.Auth.AuthIdentity(username=username, contact="user@example.com")
+    return r[m.Auth.AuthIdentity].ok(identity)
 
 
 # ❌ Incorrect - Don't use exceptions for business logic
-def authenticate_user(username: str, password: str) -> t.JsonMapping:
+def authenticate_user_legacy(username: str, password: str) -> m.Auth.AuthIdentity:
     if not username:
         raise ValueError("Username required")
 
-    return result
+    return m.Auth.AuthIdentity(username=username, contact="user@example.com")
 ```
 
 ### Domain Model Patterns
@@ -155,22 +158,21 @@ def authenticate_user(username: str, password: str) -> t.JsonMapping:
 ```python
 from __future__ import annotations
 
-# ✅ Correct - Extend FlextModels.Entity
-from flext_cli import u
-from flext_core import FlextSettings
+from flext_auth import m, p, r
 
 
-class User(FlextModels.Entity):
+# ✅ Correct - Extend the canonical auth identity model
+class User(m.Auth.AuthIdentity):
     username: str
     email: str
 
     def verify_password(self, password: str) -> p.Result[bool]:
         # Business logic returning r
-        pass
+        return r[bool].ok(True)
 
 
 # ❌ Incorrect - Don't create plain classes
-class User:
+class UserPlain:
     def __init__(self, username, email):
         self.username = username
         self.email = email
@@ -296,23 +298,24 @@ tests/
 
 ```python
 from __future__ import annotations
+
 import pytest
-from flext_auth import FlextAuth, FlextAuthSettings
-from flext_cli import u
-from flext_core import FlextSettings
+from flext_auth import FlextAuth
+from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 
 
 class TestNewFeature:
     def test_new_functionality(self):
         # Arrange
-        auth = FlextAuth()
+        FlextAuthApplicationLifecycle.reset_for_testing()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         # Act
-        result = auth.new_method("test_data")
+        result = auth.register_user("test_user", "test@example.com", "SecurePass123!")
 
         # Assert
         assert result.success
-        assert result.unwrap() == expected_result
+        assert result.unwrap().name == "test_user"
 ```
 
 ______________________________________________________________________
@@ -325,19 +328,20 @@ Follow FLEXT service patterns:
 
 ```python
 from __future__ import annotations
+
+from flext_auth import p, r, t
+from flext_core import FlextContainer
 from flext_cli import u
-from flext_core import FlextSettings
 
 
-class AuthenticationService(s):
+class AuthenticationService:
     def __init__(self):
-        super().__init__()
-        self._container = FlextContainer.get_global()
+        self._container = FlextContainer()
         self.logger = u.fetch_logger(__name__)
 
-    def process(self, request) -> p.Result[Response]:
+    def process(self, request: t.StrMapping) -> p.Result[t.StrMapping]:
         # Service implementation
-        pass
+        return r[t.StrMapping].ok({"status": "processed"})
 ```
 
 ### Error Handling
@@ -347,16 +351,33 @@ Use r exclusively:
 ```python
 from __future__ import annotations
 
+from flext_auth import FlextAuth, m, p, r
+
 
 # Chain operations with r
-def complete_auth_flow(username: str, password: str) -> p.Result[m.Dict]:
-    return (
-        self
-        ._validate_input(username, password)
-        .flat_map(lambda _: self._authenticate_user(username, password))
-        .flat_map(lambda user: self._create_session(user))
-        .map(lambda session: self._format_response(session))
-    )
+class AuthFlow:
+    def complete_auth_flow(
+        self, username: str, password: str
+    ) -> p.Result[m.Auth.AuthIdentity]:
+        return (
+            r[m.Auth.AuthIdentity]
+            .ok(m.Auth.AuthIdentity(username=username, contact="user@example.com"))
+            .flat_map(lambda identity: self._create_session(identity))
+            .map(lambda session: self._format_response(session))
+        )
+
+    def _create_session(
+        self, identity: m.Auth.AuthIdentity
+    ) -> p.Result[m.Auth.AuthIdentity]:
+        return r[m.Auth.AuthIdentity].ok(identity)
+
+    def _format_response(self, identity: m.Auth.AuthIdentity) -> m.Auth.AuthIdentity:
+        return identity
+
+
+# Or using the public facade
+auth = FlextAuth.quick_start(create_admin_user=False)
+result = auth.authenticate_user(username, password="SecurePass123!")
 ```
 
 ______________________________________________________________________
@@ -372,13 +393,18 @@ ______________________________________________________________________
 ### Debug Mode
 
 ```python
+import logging
+
+from flext_auth import FlextAuth
+from flext_cli import u
+
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Test specific functionality
-auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("test", "test@example.com", "password123")
-u.Cli.print(f"Registration result: {result}")
+u.Cli.info(f"Registration result: {result}")
 ```
 
 ______________________________________________________________________

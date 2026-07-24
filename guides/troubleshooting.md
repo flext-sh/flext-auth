@@ -145,7 +145,7 @@ error: Argument 1 to "process" has incompatible type "str"; expected "t.JsonMapp
 
 **Fix type annotations:**
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import p, r, t
 
@@ -334,10 +334,7 @@ LdifMigrationException: Server compatibility error
 ```python
 from flext_ldif import FlextLdifSettings
 
-settings = FlextLdifSettings(
-    source_server="oid",
-    target_server="oud",
-)
+settings = FlextLdifSettings(source_server="oid", target_server="oud")
 
 print(f"Config: {settings.model_dump()}")
 ```
@@ -689,7 +686,7 @@ When reporting issues, include:
 
 1. **Always Use r**
 
-```python notest
+```python
 from __future__ import annotations
 from flext_core import p, r, t
 
