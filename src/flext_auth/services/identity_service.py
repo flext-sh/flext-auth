@@ -28,10 +28,18 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         )
 
     @property
-    @override
     def identity_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
+
+    @override
+    def _persist_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
+        """Persist failed-attempt state through the concrete user manager."""
+        return self.identity_manager.update_user(
+            identity.unique_id,
+            failed_attempts=identity.failed_attempts,
+            locked_until=identity.locked_until,
+        ).map(lambda _: True)
 
     def authenticate_identity(
         self, name: str, credential: str
@@ -146,13 +154,6 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
                     roles=request.roles,
                 )
             )
-        )
-
-    @override
-    def execute(self) -> p.Result[p.Base]:
-        """Railway-oriented execute with focused service pattern."""
-        return r[p.Base].fail(
-            "Use specific identity methods: create_identity, authenticate_identity, etc."
         )
 
     def reset_credential(self, identity_id: str, new_credential: str) -> p.Result[bool]:

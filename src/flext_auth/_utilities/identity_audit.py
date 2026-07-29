@@ -19,9 +19,10 @@ class FlextAuthIdentityAudit:
             """Logger supplied by the service facade."""
             raise NotImplementedError
 
-        @property
-        def identity_manager(self) -> p.Auth.IdentityManager:
-            """Identity manager supplied by the concrete service facade."""
+        def _persist_failed_attempt(
+            self, identity: m.Auth.AuthIdentity
+        ) -> p.Result[bool]:
+            """Persist failed-attempt state through the service-owned manager."""
             raise NotImplementedError
 
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
@@ -46,11 +47,7 @@ class FlextAuthIdentityAudit:
                 provider="internal",
                 reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
             )
-        return self.identity_manager.update_user(
-            identity.unique_id,
-            failed_attempts=identity.failed_attempts,
-            locked_until=identity.locked_until,
-        ).map(lambda _: True)
+        return self._persist_failed_attempt(identity)
 
     def _log_authorization_result(
         self,

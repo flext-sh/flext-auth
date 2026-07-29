@@ -36,10 +36,10 @@ class FlextAuthModelsAuthUserIdentityExtras:
             """Normalize sequence-like values to strict string sequences."""
             if value is None:
                 return None
-            if isinstance(value, Sequence) and not isinstance(
-                value, t.STR_BINARY_TYPES
-            ):
-                return [str(item) for item in value]
+            if isinstance(value, (str, bytes, bytearray)):
+                return []
+            if isinstance(value, Sequence):
+                return t.strict_str_sequence_adapter().validate_python(value)
             return []
 
         @u.field_validator("failed_attempts", mode="before")

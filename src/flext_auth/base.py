@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import override
 
-from flext_auth import FlextAuthSettings, m, t
+from flext_auth import FlextAuthSettings, m, p, r, t
 from flext_core import s
 
 
@@ -25,6 +25,11 @@ class FlextAuthServiceBase(s[bool], ABC):
     def settings(self) -> FlextAuthSettings:
         """Typed auth settings namespace."""
         return self._auth_config
+
+    @override
+    def execute(self) -> p.Result[bool]:
+        """Reject generic execution in favor of focused auth operations."""
+        return r[bool].fail("Use a service-specific authentication operation")
 
 
 s = FlextAuthServiceBase

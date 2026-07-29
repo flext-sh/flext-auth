@@ -13,14 +13,14 @@ import os
 import secrets
 import string
 
-from flext_cli import u as cli_u
+from flext_cli import cli
 
 from flext_auth import FlextAuth, m, p
 
 
 def _emit(message: str) -> None:
     """Emit example output through the canonical CLI facade."""
-    cli_u.Cli.formatters_u.Cli.print(message)
+    cli.print(message)
 
 
 class FlextAuthDemo:
