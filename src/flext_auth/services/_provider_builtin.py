@@ -4,21 +4,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth import (
-    FlextAuthApiKeyProvider,
-    FlextAuthBasicProvider,
-    FlextAuthCertificateProvider,
-    FlextAuthJwtProvider,
-    FlextAuthLdapProvider,
-    FlextAuthOidcProvider,
-    FlextAuthRfcProvider,
-    FlextAuthSamlProvider,
-    FlextAuthSettings,
-    c,
-    p,
-    t,
-)
+from flext_auth import FlextAuthSettings, c, p, t
+from flext_auth.providers.apikey import FlextAuthApiKeyProvider
+from flext_auth.providers.basic import FlextAuthBasicProvider
+from flext_auth.providers.certificate import FlextAuthCertificateProvider
+from flext_auth.providers.jwt import FlextAuthJwtProvider
+from flext_auth.providers.ldap import FlextAuthLdapProvider
+from flext_auth.providers.oidc import FlextAuthOidcProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth.providers.saml import FlextAuthSamlProvider
 
 if TYPE_CHECKING:
     from collections.abc import Callable

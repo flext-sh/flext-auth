@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthRfcProvider, c, m, p, r, t
+from flext_auth import c, m, p, r, t
 from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
