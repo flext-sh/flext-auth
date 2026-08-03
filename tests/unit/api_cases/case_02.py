@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from flext_auth import FlextAuth, FlextAuthSettings
-from tests.models import m
+from flext_tests import tm
+from tests import m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase02:
@@ -46,9 +46,7 @@ class TestsFlextAuthApiCase02:
         """Test token validation — not implemented in JWT provider."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         register_result = auth.register_user(
-            "beareruser",
-            "bearer@example.com",
-            "BearerPass123!",
+            "beareruser", "bearer@example.com", "BearerPass123!"
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
@@ -94,7 +92,7 @@ class TestsFlextAuthApiCase02:
     def test_handler_registration_logging(self) -> None:
         """Test that handler registration is logged."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        assert auth is not None
+        tm.that(auth, none=False)
 
     def test_provider_registry_initialization(self) -> None:
         """Test provider registry is initialized."""
@@ -114,9 +112,9 @@ class TestsFlextAuthApiCase02:
 
     def test_model_config_validate_assignment(self) -> None:
         """Test validate_assignment configuration."""
-        settings = FlextAuthSettings.fetch_global()
         u.Tests.Matchers.that(
-            settings.model_config.get("validate_assignment", False) is True, eq=True
+            FlextAuthSettings.model_config.get("validate_assignment", False) is True,
+            eq=True,
         )
 
 

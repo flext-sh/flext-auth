@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import jwt
-from flext_api import r
 
+from flext_api import r
 from flext_auth import c, m, p, t
 
 
@@ -16,7 +16,7 @@ class FlextAuthUtilitiesAuthToken:
         *,
         verify: bool = True,
     ) -> p.Result[t.Auth.TokensClaimMap]:
-        """Generic JWT token decoding.
+        """Decode a JWT token.
 
         Args:
             token: JWT token to decode
@@ -31,18 +31,14 @@ class FlextAuthUtilitiesAuthToken:
             provider_config = (
                 config
                 if isinstance(config, m.Auth.ProviderConfig)
-                else m.Auth.ProviderConfig.model_validate(
-                    {
-                        c.Auth.KEY_NAME: c.Auth.ProviderTypes.JWT.value,
-                        "type": c.Auth.ProviderTypes.JWT.value,
-                        **config,
-                    },
-                )
+                else m.Auth.ProviderConfig.model_validate({
+                    c.Auth.KEY_NAME: c.Auth.ProviderTypes.JWT.value,
+                    "type": c.Auth.ProviderTypes.JWT.value,
+                    **config,
+                })
             )
             if not provider_config.secret_key:
-                return r[t.Auth.TokensClaimMap].fail(
-                    "JWT secret_key not configured",
-                )
+                return r[t.Auth.TokensClaimMap].fail("JWT secret_key not configured")
             algorithm = provider_config.algorithm or c.Auth.JWT_DEFAULT_ALGORITHM
             payload = jwt.decode(
                 token,
@@ -68,7 +64,7 @@ class FlextAuthUtilitiesAuthToken:
         secret: str,
         algorithm: str = c.Auth.JWT_DEFAULT_ALGORITHM,
     ) -> p.Result[str]:
-        """Generic JWT token encoding.
+        """Encode a JWT token.
 
         Args:
         payload: Token payload

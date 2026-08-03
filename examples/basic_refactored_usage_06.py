@@ -13,14 +13,14 @@ import os
 import secrets
 import string
 
-from flext_cli import u as cli_u
+from flext_cli import cli
 
 from flext_auth import FlextAuth, m, p
 
 
 def _emit(message: str) -> None:
     """Emit example output through the canonical CLI facade."""
-    cli_u.Cli.formatters_print(message)
+    cli.print(message)
 
 
 class FlextAuthDemo:
@@ -59,7 +59,7 @@ class FlextAuthDemo:
         )
 
     def _print_token_info(self, auth_data: m.Auth.AuthIdentity) -> None:
-        """Helper: Print token information."""
+        """Print token information."""
         token_length = len(auth_data.token) if auth_data.token else 0
         _emit(f"Token length: {token_length}")
 

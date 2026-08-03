@@ -21,11 +21,11 @@ class FlextAuthSimpleUsageExample:
         """Demonstrate FLEXT Auth functionality with clean types."""
         auth: FlextAuth = FlextAuth()
         try:
-            test_password = "SecureDemoPassword123!"
+            test_password = os.getenv(
+                "FLEXT_DEMO_USER_PASSWORD", "SecureDemoPassword123!"
+            )
             FlextAuthModels.Auth.AuthIdentityRequest(
-                name="testuser",
-                contact="test@example.com",
-                credential=test_password,
+                name="testuser", contact="test@example.com", credential=test_password
             )
             auth.register_user("testuser", "test@example.com", test_password)
         except Exception as error:

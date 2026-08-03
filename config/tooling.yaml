@@ -1,0 +1,10 @@
+ManagedArtifacts:
+  Ruff:
+    # OAuth/JWT token identifiers and protocol defaults are public contract
+    # vocabulary, not embedded credentials.
+    per_file_ignores:
+      src/flext_auth/_constants/auth_security.py: [hardcoded-password-string]
+      src/flext_auth/providers/_mixins/tokens.py:
+        [hardcoded-password-default, hardcoded-password-func-arg]
+      src/flext_auth/providers/oauth2_tokens.py:
+        [hardcoded-password-default, hardcoded-password-func-arg]

@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from flext_auth import t
+from typing import TYPE_CHECKING
+
 from flext_auth.providers._mixins.tokens import FlextAuthProviderTokenMixin
 from flext_auth.providers._mixins.validation import FlextAuthProviderValidationMixin
 
+if TYPE_CHECKING:
+    from flext_auth import t
+
 
 class FlextAuthProviderMixin(
-    FlextAuthProviderTokenMixin,
-    FlextAuthProviderValidationMixin,
+    FlextAuthProviderTokenMixin, FlextAuthProviderValidationMixin
 ):
     """Common functionality for authentication providers."""
 
@@ -27,7 +30,7 @@ class FlextAuthProviderMixin(
 
     @property
     def settings(self) -> t.ScalarMapping | None:
-        """Get provider configuration."""
+        """Provider configuration mapping."""
         return self._provider_config
 
 

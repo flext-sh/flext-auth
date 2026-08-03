@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
 
-from flext_auth import t
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from flext_auth import t
 
 
 class FlextAuthProtocolsAuthIdentity:
@@ -51,10 +54,7 @@ class FlextAuthProtocolsAuthIdentity:
             """Set credential with secure hashing."""
             ...
 
-        def verify_credential(
-            self,
-            credential: str,
-        ) -> p.Result[bool]:
+        def verify_credential(self, credential: str) -> p.Result[bool]:
             """Verify credential against stored hash."""
             ...
 
@@ -77,6 +77,16 @@ class FlextAuthProtocolsAuthIdentity:
 
         def record_successful_login(self) -> None:
             """Record successful login and reset failed attempts."""
+            ...
+
+    @runtime_checkable
+    class IdentityManager(Protocol):
+        """Protocol for identity manager mutation used by identity services."""
+
+        def update_user(
+            self, user_id: str, **updates: t.Scalar | t.StrSequence | datetime | None
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]:
+            """Update an identity and return the resulting identity."""
             ...
 
 

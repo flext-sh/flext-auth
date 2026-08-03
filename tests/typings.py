@@ -1,10 +1,11 @@
+"""Test types for the flext-auth test suite."""
+
 from __future__ import annotations
 
 from typing import Literal
 
-from flext_tests import FlextTestsTypes
-
 from flext_auth import FlextAuthTypes
+from flext_tests import FlextTestsTypes
 
 
 class TestsFlextAuthTypes(FlextTestsTypes, FlextAuthTypes):
@@ -25,16 +26,10 @@ class TestsFlextAuthTypes(FlextTestsTypes, FlextAuthTypes):
             "apikey",
         ]
         type RoleTypeLiteral = Literal[
-            "REDACTED_LDAP_BIND_PASSWORD",
-            "user",
-            "moderator",
-            "guest",
+            "REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"
         ]
         type PermissionTypeLiteral = Literal[
-            "read",
-            "write",
-            "delete",
-            "REDACTED_LDAP_BIND_PASSWORD",
+            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
         ]
 
 

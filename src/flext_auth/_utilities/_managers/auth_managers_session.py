@@ -1,22 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import (
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import MutableMapping, MutableSequence, Sequence
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 from uuid import uuid4
 
 from flext_api import r, u
-
-from flext_auth import e, m, t
-from flext_auth.protocols import p
+from flext_auth import e, m, p, t
 from flext_core import FlextContainer, FlextContext
-
-if TYPE_CHECKING:
-    from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthSessionManagers:
@@ -24,9 +15,8 @@ class FlextAuthSessionManagers:
     _context_type: ClassVar[p.ContextType] = FlextContext
 
     class FlextAuthSessionManager:
-        def __init__(self, settings: FlextAuthSettings) -> None:
+        def __init__(self) -> None:
             super().__init__()
-            self.config = settings
             self.logger = u.fetch_logger(__name__)
             self.context = FlextAuthSessionManagers._context_type.create()
             self._dispatcher: p.Dispatcher = (
@@ -109,9 +99,7 @@ class FlextAuthSessionManagers:
                 ok_result: p.Result[bool] = r[bool].ok(value=True)
                 return ok_result
             fail_result: p.Result[bool] = e.fail_not_found(
-                "Session",
-                session_id,
-                result_type=r[bool],
+                "Session", session_id, result_type=r[bool]
             )
             return fail_result
 
@@ -132,7 +120,7 @@ class FlextAuthSessionManagers:
                             expires_at=session_data["expires_at"]
                             if isinstance(session_data["expires_at"], datetime)
                             else datetime.fromisoformat(
-                                str(session_data["expires_at"]),
+                                str(session_data["expires_at"])
                             ),
                             is_active=bool(session_data.get("is_active", True)),
                             ip_address=str(session_data.get("ip_address", "")),
@@ -158,10 +146,7 @@ class FlextAuthSessionManagers:
                 if self._is_session_active(session)
             )
 
-        def _is_session_active(
-            self,
-            session_data: t.Auth.ManagersSessionData,
-        ) -> bool:
+        def _is_session_active(self, session_data: t.Auth.ManagersSessionData) -> bool:
             expires_at_value = session_data.get("expires_at")
             if not isinstance(expires_at_value, datetime):
                 return False

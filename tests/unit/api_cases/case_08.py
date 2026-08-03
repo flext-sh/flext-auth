@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-from flext_tests import r
-
 from flext_auth import FlextAuth
-from tests.models import m
+from flext_tests import r
+from tests import m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase08:
@@ -19,9 +17,7 @@ class TestsFlextAuthApiCase08:
         """Test that token creation fails — JWT provider not implemented."""
         auth = FlextAuth()
         user_result = auth.register_user(
-            "test_user",
-            "test@example.com",
-            "TestPassword123!",
+            "test_user", "test@example.com", "TestPassword123!"
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -89,8 +85,7 @@ class TestsFlextAuthApiCase08:
         test_data = self._TestDataHelper.create_test_auth_data()
         if hasattr(auth, "authenticate_user"):
             result = auth.authenticate_user(
-                str(test_data["username"]),
-                str(test_data["password"]),
+                str(test_data["username"]), str(test_data["password"])
             )
             u.Tests.Matchers.that(result, is_=r)
 

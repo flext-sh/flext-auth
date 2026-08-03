@@ -22,17 +22,13 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
         raw_config = (
             settings
             if isinstance(settings, Mapping)
-            else settings.model_dump(
-                mode="json",
-                exclude_none=True,
-            )
+            else settings.model_dump(mode="json", exclude_none=True)
         )
         normalized_config: t.ScalarMapping = t.scalar_mapping_adapter().validate_python(
             raw_config
         )
         scalar_config = self.project_to_scalar_config(normalized_config) or {}
         super().__init__(scalar_config)
-        self.config = normalized_config
         self._oauth2_config: t.MappingKV[str, t.Primitives] = scalar_config
         # Pydantic-typed view of the OAuth2 config — eliminates dict.get + isinstance
         # narrowing at every access site. ProviderConfig owns the field-typing

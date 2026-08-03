@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 from flext_api import u
-
 from flext_auth import c, t
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class FlextAuthUtilitiesAuthResponse:
     @staticmethod
     def build_auth_error_response(
-        error: str,
-        error_code: str = "AUTH_ERROR",
+        error: str, error_code: str = "AUTH_ERROR"
     ) -> t.ConfigurationMapping:
         """Build an authentication error response."""
         return {

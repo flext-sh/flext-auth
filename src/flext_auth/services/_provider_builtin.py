@@ -2,25 +2,23 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from flext_auth import (
-    FlextAuthApiKeyProvider,
-    FlextAuthBasicProvider,
-    FlextAuthCertificateProvider,
-    FlextAuthJwtProvider,
-    FlextAuthLdapProvider,
-    FlextAuthOidcProvider,
-    FlextAuthRfcProvider,
-    FlextAuthSamlProvider,
-    FlextAuthSettings,
-    c,
-    p,
-    t,
-)
+from flext_auth import FlextAuthSettings, c, p, t
+from flext_auth.providers.apikey import FlextAuthApiKeyProvider
+from flext_auth.providers.basic import FlextAuthBasicProvider
+from flext_auth.providers.certificate import FlextAuthCertificateProvider
+from flext_auth.providers.jwt import FlextAuthJwtProvider
+from flext_auth.providers.ldap import FlextAuthLdapProvider
+from flext_auth.providers.oidc import FlextAuthOidcProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-from flext_auth.registry import FlextAuthRegistry
+from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth.providers.saml import FlextAuthSamlProvider
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from flext_auth.registry import FlextAuthRegistry
 
 
 class FlextAuthProviderBuiltinRegistration:
@@ -46,7 +44,7 @@ class FlextAuthProviderBuiltinRegistration:
         if not hasattr(self, "_auth_config"):
             self.logger.error("Configuration is required for provider registration")
             return
-        provider_config = self._auth_config.model_dump()
+        provider_config = self._auth_config.Auth.model_dump()
         providers: t.SequenceOf[
             t.Triple[
                 t.Auth.ProvidersKey,
@@ -64,7 +62,7 @@ class FlextAuthProviderBuiltinRegistration:
                 "ldap",
                 FlextAuthLdapProvider,
                 lambda: bool(
-                    provider_config.get("server") and provider_config.get("base_dn"),
+                    provider_config.get("server") and provider_config.get("base_dn")
                 ),
             ),
             (
@@ -72,7 +70,7 @@ class FlextAuthProviderBuiltinRegistration:
                 FlextAuthOAuth2Provider,
                 lambda: bool(
                     provider_config.get("client_id")
-                    and provider_config.get("token_endpoint"),
+                    and provider_config.get("token_endpoint")
                 ),
             ),
             (
@@ -84,7 +82,7 @@ class FlextAuthProviderBuiltinRegistration:
                 "saml",
                 FlextAuthSamlProvider,
                 lambda: bool(
-                    provider_config.get("entity_id") and provider_config.get("sso_url"),
+                    provider_config.get("entity_id") and provider_config.get("sso_url")
                 ),
             ),
             ("certificate", FlextAuthCertificateProvider, lambda: True),
@@ -94,20 +92,16 @@ class FlextAuthProviderBuiltinRegistration:
             if condition():
                 try:
                     provider_init_config = self._build_provider_init_config(
-                        provider_config,
+                        provider_config
                     )
                     provider = provider_class(provider_init_config)
                     self._providers.register_provider(
-                        name,
-                        provider,
-                        configuration=provider_init_config,
+                        name, provider, configuration=provider_init_config
                     )
                 except c.EXC_BROAD_IO_TYPE as exc:
                     error_msg: str = str(exc) if exc else "Unknown error"
                     self.logger.warning(
-                        "Failed to register %s provider: %s",
-                        name,
-                        error_msg,
+                        "Failed to register %s provider: %s", name, error_msg
                     )
 
 

@@ -12,10 +12,9 @@ from flext_auth.services.auth_service import FlextAuthApplicationService
 class FlextAuth(FlextAuthApplicationService):
     """Authentication facade composing identity, token, session, and provider services."""
 
-    pass
 
-
-auth = FlextAuth.fetch_global()
+auth: FlextAuth = FlextAuth.fetch_global()
+"""Process-wide FlextAuth facade singleton resolved from the global container."""
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuth", "auth"]

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import secrets
+
 from flext_auth import FlextAuth, FlextAuthSettings
-from tests.constants import c
-from tests.models import m
+from tests import c, m, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase03:
@@ -21,7 +21,7 @@ class TestsFlextAuthApiCase03:
         u.Tests.Matchers.that(len(auth.config.auth_secret.get_secret_value()), gt=20)
         u.Tests.Matchers.that(auth.config.hash_rounds, eq=12)
         u.Tests.Matchers.that(auth.config.expiry_minutes, eq=1440)
-        custom_secret = "test-secret-key-with-minimum-32-characters-length"
+        custom_secret = secrets.token_urlsafe(32)
         custom_rounds = 10
         custom_expiry = 60
         custom_config = FlextAuthSettings(
@@ -47,7 +47,7 @@ class TestsFlextAuthApiCase03:
         result = auth.register_user(
             username="testuser",
             email="test@example.com",
-            password="SecurePassword123!",
+            password=c.TEST_PASSWORD,
             roles=["user"],
         )
         u.Tests.Matchers.that(result.success, eq=True)
@@ -60,11 +60,9 @@ class TestsFlextAuthApiCase03:
     def test_user_registration_duplicate_username(self) -> None:
         """Test user registration with duplicate username."""
         auth: FlextAuth = FlextAuth()
-        auth.register_user("testuser", "test1@example.com", "Password123!")
+        auth.register_user("testuser", "test1@example.com", c.TEST_PASSWORD)
         duplicate_result = auth.register_user(
-            "testuser",
-            "test2@example.com",
-            "Password123!",
+            "testuser", "test2@example.com", c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")
@@ -72,12 +70,10 @@ class TestsFlextAuthApiCase03:
     def test_user_registration_duplicate_email(self) -> None:
         """Test user registration with duplicate email."""
         auth: FlextAuth = FlextAuth()
-        first_result = auth.register_user("user1", "test@example.com", "Password123!")
+        first_result = auth.register_user("user1", "test@example.com", c.TEST_PASSWORD)
         u.Tests.Matchers.that(first_result.success, eq=True)
         duplicate_result = auth.register_user(
-            "user2",
-            "test@example.com",
-            "Password123!",
+            "user2", "test@example.com", c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")
@@ -86,7 +82,7 @@ class TestsFlextAuthApiCase03:
         """Test successful user authentication."""
         auth: FlextAuth = FlextAuth()
         username = "authtest"
-        password = "AuthPassword123!"
+        password = c.TEST_PASSWORD
         reg_result = auth.register_user(username, "auth@example.com", password)
         u.Tests.Matchers.that(reg_result.success, eq=True)
         auth_result = auth.authenticate_user(username, password)
@@ -100,8 +96,8 @@ class TestsFlextAuthApiCase03:
         """Test authentication with invalid credentials."""
         auth: FlextAuth = FlextAuth()
         username = "testuser"
-        auth.register_user(username, "test@example.com", "CorrectPassword123!")
-        failed_auth = auth.authenticate_user(username, "WrongPassword123!")
+        auth.register_user(username, "test@example.com", c.TEST_PASSWORD)
+        failed_auth = auth.authenticate_user(username, c.TEST_PASSWORD + "_wrong")
         u.Tests.Matchers.that(not failed_auth.success, eq=True)
         u.Tests.Matchers.that(not failed_auth.success, eq=True)
         u.Tests.Matchers.that((failed_auth.error or ""), has="Invalid credentials")
@@ -110,7 +106,7 @@ class TestsFlextAuthApiCase03:
         """Test that token creation/validation fails — JWT provider not implemented."""
         auth: FlextAuth = FlextAuth()
         username = "tokenuser"
-        password = "TokenPassword123!"
+        password = c.TEST_PASSWORD
         register_result = auth.register_user(username, "token@example.com", password)
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value

@@ -3,52 +3,28 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from types import MappingProxyType
 from typing import ClassVar
 
-from flext_auth import m, p, r, t
+from flext_auth import m, p, r, settings, t
 
 
 class FlextAuthKerberosSupport:
     """Kerberos validation and ticket helper owner."""
 
-    config: t.ConfigurationMapping | None
-    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = (
-        "realm",
-        "kdc",
-        "service_principal",
-    )
-    _KERBEROS_FIELD_TYPES: ClassVar[t.MappingKV[str, tuple[type, ...]]] = (
-        MappingProxyType({
-            "realm": (str,),
-            "kdc": (str,),
-            "service_principal": (str,),
-            "keytab_path": (str, type(None)),
-            "clockskew_tolerance": (int, type(None)),
-            "ticket_lifetime": (int, type(None)),
-            "renew_lifetime": (int, type(None)),
-            "forwardable": (bool, type(None)),
-            "proxiable": (bool, type(None)),
-        })
-    )
+    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = ("realm", "kdc", "service_principal")
+
+    _external_ticket_validator: t.Auth.KerberosTicketValidator | None = None
 
     def _validate_kerberos_configuration(self) -> p.Result[bool]:
-        """Railway-oriented Kerberos configuration validation."""
-        if self.config is None:
-            return r[bool].fail("Kerberos configuration is required")
-        settings = self.config
-        missing = [f for f in self._KERBEROS_REQUIRED if f not in settings]
+        """Railway-oriented validation of the typed Kerberos settings namespace."""
+        kerberos = settings.Auth.kerberos
+        missing = [
+            field for field in self._KERBEROS_REQUIRED if not getattr(kerberos, field)
+        ]
         if missing:
             return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing)}",
+                f"Missing required Kerberos configuration fields: {', '.join(missing)}"
             )
-        for field, expected_types in self._KERBEROS_FIELD_TYPES.items():
-            value = settings.get(field)
-            if value is not None and not isinstance(value, expected_types):
-                return r[bool].fail(
-                    f"Kerberos {field!r}: expected {expected_types}, "
-                    f"got {type(value).__name__}",
-                )
         return r[bool].ok(value=True)
 
     class _KerberosTicketValidator:
@@ -62,13 +38,11 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def validate_ticket(
-            self,
-            _ticket_data: m.Auth.KerberosTicketData,
+            self, _ticket_data: m.Auth.KerberosTicketData
         ) -> p.Result[m.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             result = m.Auth.KerberosTicketData(
-                ticket="validated_ticket",
-                principal="kerberos_user",
+                ticket="validated_ticket", principal="kerberos_user"
             )
             return r[m.Auth.KerberosTicketData].ok(result)
 
@@ -100,8 +74,7 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def authenticate_ticket(
-            self,
-            ticket_data: m.Auth.KerberosTicketData,
+            self, ticket_data: m.Auth.KerberosTicketData
         ) -> p.Result[m.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
@@ -109,17 +82,11 @@ class FlextAuthKerberosSupport:
     def _ticket_validator_callable(
         self,
     ) -> (
-        Callable[
-            [str],
-            m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
-        ]
+        Callable[[str], m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData]
         | None
     ):
-        settings = self.config
-        if settings is None:
-            return None
-        validator_candidate = settings.get("ticket_validator")
-        if not callable(validator_candidate):
+        validator_candidate = self._external_ticket_validator
+        if validator_candidate is None:
             return None
 
         def validated(

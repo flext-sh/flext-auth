@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from flext_auth import FlextAuth, FlextAuthSettings
+from tests import u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase01:
@@ -24,9 +24,7 @@ class TestsFlextAuthApiCase01:
         """Test username validation through processor."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result_valid = auth.register_user(
-            "validuser",
-            "test@example.com",
-            "ValidPass123!",
+            "validuser", "test@example.com", "ValidPass123!"
         )
         u.Tests.Matchers.that(result_valid.success, eq=True)
         result_short = auth.register_user("ab", "test2@example.com", "ValidPass123!")

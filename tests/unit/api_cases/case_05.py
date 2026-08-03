@@ -5,8 +5,9 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings
+from flext_tests import tm
+from tests import c, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase05:
@@ -59,14 +60,14 @@ class TestsFlextAuthApiCase05:
     def test_flext_auth_quick_start_default(self) -> None:
         """Test FlextAuth.quick_start() with default parameters."""
         auth = FlextAuth.quick_start()
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
         u.Tests.Matchers.that(auth.settings, none=False)
         u.Tests.Matchers.that(auth.registry, none=False)
 
     def test_flext_auth_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() without creating REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
         nonexistent_result = (
             auth.identity_service.identity_manager.get_user_by_username(
                 "nonexistent_user"
@@ -79,7 +80,7 @@ class TestsFlextAuthApiCase05:
     def test_flext_auth_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
 
     def test_flext_auth_config_creation_failure(self) -> None:
         """Test FlextAuth initialization when settings creation fails - lines 228-229."""
@@ -94,13 +95,13 @@ class TestsFlextAuthApiCase05:
     def test_quick_start_redacted_ldap_bind_password_creation_failure(self) -> None:
         """Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation (reserved for future)."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, is_=FlextAuth)
 
     def test_quick_start_general_failure(self) -> None:
         """Test quick_start general path."""
         auth = FlextAuth.quick_start(create_admin_user=True)
-        assert auth is not None
-        assert isinstance(auth, FlextAuth)
+        tm.that(auth, none=False)
+        tm.that(auth, is_=FlextAuth)
 
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
@@ -117,9 +118,7 @@ class TestsFlextAuthApiCase05:
         """Test register_user method error paths."""
         auth = FlextAuth()
         result = auth.register_user(
-            username="testuser",
-            email="invalid-email-format",
-            password="ValidPassword123!",
+            username="testuser", email="invalid-email-format", password=c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         error_msg = result.error or ""

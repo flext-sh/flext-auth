@@ -1,30 +1,23 @@
 from __future__ import annotations
 
-from collections.abc import (
-    MutableMapping,
-)
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r, u
-
-from flext_auth import t
-from flext_auth.protocols import p
 from flext_core import FlextContext
 
 if TYPE_CHECKING:
-    from flext_auth.settings import FlextAuthSettings
+    from collections.abc import MutableMapping
+
+    from flext_auth import p, t
 
 
 class FlextAuthRateLimiterManagers:
     _context_type: ClassVar[p.ContextType] = FlextContext
 
     class FlextAuthRateLimiter:
-        def __init__(
-            self, settings: FlextAuthSettings, dispatcher: p.Dispatcher
-        ) -> None:
+        def __init__(self, dispatcher: p.Dispatcher) -> None:
             super().__init__()
-            self.config = settings
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
             self.context = FlextAuthRateLimiterManagers._context_type.create()
@@ -43,7 +36,7 @@ class FlextAuthRateLimiterManagers:
 
             if len(recent_attempts) >= self._max_attempts:
                 fail_result: p.Result[bool] = r[bool].fail(
-                    "Too many failed attempts. Please try again later.",
+                    "Too many failed attempts. Please try again later."
                 )
                 return fail_result
             allowed_result: p.Result[bool] = r[bool].ok(value=True)
@@ -67,9 +60,7 @@ class FlextAuthRateLimiterManagers:
             self._attempts[username]["attempts"] = recent_attempts
 
         def _cleanup_window(
-            self,
-            username: str,
-            now: datetime,
+            self, username: str, now: datetime
         ) -> t.Auth.ManagersAttemptEvents:
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)

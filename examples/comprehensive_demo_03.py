@@ -14,12 +14,7 @@ import os
 import secrets
 import string
 
-from flext_auth import (
-    FlextAuth,
-    FlextAuthModels,
-    FlextAuthSettings,
-    m,
-)
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, m
 
 
 class FlextAuthComprehensiveDemo:
@@ -47,9 +42,7 @@ class FlextAuthComprehensiveDemo:
             identity_id: str = user.unique_id
             auth.session_service.session_manager.get_active_sessions(identity_id)
             if session_id:
-                auth.session_service.session_manager.end_session_by_id(
-                    session_id,
-                )
+                auth.session_service.session_manager.end_session_by_id(session_id)
 
     @staticmethod
     def demo_password_operations() -> None:
@@ -73,9 +66,7 @@ class FlextAuthComprehensiveDemo:
         """Demonstrate JWT token operations."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
-            "jwtuser",
-            "jwt@example.com",
-            "JWTPassword123!",
+            "jwtuser", "jwt@example.com", "JWTPassword123!"
         )
         if user_result.failure:
             return

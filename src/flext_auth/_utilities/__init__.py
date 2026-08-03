@@ -1,98 +1,81 @@
-# AUTO-GENERATED FILE — Regenerate with: make gen
-"""Utilities package."""
+# @generated AUTO-GENERATED FILE — Regenerate with: make gen
+"""Flext Auth. Utilities package."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import (
-    build_lazy_import_map,
-    install_lazy_exports,
-    merge_lazy_imports,
-)
+from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth._utilities._managers.auth_managers_session import (
+    from . import _managers as _managers
+    from ._managers.auth_managers_session import (
         FlextAuthSessionManagers as FlextAuthSessionManagers,
     )
-    from flext_auth._utilities._managers.rate_limiter import (
+    from ._managers.rate_limiter import (
         FlextAuthRateLimiterManagers as FlextAuthRateLimiterManagers,
     )
-    from flext_auth._utilities._managers.user import (
-        FlextAuthUserManagers as FlextAuthUserManagers,
-    )
-    from flext_auth._utilities._managers.user_create import (
+    from ._managers.user import FlextAuthUserManagers as FlextAuthUserManagers
+    from ._managers.user_create import (
         FlextAuthUserManagerCreate as FlextAuthUserManagerCreate,
     )
-    from flext_auth._utilities._managers.user_extras import (
-        FlextAuthUserIdentityExtras as FlextAuthUserIdentityExtras,
-    )
-    from flext_auth._utilities._managers.user_read import (
+    from ._managers.user_read import (
         FlextAuthUserManagerRead as FlextAuthUserManagerRead,
     )
-    from flext_auth._utilities._managers.user_write import (
+    from ._managers.user_write import (
         FlextAuthUserManagerWrite as FlextAuthUserManagerWrite,
     )
-    from flext_auth._utilities.auth import (
-        FlextAuthUtilitiesAuth as FlextAuthUtilitiesAuth,
-    )
-    from flext_auth._utilities.auth_response import (
+    from .auth import FlextAuthUtilitiesAuth as FlextAuthUtilitiesAuth
+    from .auth_response import (
         FlextAuthUtilitiesAuthResponse as FlextAuthUtilitiesAuthResponse,
     )
-    from flext_auth._utilities.auth_token import (
-        FlextAuthUtilitiesAuthToken as FlextAuthUtilitiesAuthToken,
-    )
-    from flext_auth._utilities.auth_validation import (
+    from .auth_token import FlextAuthUtilitiesAuthToken as FlextAuthUtilitiesAuthToken
+    from .auth_validation import (
         FlextAuthUtilitiesAuthValidation as FlextAuthUtilitiesAuthValidation,
     )
-    from flext_auth._utilities.managers import (
-        FlextAuthUtilitiesManagers as FlextAuthUtilitiesManagers,
-    )
-_LAZY_IMPORTS = merge_lazy_imports(
-    ("._managers",),
-    build_lazy_import_map(
-        {
-            "._managers": ("_managers",),
-            "._managers.auth_managers_session": ("FlextAuthSessionManagers",),
-            "._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
-            "._managers.user": ("FlextAuthUserManagers",),
-            "._managers.user_create": ("FlextAuthUserManagerCreate",),
-            "._managers.user_extras": ("FlextAuthUserIdentityExtras",),
-            "._managers.user_read": ("FlextAuthUserManagerRead",),
-            "._managers.user_write": ("FlextAuthUserManagerWrite",),
-            ".auth": ("FlextAuthUtilitiesAuth",),
-            ".auth_response": ("FlextAuthUtilitiesAuthResponse",),
-            ".auth_token": ("FlextAuthUtilitiesAuthToken",),
-            ".auth_validation": ("FlextAuthUtilitiesAuthValidation",),
-            ".managers": ("FlextAuthUtilitiesManagers",),
-        },
-    ),
-    exclude_names=(
-        "cleanup_submodule_namespace",
-        "install_lazy_exports",
-        "lazy_getattr",
-        "logger",
-        "merge_lazy_imports",
-        "output",
-        "output_reporting",
-        "pytest_addoption",
-        "pytest_collect_file",
-        "pytest_collection_modifyitems",
-        "pytest_configure",
-        "pytest_runtest_setup",
-        "pytest_runtest_teardown",
-        "pytest_sessionfinish",
-        "pytest_sessionstart",
-        "pytest_terminal_summary",
-        "pytest_warning_recorded",
-    ),
-    module_name=__name__,
-)
+    from .identity_audit import FlextAuthIdentityAudit as FlextAuthIdentityAudit
+    from .managers import FlextAuthUtilitiesManagers as FlextAuthUtilitiesManagers
+
+_LAZY_MODULES: dict[str, tuple[str, ...]] = {
+    "._managers": ("_managers",),
+    "._managers.auth_managers_session": ("FlextAuthSessionManagers",),
+    "._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
+    "._managers.user": ("FlextAuthUserManagers",),
+    "._managers.user_create": ("FlextAuthUserManagerCreate",),
+    "._managers.user_read": ("FlextAuthUserManagerRead",),
+    "._managers.user_write": ("FlextAuthUserManagerWrite",),
+    ".auth": ("FlextAuthUtilitiesAuth",),
+    ".auth_response": ("FlextAuthUtilitiesAuthResponse",),
+    ".auth_token": ("FlextAuthUtilitiesAuthToken",),
+    ".auth_validation": ("FlextAuthUtilitiesAuthValidation",),
+    ".identity_audit": ("FlextAuthIdentityAudit",),
+    ".managers": ("FlextAuthUtilitiesManagers",),
+}
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
+_LAZY_ALIAS_GROUPS: dict[str, tuple[tuple[str, str], ...]] = {}
+
+
+_LAZY_IMPORTS = build_lazy_import_map(
+    _LAZY_MODULES, alias_groups=_LAZY_ALIAS_GROUPS, sort_keys=False
 )
+
+_PUBLIC_EXPORTS: tuple[str, ...] = (
+    "FlextAuthIdentityAudit",
+    "FlextAuthRateLimiterManagers",
+    "FlextAuthSessionManagers",
+    "FlextAuthUserManagerCreate",
+    "FlextAuthUserManagerRead",
+    "FlextAuthUserManagerWrite",
+    "FlextAuthUserManagers",
+    "FlextAuthUtilitiesAuth",
+    "FlextAuthUtilitiesAuthResponse",
+    "FlextAuthUtilitiesAuthToken",
+    "FlextAuthUtilitiesAuthValidation",
+    "FlextAuthUtilitiesManagers",
+    "_managers",
+)
+
+__all__: tuple[str, ...] = tuple(_PUBLIC_EXPORTS)
+
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

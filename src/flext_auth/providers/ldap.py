@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthProviderMixin, p, r, t
+from flext_auth import p, r, t
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
 class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -22,7 +23,7 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         >>> result = provider.authenticate({"username": "user", "password": "password"})
         >>> if result.success:
         ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
+        ...     u.Cli.print(f"Authenticated with token: {token.token}")
 
     """
 

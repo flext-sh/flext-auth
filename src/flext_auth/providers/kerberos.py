@@ -2,24 +2,23 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import override
 
-from flext_auth import FlextAuthRfcProvider, c, m, p, r, t
+from flext_auth import c, m, p, r, t
 from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     """Kerberos authentication provider."""
 
-    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
+    def __init__(self) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
         """
-        super().__init__(self.project_to_scalar_config(settings))
-        self.config = settings
+        super().__init__()
         validation_result = self._validate_kerberos_configuration()
         if validation_result.failure:
             msg = f"Kerberos configuration validation failed: {validation_result.error}"
@@ -32,9 +31,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     def get_metadata(self) -> m.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
         return m.Auth.Providers.Metadata(
-            name="kerberos",
-            version="5",
-            capabilities=tuple(self.supports()),
+            name="kerberos", version="5", capabilities=tuple(self.supports())
         )
 
     @override
@@ -46,7 +43,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         """Validate Kerberos token and return user."""
         if not token.strip():
             return r[m.Auth.AuthIdentity].fail(
-                "Kerberos token must be a non-empty string",
+                "Kerberos token must be a non-empty string"
             )
         validator = self._ticket_validator_callable()
         if validator is None:
@@ -61,15 +58,14 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 )
                 if claims_result.success
                 else r[m.Auth.AuthIdentity].fail(
-                    "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
+                    "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)"
                 )
             )
         try:
             validator_payload = validator(token)
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[m.Auth.AuthIdentity].fail_op(
-                "Kerberos ticket validator execution",
-                exc,
+                "Kerberos ticket validator execution", exc
             )
         if isinstance(validator_payload, m.Auth.AuthIdentity):
             return r[m.Auth.AuthIdentity].ok(validator_payload)
@@ -84,24 +80,18 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 },
                 m.Auth.AuthIdentity,
             )
-        if isinstance(validator_payload, Mapping):
-            try:
-                parsed_claims = t.json_mapping_adapter().validate_python(
-                    validator_payload,
-                )
-            except c.ValidationError as exc:
-                return r[m.Auth.AuthIdentity].fail(
-                    f"Kerberos ticket validator mapping payload is invalid: {exc}",
-                )
-            return r[m.Auth.AuthIdentity].from_validation(
-                {
-                    **parsed_claims,
-                    c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
-                },
-                m.Auth.AuthIdentity,
+        try:
+            parsed_claims = t.json_mapping_adapter().validate_python(validator_payload)
+        except c.ValidationError as exc:
+            return r[m.Auth.AuthIdentity].fail(
+                f"Kerberos ticket validator mapping payload is invalid: {exc}"
             )
-        return r[m.Auth.AuthIdentity].fail(
-            "Kerberos ticket validator returned unsupported payload",
+        return r[m.Auth.AuthIdentity].from_validation(
+            {
+                **parsed_claims,
+                c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN,
+            },
+            m.Auth.AuthIdentity,
         )
 
 

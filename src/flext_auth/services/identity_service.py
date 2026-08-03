@@ -5,10 +5,9 @@ from __future__ import annotations
 from typing import override
 
 from flext_api import r
-
-from flext_auth import FlextAuthSettings, c, m, p, s, t
+from flext_auth import c, m, p, s, t
+from flext_auth._utilities.identity_audit import FlextAuthIdentityAudit
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
-from flext_auth.services._identity_audit import FlextAuthIdentityAudit
 
 
 class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
@@ -17,28 +16,33 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
     def __init__(
         self,
         *,
-        settings: FlextAuthSettings,
         dispatcher: p.Dispatcher,
         managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
     ) -> None:
-        """Generic initialization with dependency injection."""
+        """Initialize with dependency injection."""
         super().__init__()
         self._managers = (
             managers
             if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(settings, dispatcher)
+            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
         )
 
     @property
-    @override
     def identity_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
 
+    @override
+    def _persist_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
+        """Persist failed-attempt state through the concrete user manager."""
+        return self.identity_manager.update_user(
+            identity.unique_id,
+            failed_attempts=identity.failed_attempts,
+            locked_until=identity.locked_until,
+        ).map(lambda _: True)
+
     def authenticate_identity(
-        self,
-        name: str,
-        credential: str,
+        self, name: str, credential: str
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         identity_result = self.identity_manager.get_user_by_username(name)
@@ -47,7 +51,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         identity = identity_result.value
         if identity.locked():
             return r[m.Auth.AuthIdentity].fail(
-                "Account is locked due to too many failed attempts",
+                "Account is locked due to too many failed attempts"
             )
         verification_result = identity.verify_credential(credential)
         if verification_result.success and verification_result.value:
@@ -63,10 +67,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         return r[m.Auth.AuthIdentity].fail(error_message)
 
     def authorize_identity(
-        self,
-        identity_id: str,
-        permission: str,
-        resource: str | None = None,
+        self, identity_id: str, permission: str, resource: str | None = None
     ) -> p.Result[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
@@ -75,19 +76,13 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: self._log_authorization_result(
-                    ip[0],
-                    permission,
-                    resource,
-                    allowed=ip[1],
-                ),
+                    ip[0], permission, resource, allowed=ip[1]
+                )
             )
         )
 
     def change_credential(
-        self,
-        identity_id: str,
-        current_credential: str,
-        new_credential: str,
+        self, identity_id: str, current_credential: str, new_credential: str
     ) -> p.Result[bool]:
         """Railway-oriented credential change with validation."""
         result: p.Result[bool]
@@ -103,7 +98,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
                 result = r[bool].fail("Current credential is incorrect")
             elif len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
                 result = r[bool].fail(
-                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
                 )
             else:
                 set_result = identity.update_credential(new_credential)
@@ -111,7 +106,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
                     result = r[bool].fail(set_result.error)
                 else:
                     result = r[bool].ok(
-                        self._log_success("Password change successful", identity.name),
+                        self._log_success("Password change successful", identity.name)
                     )
         return result
 
@@ -146,7 +141,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
             return r[m.Auth.AuthIdentity].fail(str(exc))
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.Auth.AuthIdentity].fail(
-                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
         return (
             r[str]
@@ -157,15 +152,8 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
                     email=request.contact,
                     password_hash=ch,
                     roles=request.roles,
-                ),
+                )
             )
-        )
-
-    @override
-    def execute(self) -> p.Result[p.Base]:
-        """Railway-oriented execute with focused service pattern."""
-        return r[p.Base].fail(
-            "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
 
     def reset_credential(self, identity_id: str, new_credential: str) -> p.Result[bool]:
@@ -176,14 +164,12 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         identity = identity_result.value
         if len(new_credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[bool].fail(
-                f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
         set_result = identity.update_credential(new_credential)
         if set_result.failure:
             return r[bool].fail(set_result.error)
-        return r[bool].ok(
-            self._log_success("Password reset successful", identity.name),
-        )
+        return r[bool].ok(self._log_success("Password reset successful", identity.name))
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityService"]

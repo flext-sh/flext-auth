@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_cli import u as cli_u
+from flext_cli import cli
 
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import r
@@ -17,7 +17,7 @@ from flext_core import r
 
 def _emit(message: str) -> None:
     """Emit example output through the canonical CLI facade."""
-    cli_u.Cli.formatters_print(message)
+    cli.print(message)
 
 
 class FlextAuthRefactoredSystemShowcaseExample:
@@ -39,9 +39,7 @@ class FlextAuthRefactoredSystemShowcaseExample:
         """Demonstrate quick start behavior via FlextAuth public API."""
         auth_service = FlextAuth.quick_start(create_admin_user=False)
         quickstart_result = auth_service.register_user(
-            "quickstart_user",
-            "quickstart@example.com",
-            "QuickstartPassword123!",
+            "quickstart_user", "quickstart@example.com", "QuickstartPassword123!"
         )
         if quickstart_result.success:
             created_identity = quickstart_result.value

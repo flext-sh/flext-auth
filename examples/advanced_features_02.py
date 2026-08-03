@@ -60,12 +60,7 @@ class FlextAuthAdvancedFeaturesExample:
                 "AdminPass123!",
                 ["REDACTED_LDAP_BIND_PASSWORD", "user"],
             ),
-            (
-                "manager",
-                "manager@company.com",
-                "ManagerPass123!",
-                ["manager", "user"],
-            ),
+            ("manager", "manager@company.com", "ManagerPass123!", ["manager", "user"]),
             ("employee", "employee@company.com", "EmployeePass123!", ["user"]),
         ]
         registered_users: t.MutableSequenceOf[FlextAuthModels.Auth.AuthIdentity] = []
@@ -79,9 +74,7 @@ class FlextAuthAdvancedFeaturesExample:
         """Demonstrate authentication session handling."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
-            "sessionuser",
-            "session@example.com",
-            "SessionPass123!",
+            "sessionuser", "session@example.com", "SessionPass123!"
         )
         if user_result.failure:
             return
@@ -118,9 +111,7 @@ class FlextAuthAdvancedFeaturesExample:
         """Demonstrate advanced token validation."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
-            "tokenuser",
-            "token@example.com",
-            "TokenPass123!",
+            "tokenuser", "token@example.com", "TokenPass123!"
         )
         if user_result.failure:
             return

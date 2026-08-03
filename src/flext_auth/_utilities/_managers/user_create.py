@@ -2,22 +2,21 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
-from datetime import datetime
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
-from flext_api import r
-
+from flext_api import r, u
 from flext_auth import m, p, t
-from flext_auth._utilities._managers.user_extras import FlextAuthUserIdentityExtras
 from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
-from flext_auth.utilities import u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+    from datetime import datetime
 
 
 class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
-    IdentityExtras: ClassVar[type[FlextAuthUserIdentityExtras]] = (
-        FlextAuthUserIdentityExtras
+    IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
+        m.Auth.UserIdentityExtras
     )
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
@@ -43,15 +42,13 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         normalized_identity_extras = self.IdentityExtras.model_validate(
             extra_fields
         ).model_dump(exclude_none=True)
-        user = m.Auth.AuthIdentity.model_validate(
-            {
-                "unique_id": user_id,
-                "name": username,
-                "contact": normalized_email,
-                "credential_hash": password_hash,
-                **normalized_identity_extras,
-            },
-        )
+        user = m.Auth.AuthIdentity.model_validate({
+            "unique_id": user_id,
+            "name": username,
+            "contact": normalized_email,
+            "credential_hash": password_hash,
+            **normalized_identity_extras,
+        })
         storage_data: t.Auth.ManagersUserData = {
             "unique_id": user.unique_id,
             "name": user.name,

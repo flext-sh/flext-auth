@@ -5,9 +5,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core.lazy import (
+    build_lazy_import_map,
+    install_lazy_exports,
+    merge_lazy_imports,
+)
 
 if TYPE_CHECKING:
+    from examples._utilities.example_utilities import (
+        FlextAuthExampleUtilities as FlextAuthExampleUtilities,
+    )
     from examples.advanced_features_02 import (
         FlextAuthAdvancedFeaturesExample as FlextAuthAdvancedFeaturesExample,
     )
@@ -42,22 +49,24 @@ if TYPE_CHECKING:
     from examples.simple_usage_08 import (
         FlextAuthSimpleUsageExample as FlextAuthSimpleUsageExample,
     )
-    from examples.utils import FlextAuthExampleUtilities as FlextAuthExampleUtilities
-    from flext_core import (
+    from flext_auth import (
         c as c,
         d as d,
         e as e,
         h as h,
         m as m,
-        p as p,
+        p,
         r as r,
         s as s,
         t as t,
-        u as u,
+        u,
         x as x,
     )
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
+_LAZY_IMPORTS = merge_lazy_imports(
+    ("._utilities",),
+    build_lazy_import_map({
+        "._utilities": ("_utilities",),
+        "._utilities.example_utilities": ("FlextAuthExampleUtilities",),
         ".advanced_features_02": ("FlextAuthAdvancedFeaturesExample",),
         ".basic_auth_05": ("FlextAuthBasicAuthExample",),
         ".basic_refactored_usage_06": ("FlextAuthDemo",),
@@ -70,27 +79,29 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".flext_config_usage": ("FlextAuthConfigUsageExample",),
         ".refactored_system_showcase_04": ("FlextAuthRefactoredSystemShowcaseExample",),
         ".simple_usage_08": ("FlextAuthSimpleUsageExample",),
-        ".utils": ("FlextAuthExampleUtilities",),
-        "flext_core": (
-            "c",
-            "d",
-            "e",
-            "h",
-            "m",
-            "p",
-            "r",
-            "s",
-            "t",
-            "u",
-            "x",
-        ),
-    },
+        "flext_auth": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x"),
+    }),
+    exclude_names=(
+        "cleanup_submodule_namespace",
+        "install_lazy_exports",
+        "lazy_getattr",
+        "logger",
+        "merge_lazy_imports",
+        "output",
+        "output_reporting",
+        "pytest_addoption",
+        "pytest_collect_file",
+        "pytest_collection_modifyitems",
+        "pytest_configure",
+        "pytest_runtest_setup",
+        "pytest_runtest_teardown",
+        "pytest_sessionfinish",
+        "pytest_sessionstart",
+        "pytest_terminal_summary",
+        "pytest_warning_recorded",
+    ),
+    module_name=__name__,
 )
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

@@ -21,9 +21,9 @@ class FlextAuthBasicUsageFlows:
         settings = FlextAuthSettings()
         cls.logger.info(
             "Authentication configuration loaded",
-            expiry_minutes=settings.expiry_minutes,
-            hash_rounds=settings.hash_rounds,
-            max_sessions_per_user=settings.max_sessions_per_user,
+            expiry_minutes=settings.Auth.expiry_minutes,
+            hash_rounds=settings.Auth.hash_rounds,
+            max_sessions_per_user=settings.Auth.max_sessions_per_user,
         )
 
     @classmethod
@@ -112,21 +112,16 @@ class FlextAuthBasicUsageFlows:
                 token_result = auth.token_service.validate_token(jwt_token_str)
                 if token_result.success:
                     cls.logger.info(
-                        "Token validation successful",
-                        valid=token_result.value,
+                        "Token validation successful", valid=token_result.value
                     )
                 else:
                     cls.logger.error(
-                        "Token validation failed",
-                        error=token_result.error,
+                        "Token validation failed", error=token_result.error
                     )
             else:
                 cls.logger.error("Authentication failed", error=auth_result.error)
         else:
-            cls.logger.error(
-                "User registration failed",
-                error=register_result.error,
-            )
+            cls.logger.error("User registration failed", error=register_result.error)
 
     @classmethod
     def example_direct_auth(cls) -> None:

@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
-from datetime import datetime
+from typing import TYPE_CHECKING
 
-from flext_api import r
-
-from flext_auth import m, p, t
+from flext_api import r, u
 from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
-from flext_auth.utilities import u
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+    from datetime import datetime
+
+    from flext_auth import m, p, t
 
 
 class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
@@ -18,10 +20,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
         """Add permission to user."""
         return self._modify_user_list_field(
-            user_id,
-            "permissions",
-            permission,
-            add=True,
+            user_id, "permissions", permission, add=True
         )
 
     def add_user_role(self, user_id: str, role: str) -> p.Result[bool]:
@@ -40,10 +39,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     def remove_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
         """Remove permission from user."""
         return self._modify_user_list_field(
-            user_id,
-            "permissions",
-            permission,
-            add=False,
+            user_id, "permissions", permission, add=False
         )
 
     def remove_user_role(self, user_id: str, role: str) -> p.Result[bool]:
@@ -51,9 +47,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         return self._modify_user_list_field(user_id, "roles", role, add=False)
 
     def update_user(
-        self,
-        user_id: str,
-        **updates: t.Scalar | t.StrSequence | datetime | None,
+        self, user_id: str, **updates: t.Scalar | t.StrSequence | datetime | None
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Update user data."""
         filtered_updates: t.Auth.ManagersUserData = {
@@ -64,7 +58,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
                 ud[1].update(filtered_updates),
                 ud[1].update({"updated_at": u.now()}),
                 self._create_identity_from_storage(ud[1]),
-            )[2],
+            )[2]
         )
 
     def _apply_list_modification(
@@ -86,12 +80,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
             field_list_value.remove(value)
 
     def _modify_user_list_field(
-        self,
-        user_id: str,
-        field: str,
-        value: str,
-        *,
-        add: bool = True,
+        self, user_id: str, field: str, value: str, *, add: bool = True
     ) -> p.Result[bool]:
         """Add or remove value from user list field (roles/permissions).
 

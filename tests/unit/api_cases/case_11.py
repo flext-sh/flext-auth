@@ -6,8 +6,8 @@ import threading
 from threading import Thread
 
 from flext_auth import FlextAuth
+from tests import c, u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
-from tests.utilities import u
 
 
 class TestsFlextAuthApiCase11:
@@ -23,11 +23,11 @@ class TestsFlextAuthApiCase11:
             _ = auth.register_user(
                 username=f"user_{index}",
                 email=f"user_{index}@example.com",
-                password="Password123!",
+                password=c.TEST_PASSWORD,
             )
 
         def authenticate_user(index: int) -> None:
-            _ = auth.authenticate_user(f"user_{index}", "Password123!")
+            _ = auth.authenticate_user(f"user_{index}", c.TEST_PASSWORD)
 
         threads: list[Thread] = []
         for i in range(5):
@@ -49,7 +49,7 @@ class TestsFlextAuthApiCase11:
         registered = auth.register_user(
             username="public-api-token-user",
             email="public-api-token-user@example.com",
-            password="PublicApiTokenPass123!",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.ok(registered)
 
@@ -62,7 +62,7 @@ class TestsFlextAuthApiCase11:
         registered = auth.register_user(
             username="public-api-validate-user",
             email="public-api-validate-user@example.com",
-            password="PublicApiValidatePass123!",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.ok(registered)
 

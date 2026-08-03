@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import os
 
-from flext_cli import u as cli_u
+from flext_cli import cli
 
 from flext_auth import FlextAuth, FlextAuthSettings
 
 
 def _emit(message: str) -> None:
     """Emit example output through the canonical CLI facade."""
-    cli_u.Cli.formatters_print(message)
+    cli.print(message)
 
 
 class FlextAuthBasicAuthExample:

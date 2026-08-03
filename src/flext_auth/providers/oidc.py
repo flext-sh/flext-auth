@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthRfcProvider, p, r, t
+from flext_auth import p, r, t
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthOidcProvider(FlextAuthRfcProvider):
@@ -26,7 +27,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
         >>> result = provider.authenticate({"id_token": "oidc-token"})
         >>> if result.success:
         ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
+        ...     u.Cli.print(f"Authenticated with token: {token.token}")
 
     """
 
