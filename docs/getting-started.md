@@ -213,7 +213,7 @@ if result.success:
     u.Cli.info(f"User {data['user']} authenticated")```
 ### Container Integration
 
-```python notest
+```python
 from flext_cli import u
 from flext_core import FlextContainer, FlextSettings
 from flext_auth import FlextAuth, FlextAuthSettings

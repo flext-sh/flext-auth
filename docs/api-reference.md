@@ -346,7 +346,7 @@ ______________________________________________________________________
 
 ### Container Integration
 
-```python notest
+```python
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import FlextContainer
 from flext_cli import u

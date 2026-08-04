@@ -69,7 +69,7 @@ else:
 
 Use `FlextContainer` for dependency injection:
 
-```python notest
+```python
 from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextContainer, FlextSettings

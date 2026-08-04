@@ -85,7 +85,7 @@ git status
 
 #### Problem: ModuleNotFoundError
 
-```python notest
+```python
 # Error example (not executable)
 ModuleNotFoundError: No module named 'flext_core'
 ```
@@ -135,7 +135,7 @@ except ImportError as e:
 
 #### Problem: MyPy errors
 
-```python notest
+```python
 # Error example (not executable)
 error: Argument 1 to "process" has incompatible type "str"; expected "t.JsonMapping"
 ```
@@ -167,7 +167,7 @@ make pyrefly
 
 #### Problem: Tests failing
 
-```python notest
+```python
 # Error example (not executable)
 AssertionError: Expected success but got failure
 ```
@@ -205,7 +205,7 @@ def test_with_debug():
 
 #### Problem: Configuration not loading
 
-```python notest
+```python
 # Error example (not executable)
 ValidationError: field required
 ```
@@ -250,7 +250,7 @@ u.Cli.info(f"Config: {settings.model_dump()}")```
 
 #### Problem: LDIF parsing fails
 
-```python notest
+```python
 # Error example (not executable)
 LdifParsingException: Invalid LDIF format
 ```
@@ -308,7 +308,7 @@ def validate_ldif_content(content: str) -> t.StrSequence:
 
 #### Problem: Migration fails
 
-```python notest
+```python
 # Error example (not executable)
 LdifMigrationException: Server compatibility error
 ```
@@ -342,7 +342,7 @@ else:
 
 #### Problem: Slow processing
 
-```python notest
+```python
 # Symptoms (not executable)
 # - High memory usage
 # - Slow response times
@@ -534,7 +534,7 @@ def monitor_memory():
 monitor_memory()```
 ### CPU Issues
 
-```python notest
+```python
 from __future__ import annotations
 import time
 
