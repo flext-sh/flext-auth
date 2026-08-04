@@ -440,7 +440,7 @@ tests/
 
 ### Loading Test Data
 
-```python notest
+```python
 from __future__ import annotations
 import json
 from pathlib import Path

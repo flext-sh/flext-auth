@@ -165,7 +165,7 @@ else:
     u.Cli.info(f"Error: {result.error}")```
 ### 4. CQRS Pattern with Commands and Queries
 
-```python notest
+```python
 from __future__ import annotations
 from dataclasses import dataclass
 

@@ -157,7 +157,7 @@ ______________________________________________________________________
 
 FlextAuthSettings follows the FLEXT singleton pattern for global configuration:
 
-```python notest
+```python
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Settings singleton is resolved automatically by the facade

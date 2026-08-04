@@ -421,7 +421,7 @@ Update project README.md files when adding new features:
 
 - Add a "New Feature" section with usage and configuration examples.
 
-```python notest
+```python
 from flext_newlib import FlextNewlib, FlextNewlibSettings
 
 lib = FlextNewlib(settings=FlextNewlibSettings())

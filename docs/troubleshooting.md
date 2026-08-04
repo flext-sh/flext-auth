@@ -117,7 +117,7 @@ else:
 
 **Problem**: JWT token validation fails
 
-```python notest
+```python
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -174,7 +174,7 @@ ______________________________________________________________________
 
 **Problem**: Configuration not loading correctly
 
-```python notest
+```python
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
@@ -348,7 +348,7 @@ u.Cli.info(f"Bcrypt rounds: {settings.Auth.hash_rounds}")```
 
 **Monitoring**:
 
-```python notest
+```python
 import psutil
 
 from flext_auth import FlextAuth
@@ -369,7 +369,7 @@ u.Cli.info(f"Active sessions: {session_count}")
 
 **Mitigation**:
 
-```python notest
+```python
 from __future__ import annotations
 
 
@@ -428,7 +428,7 @@ uv run mypy src/flext_auth/
 
 **Solution**:
 
-```python notest
+```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
 from flext_auth import m
 

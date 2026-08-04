@@ -914,7 +914,7 @@ ______________________________________________________________________
 
 #### FORBIDDEN Direct Imports
 
-```python notest
+```python
 # ABSOLUTELY FORBIDDEN in flext-auth
 import httpx  # Use flext-api instead
 import requests  # Use flext-api instead
