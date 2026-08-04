@@ -199,7 +199,8 @@ def test_with_debug():
     u.Cli.info(f"Success: {result.success}")
     if result.failure:
         u.Cli.info(f"Error: {result.error}")
-    assert result.success```
+    assert result.success
+```
 ### 4. Configuration Issues
 
 #### Problem: Configuration not loading
