@@ -2,6 +2,10 @@
 
 # flext_auth.providers.oidc
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.oidc
     options:
       show_root_heading: true

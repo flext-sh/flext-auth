@@ -2,6 +2,10 @@
 
 # flext_auth.providers.rfc
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.rfc
     options:
       show_root_heading: true

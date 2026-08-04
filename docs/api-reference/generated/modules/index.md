@@ -1,35 +1,11 @@
-<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
-
 # flext-auth Module Index
+
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
+<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 These pages are generated from public modules and their docstrings.
 
-- [flext_auth.api](api.md)
-- [flext_auth.base](base.md)
-- [flext_auth.constants](constants.md)
-- [flext_auth.models](models.md)
-- [flext_auth.protocols](protocols.md)
-- [flext_auth.providers.apikey](providers/apikey.md)
-- [flext_auth.providers.basic](providers/basic.md)
-- [flext_auth.providers.certificate](providers/certificate.md)
-- [flext_auth.providers.jwt](providers/jwt.md)
-- [flext_auth.providers.jwt_token_validator](providers/jwt_token_validator.md)
-- [flext_auth.providers.kerberos](providers/kerberos.md)
-- [flext_auth.providers.kerberos_support](providers/kerberos_support.md)
-- [flext_auth.providers.ldap](providers/ldap.md)
-- [flext_auth.providers.mixin](providers/mixin.md)
-- [flext_auth.providers.oauth2](providers/oauth2.md)
-- [flext_auth.providers.oauth2_config](providers/oauth2_config.md)
-- [flext_auth.providers.oauth2_introspection](providers/oauth2_introspection.md)
-- [flext_auth.providers.oauth2_tokens](providers/oauth2_tokens.md)
-- [flext_auth.providers.oidc](providers/oidc.md)
-- [flext_auth.providers.rfc](providers/rfc.md)
-- [flext_auth.providers.saml](providers/saml.md)
-- [flext_auth.registry](registry.md)
-- [flext_auth.services.auth_service](services/auth_service.md)
-- [flext_auth.services.identity_service](services/identity_service.md)
-- [flext_auth.services.provider_service](services/provider_service.md)
-- [flext_auth.services.session_service](services/session_service.md)
-- [flext_auth.services.token_service](services/token_service.md)
-- [flext_auth.typings](typings.md)
-- [flext_auth.utilities](utilities.md)
+_No public modules discovered._

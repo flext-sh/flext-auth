@@ -2,6 +2,10 @@
 
 # flext_auth.services.session_service
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.services.session_service
     options:
       show_root_heading: true

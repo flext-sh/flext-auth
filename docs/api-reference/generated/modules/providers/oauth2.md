@@ -2,6 +2,10 @@
 
 # flext_auth.providers.oauth2
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.oauth2
     options:
       show_root_heading: true

@@ -2,6 +2,10 @@
 
 # flext_auth.services.identity_service
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.services.identity_service
     options:
       show_root_heading: true

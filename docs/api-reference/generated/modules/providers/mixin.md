@@ -2,6 +2,10 @@
 
 # flext_auth.providers.mixin
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.mixin
     options:
       show_root_heading: true

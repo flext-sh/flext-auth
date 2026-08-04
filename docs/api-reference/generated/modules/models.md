@@ -2,6 +2,10 @@
 
 # flext_auth.models
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.models
     options:
       show_root_heading: true

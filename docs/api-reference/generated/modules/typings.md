@@ -2,6 +2,10 @@
 
 # flext_auth.typings
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.typings
     options:
       show_root_heading: true

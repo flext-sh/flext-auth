@@ -2,6 +2,10 @@
 
 # flext_auth.providers.saml
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.saml
     options:
       show_root_heading: true

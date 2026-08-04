@@ -2,6 +2,10 @@
 
 # flext_auth.constants
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.constants
     options:
       show_root_heading: true

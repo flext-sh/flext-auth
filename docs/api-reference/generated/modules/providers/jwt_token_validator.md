@@ -2,6 +2,10 @@
 
 # flext_auth.providers.jwt_token_validator
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.jwt_token_validator
     options:
       show_root_heading: true
