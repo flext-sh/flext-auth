@@ -2,6 +2,10 @@
 
 # flext_auth.providers.jwt
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.jwt
     options:
       show_root_heading: true

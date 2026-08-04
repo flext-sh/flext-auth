@@ -45,4 +45,5 @@ src/flext_auth/
 make check PROJECT=flext-auth
 make test  PROJECT=flext-auth       # tests/{unit,fixtures}
 ```
+
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->

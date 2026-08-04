@@ -2,6 +2,10 @@
 
 # flext_auth.providers.ldap
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.ldap
     options:
       show_root_heading: true

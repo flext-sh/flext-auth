@@ -2,6 +2,10 @@
 
 # flext_auth.registry
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.registry
     options:
       show_root_heading: true

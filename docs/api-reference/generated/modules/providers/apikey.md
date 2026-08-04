@@ -2,6 +2,10 @@
 
 # flext_auth.providers.apikey
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.apikey
     options:
       show_root_heading: true

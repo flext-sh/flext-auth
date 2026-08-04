@@ -2,6 +2,10 @@
 
 # flext_auth.providers.kerberos
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.providers.kerberos
     options:
       show_root_heading: true

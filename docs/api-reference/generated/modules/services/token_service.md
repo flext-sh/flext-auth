@@ -2,6 +2,10 @@
 
 # flext_auth.services.token_service
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_auth.services.token_service
     options:
       show_root_heading: true

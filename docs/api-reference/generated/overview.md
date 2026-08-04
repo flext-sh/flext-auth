@@ -1,19 +1,27 @@
-<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
-
 # flext-auth API Overview
 
+<!-- TOC START -->
+- [Next Pages](#next-pages)
+<!-- TOC END -->
+
+<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
+
 - Package: `flext_auth`
-- Version: `0.12.0`
+- Version: `0.12.0rc0`
 - Description: FLEXT Auth - Enterprise Authentication & Authorization Service
 - Doc summary: Flext Auth package.
-- Classifiers: `Development Status :: 3 - Alpha`, `Intended Audience :: Developers`, `Operating System :: OS Independent`, `Programming Language :: Python :: 3 :: Only`, `Programming Language :: Python :: 3.13`, `Topic :: Software Development :: Libraries :: Python Modules` (+2 more)
+- Classifiers: `Development Status :: 3 - Alpha`, `Intended Audience ::
+  Developers`, `Operating System :: OS Independent`, `Programming Language ::
+  Python :: 3 :: Only`, `Programming Language :: Python :: 3.13`, `Topic ::
+  Software Development :: Libraries :: Python Modules` (+2 more)
 - Project class: `platform`
-- Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`, `security`, `typed`
-- Main facades: `FlextAuth`, `FlextAuthApiKeyProvider`, `FlextAuthApplicationService`, `FlextAuthBasicProvider`, `FlextAuthCertificateProvider`, `FlextAuthConstants`, `FlextAuthIdentityService`, `FlextAuthJwtProvider` (+22 more)
-- Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextAuth`, `FlextAuthApiKeyProvider`, `FlextAuthApplicationService`, `FlextAuthBasicProvider`, `FlextAuthCertificateProvider`, `FlextAuthConstants`, `FlextAuthIdentityService`, `FlextAuthJwtProvider`, `FlextAuthJwtTokenValidator`, `FlextAuthKerberosProvider` (+22 more)
+- Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`,
+  `security`, `typed`
+- Main facades: _none_
+- Alias exports: _none_
+- Public symbol exports: _none_
 - Exported module shortcuts: _none_
-- Generated module pages: `29`
+- Generated module pages: `0`
 
 ## Next Pages
 
