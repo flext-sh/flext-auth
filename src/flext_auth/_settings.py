@@ -59,7 +59,9 @@ class FlextAuthSettings(FlextSettings):
             ]
             renew_lifetime: Annotated[
                 int | None,
-                m.Field(default=None, description="Renewable ticket lifetime in seconds"),
+                m.Field(
+                    default=None, description="Renewable ticket lifetime in seconds"
+                ),
             ]
             forwardable: Annotated[
                 bool | None,
@@ -87,7 +89,8 @@ class FlextAuthSettings(FlextSettings):
             str, m.Field(default="flext-auth-users", description="Token audience claim")
         ]
         expiry_minutes: Annotated[
-            int, m.Field(default=1440, gt=0, description="Access token expiry in minutes")
+            int,
+            m.Field(default=1440, gt=0, description="Access token expiry in minutes"),
         ]
         session_expiry_minutes: Annotated[
             int, m.Field(default=1440, gt=0, description="Session expiry in minutes")
@@ -97,14 +100,18 @@ class FlextAuthSettings(FlextSettings):
         ]
         hash_rounds: Annotated[
             int,
-            m.Field(default=12, ge=4, le=31, description="Password hash rounds (bcrypt)"),
+            m.Field(
+                default=12, ge=4, le=31, description="Password hash rounds (bcrypt)"
+            ),
         ]
 
         @m.field_validator("secret_key", mode="before")
         @classmethod
         def _normalize_secret_key(cls, value: str | t.SecretStr) -> str:
             """Unwrap a t.SecretStr input and enforce the min length when set."""
-            plain = value.get_secret_value() if isinstance(value, t.SecretStr) else value
+            plain = (
+                value.get_secret_value() if isinstance(value, t.SecretStr) else value
+            )
             if plain and len(plain) < _SECRET_MIN_LENGTH:
                 msg = "secret_key must be at least 32 characters when provided"
                 raise ValueError(msg)
