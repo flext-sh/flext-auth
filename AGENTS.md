@@ -38,6 +38,8 @@ src/flext_auth/
 
 - Provider selection/extensibility is **registry-driven**; authentication lifecycle/session/token services are separate from provider implementations.
 - Canonical reference for pure-declaration `_settings.py`: `@field_validator` normalization + `@computed_field @property` derived secret, nothing else.
+- Config/settings canonical pattern: ADR-012.
+- Codemod governance (ast-grep + make mod): ADR-014.
 
 ## Commands
 
