@@ -127,9 +127,7 @@ if registered.success:
     if token_result.success:
         token = token_result.unwrap()
         validation_result = auth.token_service.validate_token(token)
-        # Returns failure for valid tokens
-```
-
+        # Returns failure for valid tokens```
 **Solutions**:
 
 1. **Token Format**:
@@ -179,9 +177,7 @@ from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
 # Access namespaced auth settings via settings.Auth
-u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")
-```
-
+u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")```
 **Solutions**:
 
 1. **Check Environment Variables**:
@@ -289,9 +285,7 @@ uv sync --all-packages
 uv run pytest tests/ -v
 
 # Run with coverage
-uv run pytest --cov=src/flext_auth tests/
-```
-
+uv run pytest --cov=src/flext_auth tests/```
 ______________________________________________________________________
 
 ## Performance Issues
@@ -364,9 +358,7 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 session_count = len(
     auth.session_service.session_manager._sessions
 )  # Internal attribute
-u.Cli.info(f"Active sessions: {session_count}")
-```
-
+u.Cli.info(f"Active sessions: {session_count}")```
 **Mitigation**:
 
 ```python
@@ -376,10 +368,7 @@ from __future__ import annotations
 # Implement session cleanup
 def cleanup_expired_sessions():
     """Clean up expired sessions (placeholder)."""
-    # Implementation needed in FlextAuth service
-    pass
-```
-
+    # Implementation needed in FlextAuth service```
 ______________________________________________________________________
 
 ## Development Issues
@@ -397,9 +386,7 @@ uv run mypy src/flext_auth/
 # Common errors:
 # - Missing type annotations
 # - r type issues
-# - Generic type problems
-```
-
+# - Generic type problems```
 **Solutions**:
 
 1. **Type Annotations**:
@@ -433,9 +420,7 @@ uv run mypy src/flext_auth/
 from flext_auth import m
 
 # Access models via namespace
-user = m.Auth.AuthIdentity(name="user", contact="user@example.com")
-```
-
+user = m.Auth.AuthIdentity(name="user", contact="user@example.com")```
 ______________________________________________________________________
 
 ## Production Issues
@@ -459,9 +444,7 @@ settings = FlextAuthSettings()
 u.Cli.info(f'Bcrypt rounds: {settings.Auth.hash_rounds}')  # Should be >= 12
 u.Cli.info(f'JWT expiry: {settings.Auth.expiry_minutes}')  # Should be <= 60
 u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')  # Should be <= 5
-"
-```
-
+"```
 ### Session Management
 
 **Problem**: Session issues in production

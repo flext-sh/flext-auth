@@ -160,9 +160,7 @@ flext-auth create-user \
 # Authenticate user
 flext-auth authenticate \
     --username bob \
-    --password securepass456
-```
-
+    --password securepass456```
 ### Configuration Management
 
 ```bash
@@ -170,9 +168,7 @@ flext-auth authenticate \
 flext-auth validate-settings
 
 # Show configuration summary
-flext-auth manage-settings show
-```
-
+flext-auth manage-settings show```
 ______________________________________________________________________
 
 ## FLEXT Integration Patterns
@@ -230,9 +226,7 @@ container.bind("auth_service", auth_service)
 auth_result = container.resolve("auth_service")
 if auth_result.success:
     auth = auth_result.unwrap()
-    u.Cli.info("Authentication service resolved")
-```
-
+    u.Cli.info("Authentication service resolved")```
 ______________________________________________________________________
 
 ## Domain Models
@@ -325,9 +319,7 @@ make test
 make check
 
 # Complete validation
-make val
-```
-
+make val```
 ### Documentation
 
 - **Architecture** - System design and patterns

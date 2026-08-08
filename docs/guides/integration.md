@@ -91,9 +91,7 @@ class UserService:
 
     def create_authenticated_user(self, user_data: dict):
         # Use injected auth service
-        return self._auth.register_user(**user_data)
-```
-
+        return self._auth.register_user(**user_data)```
 ### Domain Modeling
 
 All domain entities use `FlextModels` patterns:

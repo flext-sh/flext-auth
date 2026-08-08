@@ -87,32 +87,24 @@ git status
 
 ```python
 # Error example (not executable)
-ModuleNotFoundError: No module named 'flext_core'
-```
-
+ModuleNotFoundError: No module named 'flext_core'```
 #### Solutions
 
 **Check PYTHONPATH:**
 
 ```bash
 export PYTHONPATH=src
-uv run python -c "import flext_core; print(flext_core.__file__)"
-```
-
+uv run python -c "import flext_core; print(flext_core.__file__)"```
 **Reinstall dependencies:**
 
 ```bash
 make clean
-make boot
-```
-
+make boot```
 **Check uv environment:**
 
 ```bash
 uv venv
-uv sync
-```
-
+uv sync```
 ### Debug Import Issues
 
 ```python
@@ -137,9 +129,7 @@ except ImportError as e:
 
 ```python
 # Error example (not executable)
-error: Argument 1 to "process" has incompatible type "str"; expected "t.JsonMapping"
-```
-
+error: Argument 1 to "process" has incompatible type "str"; expected "t.JsonMapping"```
 #### Solutions
 
 **Fix type annotations:**
@@ -160,32 +150,24 @@ def process(data: t.JsonMapping) -> p.Result[t.JsonValue]:
 **Run Pyrefly with details:**
 
 ```bash
-make pyrefly
-```
-
+make pyrefly```
 ### 3. Test Failures
 
 #### Problem: Tests failing
 
 ```python
 # Error example (not executable)
-AssertionError: Expected success but got failure
-```
-
+AssertionError: Expected success but got failure```
 #### Solutions
 
 **Run with verbose output:**
 
 ```bash
-make test PYTEST_ARGS="tests/unit/test_module.py -vv --tb=long"
-```
-
+make test PYTEST_ARGS="tests/unit/test_module.py -vv --tb=long"```
 **Debug specific test:**
 
 ```bash
-uv run pytest tests/unit/test_module.py::TestClass::test_method -v --pdb
-```
-
+uv run pytest tests/unit/test_module.py::TestClass::test_method -v --pdb```
 **Check test data:**
 
 ```python
@@ -199,26 +181,20 @@ def test_with_debug():
     u.Cli.info(f"Success: {result.success}")
     if result.failure:
         u.Cli.info(f"Error: {result.error}")
-    assert result.success
-```
-
+    assert result.success```
 ### 4. Configuration Issues
 
 #### Problem: Configuration not loading
 
 ```python
 # Error example (not executable)
-ValidationError: field required
-```
-
+ValidationError: field required```
 #### Solutions
 
 **Check environment variables:**
 
 ```bash
-env | grep FLEXT_
-```
-
+env | grep FLEXT_```
 **Validate configuration:**
 
 ```python
@@ -253,10 +229,8 @@ u.Cli.info(f"Config: {settings.model_dump()}")```
 
 ```python
 # Error example (not executable)
-LdifParsingException: Invalid LDIF format
-```
-
-#### Solutions
+LdifParsingException: Invalid LDIF format```
+#### Solutions for LDIF processing
 
 **Check LDIF content:**
 
@@ -311,10 +285,8 @@ def validate_ldif_content(content: str) -> t.StrSequence:
 
 ```python
 # Error example (not executable)
-LdifMigrationException: Server compatibility error
-```
-
-#### Solutions
+LdifMigrationException: Server compatibility error```
+#### Solutions for migration
 
 **Check server configuration:**
 
@@ -347,10 +319,8 @@ else:
 # Symptoms (not executable)
 # - High memory usage
 # - Slow response times
-# - Timeout errors
-```
-
-#### Solutions
+# - Timeout errors```
+#### Solutions for performance
 
 **Profile memory usage:**
 
@@ -553,9 +523,7 @@ def monitor_cpu():
         time.sleep(1)
 
 
-monitor_cpu()
-```
-
+monitor_cpu()```
 ## Getting Help
 
 ### Self-Service Resources

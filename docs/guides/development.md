@@ -240,9 +240,7 @@ uv run pytest tests/integration/ # Integration tests
 uv run pytest tests/e2e/         # End-to-end tests
 
 # Run with coverage
-uv run pytest --cov=src --cov-report=html
-```
-
+uv run pytest --cov=src --cov-report=html```
 ### Writing Tests
 
 ```python
@@ -283,9 +281,7 @@ FLEXT uses pre-commit hooks to enforce quality standards:
 uv run pre-commit install
 
 # Run hooks manually
-uv run pre-commit run --all-files
-```
-
+uv run pre-commit run --all-files```
 ### Quality Checks
 
 ```bash
@@ -299,9 +295,7 @@ make check CHECK_GATES=pyrefly,mypy
 make check CHECK_GATES=security
 
 # All quality checks
-make check
-```
-
+make check```
 ## Adding New Projects
 
 ### 1. Create Project Structure
@@ -309,9 +303,7 @@ make check
 ```bash
 # Copy from existing project
 mkdir flext-newlib
-# Create pyproject.toml, README.md, src/flext_newlib, tests, etc.
-```
-
+# Create pyproject.toml, README.md, src/flext_newlib, tests, etc.```
 ### 2. Implement Core Patterns
 
 ```python
@@ -348,9 +340,7 @@ class FlextNewlibModels:
 ```bash
 # Add to workspace pyproject.toml
 # Add to workspace Makefile
-# Update documentation
-```
-
+# Update documentation```
 ## Debugging
 
 ### Type Errors
@@ -360,9 +350,7 @@ class FlextNewlibModels:
 make check PROJECT=flext-newlib CHECK_GATES=pyrefly
 
 # Check specific error
-make check PROJECT=flext-newlib CHECK_GATES=pyrefly FILES=src/flext_newlib/module.py
-```
-
+make check PROJECT=flext-newlib CHECK_GATES=pyrefly FILES=src/flext_newlib/module.py```
 ### Test Failures
 
 ```bash
@@ -370,9 +358,7 @@ make check PROJECT=flext-newlib CHECK_GATES=pyrefly FILES=src/flext_newlib/modul
 make test PROJECT=flext-newlib PYTEST_ARGS="tests/unit/test_module.py -vv --tb=long"
 
 # Debug mode
-make test PROJECT=flext-newlib PYTEST_ARGS="tests/unit/test_module.py --pdb"
-```
-
+make test PROJECT=flext-newlib PYTEST_ARGS="tests/unit/test_module.py --pdb"```
 ### Import Issues
 
 ```bash
@@ -381,9 +367,7 @@ export PYTHONPATH=src
 uv run python -c "import flext_core; print(flext_core.__file__)"
 
 # Check uv environment
-uv sync
-```
-
+uv sync```
 ## Documentation
 
 ### Code Documentation
@@ -427,9 +411,7 @@ from flext_newlib import FlextNewlib, FlextNewlibSettings
 lib = FlextNewlib(settings=FlextNewlibSettings())
 result = lib.process({"key": "value"})
 
-settings = FlextNewlibSettings(new_setting="value")
-```
-
+settings = FlextNewlibSettings(new_setting="value")```
 ## Contributing
 
 ### Pull Request Process

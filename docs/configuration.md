@@ -90,9 +90,7 @@ export AUTH_SECRET_KEY="your-secure-secret-key-with-at-least-32-chars"
 export AUTH_EXPIRY_MINUTES=30
 export AUTH_HASH_ROUNDS=14
 export AUTH_MAX_SESSIONS_PER_USER=5
-export AUTH_SESSION_EXPIRY_MINUTES=60
-```
-
+export AUTH_SESSION_EXPIRY_MINUTES=60```
 ______________________________________________________________________
 
 ## Custom Configuration
@@ -146,9 +144,7 @@ except Exception as e:
 flext-auth validate-settings
 
 # Show configuration summary
-flext-auth manage-settings show
-```
-
+flext-auth manage-settings show```
 ______________________________________________________________________
 
 ## Global Configuration
@@ -164,9 +160,7 @@ from flext_auth import FlextAuth, FlextAuthSettings
 settings = FlextAuthSettings()
 
 # Use global configuration
-auth = FlextAuth()  # Uses global settings automatically
-```
-
+auth = FlextAuth()  # Uses global settings automatically```
 ### Global Instance Access
 
 ```python

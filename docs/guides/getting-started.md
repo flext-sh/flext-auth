@@ -214,9 +214,7 @@ dispatcher.register_handler(GetUserQuery, user_service.get_user)
 
 # Use the dispatcher
 create_result = dispatcher.dispatch(CreateUserCommand("john", "john@example.com"))
-get_result = dispatcher.dispatch(GetUserQuery("user123"))
-```
-
+get_result = dispatcher.dispatch(GetUserQuery("user123"))```
 ## Configuration
 
 ### Basic Configuration
@@ -227,9 +225,7 @@ FLEXT uses environment variables for configuration:
 # Set configuration
 export FLEXT_LOG_LEVEL=INFO
 export FLEXT_LDIF_DEFAULT_ENCODING=utf-8
-export FLEXT_LDIF_STRICT_VALIDATION=true
-```
-
+export FLEXT_LDIF_STRICT_VALIDATION=true```
 ### Programmatic Configuration
 
 ```python
