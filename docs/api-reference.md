@@ -243,9 +243,7 @@ from flext_cli import u
 
 
 class FlextAuthSettings(FlextSettings):
-    Auth: AuthSettings
-```
-
+    Auth: AuthSettings```
 JWT and security settings are available under `settings.Auth`:
 
 - `secret_key` (str): JWT signing secret
@@ -287,9 +285,7 @@ Create a user via the command line.
 flext-auth create-user \
     --username alice \
     --email alice@example.com \
-    --password securepass123
-```
-
+    --password securepass123```
 ### authenticate
 
 Test user authentication.
@@ -297,17 +293,13 @@ Test user authentication.
 ```bash
 flext-auth authenticate \
     --username alice \
-    --password securepass123
-```
-
+    --password securepass123```
 ### validate-settings
 
 Validate the current configuration.
 
 ```bash
-flext-auth validate-settings
-```
-
+flext-auth validate-settings```
 ______________________________________________________________________
 
 ## Error Handling
@@ -358,9 +350,7 @@ container.bind("auth_service", auth)
 auth_result = container.resolve("auth_service")
 if auth_result.success:
     service = auth_result.unwrap()
-    u.Cli.info("Authentication service resolved")
-```
-
+    u.Cli.info("Authentication service resolved")```
 ### r Usage
 
 All flext-auth operations follow the `r` pattern from flext-core:

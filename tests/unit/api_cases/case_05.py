@@ -89,8 +89,6 @@ class TestsFlextAuthApiCase05:
             u.Tests.Matchers.that(auth.config, none=False)
         except RuntimeError as e:
             pytest.fail(f"FlextAuth creation failed with RuntimeError: {e}")
-        except Exception as e:
-            pytest.fail(f"Unexpected exception during FlextAuth creation: {e}")
 
     def test_quick_start_redacted_ldap_bind_password_creation_failure(self) -> None:
         """Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation (reserved for future)."""

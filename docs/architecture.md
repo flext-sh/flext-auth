@@ -510,9 +510,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         if result.failure:
             return r[m.Dict].fail(f"HTTP transport failed: {result.error}")
 
-        return r[m.Dict].ok(result.unwrap())
-```
-
+        return r[m.Dict].ok(result.unwrap())```
 ### gRPC Transport (`transports/grpc.py`)
 
 **CRITICAL**: Uses **flext-grpc** (NOT direct grpc/grpcio)
@@ -545,9 +543,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         if result.failure:
             return r[m.Dict].fail(f"gRPC transport failed: {result.error}")
 
-        return r[m.Dict].ok(result.unwrap())
-```
-
+        return r[m.Dict].ok(result.unwrap())```
 ### WebSocket Transport (`transports/websocket.py`)
 
 ```text
@@ -567,9 +563,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send authentication request via WebSocket."""
-        ...
-```
-
+        ...```
 ______________________________________________________________________
 
 ## PROTOCOL HANDLERS
@@ -593,9 +587,7 @@ class BaseProtocolHandler(Protocol):
 
     def parse_auth_response(self, response: bytes | str) -> p.Result[m.Dict]:
         """Parse authentication response from protocol."""
-        ...
-```
-
+        ...```
 ### REST Protocol Handler (`protocol_handlers/rest.py`)
 
 ```text
@@ -623,9 +615,7 @@ class RestProtocolHandler(BaseProtocolHandler):
             parsed = json.loads(response)
             return r[m.Dict].ok(parsed)
         except Exception as e:
-            return r[m.Dict].fail(f"JSON parsing failed: {e}")
-```
-
+            return r[m.Dict].fail(f"JSON parsing failed: {e}")```
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
 
 ```text
@@ -644,9 +634,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
 
     def parse_auth_response(self, response: str) -> p.Result[m.Dict]:
         """Parse SOAP XML response."""
-        ...
-```
-
+        ...```
 ______________________________________________________________________
 
 ## TOKEN MANAGEMENT
@@ -919,9 +907,7 @@ ______________________________________________________________________
 import httpx  # Use flext-api instead
 import requests  # Use flext-api instead
 import grpc  # Use flext-grpc instead
-import ldap3  # Use flext-ldap instead
-```
-
+import ldap3  # Use flext-ldap instead```
 #### Correct Integration Pattern
 
 ```python
@@ -1019,9 +1005,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 provider = FlextAuthJwtProvider(settings={})
 auth = FlextAuth.with_provider(provider)
-result = auth.authenticate({"username": "user", "password": "pass"})
-```
-
+result = auth.authenticate({"username": "user", "password": "pass"})```
 #### Pattern 4: Token Retry
 
 ```python
@@ -1145,9 +1129,7 @@ make val          # Complete pipeline
 make lint
 make type-check   # MyPy/PyRight: ZERO errors in src/
 make security     # Bandit: ZERO critical issues
-make test         # Tests: 100% pass rate
-```
-
+make test         # Tests: 100% pass rate```
 ### Coverage Requirements
 
 - **Providers**: 95%+ test coverage per provider

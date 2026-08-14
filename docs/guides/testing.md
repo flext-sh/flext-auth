@@ -212,9 +212,7 @@ uv run pytest tests/e2e/         # End-to-end tests only
 # Run with markers
 uv run pytest -m unit           # Unit tests
 uv run pytest -m integration    # Integration tests
-uv run pytest -m "not slow"     # Skip slow tests
-```
-
+uv run pytest -m "not slow"     # Skip slow tests```
 ### Coverage Analysis
 
 Coverage thresholds and source directories are configured in each project's `pyproject.toml` under `[tool.coverage]`. Use `make test` which reads these automatically.
@@ -224,9 +222,7 @@ Coverage thresholds and source directories are configured in each project's `pyp
 make test
 
 # HTML coverage report
-uv run pytest --cov --cov-report=html
-```
-
+uv run pytest --cov --cov-report=html```
 ### Parallel Test Execution
 
 ```bash
@@ -234,9 +230,7 @@ uv run pytest --cov --cov-report=html
 uv run pytest -n auto
 
 # Specific number of workers
-uv run pytest -n 4
-```
-
+uv run pytest -n 4```
 ## Test Fixtures
 
 ### Pytest Fixtures
@@ -435,9 +429,7 @@ tests/
 │   │   └── prod.yaml
 │   └── data/
 │       ├── users.json
-│       └── schema.json
-```
-
+│       └── schema.json```
 ### Loading Test Data
 
 ```python
@@ -462,9 +454,7 @@ def load_json_fixture(fixture_name: str) -> t.JsonMapping:
 
 # Usage
 sample_content = load_test_fixture("ldif/valid.ldif")
-config_data = load_json_fixture("data/dev.json")
-```
-
+config_data = load_json_fixture("data/dev.json")```
 ## Continuous Integration
 
 ### GitHub Actions Workflow
@@ -501,9 +491,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
-```
-
+          file: ./coverage.xml```
 ## Best Practices
 
 ### 1. Test Naming

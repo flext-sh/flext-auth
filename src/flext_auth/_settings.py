@@ -127,7 +127,7 @@ class FlextAuthSettings(FlextSettings):
             _Kerberos,
             m.Field(
                 # mro-j47u: close the AuthSettings rename without a legacy alias.
-                default_factory=lambda: FlextAuthSettings.AuthSettings._Kerberos(),
+                default_factory=_Kerberos,
                 description="Kerberos realm/KDC settings.",
             ),
         ]

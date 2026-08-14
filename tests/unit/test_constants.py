@@ -14,8 +14,9 @@ avoid poking implementation internals such as ``__mro__``.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 from enum import StrEnum
+from typing import cast
 
 import pytest
 
@@ -221,10 +222,11 @@ class TestsFlextAuthConstants:
         self, valid_set: frozenset[str]
     ) -> None:
         tm.that(valid_set, is_=frozenset)
+        # Why: frozenset has no add; the cast lets the call type-check so the
+        # test can assert the AttributeError the runtime actually raises.
+        mutable = cast("set[str]", valid_set)
         with pytest.raises(AttributeError):
-            getattr(valid_set, "add")(
-                "mutated"
-            )  # Why: frozenset has no add; asserting immutability.
+            mutable.add("mutated")
 
     @pytest.mark.parametrize(
         "mapping", [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE]
@@ -232,8 +234,9 @@ class TestsFlextAuthConstants:
     def test_exposed_mappings_reject_mutation(
         self, mapping: Mapping[str, object]
     ) -> None:
+        mutable = cast("MutableMapping[str, object]", mapping)
         with pytest.raises((TypeError, AttributeError)):
-            getattr(mapping, "__setitem__")("injected", 1)
+            mutable["injected"] = 1
 
     # ----- Mapping contract: required keys and payload shape -----
 

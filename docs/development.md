@@ -23,7 +23,7 @@
   - [3. Before Committing](#3-before-committing)
   - [4. Contribution Guidelines](#4-contribution-guidelines)
 - [Testing Strategy](#testing-strategy)
-  - [Current Test Structure](#current-test-structure)
+  - [Current Test Structure```](#current-test-structure)
   - [Test Categories](#test-categories)
   - [Adding Tests](#adding-tests)
 - [Architecture Guidelines](#architecture-guidelines)
@@ -172,9 +172,7 @@ class User(m.Auth.AuthIdentity):
 class UserPlain:
     def __init__(self, username, email):
         self.username = username
-        self.email = email
-```
-
+        self.email = email```
 ______________________________________________________________________
 
 ## Current Development Areas
@@ -198,9 +196,7 @@ pytest tests/ -v --tb=short
 
 # Focus on specific failing areas
 pytest tests/unit/test_cli_coverage.py -v
-pytest tests/unit/test_config_coverage.py -v
-```
-
+pytest tests/unit/test_config_coverage.py -v```
 ### Priority 2: Security Enhancements
 
 **Missing Features**:
@@ -230,9 +226,7 @@ ______________________________________________________________________
 git checkout -b feature/your-feature-name
 
 # Ensure clean starting state
-make val
-```
-
+make val```
 ### 2. Development Process
 
 ```bash
@@ -243,9 +237,7 @@ pytest tests/unit/test_your_module.py -v
 
 # Check code quality
 make lint
-make type-check
-```
-
+make type-check```
 ### 3. Before Committing
 
 ```bash
@@ -256,9 +248,7 @@ make val
 make test
 
 # Format code
-make format
-```
-
+make format```
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns
@@ -271,9 +261,7 @@ ______________________________________________________________________
 
 ## Testing Strategy
 
-### Current Test Structure
-
-```
+### Current Test Structure```
 tests/
 ├── unit/                   # Unit tests for individual components
 │   ├── test_auth.py       # Authentication service tests

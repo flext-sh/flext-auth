@@ -163,9 +163,7 @@ The CLI provides user management commands via the workspace `flext-cli` surface:
 ```bash
 flext-auth create-user --username alice --email alice@example.com --password securepass123
 flext-auth authenticate --username alice --password securepass123
-flext-auth validate-settings
-```
-
+flext-auth validate-settings```
 ### API Integration
 
 For web applications and services:
