@@ -30,12 +30,16 @@ class FlextAuthRegistryMetadata(FlextAuthRegistryMutation):
         if callable(get_metadata_fn):
             try:
                 raw = get_metadata_fn()
-                return m.Auth.Providers.Metadata.model_validate(raw)
+                metadata: m.Auth.Providers.Metadata = (
+                    m.Auth.Providers.Metadata.model_validate(raw)
+                )
             except c.EXC_BASIC_TYPE as exc:
                 u.fetch_logger(__name__).debug(
                     f"Provider {name} metadata extraction failed, using base: {exc}"
                 )
                 return base
+            else:
+                return metadata
         return base
 
 
