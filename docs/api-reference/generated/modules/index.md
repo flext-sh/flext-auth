@@ -1,6 +1,10 @@
-<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
-
 # flext-auth Module Index
+
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
+<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 These pages are generated from public modules and their docstrings.
 
@@ -15,12 +19,8 @@ These pages are generated from public modules and their docstrings.
 - [flext_auth.providers.jwt](providers/jwt.md)
 - [flext_auth.providers.jwt_token_validator](providers/jwt_token_validator.md)
 - [flext_auth.providers.kerberos](providers/kerberos.md)
-- [flext_auth.providers.kerberos_support](providers/kerberos_support.md)
 - [flext_auth.providers.ldap](providers/ldap.md)
 - [flext_auth.providers.mixin](providers/mixin.md)
-- [flext_auth.providers.oauth2](providers/oauth2.md)
-- [flext_auth.providers.oauth2_config](providers/oauth2_config.md)
-- [flext_auth.providers.oauth2_introspection](providers/oauth2_introspection.md)
 - [flext_auth.providers.oauth2_tokens](providers/oauth2_tokens.md)
 - [flext_auth.providers.oidc](providers/oidc.md)
 - [flext_auth.providers.rfc](providers/rfc.md)

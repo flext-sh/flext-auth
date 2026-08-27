@@ -69,7 +69,7 @@ class FlextAuthProviderCodecMixin:
         str: Token string
 
         Raises:
-        ValueError: If token cannot be extracted
+        e.ValidationError: If token cannot be extracted
 
         """
         token_value = token.token if isinstance(token, p.Auth.Token) else token
