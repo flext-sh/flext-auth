@@ -17,18 +17,16 @@
 - Project class: `platform`
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`,
   `security`, `typed`
-- Main facades: `FlextAuth`, `FlextAuthApiKeyProvider`,
-  `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
-  `FlextAuthCertificateProvider`, `FlextAuthConfig`, `FlextAuthConstants`,
-  `FlextAuthIdentityService` (+18 more)
+- Main facades: `FlextAuth`, `FlextAuthConfig`, `FlextAuthConstants`,
+  `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthRegistry`,
+  `FlextAuthServiceBase`, `FlextAuthSettings` (+2 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextAuth`, `FlextAuthApiKeyProvider`,
-  `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
-  `FlextAuthCertificateProvider`, `FlextAuthConfig`, `FlextAuthConstants`,
-  `FlextAuthIdentityService`, `FlextAuthJwtProvider`,
-  `FlextAuthJwtTokenValidator` (+19 more)
+- Public symbol exports: `FlextAuth`, `FlextAuthConfig`, `FlextAuthConstants`,
+  `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthRegistry`,
+  `FlextAuthServiceBase`, `FlextAuthSettings`, `FlextAuthTypes`,
+  `FlextAuthUtilities` (+3 more)
 - Exported module shortcuts: _none_
-- Generated module pages: `25`
+- Generated module pages: `0`
 
 ## Next Pages
 
