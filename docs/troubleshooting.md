@@ -134,9 +134,9 @@ if registered.success:
 
    ```python
    # Ensure proper Bearer format or clean token
-   token = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+   token = "Bearer <jwt-header>.<jwt-payload>.<jwt-signature>"
    # or
-   token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+   token = "<jwt-header>.<jwt-payload>.<jwt-signature>"
    ```
 
 1. **Token Expiration**:
@@ -145,7 +145,7 @@ if registered.success:
    import jwt
 
    # Check token expiration without validation
-   token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+   token = "<jwt-header>.<jwt-payload>.<jwt-signature>"
    try:
        payload = jwt.decode(token, options={"verify_signature": False})
        u.Cli.info(f"Token expires at: {payload.get('exp')}")
