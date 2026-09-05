@@ -11,8 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import r
-from flext_auth import c, m, p, s, u
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
+from flext_auth import u, c, m, p, s
 from flext_auth.services.provider_service import FlextAuthProviderService
 
 
@@ -28,20 +27,20 @@ class FlextAuthTokenService(s):
         *,
         provider_service: FlextAuthProviderService,
         dispatcher: p.Dispatcher,
-        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
+        managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
         self._managers = (
             managers
             if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
+            else u.Auth.ServiceManagers(dispatcher)
         )
         self._provider_service = provider_service
         self._jwt_provider_cache: p.Auth.FlextAuthBaseProvider | None = None
 
     @property
-    def user_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
+    def user_manager(self) -> u.Auth.FlextAuthUserManager:
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 

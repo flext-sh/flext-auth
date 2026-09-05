@@ -5,9 +5,8 @@ from __future__ import annotations
 from typing import override
 
 from flext_api import r
-from flext_auth import c, m, p, s, t
+from flext_auth import u, c, m, p, s, t
 from flext_auth._utilities.identity_audit import FlextAuthIdentityAudit
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
 class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
@@ -17,18 +16,18 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         self,
         *,
         dispatcher: p.Dispatcher,
-        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
+        managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
         """Initialize with dependency injection."""
         super().__init__()
         self._managers = (
             managers
             if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
+            else u.Auth.ServiceManagers(dispatcher)
         )
 
     @property
-    def identity_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
+    def identity_manager(self) -> u.Auth.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
 
@@ -138,7 +137,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
             error_msg = "; ".join(error_messages) if error_messages else str(exc)
             return r[m.Auth.AuthIdentity].fail(error_msg)
         except c.EXC_BROAD_IO_TYPE as exc:
-            return r[m.Auth.AuthIdentity].fail(str(exc))
+            return r[m.Auth.AuthIdentity].fail(str(exc), exception=exc)
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.Auth.AuthIdentity].fail(
                 f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
