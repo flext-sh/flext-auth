@@ -68,7 +68,7 @@ class FlextAuthProtocolsAuthIdentity:
 
         @property
         def can_login(self) -> bool:
-            """Check if user can attempt login."""
+            """Whether user can attempt login."""
             ...
 
         def record_failed_login(self) -> None:
