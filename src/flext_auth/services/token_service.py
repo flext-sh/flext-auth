@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from flext_api import r
 from flext_auth import c, m, p, s, u
-from flext_auth.services.provider_service import FlextAuthProviderService
 from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
+from flext_auth.services.provider_service import FlextAuthProviderService
 
 
 class FlextAuthTokenService(s):

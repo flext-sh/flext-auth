@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import ClassVar, override
 
 from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, r, settings, t
+from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
+from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 from flext_auth.services.identity_service import FlextAuthIdentityService
 from flext_auth.services.provider_service import FlextAuthProviderService
 from flext_auth.services.session_service import FlextAuthSessionService
 from flext_auth.services.token_service import FlextAuthTokenService
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
-from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 from flext_core import FlextContainer
 
 
