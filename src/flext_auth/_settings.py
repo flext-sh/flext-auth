@@ -20,7 +20,9 @@ from typing import TYPE_CHECKING, Annotated, Final
 
 from pydantic_settings import SettingsConfigDict
 
-from flext_core import FlextSettings, m, t
+from flext_auth.models import m
+from flext_auth.typings import t
+from flext_core import FlextSettings
 
 _SECRET_MIN_LENGTH: Final[int] = 32
 
