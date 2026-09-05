@@ -140,10 +140,7 @@ class FlextAuthOAuth2Tokens(
         if introspection_endpoint_result.success:
             introspection_result = self._introspect_token(token)
             if introspection_result.failure:
-                return r[m.Auth.AuthIdentity].fail(
-                    introspection_result.error
-                    or "OAuth2 introspection token validation failed"
-                )
+                return r[m.Auth.AuthIdentity].from_failure(introspection_result)
             active_value = introspection_result.value.get("active")
             is_active = active_value if isinstance(active_value, bool) else False
             if not is_active:
@@ -157,9 +154,7 @@ class FlextAuthOAuth2Tokens(
             )
         claims_result = self._decode_token_claims(token)
         if claims_result.failure:
-            return r[m.Auth.AuthIdentity].fail(
-                claims_result.error or "OAuth2 token validation failed"
-            )
+            return r[m.Auth.AuthIdentity].from_failure(claims_result)
         return r[m.Auth.AuthIdentity].from_validation(
             {
                 **claims_result.value,
