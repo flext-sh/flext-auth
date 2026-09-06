@@ -14,16 +14,12 @@ class FlextAuthSessionService(s):
     """Focused service for session management with complete flext-core integration."""
 
     def __init__(
-        self,
-        dispatcher: p.Dispatcher,
-        managers: u.Auth.ServiceManagers | None = None,
+        self, dispatcher: p.Dispatcher, managers: u.Auth.ServiceManagers | None = None
     ) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._managers = (
-            managers
-            if managers is not None
-            else u.Auth.ServiceManagers(dispatcher)
+            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
 
     @property

@@ -83,7 +83,10 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         try:
             parsed_claims = t.json_mapping_adapter().validate_python(validator_payload)
         except c.ValidationError as exc:
-            return r[m.Auth.AuthIdentity].fail(f"Kerberos ticket validator mapping payload is invalid: {exc}", exception=exc)
+            return r[m.Auth.AuthIdentity].fail(
+                f"Kerberos ticket validator mapping payload is invalid: {exc}",
+                exception=exc,
+            )
         return r[m.Auth.AuthIdentity].from_validation(
             {
                 **parsed_claims,

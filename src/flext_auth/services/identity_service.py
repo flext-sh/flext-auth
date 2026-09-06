@@ -21,9 +21,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         """Initialize with dependency injection."""
         super().__init__()
         self._managers = (
-            managers
-            if managers is not None
-            else u.Auth.ServiceManagers(dispatcher)
+            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
 
     @property

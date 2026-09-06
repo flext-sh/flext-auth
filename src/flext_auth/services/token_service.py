@@ -32,9 +32,7 @@ class FlextAuthTokenService(s):
         """Flexible initialization with dependency injection."""
         super().__init__()
         self._managers = (
-            managers
-            if managers is not None
-            else u.Auth.ServiceManagers(dispatcher)
+            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
         self._provider_service = provider_service
         self._jwt_provider_cache: p.Auth.FlextAuthBaseProvider | None = None
