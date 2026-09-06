@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
-from flext_auth import u, FlextAuthRegistry, FlextAuthSettings, c, m, p, r, settings, t
+from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, r, settings, t, u
 from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 from flext_auth.services.identity_service import FlextAuthIdentityService
 from flext_auth.services.provider_service import FlextAuthProviderService

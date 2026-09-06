@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_api import r
-from flext_auth import u, c, m, p, s, t
+from flext_auth import c, m, p, s, t, u
 from flext_auth._utilities.identity_audit import FlextAuthIdentityAudit
 
 
