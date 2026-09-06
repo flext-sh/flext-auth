@@ -20,15 +20,15 @@
 - Main facades: `FlextAuth`, `FlextAuthApiKeyProvider`,
   `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
   `FlextAuthCertificateProvider`, `FlextAuthConfig`, `FlextAuthConstants`,
-  `FlextAuthIdentityService` (+18 more)
+  `FlextAuthIdentityService` (+22 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
 - Public symbol exports: `FlextAuth`, `FlextAuthApiKeyProvider`,
   `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
   `FlextAuthCertificateProvider`, `FlextAuthConfig`, `FlextAuthConstants`,
   `FlextAuthIdentityService`, `FlextAuthJwtProvider`,
-  `FlextAuthJwtTokenValidator` (+19 more)
-- Exported module shortcuts: _none_
-- Generated module pages: `25`
+  `FlextAuthJwtTokenValidator` (+23 more)
+- Exported module shortcuts: `providers`, `services`
+- Generated module pages: `30`
 
 ## Next Pages
 

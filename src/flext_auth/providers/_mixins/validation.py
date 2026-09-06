@@ -82,9 +82,13 @@ class FlextAuthProviderValidationMixin:
         r[bool]: True if valid, False if invalid, error message on failure
 
         """
-        missing_fields = u.filter(
-            required_fields, lambda field: field not in credentials
-        )
+        def _is_missing(field: str) -> bool:
+            return field not in credentials
+
+        # Why: a bare lambda leaves pyrefly with no annotation to bind the
+        # overloaded u.filter's item type to, producing implicit-any-lambda;
+        # a named, explicitly-typed predicate resolves the overload cleanly.
+        missing_fields = u.filter(required_fields, _is_missing)
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
             return r[bool].fail(error_msg)
