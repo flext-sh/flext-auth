@@ -14,13 +14,7 @@ import os
 import secrets
 import string
 
-from . import (
-    FlextAuth,
-    FlextAuthModels,
-    FlextAuthSettings,
-    t,
-    u,
-)
+from flext_auth import FlextAuth, t, u, FlextAuthModels, FlextAuthSettings, t, u
 
 
 class FlextAuthAdvancedFeaturesExample:

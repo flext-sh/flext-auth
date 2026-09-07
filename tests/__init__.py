@@ -53,6 +53,31 @@ __all__: tuple[str, ...] = (
     "x",
 )
 
+# Explicit re-exports for static analysis tools (pyrefly, pyright, mypy)
+# These are also provided via lazy imports at runtime
+from .constants import TestsFlextAuthConstants, TestsFlextAuthConstants as c
+from .models import CertificateFixture, TestsFlextAuthModels, TestsFlextAuthModels as m
+from .protocols import TestsFlextAuthProtocols, TestsFlextAuthProtocols as p
+from .settings import TestsFlextAuthSettings
+from .typings import TestsFlextAuthTypes, TestsFlextAuthTypes as t
+from .utilities import TestsFlextAuthUtilities, TestsFlextAuthUtilities as u
+
+if TYPE_CHECKING:
+    from flext_tests import FlextTestsConstants, d, e, h, r, td, tf, tk, tm, tv, x
+
+    from . import fixtures as fixtures, unit as unit
+    from .base import TestsFlextAuthServiceBase, TestsFlextAuthServiceBase as s
+    from .constants import TestsFlextAuthConstants, TestsFlextAuthConstants as c
+    from .models import (
+        CertificateFixture,
+        TestsFlextAuthModels,
+        TestsFlextAuthModels as m,
+    )
+    from .protocols import TestsFlextAuthProtocols, TestsFlextAuthProtocols as p
+    from .settings import TestsFlextAuthSettings
+    from .typings import TestsFlextAuthTypes, TestsFlextAuthTypes as t
+    from .utilities import TestsFlextAuthUtilities, TestsFlextAuthUtilities as u
+
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({

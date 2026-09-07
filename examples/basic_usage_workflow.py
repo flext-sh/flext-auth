@@ -6,12 +6,7 @@ import os
 import secrets
 import string
 
-from . import (
-    FlextAuth,
-    c,
-    t,
-    u,
-)
+from flext_auth import FlextAuth, c, t, u
 
 
 class FlextAuthBasicUsageWorkflow:

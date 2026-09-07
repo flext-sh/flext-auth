@@ -6,10 +6,7 @@ import os
 
 from flext_cli import cli
 
-from . import (
-    FlextAuth,
-    FlextAuthSettings,
-)
+from flext_auth import FlextAuth, FlextAuthSettings
 
 
 def _emit(message: str) -> None:

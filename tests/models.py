@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from . import FlextAuthModels
 from flext_tests import FlextTestsModels, u
+
+from tests.models import FlextAuthModels
 
 
 class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):

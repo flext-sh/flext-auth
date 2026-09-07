@@ -4,12 +4,7 @@ from __future__ import annotations
 
 import os
 
-from . import (
-    FlextAuth,
-    FlextAuthSettings,
-    t,
-    u,
-)
+from flext_auth import FlextAuth, FlextAuthSettings, t, u
 
 
 class FlextAuthBasicUsageFlows:

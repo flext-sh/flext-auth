@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from . import FlextAuthUtilities
 from flext_tests import FlextTestsUtilities
+
+from tests.utilities import FlextAuthUtilities
 
 
 class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):

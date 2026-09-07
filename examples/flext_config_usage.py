@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from . import settings
+from flext_auth import settings
 
 
 class FlextAuthConfigUsageExample:

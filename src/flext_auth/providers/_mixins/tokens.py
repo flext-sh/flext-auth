@@ -6,7 +6,8 @@ from collections.abc import Mapping
 from datetime import datetime, timedelta
 
 from flext_auth import c, m, p, r, t, u
-from flext_auth.providers._mixins.codec import FlextAuthProviderCodecMixin
+
+from .codec import FlextAuthProviderCodecMixin
 
 
 class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
