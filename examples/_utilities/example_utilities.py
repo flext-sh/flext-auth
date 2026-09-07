@@ -31,3 +31,6 @@ class FlextAuthExampleUtilities:
 
         for example in examples:
             example()
+
+
+u = FlextAuthExampleUtilities

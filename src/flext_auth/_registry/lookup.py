@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from flext_auth import c, m, p, r, t
-from flext_auth._registry.base import FlextAuthRegistryBase
+
+from .base import FlextAuthRegistryBase
 
 
 class FlextAuthRegistryLookup(FlextAuthRegistryBase):

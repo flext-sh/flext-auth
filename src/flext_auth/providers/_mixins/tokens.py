@@ -6,7 +6,8 @@ from collections.abc import Mapping
 from datetime import datetime, timedelta
 
 from flext_auth import c, m, p, r, t, u
-from flext_auth.providers._mixins.codec import FlextAuthProviderCodecMixin
+
+from .codec import FlextAuthProviderCodecMixin
 
 
 class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
@@ -15,7 +16,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
     def generate_token(
         self,
         payload: t.JsonMapping,
-        token_kind: str = "access",
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
         """Generate a token from the provided payload.
@@ -71,7 +72,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | t.JsonMapping,
-        token_kind: str = "access",
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
@@ -129,7 +130,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
         refreshed = m.Auth.AuthToken(
             identity_id=identity_id,
             token=new_token_result.value,
-            token_type="Bearer",
+            token_type=c.Auth.JWT_DEFAULT_TOKEN_TYPE,
             expires_at=u.generate_datetime_utc() + timedelta(minutes=default_expiry),
         )
         return r[p.Auth.Token].ok(refreshed)

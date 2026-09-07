@@ -44,7 +44,6 @@ class CertificateFixture(m.BaseModel):
             f"Valid Days: {valid_days}\n"
             "-----END CERTIFICATE-----"
         )
-        # Why: header text avoids gitleaks' PEM private-key rule (flext-1wjg1.16)
         mock_key_pem = (
             "-----BEGIN MOCK KEY MATERIAL-----\n"
             "MOCK PRIVATE KEY FOR TESTING\n"
@@ -73,7 +72,6 @@ class CertificateFixture(m.BaseModel):
             "Type: Client Certificate\n"
             "-----END CERTIFICATE-----"
         )
-        # Why: header text avoids gitleaks' PEM private-key rule (flext-1wjg1.16)
         mock_key_pem = (
             "-----BEGIN MOCK KEY MATERIAL-----\n"
             "MOCK CLIENT PRIVATE KEY FOR TESTING\n"

@@ -5,7 +5,7 @@ from __future__ import annotations
 import secrets
 from typing import Final
 
-from flext_auth import c
+from flext_auth import c as auth_c
 from flext_tests import FlextTestsConstants
 
 
@@ -14,8 +14,8 @@ def _make_test_password() -> str:
     return secrets.token_urlsafe(32)
 
 
-class TestsFlextAuthConstants(FlextTestsConstants, c):
-    """Test constants for flext-auth."""
+class TestsFlextAuthConstants(auth_c, FlextTestsConstants):
+    """Test constants composing production Auth with the shared test namespace."""
 
     TEST_PASSWORD: Final[str] = _make_test_password()
 

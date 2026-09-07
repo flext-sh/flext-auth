@@ -30,7 +30,7 @@ class FlextAuthOAuth2Tokens(
                 credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user"
             ),
             token=str(credential_payload.get("access_token") or ""),
-            token_type="Bearer",
+            token_type=c.Auth.TokenTypes.BEARER.value,
             expires_at=u.generate_datetime_utc() + timedelta(hours=1),
         )
         return r[p.Auth.Token].ok(token_model)
@@ -39,7 +39,7 @@ class FlextAuthOAuth2Tokens(
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | t.JsonMapping,
-        token_kind: str = "oauth2_access",
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
@@ -100,7 +100,7 @@ class FlextAuthOAuth2Tokens(
         refreshed_model = m.Auth.AuthToken(
             identity_id=identity_id,
             token=f"access_token_{secrets.token_hex(16)}",
-            token_type="Bearer",
+            token_type=c.Auth.TokenTypes.BEARER.value,
             expires_at=u.generate_datetime_utc() + timedelta(seconds=3600),
             refresh_token=f"refresh_token_{secrets.token_hex(16)}",
         )
