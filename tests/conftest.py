@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from . import FlextAuth
+from flext_auth import FlextAuth
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
