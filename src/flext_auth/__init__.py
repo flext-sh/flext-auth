@@ -20,8 +20,6 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from typing import TYPE_CHECKING
-
     from flext_api import d, e, h, r, x
 
     from . import providers as providers, services as services
@@ -56,7 +54,6 @@ if TYPE_CHECKING:
     from .typings import FlextAuthTypes, FlextAuthTypes as t
     from .utilities import FlextAuthUtilities, FlextAuthUtilities as u
 __all__: tuple[str, ...] = (
-    "TYPE_CHECKING",
     "FlextAuth",
     "FlextAuthApiKeyProvider",
     "FlextAuthApplicationService",
@@ -149,7 +146,6 @@ _LAZY_IMPORTS = MappingProxyType(
             ".typings": ("FlextAuthTypes", "t"),
             ".utilities": ("FlextAuthUtilities", "u"),
             "flext_api": ("d", "e", "h", "r", "x"),
-            "typing": ("TYPE_CHECKING",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
