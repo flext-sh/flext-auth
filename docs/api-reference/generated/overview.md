@@ -7,7 +7,7 @@
 <!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 - Package: `flext_auth`
-- Version: `0.12.0rc0`
+- Version: `0.12.0`
 - Description: FLEXT Auth - Enterprise Authentication & Authorization Service
 - Doc summary: Flext Auth package.
 - Classifiers: `Development Status :: 3 - Alpha`, `Intended Audience ::
