@@ -6,12 +6,12 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
 from flext_api import c
-from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
+from ..._constants.auth_enums import FlextAuthConstantsAuthEnums
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Set as AbstractSet
 
-    from flext_auth import t
+    from ... import t
 
 
 class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
