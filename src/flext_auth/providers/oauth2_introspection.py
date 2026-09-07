@@ -120,7 +120,8 @@ class FlextAuthOAuth2Introspection:
                     )
                 except c.EXC_VALIDATION_VALUE as exc:
                     result = r[t.JsonMapping].fail(
-                        f"OAuth2 introspection payload is not valid JSON: {exc}"
+                        f"OAuth2 introspection payload is not valid JSON: {exc}",
+                        exception=exc,
                     )
                 else:
                     result = r[t.JsonMapping].ok(parsed_mapping)

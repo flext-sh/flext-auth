@@ -69,7 +69,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         """Check if provider has capability."""
         caps_result = self.get_capabilities(name)
         if caps_result.failure:
-            return r[bool].fail(caps_result.error or f"Provider '{name}' not found")
+            return r[bool].from_failure(caps_result)
         caps = caps_result.unwrap()
         return r[bool].ok(capability in caps)
 

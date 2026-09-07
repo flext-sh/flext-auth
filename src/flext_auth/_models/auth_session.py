@@ -26,7 +26,7 @@ class FlextAuthModelsAuthSession:
 
         @property
         def expired(self) -> bool:
-            """Check if session is expired."""
+            """Whether session is expired."""
             current_time: datetime = u.now()
             return current_time > self.expires_at
 

@@ -34,7 +34,7 @@ class FlextAuthModelsAuthToken:
 
         @property
         def expired(self) -> bool:
-            """Check if token is expired."""
+            """Whether token is expired."""
             current_time: datetime = u.now()
             return current_time > self.expires_at
 
