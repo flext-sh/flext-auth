@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from flext_auth import FlextAuthTypes
+from . import FlextAuthTypes
 from flext_tests import FlextTestsTypes
 
 

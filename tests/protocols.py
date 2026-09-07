@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthProtocols
+from . import FlextAuthProtocols
 from flext_tests import FlextTestsProtocols
 
 

@@ -9,7 +9,19 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth import c, d, e, h, m, p, r, s, t, u, x
+    from . import (
+        c,
+        d,
+        e,
+        h,
+        m,
+        p,
+        r,
+        s,
+        t,
+        u,
+        x,
+    )
 
     from . import _utilities as _utilities
     from .basic_usage_flows import FlextAuthBasicUsageFlows

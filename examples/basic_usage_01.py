@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from examples.basic_usage_flows import FlextAuthBasicUsageFlows
 from examples.basic_usage_workflow import FlextAuthBasicUsageWorkflow
-from flext_auth import u
+from . import u
 
 
 class FlextAuthBasicUsageExample(FlextAuthBasicUsageFlows, FlextAuthBasicUsageWorkflow):

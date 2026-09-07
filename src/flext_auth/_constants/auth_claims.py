@@ -137,8 +137,9 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     MAX_ATTEMPTS_DEFAULT: Final[int] = 5
     "Default max authentication attempts."
     LOCKOUT_DURATION_MINUTES: Final[int] = 30
-    OAUTH2_TOKEN_TYPE_HINT_ACCESS: Final[str] = "access_token"  # nosec B105 - RFC 7662 protocol literal, not a credential
-    "RFC 7662 introspection token_type_hint value for access tokens."
+    # RFC 7662 wire literal, not a credential; bandit name-heuristic false positive.
+    OAUTH2_INTROSPECTION_TYPE_HINT_ACCESS: Final[str] = "access_token"
+    "RFC 7662 introspection token_type_hint wire value for access tokens."
     "Lockout duration in minutes."
     SECRET_MIN_LENGTH: Final[int] = 32
     "Minimum secret key length."
@@ -155,6 +156,7 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
         "status": c.Status.SUCCESS.value,
         "message": "Authentication successful",
+        # Null sentinel in response template; "token" in key trips B105.
         "token_type": None,  # nosec B105 - null sentinel in response template
     })
     "Template for successful authentication responses."
