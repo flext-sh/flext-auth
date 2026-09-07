@@ -19,16 +19,6 @@ class FlextAuthCertificateProvider(
 ):
     """Certificate-based authentication provider."""
 
-    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
-        """Initialize provider with configuration."""
-        super().__init__(settings)
-
-    @override
-    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate using certificate credentials."""
-        _ = credentials
-        return r[p.Auth.Token].fail("Not implemented")
-
     @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.

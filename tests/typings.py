@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from flext_auth import FlextAuthTypes
 from flext_tests import FlextTestsTypes
-
-from tests.typings import FlextAuthTypes
 
 
 class TestsFlextAuthTypes(FlextTestsTypes, FlextAuthTypes):
