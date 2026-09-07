@@ -3,18 +3,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from . import fixtures as fixtures
-    from . import unit as unit
-    from flext_tests import FlextTestsConstants, d, e, h, r, td, tf, tk, tm, tv, x
     from typing import Final
 
+    from flext_tests import FlextTestsConstants, d, e, h, r, td, tf, tk, tm, tv, x
+
+    from . import fixtures as fixtures, unit as unit
     from .base import TestsFlextAuthServiceBase, TestsFlextAuthServiceBase as s
     from .conftest import reset_auth_singleton
     from .constants import TestsFlextAuthConstants, TestsFlextAuthConstants as c

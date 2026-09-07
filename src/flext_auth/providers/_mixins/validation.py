@@ -82,6 +82,7 @@ class FlextAuthProviderValidationMixin:
         r[bool]: True if valid, False if invalid, error message on failure
 
         """
+
         def _is_missing(field: str) -> bool:
             return field not in credentials
 

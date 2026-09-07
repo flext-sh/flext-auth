@@ -3,16 +3,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from . import api_cases as api_cases
     from flext_tests import c, d, e, h, m, p, r, s, t, td, tf, tk, tm, tv, u, x
 
+    from . import api_cases as api_cases
     from .api_cases.case_01 import TestsFlextAuthApiCase01
     from .api_cases.case_02 import TestsFlextAuthApiCase02
     from .api_cases.case_03 import TestsFlextAuthApiCase03
