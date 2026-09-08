@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_auth import c as auth_c
     from flext_tests import FlextTestsConstants, d, e, h, r, td, tf, tk, tm, tv, x
 
-    from . import fixtures as fixtures, unit as unit
+    from . import fixtures, unit
     from .base import TestsFlextAuthServiceBase, TestsFlextAuthServiceBase as s
     from .constants import TestsFlextAuthConstants, TestsFlextAuthConstants as c
     from .models import (
@@ -33,6 +34,7 @@ __all__: tuple[str, ...] = (
     "TestsFlextAuthSettings",
     "TestsFlextAuthTypes",
     "TestsFlextAuthUtilities",
+    "auth_c",
     "c",
     "d",
     "e",
@@ -79,7 +81,7 @@ _LAZY_IMPORTS = MappingProxyType(
                 "x",
             ),
         }),
-        alias_groups=MappingProxyType({}),
+        alias_groups=MappingProxyType({"flext_auth": (("auth_c", "c"),)}),
         sort_keys=False,
     )
 )

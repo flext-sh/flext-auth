@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from . import _mixins as _mixins
+    from . import _mixins
     from ._mixins.codec import FlextAuthProviderCodecMixin
     from ._mixins.tokens import FlextAuthProviderTokenMixin
     from ._mixins.validation import FlextAuthProviderValidationMixin
