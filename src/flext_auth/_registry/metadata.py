@@ -23,7 +23,7 @@ class FlextAuthRegistryMetadata(FlextAuthRegistryMutation):
             )
             caps = ()
         base = m.Auth.Providers.Metadata(
-            name=name, version="1.0.0", capabilities=caps, extras={}
+            name=name, version=c.Auth.PROVIDER_VERSION, capabilities=caps, extras={}
         )
         if provided:
             return provided

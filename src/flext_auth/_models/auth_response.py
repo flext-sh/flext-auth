@@ -108,7 +108,9 @@ class FlextAuthModelsAuthResponse:
             """Provider metadata for registry."""
 
             name: Annotated[str, u.Field(..., description="Provider name")]
-            version: Annotated[str, u.Field(description="Provider version")] = "1.0.0"
+            version: Annotated[str, u.Field(description="Provider version")] = (
+                c.Auth.PROVIDER_VERSION
+            )
             capabilities: t.VariadicTuple[str] = u.Field(
                 default_factory=tuple, description="Provider capabilities"
             )

@@ -117,7 +117,7 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         )
 
     @override
-    def validate(self, token: str) -> p.Result[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate authentication token.
 
         This is an abstract method that must be implemented by RFC-specific providers.

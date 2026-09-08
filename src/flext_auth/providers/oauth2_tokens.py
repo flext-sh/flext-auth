@@ -55,7 +55,7 @@ class FlextAuthOAuth2Tokens(
         """Get OAuth2 provider metadata using composition."""
         return m.Auth.Providers.Metadata(
             name="oauth2",
-            version="1.0.0",
+            version=c.Auth.PROVIDER_VERSION,
             capabilities=tuple(self.supports()),
             extras={
                 "flows": [c.Auth.OAUTH2_FLOW_DEFAULT, "client_credentials"],

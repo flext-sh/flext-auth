@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import p, r, t
+from flext_auth import c, p, r, t
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
@@ -66,7 +66,7 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         """
         return {
             "name": "saml",
-            "version": "1.0.0",
+            "version": c.Auth.PROVIDER_VERSION,
             "protocol": "SAML 2.0",
             "capabilities": list(self.supports()),
             "status": "basic_implementation",

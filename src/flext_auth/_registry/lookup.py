@@ -53,7 +53,10 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         if metadata_result.failure:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name, version="1.0.0", capabilities=(), extras={}
+                    name=name,
+                    version=c.Auth.PROVIDER_VERSION,
+                    capabilities=(),
+                    extras={},
                 )
             )
         wrapper = metadata_result.value
@@ -61,7 +64,10 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         if metadata is None:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name, version="1.0.0", capabilities=(), extras={}
+                    name=name,
+                    version=c.Auth.PROVIDER_VERSION,
+                    capabilities=(),
+                    extras={},
                 )
             )
         return r[m.Auth.Providers.Metadata].ok(metadata)
