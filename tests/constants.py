@@ -5,8 +5,9 @@ from __future__ import annotations
 import secrets
 from typing import Final
 
-from flext_auth import c as auth_c
 from flext_tests import FlextTestsConstants
+
+from flext_auth import c as auth_c
 
 
 def _make_test_password() -> str:

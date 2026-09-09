@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from typing import Annotated, Self
 
 from flext_api import m, u
+
 from flext_auth import c, p, r, t
 
 from .auth_password import FlextAuthModelsAuthPassword

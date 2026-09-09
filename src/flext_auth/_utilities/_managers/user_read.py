@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flext_api import r
+
 from flext_auth import e, m, p, t
 
 if TYPE_CHECKING:

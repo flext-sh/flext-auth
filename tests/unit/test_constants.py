@@ -19,9 +19,9 @@ from enum import StrEnum
 from typing import cast
 
 import pytest
+from flext_tests import tm
 
 from flext_auth import c
-from flext_tests import tm
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_tests import s as tests_s
+
 from tests.settings import TestsFlextAuthSettings
 
 from . import m

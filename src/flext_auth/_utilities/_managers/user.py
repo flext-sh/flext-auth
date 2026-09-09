@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from typing import ClassVar
 
 from flext_api import u
+
 from flext_auth import FlextAuthSettings, m, p, t
 from flext_core import FlextContext
 

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r, u
+
 from flext_core import FlextContext
 
 if TYPE_CHECKING:
