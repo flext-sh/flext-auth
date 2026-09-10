@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import TypeIs
 
 from flext_auth import c, p, r, t, u
-from flext_auth._registry.plugins import FlextAuthRegistryPlugins
+
+from .plugins import FlextAuthRegistryPlugins
 
 
 class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
@@ -34,9 +35,7 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
         """Get provider by name."""
         result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, data)
         if result.failure:
-            return r[p.Auth.FlextAuthBaseProvider].fail(
-                result.error or f"Provider '{data}' not registered"
-            )
+            return r[p.Auth.FlextAuthBaseProvider].from_failure(result)
         wrapped = result.unwrap()
         if wrapped is None:
             return r[p.Auth.FlextAuthBaseProvider].fail(

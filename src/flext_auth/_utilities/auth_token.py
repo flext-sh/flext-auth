@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import jwt
-
 from flext_api import r
+
 from flext_auth import c, m, p, t
 
 
@@ -50,7 +50,7 @@ class FlextAuthUtilitiesAuthToken:
             typed_payload = t.json_dict_adapter().validate_python(payload)
             return r[t.Auth.TokensClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as exc:
-            return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}")
+            return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}", exception=exc)
         except c.ValidationError as exc:
             return r[t.Auth.TokensClaimMap].fail_op(
                 "Decoded token payload validation", exc

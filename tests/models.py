@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from flext_auth import FlextAuthModels
 from flext_tests import FlextTestsModels, u
+
+from flext_auth import FlextAuthModels
+from tests import t
 
 
 class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
@@ -21,7 +23,7 @@ m = TestsFlextAuthModels
 class CertificateFixture(m.BaseModel):
     """Certificate fixture data."""
 
-    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(frozen=True)
+    model_config: ClassVar[t.ConfigDict] = m.ConfigDict(frozen=True)
 
     cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
     key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]
@@ -45,9 +47,9 @@ class CertificateFixture(m.BaseModel):
             "-----END CERTIFICATE-----"
         )
         mock_key_pem = (
-            "-----BEGIN PRIVATE KEY-----\n"
+            "-----BEGIN MOCK KEY MATERIAL-----\n"
             "MOCK PRIVATE KEY FOR TESTING\n"
-            "-----END PRIVATE KEY-----"
+            "-----END MOCK KEY MATERIAL-----"
         )
         mock_fingerprint = (
             "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
@@ -73,9 +75,9 @@ class CertificateFixture(m.BaseModel):
             "-----END CERTIFICATE-----"
         )
         mock_key_pem = (
-            "-----BEGIN PRIVATE KEY-----\n"
+            "-----BEGIN MOCK KEY MATERIAL-----\n"
             "MOCK CLIENT PRIVATE KEY FOR TESTING\n"
-            "-----END PRIVATE KEY-----"
+            "-----END MOCK KEY MATERIAL-----"
         )
         mock_fingerprint = (
             "bbccddeeff00112233445566778899aabbccddeeff0011223344556677889900"

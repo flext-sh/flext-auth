@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flext_api import r, u
-from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
+
+from .user_read import FlextAuthUserManagerRead
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
@@ -31,7 +32,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         """Delete user."""
         result = self._find_user_by_id(user_id)
         if result.failure:
-            return r[bool].fail(result.error or "Unknown error")
+            return r[bool].from_failure(result)
         user_key, _ = result.value
         del self._users[user_key]
         return r[bool].ok(value=True)
@@ -88,7 +89,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         """
         user_result = self._find_user_by_id(user_id)
         if user_result.failure:
-            return r[bool].fail(user_result.error or "User not found")
+            return r[bool].from_failure(user_result)
         _, user_data = user_result.unwrap()
         self._apply_list_modification(user_data, field, value, add=add)
         return r[bool].ok(True)

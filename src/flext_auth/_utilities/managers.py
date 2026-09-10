@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import r
-from flext_auth._utilities._managers.auth_managers_session import (
-    FlextAuthSessionManagers,
-)
-from flext_auth._utilities._managers.rate_limiter import FlextAuthRateLimiterManagers
-from flext_auth._utilities._managers.user import FlextAuthUserManagers
+
 from flext_core import FlextContext
+
+from ._managers.auth_managers_session import FlextAuthSessionManagers
+from ._managers.rate_limiter import FlextAuthRateLimiterManagers
+from ._managers.user import FlextAuthUserManagers
 
 if TYPE_CHECKING:
     from flext_auth import p, t

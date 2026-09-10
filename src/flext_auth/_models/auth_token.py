@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Annotated
 
 from flext_api import m, u
+
 from flext_auth import c
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ class FlextAuthModelsAuthToken:
 
         @property
         def expired(self) -> bool:
-            """Check if token is expired."""
+            """Whether token is expired."""
             current_time: datetime = u.now()
             return current_time > self.expires_at
 

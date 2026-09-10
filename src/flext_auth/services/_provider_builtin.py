@@ -10,8 +10,8 @@ from flext_auth.providers.basic import FlextAuthBasicProvider
 from flext_auth.providers.certificate import FlextAuthCertificateProvider
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.providers.ldap import FlextAuthLdapProvider
-from flext_auth.providers.oidc import FlextAuthOidcProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+from flext_auth.providers.oidc import FlextAuthOidcProvider
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.providers.saml import FlextAuthSamlProvider
 

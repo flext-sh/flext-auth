@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from flext_api import p
-from flext_auth._protocols.auth import FlextAuthProtocolsAuth
+
+from ._protocols.auth import FlextAuthProtocolsAuth
 
 
 class FlextAuthProtocols(p):

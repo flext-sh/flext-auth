@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from flext_api import m, u
+
 from flext_auth import t
 
 
@@ -102,7 +103,7 @@ class FlextAuthModelsAuthProviderConfig:
 
         @property
         def configured(self) -> bool:
-            """Check if configured."""
+            """Whether configured."""
             return bool(self.name and self.type)
 
 

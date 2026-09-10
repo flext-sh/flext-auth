@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import p, r, t
+from flext_auth import p, t
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
@@ -21,16 +21,6 @@ class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvid
 
     Provides API key-based authentication with token validation.
     """
-
-    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
-        """Initialize provider with configuration."""
-        super().__init__(settings)
-
-    @override
-    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate using API key credentials."""
-        _ = credentials
-        return r[p.Auth.Token].fail("Not implemented")
 
     @override
     def supports(self) -> set[str]:
@@ -41,12 +31,6 @@ class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvid
 
         """
         return {"api_key", "validate"}
-
-    @override
-    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate authentication token."""
-        _ = token
-        return r[bool].fail("Not implemented")
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthApiKeyProvider"]
