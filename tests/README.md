@@ -33,7 +33,7 @@ Run the suite only from the workspace root through the canonical Testmon-backed
 dispatcher:
 
 ```bash
-make test APPLY=Y
+make test
 ```
 
 The same command owns impacted and explicitly requested complete execution; do
