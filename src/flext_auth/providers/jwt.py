@@ -10,23 +10,13 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import p, r, t
+from flext_auth import p, t
 from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
 class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
-
-    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
-        """Initialize provider with configuration."""
-        super().__init__(settings)
-
-    @override
-    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate using JWT credentials."""
-        _ = credentials
-        return r[p.Auth.Token].fail("Not implemented")
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
@@ -48,17 +38,10 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return {"jwt", "validate", "refresh"}
 
     @override
-    def validate(self, token: str) -> p.Result[bool]:
-        """Validate JWT token.
-
-        Args:
-            token: Token to validate
-
-        Returns:
-            r[bool]: True if valid, False if invalid, error on failure
-
-        """
-        return self.validate_token(token)
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
+        """Validate JWT token."""
+        token_value = token if isinstance(token, str) else token.token
+        return self.validate_token(token_value)
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Validate JWT token.

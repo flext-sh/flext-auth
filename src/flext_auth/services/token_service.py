@@ -11,9 +11,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import r
+
 from flext_auth import c, m, p, s, u
 from flext_auth.services.provider_service import FlextAuthProviderService
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
 class FlextAuthTokenService(s):
@@ -28,20 +28,18 @@ class FlextAuthTokenService(s):
         *,
         provider_service: FlextAuthProviderService,
         dispatcher: p.Dispatcher,
-        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
+        managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
         self._managers = (
-            managers
-            if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
+            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
         self._provider_service = provider_service
         self._jwt_provider_cache: p.Auth.FlextAuthBaseProvider | None = None
 
     @property
-    def user_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthUserManager:
+    def user_manager(self) -> u.Auth.FlextAuthUserManager:
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 
@@ -53,6 +51,20 @@ class FlextAuthTokenService(s):
             return token
         return f"{token[:length]}..."
 
+    @staticmethod
+    def _fail_token_creation(
+        user_id: str, token_kind: str, error: str | None, fallback: str
+    ) -> p.Result[str]:
+        """Log a failed token creation and return the failure result."""
+        u.fetch_logger(__name__).info(
+            "Token creation",
+            user_id=user_id,
+            token_type=token_kind,
+            success=False,
+            reason=error or "",
+        )
+        return r[str].fail(error or fallback)
+
     def generate_jwt_token(
         self,
         user_id: str,
@@ -62,15 +74,9 @@ class FlextAuthTokenService(s):
         """Railway-oriented JWT token generation with audit logging."""
         user_result = self.user_manager.get_user(user_id)
         if user_result.failure:
-            error = user_result.error
-            u.fetch_logger(__name__).info(
-                "Token creation",
-                user_id=user_id,
-                token_type=token_kind,
-                success=False,
-                reason=error or "",
+            return self._fail_token_creation(
+                user_id, token_kind, user_result.error, "User lookup failed"
             )
-            return r[str].fail(error or "User lookup failed")
         user = user_result.value
         user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
@@ -79,15 +85,9 @@ class FlextAuthTokenService(s):
             )
         )
         if token_result.failure:
-            error = token_result.error
-            u.fetch_logger(__name__).info(
-                "Token creation",
-                user_id=user_id,
-                token_type=token_kind,
-                success=False,
-                reason=error or "",
+            return self._fail_token_creation(
+                user_id, token_kind, token_result.error, "Token generation failed"
             )
-            return r[str].fail(error or "Token generation failed")
         token_value = token_result.value
         u.fetch_logger(__name__).debug(
             "Token creation successful", user_id=user_id, token_type=token_kind

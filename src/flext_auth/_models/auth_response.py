@@ -6,6 +6,7 @@ from types import MappingProxyType
 from typing import Annotated, ClassVar
 
 from flext_api import m, u
+
 from flext_auth import c, p, t
 
 
@@ -80,7 +81,7 @@ class FlextAuthModelsAuthResponse:
     class ProviderWrapper(m.Value):
         """Wrapper for auth provider instances."""
 
-        model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
+        model_config: ClassVar[t.ConfigDict] = m.ConfigDict(
             arbitrary_types_allowed=True
         )
 
@@ -108,7 +109,9 @@ class FlextAuthModelsAuthResponse:
             """Provider metadata for registry."""
 
             name: Annotated[str, u.Field(..., description="Provider name")]
-            version: Annotated[str, u.Field(description="Provider version")] = "1.0.0"
+            version: Annotated[str, u.Field(description="Provider version")] = (
+                c.Auth.PROVIDER_VERSION
+            )
             capabilities: t.VariadicTuple[str] = u.Field(
                 default_factory=tuple, description="Provider capabilities"
             )

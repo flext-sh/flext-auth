@@ -8,27 +8,22 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth import p, s, t, u
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
 class FlextAuthSessionService(s):
     """Focused service for session management with complete flext-core integration."""
 
     def __init__(
-        self,
-        dispatcher: p.Dispatcher,
-        managers: FlextAuthUtilitiesManagers.ServiceManagers | None = None,
+        self, dispatcher: p.Dispatcher, managers: u.Auth.ServiceManagers | None = None
     ) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._managers = (
-            managers
-            if managers is not None
-            else FlextAuthUtilitiesManagers.ServiceManagers(dispatcher)
+            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
 
     @property
-    def session_manager(self) -> FlextAuthUtilitiesManagers.FlextAuthSessionManager:
+    def session_manager(self) -> u.Auth.FlextAuthSessionManager:
         """Direct access to session manager for client orchestration."""
         return self._managers.session_manager
 

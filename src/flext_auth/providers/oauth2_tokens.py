@@ -30,7 +30,7 @@ class FlextAuthOAuth2Tokens(
                 credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user"
             ),
             token=str(credential_payload.get("access_token") or ""),
-            token_type="Bearer",
+            token_type=c.Auth.TokenTypes.BEARER.value,
             expires_at=u.generate_datetime_utc() + timedelta(hours=1),
         )
         return r[p.Auth.Token].ok(token_model)
@@ -39,7 +39,7 @@ class FlextAuthOAuth2Tokens(
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | t.JsonMapping,
-        token_kind: str = "oauth2_access",
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
@@ -55,7 +55,7 @@ class FlextAuthOAuth2Tokens(
         """Get OAuth2 provider metadata using composition."""
         return m.Auth.Providers.Metadata(
             name="oauth2",
-            version="1.0.0",
+            version=c.Auth.PROVIDER_VERSION,
             capabilities=tuple(self.supports()),
             extras={
                 "flows": [c.Auth.OAUTH2_FLOW_DEFAULT, "client_credentials"],
@@ -100,7 +100,7 @@ class FlextAuthOAuth2Tokens(
         refreshed_model = m.Auth.AuthToken(
             identity_id=identity_id,
             token=f"access_token_{secrets.token_hex(16)}",
-            token_type="Bearer",
+            token_type=c.Auth.TokenTypes.BEARER.value,
             expires_at=u.generate_datetime_utc() + timedelta(seconds=3600),
             refresh_token=f"refresh_token_{secrets.token_hex(16)}",
         )
@@ -140,10 +140,7 @@ class FlextAuthOAuth2Tokens(
         if introspection_endpoint_result.success:
             introspection_result = self._introspect_token(token)
             if introspection_result.failure:
-                return r[m.Auth.AuthIdentity].fail(
-                    introspection_result.error
-                    or "OAuth2 introspection token validation failed"
-                )
+                return r[m.Auth.AuthIdentity].from_failure(introspection_result)
             active_value = introspection_result.value.get("active")
             is_active = active_value if isinstance(active_value, bool) else False
             if not is_active:
@@ -157,9 +154,7 @@ class FlextAuthOAuth2Tokens(
             )
         claims_result = self._decode_token_claims(token)
         if claims_result.failure:
-            return r[m.Auth.AuthIdentity].fail(
-                claims_result.error or "OAuth2 token validation failed"
-            )
+            return r[m.Auth.AuthIdentity].from_failure(claims_result)
         return r[m.Auth.AuthIdentity].from_validation(
             {
                 **claims_result.value,

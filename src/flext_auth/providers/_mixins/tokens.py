@@ -6,7 +6,8 @@ from collections.abc import Mapping
 from datetime import datetime, timedelta
 
 from flext_auth import c, m, p, r, t, u
-from flext_auth.providers._mixins.codec import FlextAuthProviderCodecMixin
+
+from .codec import FlextAuthProviderCodecMixin
 
 
 class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
@@ -15,7 +16,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
     def generate_token(
         self,
         payload: t.JsonMapping,
-        token_kind: str = "access",
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
         """Generate a token from the provided payload.
@@ -71,7 +72,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | t.JsonMapping,
-        token_kind: str = "access",
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
@@ -112,21 +113,15 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
         token_text = token
         claims_result = self._decode_token_claims(token_text)
         if claims_result.failure:
-            return r[p.Auth.Token].fail(
-                claims_result.error or "Token decode failed during refresh"
-            )
+            return r[p.Auth.Token].from_failure(claims_result)
         claims = claims_result.value
         identity_result = self._extract_identity_id(claims)
         if identity_result.failure:
-            return r[p.Auth.Token].fail(
-                identity_result.error or "Identity extraction failed during refresh"
-            )
+            return r[p.Auth.Token].from_failure(identity_result)
         identity_id = identity_result.value
         new_token_result = self.generate_token(claims, "access")
         if new_token_result.failure:
-            return r[p.Auth.Token].fail(
-                new_token_result.error or "Token generation failed during refresh"
-            )
+            return r[p.Auth.Token].from_failure(new_token_result)
         settings = self._provider_config
         expiry_config_value = settings.get("expiry_minutes") if settings else None
         default_expiry = (
@@ -135,7 +130,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
         refreshed = m.Auth.AuthToken(
             identity_id=identity_id,
             token=new_token_result.value,
-            token_type="Bearer",
+            token_type=c.Auth.JWT_DEFAULT_TOKEN_TYPE,
             expires_at=u.generate_datetime_utc() + timedelta(minutes=default_expiry),
         )
         return r[p.Auth.Token].ok(refreshed)

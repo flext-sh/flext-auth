@@ -1,4 +1,4 @@
 version: 1
-workspace: flext-auth
-database: flext-auth
-issue_prefix: flext-auth
+workspace: flext
+database: flext
+issue_prefix: flext

@@ -6,7 +6,8 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
 from flext_api import c
-from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
+
+from .auth_enums import FlextAuthConstantsAuthEnums
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Set as AbstractSet
@@ -137,6 +138,9 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     MAX_ATTEMPTS_DEFAULT: Final[int] = 5
     "Default max authentication attempts."
     LOCKOUT_DURATION_MINUTES: Final[int] = 30
+    # RFC 7662 wire literal, not a credential; bandit name-heuristic false positive.
+    OAUTH2_INTROSPECTION_TYPE_HINT_ACCESS: Final[str] = "access_token"
+    "RFC 7662 introspection token_type_hint wire value for access tokens."
     "Lockout duration in minutes."
     SECRET_MIN_LENGTH: Final[int] = 32
     "Minimum secret key length."
@@ -153,7 +157,8 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
         "status": c.Status.SUCCESS.value,
         "message": "Authentication successful",
-        "token_type": None,
+        # Null sentinel in response template; "token" in key trips B105.
+        "token_type": None,  # nosec B105 - null sentinel in response template
     })
     "Template for successful authentication responses."
 

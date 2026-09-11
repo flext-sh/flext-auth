@@ -9,9 +9,9 @@ attribute, internal collaborator, or implementation detail is asserted.
 from __future__ import annotations
 
 import pytest
+from flext_tests import tm
 
 from flext_auth import FlextAuth, FlextAuthSettings
-from flext_tests import tm
 from tests import c
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from flext_auth import t
-from flext_auth._registry.metadata import FlextAuthRegistryMetadata
+
+from ._registry.metadata import FlextAuthRegistryMetadata
 
 
 class FlextAuthRegistry(FlextAuthRegistryMetadata):

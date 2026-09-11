@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from flext_auth import c, m, p, r, t
-from flext_auth._registry.base import FlextAuthRegistryBase
+
+from .base import FlextAuthRegistryBase
 
 
 class FlextAuthRegistryLookup(FlextAuthRegistryBase):
@@ -52,7 +53,10 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         if metadata_result.failure:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name, version="1.0.0", capabilities=(), extras={}
+                    name=name,
+                    version=c.Auth.PROVIDER_VERSION,
+                    capabilities=(),
+                    extras={},
                 )
             )
         wrapper = metadata_result.value
@@ -60,7 +64,10 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         if metadata is None:
             return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name, version="1.0.0", capabilities=(), extras={}
+                    name=name,
+                    version=c.Auth.PROVIDER_VERSION,
+                    capabilities=(),
+                    extras={},
                 )
             )
         return r[m.Auth.Providers.Metadata].ok(metadata)
@@ -69,7 +76,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         """Check if provider has capability."""
         caps_result = self.get_capabilities(name)
         if caps_result.failure:
-            return r[bool].fail(caps_result.error or f"Provider '{name}' not found")
+            return r[bool].from_failure(caps_result)
         caps = caps_result.unwrap()
         return r[bool].ok(capability in caps)
 

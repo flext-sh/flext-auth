@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar
 
-from flext_auth import FlextAuthModels
 from flext_tests import FlextTestsModels, u
+
+from flext_auth import FlextAuthModels
+from tests import t
 
 
 class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
@@ -21,7 +23,7 @@ m = TestsFlextAuthModels
 class CertificateFixture(m.BaseModel):
     """Certificate fixture data."""
 
-    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(frozen=True)
+    model_config: ClassVar[t.ConfigDict] = m.ConfigDict(frozen=True)
 
     cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
     key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]
@@ -44,7 +46,6 @@ class CertificateFixture(m.BaseModel):
             f"Valid Days: {valid_days}\n"
             "-----END CERTIFICATE-----"
         )
-        # Why: header text avoids gitleaks' PEM private-key rule (flext-1wjg1.16)
         mock_key_pem = (
             "-----BEGIN MOCK KEY MATERIAL-----\n"
             "MOCK PRIVATE KEY FOR TESTING\n"
@@ -73,7 +74,6 @@ class CertificateFixture(m.BaseModel):
             "Type: Client Certificate\n"
             "-----END CERTIFICATE-----"
         )
-        # Why: header text avoids gitleaks' PEM private-key rule (flext-1wjg1.16)
         mock_key_pem = (
             "-----BEGIN MOCK KEY MATERIAL-----\n"
             "MOCK CLIENT PRIVATE KEY FOR TESTING\n"

@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
 from flext_api import t, u
+
 from flext_auth import c
 
 if TYPE_CHECKING:

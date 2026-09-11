@@ -7,8 +7,10 @@ from datetime import UTC, datetime
 from typing import Annotated, Self
 
 from flext_api import m, u
+
 from flext_auth import c, p, r, t
-from flext_auth._models.auth_password import FlextAuthModelsAuthPassword
+
+from .auth_password import FlextAuthModelsAuthPassword
 
 
 class FlextAuthModelsAuthIdentity:
@@ -146,7 +148,7 @@ class FlextAuthModelsAuthIdentity:
                 )
                 return r[bool].ok(value=True)
             except c.EXC_BROAD_IO_TYPE as exc:
-                return r[bool].fail(f"Failed to hash credential: {exc}")
+                return r[bool].fail(f"Failed to hash credential: {exc}", exception=exc)
 
         def verify_credential(self, credential: str) -> p.Result[bool]:
             """Verify a credential against stored hash using bcrypt."""

@@ -3,14 +3,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from . import _managers as _managers
+    from . import _managers
     from ._managers.auth_managers_session import FlextAuthSessionManagers
     from ._managers.rate_limiter import FlextAuthRateLimiterManagers
     from ._managers.user import FlextAuthUserManagers

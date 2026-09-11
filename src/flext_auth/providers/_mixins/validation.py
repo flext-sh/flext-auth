@@ -6,6 +6,16 @@ from flext_auth import p, r, t, u
 
 
 class FlextAuthProviderValidationMixin:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
+        """Authenticate credentials. Stub providers inherit this unimplemented owner."""
+        _ = credentials
+        return r[p.Auth.Token].fail("Not implemented")
+
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
+        """Validate a token. Stub providers inherit this unimplemented owner."""
+        _ = token
+        return r[bool].fail("Not implemented")
+
     def revoke(self, token: str) -> p.Result[bool]:
         """Revoke authentication token.
 
@@ -82,6 +92,7 @@ class FlextAuthProviderValidationMixin:
         r[bool]: True if valid, False if invalid, error message on failure
 
         """
+
         def _is_missing(field: str) -> bool:
             return field not in credentials
 

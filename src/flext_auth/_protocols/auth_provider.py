@@ -8,7 +8,8 @@ from flext_auth import c, t
 
 if TYPE_CHECKING:
     from flext_api import p
-    from flext_auth._protocols.auth_token import FlextAuthProtocolsAuthToken
+
+    from .auth_token import FlextAuthProtocolsAuthToken
 
 
 class FlextAuthProtocolsAuthProvider:
