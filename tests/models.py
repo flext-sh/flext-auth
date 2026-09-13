@@ -7,7 +7,6 @@ from typing import Annotated, ClassVar
 from flext_tests import FlextTestsModels, u
 
 from flext_auth import FlextAuthModels
-from tests import t
 
 
 class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
@@ -23,7 +22,7 @@ m = TestsFlextAuthModels
 class CertificateFixture(m.BaseModel):
     """Certificate fixture data."""
 
-    model_config: ClassVar[t.ConfigDict] = m.ConfigDict(frozen=True)
+    model_config: ClassVar[m.ConfigDict] = m.ConfigDict(frozen=True)
 
     cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
     key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]
