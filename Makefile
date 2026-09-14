@@ -49,9 +49,27 @@ UV_LINK_MODE := copy
 # End SECTION: project identity
 
 # === SECTION: public boundary (managed) ===
-# Operator law 2026-09-14: the Makefile validates no caller input. Every verb
-# always applies; a mistyped variable fails where the verb consumes it, and an
-# unconsumed variable is ignored.
+# GNU Make built-ins are dot-prefixed; .SHELLSTATUS carries origin "override"
+# on Make >= 4.4, so they are excluded from caller-input detection.
+# WHAT is the universal action selector (`make <verb> WHAT=<action>`): it
+# routes custom handlers in every project, and the generated `_dispatch` reads
+# it where script dispatch is active (cosmos-3flk9). `initialize` is the
+# hermetic bootstrap verb and derives GEN_INIT_ONLY above.
+# Verbs mutate by default — there is no dry-run selector. Read-only check mode
+# is owned exclusively by dedicated check verbs (e.g. `make check`), never a
+# flag on a mutating verb.
+PUBLIC_INPUTS := INDEX FAIL_FAST PR_TITLE ARGS GEN_INIT_ONLY UV PROJECT_INFRA_PYTHONPATH REPOSITORY_ROOT SETUP_BOOTSTRAP_ONLY WHAT CI
+COMMAND_LINE_INPUTS := $(foreach name,$(filter-out .%,$(.VARIABLES)),$(if $(filter command line override,$(origin $(name))),$(name)))
+UNKNOWN_INPUTS := $(filter-out $(PUBLIC_INPUTS),$(COMMAND_LINE_INPUTS))
+ifneq ($(strip $(UNKNOWN_INPUTS)),)
+$(error Unsupported Make input(s): $(UNKNOWN_INPUTS); declared public inputs are $(PUBLIC_INPUTS))
+endif
+# INDEX refines receipt-attested publication: Y uploads to the package index,
+# N publishes GitHub assets only.
+INDEX ?=
+ifneq ($(filter-out N,$(strip $(INDEX))),)
+$(error INDEX must be , N, or unset)
+endif
 PYTEST_DIAG_ARGS := -rA --durations=0 --tb=long --showlocals
 PYTEST_REPORT_ARGS := -ra --durations=25 --durations-min=0.001 --tb=short
 PYTEST_PROCESS_TIMEOUT_SECONDS := 660
@@ -705,6 +723,7 @@ _builtin-help:
 
 	@printf '  %-16s %s\n' 'duplication' 'Run the canonical jscpd duplicate-code gate.';
 
+	@printf '%s\n' 'Verbs mutate by default; read-only check mode is owned by dedicated check verbs (e.g. make check).';
 
 # A project owns the sources declared by its manifest. The generated setup
 # reconciler validates every initialized checkout before mutation, initializes
@@ -996,9 +1015,12 @@ _builtin_status_diagnostics: _builtin_require_environment
 	fi
 	@git -C "$(PROJECT_ROOT)" status --short
 
+# In-process fan-out (no per-project subprocess fork), so docs actions always
+# apply (mutate) through the single --apply argument.
 _builtin_docs_all:
 	@set -eu; \
 	for action in $(DOCS_ACTIONS); do \
+		case "$$action" in fix) mode=--apply ;; *) mode= ;; esac; \
 		case "$$action" in fix) mode=--apply ;; *) mode= ;; esac; \
 		$(PROJECT_FLEXT_INFRA) docs "$$action" --repository-root "$(PROJECT_ROOT)" --output-dir ".reports/docs" $$mode $(DOCS_PROJECT_ARGS); \
 	done
@@ -1072,12 +1094,23 @@ _builtin_gen_all:
 _builtin_mod_apply: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) refactor mod --apply
 
-# Selector-free public verbs map one-to-one to their canonical implementation;
-# every verb always applies (operator law 2026-09-14).
+# Omitting --apply is the owner's own scan-only contract
+# (FlextInfraCodemodBatchApply.effective_dry_run): prove the fixed point,
+# mutate nothing.
+_builtin_mod_check: _builtin_require_environment
+	@$(PROJECT_FLEXT_INFRA) refactor mod
+
+# Selector-free public verbs map one-to-one to their canonical implementation.
+# Dispatch tables map each public verb to its builtin implementation. Mutating
+# verbs always run their apply variant — read-only check mode is owned
+# exclusively by the dedicated `check` verb.
 _builtin-deps: _builtin_deps_upgrade
 _builtin-build: _builtin_build_artifacts
 _builtin-check: _builtin_check_all
 _builtin-test: _builtin_test_all
+_builtin-fmt: _builtin_fmt_all
+_builtin-fix: _builtin_fix_all
+_builtin-fix-enforcement: _builtin_fix_enforcement
 _builtin-fmt: _builtin_fmt_all
 _builtin-fix: _builtin_fix_all
 _builtin-fix-enforcement: _builtin_fix_enforcement
@@ -1098,7 +1131,9 @@ _builtin-release-tag: _builtin_release_tag
 _builtin-release-build: _builtin_release_build
 _builtin-publication: _builtin_release_publish
 _builtin-gen: _builtin_gen_all
+_builtin-conform: _builtin_gen_check
 _builtin-initialize: _builtin_gen_init
+_builtin-mod: _builtin_mod_apply
 _builtin-mod: _builtin_mod_apply
 _builtin-waza:
 	@cd "$(PROJECT_ROOT)" && "$(SETUP_MISE)" exec -- waza check --no-update-check
