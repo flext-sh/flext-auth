@@ -14,7 +14,7 @@
   Developers`, `Operating System :: OS Independent`, `Programming Language ::
   Python :: 3 :: Only`, `Programming Language :: Python :: 3.13`, `Topic ::
   Software Development :: Libraries :: Python Modules` (+2 more)
-- Project class: `platform`
+- Project class: `domain`
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`,
   `security`, `typed`
 - Main facades: `FlextAuth`, `FlextAuthApiKeyProvider`,

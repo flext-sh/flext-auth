@@ -579,7 +579,7 @@ constraint-dependencies = ["structlog<26"]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 
 [tool.flext.docs]
-project_class = "platform"
+package_name = "flext_auth"
 
 
 [tool.flext.project.budget.boundary]
@@ -618,6 +618,11 @@ memory-mb = 2048
 tokens = 1000000
 
 [tool.flext.project.budget.format]
+time-seconds = 600
+memory-mb = 2048
+tokens = 1000000
+
+[tool.flext.project.budget.index-declarations]
 time-seconds = 600
 memory-mb = 2048
 tokens = 1000000
