@@ -9,24 +9,19 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_tests import FlextTestsConstants, d, e, h, r, td, tf, tk, tm, tv, x
+    from flext_tests import FlextTestsConstants, d, e, h, m, r, td, tf, tk, tm, tv, x
 
     from flext_auth import c as auth_c
 
     from . import fixtures, unit
     from .base import TestsFlextAuthServiceBase, TestsFlextAuthServiceBase as s
     from .constants import TestsFlextAuthConstants, TestsFlextAuthConstants as c
-    from .models import (
-        CertificateFixture,
-        TestsFlextAuthModels,
-        TestsFlextAuthModels as m,
-    )
+    from .models import TestsFlextAuthModels
     from .protocols import TestsFlextAuthProtocols, TestsFlextAuthProtocols as p
     from .settings import TestsFlextAuthSettings
     from .typings import TestsFlextAuthTypes, TestsFlextAuthTypes as t
     from .utilities import TestsFlextAuthUtilities, TestsFlextAuthUtilities as u
 __all__: tuple[str, ...] = (
-    "CertificateFixture",
     "FlextTestsConstants",
     "TestsFlextAuthConstants",
     "TestsFlextAuthModels",
@@ -62,7 +57,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".base": ("TestsFlextAuthServiceBase", "s"),
             ".constants": ("TestsFlextAuthConstants", "c"),
             ".fixtures": ("fixtures",),
-            ".models": ("CertificateFixture", "TestsFlextAuthModels", "m"),
+            ".models": ("TestsFlextAuthModels",),
             ".protocols": ("TestsFlextAuthProtocols", "p"),
             ".settings": ("TestsFlextAuthSettings",),
             ".typings": ("TestsFlextAuthTypes", "t"),
@@ -73,6 +68,7 @@ _LAZY_IMPORTS = MappingProxyType(
                 "d",
                 "e",
                 "h",
+                "m",
                 "r",
                 "td",
                 "tf",
