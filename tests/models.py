@@ -18,8 +18,8 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
     class CertificateFixture(FlextAuthModels.BaseModel):
         """Certificate fixture data."""
 
-        model_config: ClassVar[FlextAuthModels.ConfigDict] = (
-            FlextAuthModels.ConfigDict(frozen=True)
+        model_config: ClassVar[FlextAuthModels.ConfigDict] = FlextAuthModels.ConfigDict(
+            frozen=True
         )
 
         cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
@@ -35,7 +35,7 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
             common_name: str = "test.example.com",
             organization: str = "Test Organization",
             valid_days: int = 365,
-        ) -> CertificateFixture:
+        ) -> TestsFlextAuthModels.CertificateFixture:
             """Generate a mock certificate fixture for testing."""
             mock_cert_pem = (
                 "-----BEGIN CERTIFICATE-----\n"
@@ -65,7 +65,7 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
             cls,
             common_name: str = "client.example.com",
             organization: str = "Test Client",
-        ) -> CertificateFixture:
+        ) -> TestsFlextAuthModels.CertificateFixture:
             """Generate a mock client certificate fixture for testing."""
             mock_cert_pem = (
                 "-----BEGIN CERTIFICATE-----\n"
