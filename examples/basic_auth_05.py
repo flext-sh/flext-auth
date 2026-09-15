@@ -6,7 +6,7 @@ import os
 
 from flext_cli import cli
 
-from flext_auth import FlextAuth, FlextAuthSettings
+from flext_auth import FlextAuth, FlextAuthSettings, p, r
 
 
 def _emit(message: str) -> None:
@@ -18,7 +18,7 @@ class FlextAuthBasicAuthExample:
     """Single owner for the basic auth example flow."""
 
     @staticmethod
-    def main() -> None:
+    def main() -> p.Result[None]:
         """Demonstrate core auth workflow with the supported API surface."""
         auth = FlextAuth(settings=FlextAuthSettings())
         password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
@@ -30,18 +30,19 @@ class FlextAuthBasicAuthExample:
         )
         if registration.failure:
             _emit(f"registration failed: {registration.error}")
-            return
+            return r[None].from_failure(registration)
         authentication = auth.authenticate_user("demouser", password)
         if authentication.failure:
             _emit(f"authentication failed: {authentication.error}")
-            return
+            return r[None].from_failure(authentication)
         identity = authentication.value
         token_result = auth.create_token(identity_id=identity.unique_id)
         if token_result.failure:
             _emit(f"token generation failed: {token_result.error}")
-            return
+            return r[None].from_failure(token_result)
         validation_result = auth.token_service.validate_token(token_result.value)
         _emit(f"token valid: {validation_result.success and validation_result.value}")
+        return r[None].ok(None)
 
 
 if __name__ == "__main__":

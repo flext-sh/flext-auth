@@ -13,7 +13,7 @@ facades. Tests use `flext-tests` matchers and typed helpers exposed by the local
 - Use `tests.u.Tests.env_vars_context` when observable settings behavior needs
   a temporary real environment. Values expected from settings or configuration
   come from the same public typed owner as production.
-- Mocks, patching, monkeypatching, copied setup, compatibility fixtures, and
+- Substitutes, shims, copied setup, compatibility fixtures, and
   hardcoded project-owned defaults are prohibited.
 - Preserve the first failure and its cause. A warning, skip, empty collection,
   disabled Testmon cache, or normalized failure is red.

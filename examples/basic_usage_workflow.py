@@ -6,7 +6,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, c, t, u
+from flext_auth import FlextAuth, c, p, r, t, u
 
 
 class FlextAuthBasicUsageWorkflow:
@@ -61,7 +61,7 @@ class FlextAuthBasicUsageWorkflow:
             cls.logger.error("User registration failed", error=user_result.error)
 
     @classmethod
-    def example_complete_workflow(cls) -> None:
+    def example_complete_workflow(cls) -> p.Result[None]:
         """Demonstrate complete authentication workflow."""
         cls.logger.info("Starting complete workflow example")
         auth: FlextAuth = FlextAuth()
@@ -72,14 +72,14 @@ class FlextAuthBasicUsageWorkflow:
         )
         if reg_result.failure:
             cls.logger.error("Registration failed", error=reg_result.error)
-            return
+            return r[None].from_failure(reg_result)
         user = reg_result.value
         cls.logger.info("User registered successfully", name=user.name)
         cls.logger.info("Step 2: User authentication")
         auth_result = auth.authenticate_user("workflowuser", password)
         if auth_result.failure:
             cls.logger.error("Authentication failed", error=auth_result.error)
-            return
+            return r[None].from_failure(auth_result)
         auth_token = auth_result.value
         cls.logger.info("Authentication successful")
         cls.logger.info("Step 3: Token operations")
@@ -97,6 +97,7 @@ class FlextAuthBasicUsageWorkflow:
             cls.logger.info("User information retrieved", name=retrieved_user.name)
         else:
             cls.logger.error("Failed to get user information", error=user_info.error)
+        return r[None].ok(None)
 
     @staticmethod
     def generate_secure_password(length: int = c.Auth.CREDENTIAL_MAX_LENGTH) -> str:

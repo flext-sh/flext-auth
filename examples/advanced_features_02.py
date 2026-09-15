@@ -14,7 +14,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, t, u
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, p, r, t, u
 
 
 class FlextAuthAdvancedFeaturesExample:
@@ -30,7 +30,7 @@ class FlextAuthAdvancedFeaturesExample:
         cls.logger.info("FlextAuth created with custom configuration")
 
     @staticmethod
-    def example_jwt_operations() -> None:
+    def example_jwt_operations() -> p.Result[None]:
         """Advanced JWT operations example using REAL current API."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
@@ -40,14 +40,15 @@ class FlextAuthAdvancedFeaturesExample:
             roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
         )
         if user_result.failure:
-            return
-        token_result = auth.authenticate_user(
+            return r[None].from_failure(user_result)
+        auth_result = auth.authenticate_user(
             username="advanced_user",
             password=os.getenv("EXAMPLE_PASSWORD", "AdvancedPassword123!"),
         )
-        if token_result.success:
-            auth_token = token_result.value
+        if auth_result.success:
+            auth_token = auth_result.value
             auth.token_service.validate_token(auth_token.token)
+        return r[None].ok(None)
 
     @staticmethod
     def example_role_based_access() -> None:
@@ -70,19 +71,20 @@ class FlextAuthAdvancedFeaturesExample:
                 registered_users.append(result.value)
 
     @staticmethod
-    def example_session_management() -> None:
+    def example_session_management() -> p.Result[None]:
         """Demonstrate authentication session handling."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
             "sessionuser", "session@example.com", "SessionPass123!"
         )
         if user_result.failure:
-            return
-        tokens: t.MutableSequenceOf[str] = []
+            return r[None].from_failure(user_result)
+        invalid_sessions: t.MutableSequenceOf[str] = []
         for _i in range(3):
             auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
             if auth_result.success:
-                tokens.append(auth_result.value.token)
+                invalid_sessions.append(auth_result.value.token)
+        return r[None].ok(None)
 
     @staticmethod
     def example_password_security() -> None:
@@ -107,29 +109,30 @@ class FlextAuthAdvancedFeaturesExample:
         )
 
     @staticmethod
-    def example_token_validation() -> None:
+    def example_token_validation() -> p.Result[None]:
         """Demonstrate advanced token validation."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
             "tokenuser", "token@example.com", "TokenPass123!"
         )
         if user_result.failure:
-            return
+            return r[None].from_failure(user_result)
         user = user_result.value
         identity_id: str = user.unique_id
         token_result = auth.create_token(identity_id=identity_id)
         if token_result.failure:
-            return
+            return r[None].from_failure(token_result)
         auth_token = token_result.value
-        test_tokens = [
+        expired_test_tokens = [
             ("Valid token", auth_token),
             ("Bearer token", f"Bearer {auth_token}"),
             ("Invalid format", "invalid.token.format"),
             ("Empty token", ""),
             ("Malformed JWT", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.invalid"),
         ]
-        for _desc, test_token in test_tokens:
+        for _desc, test_token in expired_test_tokens:
             auth.token_service.validate_token(test_token)
+        return r[None].ok(None)
 
     @staticmethod
     def generate_secure_password(length: int = 16) -> str:
