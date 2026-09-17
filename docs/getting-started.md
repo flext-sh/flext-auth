@@ -3,7 +3,7 @@
 <!-- TOC START -->
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
+  - [Installation](#installation_1)
 - [Basic Authentication](#basic-authentication)
   - [Quick Start Service](#quick-start-service)
   - [User Authentication](#user-authentication)
@@ -351,7 +351,7 @@ This guide covers basic usage patterns. For production deployment and additional
 
 - [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
 - [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
-- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) - CLI authentication patterns
+- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference/README.md) - CLI authentication patterns
 
 **External Resources**:
 

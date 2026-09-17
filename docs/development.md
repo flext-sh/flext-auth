@@ -12,18 +12,6 @@
   - [Quality Gates](#quality-gates)
 - [Code Standards](#code-standards)
   - [FLEXT Pattern Compliance](#flext-pattern-compliance)
-  - [Domain Model Patterns](#domain-model-patterns)
-- [Current Development Areas](#current-development-areas)
-  - [Priority 1: Test Stabilization](#priority-1-test-stabilization)
-  - [Priority 2: Security Enhancements](#priority-2-security-enhancements)
-  - [Priority 3: Production Features](#priority-3-production-features)
-- [Contributing Workflow](#contributing-workflow)
-  - [1. Before Development](#1-before-development)
-  - [2. Development Process](#2-development-process)
-  - [3. Before Committing](#3-before-committing)
-  - [4. Contribution Guidelines](#4-contribution-guidelines)
-- [Testing Strategy](#testing-strategy)
-  - [Current Test Structure```](#current-test-structure)
   - [Test Categories](#test-categories)
   - [Adding Tests](#adding-tests)
 - [Architecture Guidelines](#architecture-guidelines)
@@ -70,14 +58,10 @@ ______________________________________________________________________
 ### Essential Commands
 
 ```bash
-# Complete validation pipeline
-make check        # lint + type + test
-
-# Individual quality checks
-make lint           # Ruff code linting
-make type-check     # MyPy type checking
-make format         # Code formatting
-make test           # Run test suite
+# Canonical workspace lifecycle gates
+make fmt
+make check
+make test
 ```
 
 ### Testing Commands
@@ -231,12 +215,10 @@ make check```
 ```bash
 # Make changes following FLEXT patterns
 
-# Test frequently during development
-pytest tests/unit/test_your_module.py -v
-
-# Check code quality
-make lint
-make type-check```
+# Test and check through the root dispatcher
+make test
+make check
+```
 ### 3. Before Committing
 
 ```bash
@@ -247,7 +229,8 @@ make check
 make test
 
 # Format code
-make format```
+make fmt
+```
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns
