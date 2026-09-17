@@ -279,13 +279,14 @@ ______________________________________________________________________
 
 ```bash
 # Ensure test environment is clean
-uv sync --all-packages
+make setup
 
 # Run tests with proper environment
-uv run pytest tests/ -v
+make test
 
 # Run with coverage
-uv run pytest --cov=src/flext_auth tests/```
+make test
+```
 ______________________________________________________________________
 
 ## Performance Issues
@@ -381,7 +382,7 @@ ______________________________________________________________________
 
 ```bash
 # Run type checking
-uv run mypy src/flext_auth/
+make check
 
 # Common errors:
 # - Missing type annotations
@@ -433,10 +434,10 @@ ______________________________________________________________________
 
 ```bash
 # Check for security issues
-uv run bandit -r src/flext_auth/
+make check
 
 # Verify secure configuration
-uv run python -c "
+python -c "
 from flext_auth import FlextAuthSettings
 from flext_cli import u
 

@@ -40,7 +40,7 @@ ______________________________________________________________________
 ### Prerequisites
 
 - Python 3.13+
-- uv for dependency management
+- **Make** for build automation
 - **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)** foundation library
 
 ### Installation
@@ -50,10 +50,10 @@ ______________________________________________________________________
 cd flext-auth
 
 # Install dependencies
-uv sync
+make setup
 
 # Verify installation
-uv run python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
+python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
 ```
 
 ______________________________________________________________________
@@ -319,7 +319,7 @@ make test
 make check
 
 # Complete validation
-make val```
+make check```
 ### Documentation
 
 - **Architecture** - System design and patterns

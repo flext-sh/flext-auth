@@ -1089,7 +1089,7 @@ ______________________________________________________________________
 - Token caching (Redis/Memcached)
 - Credential manager with encryption
 - Session manager refactoring
-- Quality gates: make val passing
+- Quality gates: make check passing
 
 **Success Criteria**: Advanced token/credential management operational
 
@@ -1125,7 +1125,7 @@ ______________________________________________________________________
 ### Quality Gates (MANDATORY after each phase)
 
 ```bash
-make val          # Complete pipeline
+make check          # Complete pipeline
 make lint
 make type-check   # MyPy/PyRight: ZERO errors in src/
 make security     # Bandit: ZERO critical issues

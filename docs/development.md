@@ -45,7 +45,6 @@ ______________________________________________________________________
 ### Prerequisites
 
 - Python 3.13+
-- Poetry for dependency management
 - [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md) foundation library
 
 ### Setup Environment
@@ -54,8 +53,8 @@ ______________________________________________________________________
 # Navigate to flext-auth
 cd flext-auth
 
-# Install development dependencies
-uv sync
+    # Install development dependencies
+    make setup
 
 # Install pre-commit hooks (if available)
 make setup
@@ -72,7 +71,7 @@ ______________________________________________________________________
 
 ```bash
 # Complete validation pipeline
-make val        # lint + type + test
+make check        # lint + type + test
 
 # Individual quality checks
 make lint           # Ruff code linting
@@ -226,7 +225,7 @@ ______________________________________________________________________
 git checkout -b feature/your-feature-name
 
 # Ensure clean starting state
-make val```
+make check```
 ### 2. Development Process
 
 ```bash
@@ -242,7 +241,7 @@ make type-check```
 
 ```bash
 # Complete validation
-make val
+make check
 
 # Ensure all tests pass (or at least don't add new failures)
 make test
