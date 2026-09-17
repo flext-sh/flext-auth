@@ -169,6 +169,8 @@ def test_settings_override() -> None:
         assert settings.debug
     finally:
         FlextSettings.reset_for_testing()
+
+
 from flext_core import FlextSettings
 
 
