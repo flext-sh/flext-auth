@@ -11,15 +11,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
 from tests.utilities import TestsFlextAuthUtilities as u
-
-if TYPE_CHECKING:
-    pass
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 

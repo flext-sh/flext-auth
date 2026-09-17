@@ -7,8 +7,8 @@ import time
 from flext_tests import r
 
 from flext_auth import FlextAuth, m
-from tests.utilities import TestsFlextAuthUtilities as u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase10:

@@ -1,7 +1,9 @@
 # flext-auth API Overview
 
 <!-- TOC START -->
+
 - [Next Pages](#next-pages)
+
 <!-- TOC END -->
 
 <!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
@@ -11,9 +13,9 @@
 - Description: FLEXT Auth - Enterprise Authentication & Authorization Service
 - Doc summary: Flext Auth package.
 - Classifiers: `Development Status :: 3 - Alpha`, `Intended Audience ::
-  Developers`, `Operating System :: OS Independent`, `Programming Language ::
-  Python :: 3 :: Only`, `Programming Language :: Python :: 3.13`, `Topic ::
-  Software Development :: Libraries :: Python Modules` (+2 more)
+Developers`, `Operating System :: OS Independent`, `Programming Language ::
+Python :: 3 :: Only`, `Programming Language :: Python :: 3.13`, `Topic ::
+Software Development :: Libraries :: Python Modules` (+2 more)
 - Project class: `domain`
 - Keywords: `authentication`, `authorization`, `enterprise`, `flext`, `jwt`,
   `security`, `typed`

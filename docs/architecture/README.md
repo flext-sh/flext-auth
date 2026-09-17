@@ -1,6 +1,7 @@
 # FLEXT Auth Architecture Documentation
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [📚 Documentation Structure](#documentation-structure)
 - [🏗️ Architectural Frameworks Used](#architectural-frameworks-used)
@@ -35,7 +36,7 @@
 - [📚 Additional Resources](#additional-resources)
 - [🤝 Contributing](#contributing)
   - [Standards](#standards)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 ## Overview
 
@@ -310,7 +311,7 @@ When making architectural changes:
 - Keep diagrams in source control
 - Use consistent naming conventions
 
-______________________________________________________________________
+---
 
 **Last Updated**: October 10, 2025
 **Version**: v0.9.0

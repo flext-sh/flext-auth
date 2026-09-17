@@ -1,6 +1,7 @@
 # ADR-001: Multi-Provider Authentication Architecture
 
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
   - [Problem Statement](#problem-statement)
@@ -36,7 +37,7 @@
   - [Implementation Challenges](#implementation-challenges)
   - [Future Considerations](#future-considerations)
   - [Lessons Learned](#lessons-learned)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 ## Status
 

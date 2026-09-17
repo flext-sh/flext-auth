@@ -1,6 +1,7 @@
 # Integration
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [FLEXT-Core Integration](#flext-core-integration)
   - [Authentication-Specific Integration](#authentication-specific-integration)
@@ -24,13 +25,13 @@
 - [Future Integration Plans](#future-integration-plans)
   - [Modern Authentication Protocols](#modern-authentication-protocols)
   - [Enterprise SSO](#enterprise-sso)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 Integration patterns for flext-auth within the FLEXT ecosystem.
 
-______________________________________________________________________
+---
 
 ## Overview
 
@@ -40,7 +41,7 @@ foundation patterns and provides authentication services to other FLEXT projects
 
 **Integration Status**: 85% flext-core pattern compliance
 
-______________________________________________________________________
+---
 
 ## FLEXT-Core Integration
 
@@ -52,7 +53,7 @@ patterns. For complete `r` usage patterns, see the flext-core documentation.
 
 Authentication operations return `r` for consistency with the FLEXT ecosystem:
 
-```python
+````python
 from flext_auth import FlextAuth
 from flext_cli import u
 
@@ -454,3 +455,4 @@ class SAMLProvider:
 ______________________________________________________________________
 
 This integration guide reflects the current implementation and planned integrations as of April 14, 2026.
+````

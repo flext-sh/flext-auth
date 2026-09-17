@@ -1,6 +1,7 @@
 # C4 Containers: Container Architecture Diagram
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Container Architecture](#container-architecture)
   - [Technology Choices](#technology-choices)
@@ -25,6 +26,7 @@
   - [Security Considerations](#security-considerations)
 - [Related Documentation](#related-documentation)
 - [Diagram](#diagram)
+
 <!-- TOC END -->
 
 ## Overview

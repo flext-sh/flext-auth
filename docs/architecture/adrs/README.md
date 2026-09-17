@@ -1,6 +1,7 @@
 # Architecture Decision Records (ADRs)
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [ADR Process](#adr-process)
   - [When to Create an ADR](#when-to-create-an-adr)
@@ -39,6 +40,7 @@
   - [Success Metrics](#success-metrics)
   - [Continuous Improvement](#continuous-improvement)
 - [Quick Reference](#quick-reference)
+
 <!-- TOC END -->
 
 ## Overview
@@ -290,7 +292,7 @@ adr generate index
 - **Tool Enhancement**: Add automation for common ADR tasks
 - **Training Updates**: Update team training based on lessons learned
 
-______________________________________________________________________
+---
 
 ## Quick Reference
 
