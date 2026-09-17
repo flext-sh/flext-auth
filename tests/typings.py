@@ -1,39 +1,23 @@
-"""Test types for the flext-auth test suite."""
+"""Test typings for flext-auth.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from typing import Literal
-
-from flext_tests import FlextTestsTypes
-
-from flext_auth import FlextAuthTypes
+from flext_auth import t
 
 
-class TestsFlextAuthTypes(FlextTestsTypes, FlextAuthTypes):
-    """Test types for flext-auth."""
+class _AuthTypes:
+    """Auth-specific test types."""
 
-    class Tests(FlextTestsTypes.Tests):
+
+class TestsFlextAuthTypes(t):
+    """Test typings for flext-auth — extends flext_auth.t."""
+
+    class TestsFlextAuth(_AuthTypes):
         """Test-specific types."""
 
-        type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
-        type ProviderTypeLiteral = Literal[
-            "basic",
-            "jwt",
-            "oauth2",
-            "saml",
-            "ldap",
-            "certificate",
-            "kerberos",
-            "apikey",
-        ]
-        type RoleTypeLiteral = Literal[
-            "REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"
-        ]
-        type PermissionTypeLiteral = Literal[
-            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
-        ]
 
-
-t = TestsFlextAuthTypes
-
-__all__: list[str] = ["TestsFlextAuthTypes", "t"]
+__all__: list[str] = ["TestsFlextAuthTypes"]

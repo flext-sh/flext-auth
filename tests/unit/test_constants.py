@@ -21,7 +21,7 @@ from typing import cast
 import pytest
 from flext_tests import tm
 
-from flext_auth import c
+from flext_auth import c, t
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
@@ -232,9 +232,9 @@ class TestsFlextAuthConstants:
         "mapping", [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE]
     )
     def test_exposed_mappings_reject_mutation(
-        self, mapping: Mapping[str, object]
+        self, mapping: Mapping[str, t.JsonValue]
     ) -> None:
-        mutable = cast("MutableMapping[str, object]", mapping)
+        mutable = cast("MutableMapping[str, t.JsonValue]", mapping)
         with pytest.raises((TypeError, AttributeError)):
             mutable["injected"] = 1
 

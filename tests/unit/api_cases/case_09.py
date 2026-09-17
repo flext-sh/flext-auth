@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from flext_tests import r, tm
 
-from flext_auth import FlextAuth
-from tests import m, u
+from flext_auth import FlextAuth, m
+from tests.utilities import TestsFlextAuthUtilities as u
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 
 

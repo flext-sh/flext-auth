@@ -20,6 +20,16 @@ SELF_MAKE_EXECUTABLE := $(realpath $(SELF_MAKE_EXECUTABLE))
 ifeq ($(strip $(SELF_MAKE_EXECUTABLE)),)
 $(error Current Make executable has no physical path: $(MAKE_COMMAND))
 endif
+# GNU MAKE_COMMAND may be a bare name. Resolve it before changing PATH so
+# recursive lifecycle calls keep this invoker instead of selecting a Mise shim.
+SELF_MAKE_EXECUTABLE := $(shell command -v "$(MAKE_COMMAND)")
+ifneq ($(.SHELLSTATUS),0)
+$(error Cannot resolve current Make executable: $(MAKE_COMMAND))
+endif
+SELF_MAKE_EXECUTABLE := $(realpath $(SELF_MAKE_EXECUTABLE))
+ifeq ($(strip $(SELF_MAKE_EXECUTABLE)),)
+$(error Current Make executable has no physical path: $(MAKE_COMMAND))
+endif
 .DEFAULT_GOAL := help
 ifeq ($(filter command line override,$(origin SETUP_BOOTSTRAP_ONLY)),)
 ifneq ($(filter setup,$(MAKECMDGOALS)),)
@@ -492,6 +502,9 @@ BORROW_RUNTIME_VENV_RECIPE = set -eu; \
 	fi
 
 WORKSPACE_ORCHESTRATE = $(UV_RUN) python -m flext_infra workspace orchestrate
+# Workspace runs include the root project itself: `.` maps to the
+# _builtin-self-* targets, so all 32 distributions execute their own gates
+# (plan contract: no member of the fleet is excluded from required cycles).
 # Workspace runs include the root project itself: `.` maps to the
 # _builtin-self-* targets, so all 32 distributions execute their own gates
 # (plan contract: no member of the fleet is excluded from required cycles).
@@ -1122,6 +1135,8 @@ _builtin_fix_all: _builtin_require_environment
 # declared safe, applied through its registered adapter.
 _builtin_fix_enforcement: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) check fix-enforcement --repository-root "$(PROJECT_ROOT)" --safe-only --apply
+
+
 
 
 _builtin_run_default: _builtin_require_environment

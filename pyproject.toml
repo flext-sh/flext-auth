@@ -16,11 +16,14 @@ classifiers = [
 dependencies = [
   "annotated-types>=0.8.0",
   "bcrypt>=5.0.0",
+  "bcrypt>=5.0.0",
   "beartype>=0.22.9",
   "dependency-injector>=4.49.1",
   "flext-api @ git+https://github.com/flext-sh/flext-api.git@0.12.0-dev",
+  "flext-api @ git+https://github.com/flext-sh/flext-api.git@0.12.0-dev",
   "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
   "packaging>=26.3",
+  "pydantic>=2.13.5",
   "pydantic>=2.13.5",
   "pydantic-settings>=2.15.0",
   "PyJWT>=2.14.0",
@@ -68,7 +71,9 @@ dev = [
   "actionlint-py>=1.7.12.24",
   "bandit>=1.9.4",
   "deptry",
+  "deptry",
   "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
+  "hypothesis",
   "hypothesis",
   "mkdocs",
   "mkdocs-autorefs",
@@ -86,6 +91,7 @@ dev = [
   "pyrefly>=1.2.0",
   "pyright>=1.1.411",
   "pytest>=9.1.1",
+  "pytest-asyncio",
   "pytest-asyncio",
   "pytest-benchmark",
   "pytest-cov",
@@ -409,6 +415,7 @@ addopts = [
   "--timeout=10",
 ]
 flext_slow_timeout_seconds = "60"
+asyncio_default_fixture_loop_scope = "function"
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
   "error",

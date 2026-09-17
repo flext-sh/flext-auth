@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth import FlextAuth
-from tests import m, u
+from flext_auth import FlextAuth, m
+from tests.utilities import TestsFlextAuthUtilities as u
 
 if TYPE_CHECKING:
-    from tests import t
+    from flext_auth import t
 
 
 class FlextAuthApiTestDataHelper:

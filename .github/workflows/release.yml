@@ -108,6 +108,8 @@ jobs:
       contents: write # Push the release tag and create the GitHub release.
       id-token: write # Trusted publishing to the package index.
     environment: pypi
+      id-token: write # Trusted publishing to the package index.
+    environment: pypi
     env:
       CI: Y
       GH_TOKEN: ${{ github.token }}

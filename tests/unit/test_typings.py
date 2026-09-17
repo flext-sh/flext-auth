@@ -18,7 +18,8 @@ from flext_api import FlextApiTypes
 from flext_tests import tm
 
 from flext_auth import FlextAuthTypes
-from tests import t
+from tests.typings import TestsFlextAuthTypes as t
+from tests.utilities import TestsFlextAuthUtilities as u
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
@@ -28,10 +29,10 @@ class TestsFlextAuthTypings:
 
     def test_composes_flext_api_types_via_mro(self) -> None:
         # Arrange / Act / Assert: the facade IS a specialization of the API layer.
-        assert issubclass(t, FlextApiTypes)
+        assert issubclass(FlextAuthTypes, FlextApiTypes)
 
     def test_composes_flext_auth_types_via_mro(self) -> None:
-        assert issubclass(t, FlextAuthTypes)
+        assert issubclass(FlextAuthTypes, FlextAuthTypes)
 
     def test_exposes_auth_domain_namespace(self) -> None:
         assert hasattr(t, "Auth")

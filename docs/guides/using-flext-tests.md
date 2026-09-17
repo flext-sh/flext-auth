@@ -24,6 +24,7 @@ the canonical aliases.
 ## Aliases
 
 Import the aliases each test consumes from the public `flext_tests` package root.
+Import the aliases each test consumes from the public `flext_tests` package root.
 
 `flext_tests` reexports `d`, `e`, `h`, `r`, `x` from `flext_infra` and exposes domain helpers (`tk`, `td`, `tf`, `tv`,
 `tm`).
@@ -50,9 +51,15 @@ Add `flext_tests` to your project test dependencies and use these fixtures in `c
 | --------- | --------- |
 | `reset_settings` | Explicit fixture resetting `FlextSettings`, `FlextTestsSettings`, and `FlextContainer` before and after its consumer. |
 | `test_runtime` | Explicit fixture binding `c`, `e`, `m`, `p`, `r`, `t`, `u` and `service`/`settings`/`logger` on `FlextTestsCase` instances. |
+| `reset_settings` | Explicit fixture resetting `FlextSettings`, `FlextTestsSettings`, and `FlextContainer` before and after its consumer. |
+| `test_runtime` | Explicit fixture binding `c`, `e`, `m`, `p`, `r`, `t`, `u` and `service`/`settings`/`logger` on `FlextTestsCase` instances. |
 | `settings` | Clean `FlextTestsSettings(debug=True, trace=False)`. |
 | `settings_factory` | Factory for creating project-specific settings instances. |
 | `temp_dir` / `temp_file` | Temporary paths isolated per test. |
+
+With the settings plugin loaded, its `pytest_runtest_setup` and
+`pytest_runtest_teardown` hooks perform automatic isolation. The two explicit
+fixtures above are not declared with `autouse=True`.
 
 With the settings plugin loaded, its `pytest_runtest_setup` and
 `pytest_runtest_teardown` hooks perform automatic isolation. The two explicit
@@ -67,6 +74,7 @@ from flext_tests import FlextTestsSettings
 
 def test_settings_isolation(settings: FlextTestsSettings) -> None:
     settings.debug = True
+    # The settings plugin resets runtime singletons between test functions.
     # The settings plugin resets runtime singletons between test functions.
     assert FlextSettings.fetch_global() is not settings
 ```
@@ -142,7 +150,25 @@ fixture providing isolation. Do not import a separate result implementation from
 For a standalone test without the settings plugin, keep the reset on both sides
 of the mutation, including assertion failure:
 
+Do not mutate a global singleton without the settings plugin or explicit reset
+fixture providing isolation. Do not import a separate result implementation from
+`returns`; exercise the public `r` facade used by the production consumer.
+
+For a standalone test without the settings plugin, keep the reset on both sides
+of the mutation, including assertion failure:
+
 ```python
+from flext_core import FlextSettings
+
+
+def test_settings_override() -> None:
+    FlextSettings.reset_for_testing()
+    try:
+        settings = FlextSettings.fetch_global()
+        settings.debug = True
+        assert settings.debug
+    finally:
+        FlextSettings.reset_for_testing()
 from flext_core import FlextSettings
 
 
