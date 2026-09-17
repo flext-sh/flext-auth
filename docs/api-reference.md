@@ -30,6 +30,7 @@
   - [JWT Security](#jwt-security)
   - [Session Management](#session-management)
 - [Related Documentation](#related-documentation)
+
 <!-- TOC END -->
 
 **Version**: 0.12.0-dev Current | **Updated**: April 14, 2026

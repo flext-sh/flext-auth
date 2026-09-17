@@ -56,6 +56,7 @@
   - [Technology Stack Summary](#technology-stack-summary)
   - [Backward Compatibility Timeline](#backward-compatibility-timeline)
 - [Related Documentation](#related-documentation)
+
 <!-- TOC END -->
 
 ## Generic Authentication API Framework
