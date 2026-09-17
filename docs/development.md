@@ -55,7 +55,7 @@ ______________________________________________________________________
 cd flext-auth
 
 # Install development dependencies
-poetry install
+uv sync
 
 # Install pre-commit hooks (if available)
 make setup
