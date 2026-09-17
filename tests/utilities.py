@@ -1,19 +1,21 @@
-"""Test utilities for the flext-auth test suite."""
+"""Test utilities for flext-auth.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsUtilities
-
 from flext_auth import FlextAuthUtilities
+from flext_tests import FlextTestsUtilities
 
 
 class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
-    """Test utilities for flext-auth."""
+    """Test utilities for flext-auth — extends flext_auth.u and flext_tests.u."""
+    
+    class _AuthUtilities:
+        """Auth-specific test utilities."""
 
-    class Tests(FlextTestsUtilities.Tests):
+    class TestsFlextAuth(TestsFlextAuthUtilities._AuthUtilities, FlextTestsUtilities.Tests):
         """Test-specific utilities."""
-
-
-u = TestsFlextAuthUtilities
-
-__all__: list[str] = ["TestsFlextAuthUtilities", "u"]
+__all__: list[str] = ["TestsFlextAuthUtilities"]

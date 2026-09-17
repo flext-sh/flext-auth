@@ -11,10 +11,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
-from tests import u
+from tests.utilities import TestsFlextAuthUtilities as u
+
+if TYPE_CHECKING:
+    pass
 
 pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
@@ -93,7 +98,7 @@ class TestsFlextAuthConfig:
         ],
     )
     def test_construction_rejects_out_of_contract_values(
-        self, overrides: dict[str, str | int]
+        self, overrides: t.JsonMapping
     ) -> None:
         """Values outside the declared bounds fail model validation."""
         with pytest.raises(m.ValidationError):

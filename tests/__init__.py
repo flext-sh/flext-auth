@@ -9,9 +9,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_tests import FlextTestsConstants, d, e, h, r, td, tf, tk, tm, tv, x
-
-    from flext_auth import c as auth_c
+    from flext_tests import d, e, h, r, td, tf, tk, tm, tv, x
 
     from . import fixtures, unit
     from .base import TestsFlextAuthServiceBase, TestsFlextAuthServiceBase as s
@@ -22,7 +20,6 @@ if TYPE_CHECKING:
     from .typings import TestsFlextAuthTypes, TestsFlextAuthTypes as t
     from .utilities import TestsFlextAuthUtilities, TestsFlextAuthUtilities as u
 __all__: tuple[str, ...] = (
-    "FlextTestsConstants",
     "TestsFlextAuthConstants",
     "TestsFlextAuthModels",
     "TestsFlextAuthProtocols",
@@ -30,7 +27,6 @@ __all__: tuple[str, ...] = (
     "TestsFlextAuthSettings",
     "TestsFlextAuthTypes",
     "TestsFlextAuthUtilities",
-    "auth_c",
     "c",
     "d",
     "e",
@@ -63,21 +59,9 @@ _LAZY_IMPORTS = MappingProxyType(
             ".typings": ("TestsFlextAuthTypes", "t"),
             ".unit": ("unit",),
             ".utilities": ("TestsFlextAuthUtilities", "u"),
-            "flext_tests": (
-                "FlextTestsConstants",
-                "d",
-                "e",
-                "h",
-                "r",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-                "x",
-            ),
+            "flext_tests": ("d", "e", "h", "r", "td", "tf", "tk", "tm", "tv", "x"),
         }),
-        alias_groups=MappingProxyType({"flext_auth": (("auth_c", "c"),)}),
+        alias_groups=MappingProxyType({}),
         sort_keys=False,
     )
 )

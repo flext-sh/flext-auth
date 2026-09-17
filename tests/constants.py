@@ -1,33 +1,20 @@
-"""Test constants for the flext-auth test suite."""
+"""Test constants for flext-auth.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-import secrets
-from typing import Final
-
-from flext_tests import FlextTestsConstants
-
-from flext_auth import c as auth_c
+from flext_auth import c
 
 
-def _make_test_password() -> str:
-    """Return a strong, non-hardcoded test password."""
-    return secrets.token_urlsafe(32)
+class TestsFlextAuthConstants(c):
+    """Test constants for flext-auth — extends flext_auth.c."""
+    
+    class _AuthConstants:
+        """Auth-specific test constants."""
 
-
-class TestsFlextAuthConstants(auth_c, FlextTestsConstants):
-    """Test constants composing production Auth with the shared test namespace."""
-
-    TEST_PASSWORD: Final[str] = _make_test_password()
-
-    class Tests(FlextTestsConstants.Tests):
+    class TestsFlextAuth(TestsFlextAuthConstants._AuthConstants):
         """Test-specific constants."""
-
-        TEST_INPUT_DIR: Final[str] = "tests/fixtures/data/input"
-        TEST_OUTPUT_DIR: Final[str] = "tests/fixtures/data/output"
-        TEST_TEMP_PREFIX: Final[str] = "flext_auth_test_"
-
-
-c = TestsFlextAuthConstants
-
-__all__: list[str] = ["TestsFlextAuthConstants", "c"]
+__all__: list[str] = ["TestsFlextAuthConstants"]
