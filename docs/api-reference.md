@@ -1,6 +1,7 @@
 # API Reference
 
 <!-- TOC START -->
+
 - [Core API](#core-api)
   - [FlextAuth.quick_start()](#flextauthquickstart)
 - [FlextAuth Service](#flextauth-service)
@@ -39,7 +40,7 @@ For general FLEXT patterns and `r` usage, see the
 **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)**
 documentation.
 
-______________________________________________________________________
+---
 
 ## Core API
 
@@ -47,7 +48,7 @@ ______________________________________________________________________
 
 Initialize the authentication service for development and testing.
 
-```python
+````python
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)```
@@ -407,3 +408,4 @@ For usage examples, see Getting Started.
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+````

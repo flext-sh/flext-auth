@@ -6,6 +6,7 @@
 > **Standalone / independent mode:** when `../AGENTS.md` does not resolve, pin the parent raw `AGENTS.md` URL to the same branch/release as this package (never `main`).
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-BEGIN -->
+
 **Package:** `flext_auth` · deps: `flext-api`, `flext-core`
 
 ## Overview
@@ -27,12 +28,12 @@ src/flext_auth/
 
 ## Code Map
 
-| Symbol | Kind | Location | Role |
-|--------|------|----------|------|
-| `FlextAuth` | class | `api.py` | facade (inherits `FlextAuthApplicationService`) |
-| `AuthService` | class | `services/auth_service.py` | auth lifecycle |
-| `ProviderService` | class | `services/provider_service.py` | provider orchestration |
-| registry | modules | `_registry/{lookup,plugins,metadata}.py` | provider selection |
+| Symbol            | Kind    | Location                                 | Role                                            |
+| ----------------- | ------- | ---------------------------------------- | ----------------------------------------------- |
+| `FlextAuth`       | class   | `api.py`                                 | facade (inherits `FlextAuthApplicationService`) |
+| `AuthService`     | class   | `services/auth_service.py`               | auth lifecycle                                  |
+| `ProviderService` | class   | `services/provider_service.py`           | provider orchestration                          |
+| registry          | modules | `_registry/{lookup,plugins,metadata}.py` | provider selection                              |
 
 ## Conventions (specific to this package)
 
@@ -52,6 +53,7 @@ make test  PROJECT=flext-auth       # tests/{unit,fixtures}
 
 <!-- AIHUB-GOVERNANCE-INSTRUCTIONS-BEGIN -->
 <!-- AIHUB-GOVERNANCE-CAPSULE v1 sha256:e1b7a9ae088643bf660b78ff1aea55d49076ec46518707976d77c78ed23db5db -->
+
 # Generated session governance capsule
 
 This projection is derived by `agentsctl sync`; edit canonical `AGENTS.md`, `rules/`, `skills/`, or `commands/`, never this output. The operator's newest request has precedence. Provider hooks are delivery mechanisms, not policy owners.
@@ -254,9 +256,11 @@ sufficient.
 
 Skills: caveman, context-canary, fix-forward-collaboration, governance-audit, operator-correction-learning, plan-focus-recovery, sprint-closure, strategic-compact, verification-loop
 Commands: add-language-rules, database-migration, feature-development, ghi-list, pr-list, ralph-loop, security-triage, synthesize-governance
+
 <!-- AIHUB-GOVERNANCE-INSTRUCTIONS-END -->
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:970c3bf2 -->
+
 ## Beads Issue Tracker
 
 This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
@@ -294,6 +298,7 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 2. **Run quality gates** (if code changed) - Tests, linters, builds
 3. **Update issue status** - Close finished work, update in-progress items
 4. **Handle git/sync by active profile**:
+
    ```bash
    # Conservative/minimal/default: report status and proposed commands; wait for approval.
    git status
@@ -304,9 +309,11 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
    git push
    git status
    ```
+
 5. **Hand off** - Summarize changes, validation, issue status, and any blocked sync/commit/push step
 
 **Critical rules:**
+
 - Explicit user or orchestrator instructions override this Beads block.
 - Do not commit or push without clear authority from the active profile or the current user request.
 - If a required sync or push is blocked, stop and report the exact command and error.

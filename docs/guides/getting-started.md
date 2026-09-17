@@ -6,6 +6,7 @@
 > Project profile: `flext-auth`
 
 <!-- TOC START -->
+
 - [Prepare the workspace](#prepare-the-workspace)
 - [Make a bounded change](#make-a-bounded-change)
 - [Command boundaries](#command-boundaries)

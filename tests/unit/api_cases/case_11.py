@@ -5,7 +5,8 @@ from __future__ import annotations
 import threading
 from threading import Thread
 
-from flext_auth import FlextAuth, c
+from flext_auth import FlextAuth
+from tests.constants import TestsFlextAuthConstants as c
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 

@@ -6,18 +6,34 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Literal
+
 from flext_auth import t
-
-
-class _AuthTypes:
-    """Auth-specific test types."""
 
 
 class TestsFlextAuthTypes(t):
     """Test typings for flext-auth — extends flext_auth.t."""
 
+    class _AuthTypes:
+        """Auth-specific test types."""
+
     class TestsFlextAuth(_AuthTypes):
         """Test-specific types."""
+
+    class Tests(_AuthTypes):
+        """Test-scoped literal aliases."""
+
+        type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
+        type ProviderTypeLiteral = Literal[
+            "basic",
+            "jwt",
+            "oauth2",
+            "saml",
+            "ldap",
+            "certificate",
+            "kerberos",
+            "apikey",
+        ]
 
 
 __all__: list[str] = ["TestsFlextAuthTypes"]

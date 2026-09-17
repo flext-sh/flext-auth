@@ -1,6 +1,7 @@
 # C4 Components: Component Architecture Diagram
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Component Architecture](#component-architecture)
   - [Core Components](#core-components)

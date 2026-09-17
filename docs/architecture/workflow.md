@@ -1,6 +1,7 @@
 # Architecture Documentation Workflow
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Workflow Phases](#workflow-phases)
   - [1. Architecture Analysis & Discovery](#1-architecture-analysis-discovery)
@@ -30,7 +31,7 @@
 - [Resources](#resources)
   - [Documentation](#documentation)
   - [Tools](#tools)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 ## Overview
 
@@ -413,7 +414,7 @@ python main.py comprehensive | grep -A 20 "Link Validation"
 - Architecture Generation Scripts
 - Diagram Generation Scripts
 
-______________________________________________________________________
+---
 
 **Last Updated**: October 10, 2025
 **Version**: 1.0

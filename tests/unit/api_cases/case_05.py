@@ -5,7 +5,8 @@ from __future__ import annotations
 import pytest
 from flext_tests import tm
 
-from flext_auth import FlextAuth, FlextAuthSettings, c
+from flext_auth import FlextAuth, FlextAuthSettings
+from tests.constants import TestsFlextAuthConstants as c
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 

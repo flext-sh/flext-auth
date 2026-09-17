@@ -1,6 +1,7 @@
 # Security Architecture
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Security Principles](#security-principles)
   - [Core Security Principles](#core-security-principles)
@@ -373,7 +374,7 @@ This document outlines the security architecture of flext-auth, covering authent
 - **Automated Remediation**: Self-healing security responses
 - **Security Orchestration**: Automated security workflow orchestration
 
-______________________________________________________________________
+---
 
 ## Security Architecture Summary
 

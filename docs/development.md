@@ -1,6 +1,7 @@
 # Development
 
 <!-- TOC START -->
+
 - [Development Setup](#development-setup)
   - [Prerequisites](#prerequisites)
   - [Setup Environment](#setup-environment)
@@ -32,13 +33,13 @@
 - [Debugging](#debugging)
   - [Common Issues](#common-issues)
   - [Debug Mode](#debug-mode)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 **Version**: 0.9.0 Multi-Provider Implementation | **Updated**: October 10, 2025
 
 Development workflow and contributing guidelines for flext-auth with multi-provider authentication architecture. Implementation complete for Phases 1-3, transport layer in progress.
 
-______________________________________________________________________
+---
 
 ## Development Setup
 
@@ -64,7 +65,7 @@ make setup
 python -c "from flext_auth import FlextAuth; u.Cli.print('Development setup complete')"
 ```
 
-______________________________________________________________________
+---
 
 ## Development Commands
 
@@ -100,7 +101,7 @@ pytest -m security          # Security tests
 pytest --cov=src/flext_auth --cov-report=term-missing
 ```
 
-______________________________________________________________________
+---
 
 ## Quality Standards
 
@@ -121,7 +122,7 @@ All contributions must pass:
 1. **Security**: No security vulnerabilities
 1. **Tests**: All new tests must pass
 
-______________________________________________________________________
+---
 
 ## Code Standards
 
@@ -129,7 +130,7 @@ ______________________________________________________________________
 
 All code must follow FLEXT patterns:
 
-```python
+````python
 from __future__ import annotations
 
 from flext_auth import m, p, r
@@ -270,7 +271,7 @@ tests/
 │   └── test_cli.py        # CLI interface tests
 ├── integration/           # Integration tests (limited)
 └── conftest.py           # Test configuration and fixtures
-```
+````
 
 ### Test Categories
 
@@ -281,7 +282,7 @@ tests/
 
 ### Adding Tests
 
-```python
+````python
 from __future__ import annotations
 
 from flext_auth import FlextAuth
@@ -387,3 +388,4 @@ u.Cli.info(f"Registration result: {result}")```
 ______________________________________________________________________
 
 This development guide reflects the current implementation state as of April 14, 2026. For additional FLEXT patterns, see [flext-core documentation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/development.md).
+````

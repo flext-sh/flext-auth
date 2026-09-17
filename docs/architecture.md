@@ -1,6 +1,7 @@
 # FLEXT-AUTH ARCHITECTURE v2.0.0
 
 <!-- TOC START -->
+
 - [Generic Authentication API Framework](#generic-authentication-api-framework)
 - [TABLE OF CONTENTS](#table-of-contents)
 - [EXECUTIVE SUMMARY](#executive-summary)
@@ -64,7 +65,7 @@
 **Last Updated**: 2025-10-01
 **Parent**: FLEXT Workspace
 
-______________________________________________________________________
+---
 
 ## TABLE OF CONTENTS
 
@@ -82,7 +83,7 @@ ______________________________________________________________________
 1. Implementation Phases
 1. Quality Standards
 
-______________________________________________________________________
+---
 
 ## EXECUTIVE SUMMARY
 
@@ -107,7 +108,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 - **CLI**: Removed (pure library)
 - **Quality**: 100% backward compatible, all quality gates passing
 
-______________________________________________________________________
+---
 
 ## ARCHITECTURAL VISION
 
@@ -184,7 +185,7 @@ ______________________________________________________________________
 └───────────────┘  └────────────┘  └────────────────┘
 ```
 
-______________________________________________________________________
+---
 
 ## CORE COMPONENTS
 
@@ -200,7 +201,7 @@ ______________________________________________________________________
 
 **Public API**:
 
-```python
+````python
 from __future__ import annotations
 from typing import Protocol
 from flext_core import p, s, t
@@ -1196,3 +1197,4 @@ _This architecture document is the authoritative reference for the flext-auth v2
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+````

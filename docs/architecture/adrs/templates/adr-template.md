@@ -1,6 +1,7 @@
 # ADR-\[Number\]: [Decision Title]
 
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
   - [Problem Statement](#problem-statement)
@@ -166,7 +167,7 @@
 
 [t.JsonValue additional notes, implementation details, or future considerations]
 
-______________________________________________________________________
+---
 
 **ADR Template Version**: 1.0
 **Template Source**: docs/architecture/adrs/templates/adr-template.md

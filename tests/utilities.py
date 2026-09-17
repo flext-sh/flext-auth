@@ -11,12 +11,11 @@ from flext_tests import FlextTestsUtilities
 from flext_auth import FlextAuthUtilities
 
 
-class _AuthUtilities:
-    """Auth-specific test utilities."""
-
-
 class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
     """Test utilities for flext-auth — extends flext_auth.u and flext_tests.u."""
+
+    class _AuthUtilities:
+        """Auth-specific test utilities."""
 
     class TestsFlextAuth(_AuthUtilities, FlextTestsUtilities.Tests):
         """Test-specific utilities."""

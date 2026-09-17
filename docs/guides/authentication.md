@@ -1,6 +1,7 @@
 # Authentication Implementation Guide
 
 <!-- TOC START -->
+
 - [Authentication Service Implementation](#authentication-service-implementation)
   - [FlextAuth Main Service](#flextauth-main-service)
   - [Authentication Models](#authentication-models)
@@ -23,13 +24,13 @@
   - [Priority 1: Foundation Stabilization](#priority-1-foundation-stabilization)
   - [Priority 2: Modern Authentication (2025 Standards)](#priority-2-modern-authentication-2025-standards)
   - [Priority 3: Advanced Security](#priority-3-advanced-security)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
 This guide covers authentication-specific implementation details for the FLEXT-AUTH library, focusing on security practices and integration patterns specific to authentication workflows.
 
-______________________________________________________________________
+---
 
 ## Authentication Service Implementation
 
@@ -69,7 +70,7 @@ The main authentication orchestrator handles all authentication operations:
 - Role-based access control foundation
 - Session timeout management
 
-______________________________________________________________________
+---
 
 ## Security Implementation
 
@@ -77,7 +78,7 @@ ______________________________________________________________________
 
 **Current Implementation**:
 
-```python
+````python
 from __future__ import annotations
 from flext_auth import FlextAuth
 
@@ -287,3 +288,4 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 This authentication guide provides implementation-specific details without duplicating general FLEXT patterns documented elsewhere.
+````

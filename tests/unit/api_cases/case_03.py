@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import secrets
 
-from flext_auth import FlextAuth, FlextAuthSettings, c, m
+from flext_auth import FlextAuth, FlextAuthSettings, m
+from tests.constants import TestsFlextAuthConstants as c
 from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 

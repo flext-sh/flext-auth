@@ -1,6 +1,7 @@
 # Getting Started
 
 <!-- TOC START -->
+
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -33,7 +34,7 @@
 
 Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FLEXT integration.
 
-______________________________________________________________________
+---
 
 ## Installation
 
@@ -56,13 +57,13 @@ uv sync
 uv run python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
 ```
 
-______________________________________________________________________
+---
 
 ## Basic Authentication
 
 ### Quick Start Service
 
-```python
+````python
 from flext_auth import FlextAuth
 from flext_cli import u
 
@@ -357,3 +358,4 @@ This guide covers basic usage patterns. For production deployment and additional
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+````

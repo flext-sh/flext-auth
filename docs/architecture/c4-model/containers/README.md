@@ -1,6 +1,7 @@
 # C4 Containers: Container Architecture Diagram
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Container Architecture](#container-architecture)
   - [Technology Choices](#technology-choices)
