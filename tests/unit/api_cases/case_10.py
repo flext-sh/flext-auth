@@ -8,8 +8,8 @@ from flext_tests import r
 
 from flext_auth import FlextAuth, m
 from tests.unit.api_cases.support import (
-    FlextAuthApiTestDataHelper,
     UNIT_TEST_CREDENTIAL_TOKEN,
+    FlextAuthApiTestDataHelper,
 )
 from tests.utilities import TestsFlextAuthUtilities as u
 

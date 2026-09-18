@@ -48,8 +48,7 @@ class FlextAuthAdvancedFeaturesExample:
         if user_result.failure:
             return r[None].from_failure(user_result)
         auth_result = auth.authenticate_user(
-            username="advanced_user",
-            password=demo_password,
+            username="advanced_user", password=demo_password
         )
         if auth_result.success:
             auth_token = auth_result.value
@@ -73,7 +72,12 @@ class FlextAuthAdvancedFeaturesExample:
                 _demo_credential("manager"),
                 ["manager", "user"],
             ),
-            ("employee", "employee@company.com", _demo_credential("employee"), ["user"]),
+            (
+                "employee",
+                "employee@company.com",
+                _demo_credential("employee"),
+                ["user"],
+            ),
         ]
         registered_users: t.MutableSequenceOf[FlextAuthModels.Auth.AuthIdentity] = []
         for username, email, password, roles in users_data:

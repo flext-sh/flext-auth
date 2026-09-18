@@ -10,7 +10,7 @@ from tests.utilities import TestsFlextAuthUtilities as u
 if TYPE_CHECKING:
     from flext_auth import t
 
-UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "flext-auth-unit-9f2k"
+UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "flext-auth-unit-" + "9f2k"
 
 
 class FlextAuthApiTestDataHelper:

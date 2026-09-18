@@ -140,10 +140,7 @@ class TestsFlextAuthApi:
         auth = _fresh_auth()
         auth.register_user("authuser", "auth@example.com", c.TEST_PASSWORD)
 
-        result = auth.authenticate({
-            "username": "authuser",
-            "password": "w" + "0" * 12,
-        })
+        result = auth.authenticate({"username": "authuser", "password": "w" + "0" * 12})
 
         tm.fail(result)
         assert result.error
