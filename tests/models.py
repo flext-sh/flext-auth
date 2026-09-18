@@ -91,4 +91,6 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
             )
 
 
-__all__: list[str] = ["TestsFlextAuthModels"]
+m: type[TestsFlextAuthModels] = TestsFlextAuthModels
+
+__all__: list[str] = ["TestsFlextAuthModels", "m"]
