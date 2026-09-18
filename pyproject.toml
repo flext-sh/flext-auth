@@ -572,6 +572,7 @@ split-on-trailing-comma = false
   "hardcoded-password-default",
   "hardcoded-password-func-arg",
 ]
+"tests/constants.py" = ["hardcoded-password-string"]
 
 [tool.tomlsort]
 all = true
