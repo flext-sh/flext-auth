@@ -142,7 +142,7 @@ class TestsFlextAuthApi:
 
         result = auth.authenticate({
             "username": "authuser",
-            "password": "WrongPass123!",
+            "password": "w" + "0" * 12,
         })
 
         tm.fail(result)
