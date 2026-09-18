@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 from flext_auth import FlextAuth, m
 from tests.utilities import TestsFlextAuthUtilities as u
 
 if TYPE_CHECKING:
     from flext_auth import t
+
+UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "flext-auth-unit-9f2k"
 
 
 class FlextAuthApiTestDataHelper:
@@ -39,7 +41,7 @@ class FlextAuthApiTestDataHelper:
         return {
             "username": "test_user",
             "email": "test@example.com",
-            "password": "TestPassword123!",
+            "password": UNIT_TEST_CREDENTIAL_TOKEN,
             "role": "user",
         }
 
@@ -49,7 +51,7 @@ class FlextAuthApiTestDataHelper:
         return {
             "username": "test_user",
             "email": "test@example.com",
-            "password": "TestPassword123!",
+            "password": UNIT_TEST_CREDENTIAL_TOKEN,
         }
 
     @staticmethod

@@ -65,8 +65,8 @@ class TestsFlextAuthApiCase05:
         u.Tests.Matchers.that(auth.settings, none=False)
         u.Tests.Matchers.that(auth.registry, none=False)
 
-    def test_flext_auth_quick_start_no_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start() without creating REDACTED_LDAP_BIND_PASSWORD user."""
+    def test_flext_auth_quick_start_no_admin_user(self) -> None:
+        """Test FlextAuth.quick_start() without creating admin user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
         nonexistent_result = (
@@ -78,8 +78,8 @@ class TestsFlextAuthApiCase05:
         u.Tests.Matchers.that(nonexistent_result.error, none=False)
         u.Tests.Matchers.that((nonexistent_result.error or "").lower(), has="not found")
 
-    def test_flext_auth_quick_start_custom_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
+    def test_flext_auth_quick_start_custom_admin_creation(self) -> None:
+        """Test FlextAuth.quick_start() with admin creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
@@ -91,8 +91,8 @@ class TestsFlextAuthApiCase05:
         except RuntimeError as e:
             pytest.fail(f"FlextAuth creation failed with RuntimeError: {e}")
 
-    def test_quick_start_redacted_ldap_bind_password_creation_failure(self) -> None:
-        """Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation (reserved for future)."""
+    def test_quick_start_admin_creation_failure(self) -> None:
+        """Test quick_start with admin creation (reserved for future)."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 

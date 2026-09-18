@@ -17,6 +17,11 @@ import string
 from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, p, r, t, u
 
 
+def _demo_credential(prefix: str) -> str:
+    """Per-run demo credential; the example never embeds a reusable secret."""
+    return f"{prefix}-{secrets.token_hex(6)}"
+
+
 class FlextAuthAdvancedFeaturesExample:
     """Single owner for the advanced features example flow."""
 
@@ -33,17 +38,18 @@ class FlextAuthAdvancedFeaturesExample:
     def example_jwt_operations() -> p.Result[None]:
         """Advanced JWT operations example using REAL current API."""
         auth: FlextAuth = FlextAuth()
+        demo_password = os.getenv("EXAMPLE_PASSWORD") or _demo_credential("jwt")
         user_result = auth.register_user(
             username="advanced_user",
             email="advanced@example.com",
-            password=os.getenv("EXAMPLE_PASSWORD", "AdvancedPassword123!"),
-            roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
+            password=demo_password,
+            roles=["admin", "user"],
         )
         if user_result.failure:
             return r[None].from_failure(user_result)
         auth_result = auth.authenticate_user(
             username="advanced_user",
-            password=os.getenv("EXAMPLE_PASSWORD", "AdvancedPassword123!"),
+            password=demo_password,
         )
         if auth_result.success:
             auth_token = auth_result.value
@@ -56,13 +62,18 @@ class FlextAuthAdvancedFeaturesExample:
         auth: FlextAuth = FlextAuth()
         users_data = [
             (
-                "REDACTED_LDAP_BIND_PASSWORD",
-                "REDACTED_LDAP_BIND_PASSWORD@company.com",
-                "AdminPass123!",
-                ["REDACTED_LDAP_BIND_PASSWORD", "user"],
+                "admin",
+                "admin@company.com",
+                _demo_credential("admin"),
+                ["admin", "user"],
             ),
-            ("manager", "manager@company.com", "ManagerPass123!", ["manager", "user"]),
-            ("employee", "employee@company.com", "EmployeePass123!", ["user"]),
+            (
+                "manager",
+                "manager@company.com",
+                _demo_credential("manager"),
+                ["manager", "user"],
+            ),
+            ("employee", "employee@company.com", _demo_credential("employee"), ["user"]),
         ]
         registered_users: t.MutableSequenceOf[FlextAuthModels.Auth.AuthIdentity] = []
         for username, email, password, roles in users_data:
@@ -74,14 +85,15 @@ class FlextAuthAdvancedFeaturesExample:
     def example_session_management() -> p.Result[None]:
         """Demonstrate authentication session handling."""
         auth: FlextAuth = FlextAuth()
+        session_password = _demo_credential("session")
         user_result = auth.register_user(
-            "sessionuser", "session@example.com", "SessionPass123!"
+            "sessionuser", "session@example.com", session_password
         )
         if user_result.failure:
             return r[None].from_failure(user_result)
         invalid_sessions: t.MutableSequenceOf[str] = []
         for _i in range(3):
-            auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
+            auth_result = auth.authenticate_user("sessionuser", session_password)
             if auth_result.success:
                 invalid_sessions.append(auth_result.value.token)
         return r[None].ok(None)
@@ -113,7 +125,7 @@ class FlextAuthAdvancedFeaturesExample:
         """Demonstrate advanced token validation."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
-            "tokenuser", "token@example.com", "TokenPass123!"
+            "tokenuser", "token@example.com", _demo_credential("token")
         )
         if user_result.failure:
             return r[None].from_failure(user_result)

@@ -156,7 +156,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         )
 
     def reset_credential(self, identity_id: str, new_credential: str) -> p.Result[bool]:
-        """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
+        """Railway-oriented credential reset for admin operations."""
         identity_result = self.identity_manager.get_user(identity_id)
         if identity_result.failure:
             return r[bool].fail(identity_result.error)

@@ -60,7 +60,7 @@ class FlextAuthConstantsAuthEnums:
             or RoleTypes.ADMIN directly - no base strings needed.
         """
 
-        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+        ADMIN = "admin"
         USER = "user"
         MODERATOR = "moderator"
         GUEST = "guest"
@@ -77,7 +77,7 @@ class FlextAuthConstantsAuthEnums:
         READ = "read"
         WRITE = "write"
         DELETE = "delete"
-        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+        ADMIN = "admin"
 
     @unique
     class Algorithms(StrEnum):

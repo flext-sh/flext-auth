@@ -9,6 +9,11 @@ import string
 from flext_auth import FlextAuth, c, p, r, t, u
 
 
+def _demo_credential(prefix: str) -> str:
+    """Per-run demo credential; the example never embeds a reusable secret."""
+    return f"{prefix}-{secrets.token_hex(6)}"
+
+
 class FlextAuthBasicUsageWorkflow:
     """Reusable full workflow usage examples."""
 
@@ -19,12 +24,14 @@ class FlextAuthBasicUsageWorkflow:
         """Demonstrate advanced user registration with roles."""
         cls.logger.info("Starting advanced registration example")
         auth: FlextAuth = FlextAuth()
-        password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!")
+        password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD") or _demo_credential(
+            "advanced"
+        )
         register_result = auth.register_user(
-            username="REDACTED_LDAP_BIND_PASSWORD",
-            email="REDACTED_LDAP_BIND_PASSWORD@company.com",
+            username="admin",
+            email="admin@company.com",
             password=password,
-            roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
+            roles=["admin", "user"],
         )
         if register_result.success:
             user_data = register_result.value
@@ -33,9 +40,7 @@ class FlextAuthBasicUsageWorkflow:
                 "Admin user registered successfully",
                 name=user_data.name,
                 roles=admin_roles_payload,
-                has_REDACTED_LDAP_BIND_PASSWORD_role=(
-                    "REDACTED_LDAP_BIND_PASSWORD" in user_data.roles
-                ),
+                has_admin_role=("admin" in user_data.roles),
                 is_active=user_data.is_active,
             )
         else:
@@ -53,9 +58,7 @@ class FlextAuthBasicUsageWorkflow:
                 "Regular user registered successfully",
                 name=user_data.name,
                 roles=user_roles_payload,
-                has_REDACTED_LDAP_BIND_PASSWORD_role=(
-                    "REDACTED_LDAP_BIND_PASSWORD" in user_data.roles
-                ),
+                has_admin_role=("admin" in user_data.roles),
             )
         else:
             cls.logger.error("User registration failed", error=user_result.error)
@@ -65,7 +68,9 @@ class FlextAuthBasicUsageWorkflow:
         """Demonstrate complete authentication workflow."""
         cls.logger.info("Starting complete workflow example")
         auth: FlextAuth = FlextAuth()
-        password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!")
+        password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD") or _demo_credential(
+            "workflow"
+        )
         cls.logger.info("Step 1: User registration")
         reg_result = auth.register_user(
             username="workflowuser", email="workflow@example.com", password=password

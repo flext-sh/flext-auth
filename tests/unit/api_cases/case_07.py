@@ -103,8 +103,8 @@ class TestsFlextAuthApiCase07:
         cleanup_result = auth.session_service.cleanup_expired_sessions()
         u.Tests.Matchers.that(cleanup_result.success, is_=bool)
 
-    def test_quick_start_without_redacted_ldap_bind_password(self) -> None:
-        """Test quick_start class method without REDACTED_LDAP_BIND_PASSWORD creation."""
+    def test_quick_start_without_admin_creation(self) -> None:
+        """Test quick_start class method without admin creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
         u.Tests.Matchers.that(auth.settings, none=False)

@@ -95,18 +95,18 @@ class TestsFlextAuthApiCase04:
         auth = FlextAuth.quick_start()
         tm.that(auth, is_=FlextAuth)
 
-    def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start with REDACTED_LDAP_BIND_PASSWORD user creation."""
+    def test_quick_start_with_admin_user(self) -> None:
+        """Test FlextAuth.quick_start with admin user creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
-    def test_quick_start_custom_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
+    def test_quick_start_custom_admin_credentials(self) -> None:
+        """Test FlextAuth.quick_start with custom admin credentials."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
-    def test_quick_start_no_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start without REDACTED_LDAP_BIND_PASSWORD user."""
+    def test_quick_start_no_admin_user(self) -> None:
+        """Test FlextAuth.quick_start without admin user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
 
