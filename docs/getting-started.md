@@ -381,16 +381,14 @@ features, see the documentation.
 
 **Across Projects**:
 
-- [flext-core Foundation][flext-core-foundation] - Clean architecture and CQRS patterns
-- [flext-core Service Patterns][flext-core-service-patterns] - Service patterns and
-  dependency injection
-- [flext-cli Authentication][flext-cli-authentication] - CLI authentication patterns
+- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) -
+  Clean architecture and CQRS patterns
+- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) -
+  Service patterns and dependency injection
+- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) -
+  CLI authentication patterns
 
 **External Resources**:
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
-
-[flext-core-foundation]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md
-[flext-core-service-patterns]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md
-[flext-cli-authentication]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md

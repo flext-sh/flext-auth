@@ -31,7 +31,7 @@
 
 Configuration management for flext-auth authentication service.
 
-______________________________________________________________________
+---
 
 ## Overview
 
@@ -39,13 +39,13 @@ flext-auth uses `FlextAuthSettings` extending
 [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)
 `FlextSettings` patterns for environment-aware configuration management.
 
-______________________________________________________________________
+---
 
 ## FlextAuthSettings
 
 ### Default Configuration
 
-``` python
+```python
 from flext_auth import FlextAuthSettings
 from flext_cli import u
 
@@ -53,6 +53,7 @@ settings = FlextAuthSettings()
 u.Cli.info(f"JWT Expiry: {settings.Auth.expiry_minutes} minutes")
 u.Cli.info(f"Bcrypt Rounds: {settings.Auth.hash_rounds}")
 ```
+
 ### Environment-Specific Configuration
 
 ```python
@@ -65,25 +66,25 @@ dev_settings = FlextAuthSettings()
 prod_settings = FlextAuthSettings()
 ```
 
-______________________________________________________________________
+---
 
 ## Configuration Parameters
 
 ### JWT Settings
 
-| Parameter            | Type | Default          | Description                      |
-| -------------------- | ---- | ---------------- | -------------------------------- |
-| `secret_key`         | str  | generated        | Secret key for JWT signing       |
-| `expiry_minutes`     | int  | 1440             | Token expiration time in minutes |
-| `algorithm`          | str  | HS256            | JWT signing algorithm            |
+| Parameter        | Type | Default   | Description                      |
+| ---------------- | ---- | --------- | -------------------------------- |
+| `secret_key`     | str  | generated | Secret key for JWT signing       |
+| `expiry_minutes` | int  | 1440      | Token expiration time in minutes |
+| `algorithm`      | str  | HS256     | JWT signing algorithm            |
 
 ### Security Settings
 
-| Parameter                 | Type | Default | Description                |
-| ------------------------- | ---- | ------- | -------------------------- |
-| `hash_rounds`             | int  | 12      | Bcrypt hashing rounds      |
-| `max_sessions_per_user`   | int  | 5       | Max sessions per user      |
-| `session_expiry_minutes`  | int  | 1440    | Session timeout in minutes |
+| Parameter                | Type | Default | Description                |
+| ------------------------ | ---- | ------- | -------------------------- |
+| `hash_rounds`            | int  | 12      | Bcrypt hashing rounds      |
+| `max_sessions_per_user`  | int  | 5       | Max sessions per user      |
+| `session_expiry_minutes` | int  | 1440    | Session timeout in minutes |
 
 ### Environment Variables
 
@@ -97,7 +98,7 @@ export AUTH_MAX_SESSIONS_PER_USER=5
 export AUTH_SESSION_EXPIRY_MINUTES=60
 ```
 
-______________________________________________________________________
+---
 
 ## Custom Configuration
 
@@ -116,6 +117,7 @@ settings = FlextAuthSettings(
 
 auth = FlextAuth(settings=settings)
 ```
+
 ### Production Security Settings
 
 ```python
@@ -131,13 +133,13 @@ prod_config = FlextAuthSettings(
 )
 ```
 
-______________________________________________________________________
+---
 
 ## Configuration Validation
 
 ### Validate Configuration
 
-```python notest
+````python notest
 from flext_auth import FlextAuthSettings
 from flext_cli import u
 
@@ -155,9 +157,9 @@ flext-auth validate-settings
 
 # Show configuration summary
 flext-auth manage-settings show
-```
+````
 
-______________________________________________________________________
+---
 
 ## Global Configuration
 
@@ -174,6 +176,7 @@ settings = FlextAuthSettings()
 # Use global configuration
 auth = FlextAuth()  # Uses global settings automatically
 ```
+
 ### Global Instance Access
 
 ```python
@@ -185,7 +188,7 @@ global_config = FlextAuthSettings.fetch_global()
 u.Cli.info(f"Current JWT expiry: {global_config.Auth.expiry_minutes}")
 ```
 
-______________________________________________________________________
+---
 
 ## Security Recommendations
 
@@ -205,6 +208,7 @@ FlextAuthSettings(
     }
 )
 ```
+
 ### Development Settings
 
 For development environments:
@@ -222,7 +226,7 @@ FlextAuthSettings(
 )
 ```
 
-______________________________________________________________________
+---
 
 ## Configuration Environments
 
@@ -243,8 +247,11 @@ env = os.getenv("FLEXT_ENV", "development")
 settings = FlextAuthSettings()
 ```
 
-______________________________________________________________________
+---
 
-This configuration guide covers the current implementation as of April 14, 2026.
-For usage examples, see Getting Started.
-````
+This configuration guide covers the current implementation as of April 14, 2026. For
+usage examples, see Getting Started.
+
+```
+
+```

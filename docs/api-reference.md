@@ -446,16 +446,14 @@ examples, see Getting Started.
 
 **Across Projects**:
 
-- [flext-core Foundation][flext-core-foundation] - Core APIs and patterns
-- [flext-core Railway-Oriented Programming][flext-core-railway-oriented-programming] - r
-  patterns
-- [flext-cli Authentication][flext-cli-authentication] - CLI authentication patterns
+- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/api-reference/foundation.md) -
+  Core APIs and patterns
+- [flext-core Railway-Oriented Programming](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/railway-oriented-programming.md) -
+  r patterns
+- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) -
+  CLI authentication patterns
 
 **External Resources**:
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
-
-[flext-core-foundation]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/api-reference/foundation.md
-[flext-core-railway-oriented-programming]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/railway-oriented-programming.md
-[flext-cli-authentication]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md

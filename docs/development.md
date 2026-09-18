@@ -41,7 +41,7 @@ Development workflow and contributing guidelines for flext-auth with multi-provi
 authentication architecture. Implementation complete for Phases 1-3, transport layer in
 progress.
 
-______________________________________________________________________
+---
 
 ## Development Setup
 
@@ -68,7 +68,7 @@ make setup
 python -c "from flext_auth import FlextAuth; u.Cli.print('Development setup complete')"
 ```
 
-______________________________________________________________________
+---
 
 ## Development Commands
 
@@ -104,7 +104,7 @@ pytest -m security # Security tests
 pytest --cov=src/flext_auth --cov-report=term-missing
 ```
 
-______________________________________________________________________
+---
 
 ## Quality Standards
 
@@ -125,7 +125,7 @@ All contributions must pass:
 1. **Security**: No security vulnerabilities
 1. **Tests**: All new tests must pass
 
-______________________________________________________________________
+---
 
 ## Code Standards
 
@@ -133,7 +133,7 @@ ______________________________________________________________________
 
 All code must follow FLEXT patterns:
 
-``` python
+```python
 from __future__ import annotations
 
 from flext_auth import m, p, r
@@ -156,6 +156,7 @@ def authenticate_user_legacy(username: str, password: str) -> m.Auth.AuthIdentit
 
     return m.Auth.AuthIdentity(username=username, contact="user@example.com")
 ```
+
 ### Domain Model Patterns
 
 ```text
@@ -180,7 +181,7 @@ class UserPlain:
         self.email = email
 ```
 
-______________________________________________________________________
+---
 
 ## Current Development Areas
 
@@ -205,6 +206,7 @@ pytest tests/ -v --tb=short
 pytest tests/unit/test_cli_coverage.py -v
 pytest tests/unit/test_config_coverage.py -v
 ```
+
 ### Priority 2: Security Enhancements
 
 **Missing Features**:
@@ -223,7 +225,7 @@ pytest tests/unit/test_config_coverage.py -v
 - Connection pooling
 - Migration strategies
 
-______________________________________________________________________
+---
 
 ## Contributing Workflow
 
@@ -236,6 +238,7 @@ git checkout -b feature/your-feature-name
 # Ensure clean starting state
 make val
 ```
+
 ### 2. Development Process
 
 ```bash
@@ -248,6 +251,7 @@ pytest tests/unit/test_your_module.py -v
 make lint
 make type-check
 ```
+
 ### 3. Before Committing
 
 ```bash
@@ -260,6 +264,7 @@ make test
 # Format code
 make format
 ```
+
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns
@@ -268,11 +273,12 @@ make format
 - Add tests for new functionality
 - Update documentation for API changes
 
-______________________________________________________________________
+---
 
 ## Testing Strategy
 
 ### Current Test Structure
+
 ```
 tests/
 ├── unit/                   # Unit tests for individual components
@@ -282,7 +288,7 @@ tests/
 │   └── test_cli.py        # CLI interface tests
 ├── integration/           # Integration tests (limited)
 └── conftest.py           # Test configuration and fixtures
-````
+```
 
 ### Test Categories
 
@@ -293,7 +299,7 @@ tests/
 
 ### Adding Tests
 
-``` python
+```python
 from __future__ import annotations
 
 from flext_auth import FlextAuth
@@ -314,7 +320,7 @@ class TestNewFeature:
         assert result.unwrap().name == "test_user"
 ```
 
-______________________________________________________________________
+---
 
 ## Architecture Guidelines
 
@@ -339,6 +345,7 @@ class AuthenticationService:
         # Service implementation
         return r[t.StrMapping].ok({"status": "processed"})
 ```
+
 ### Error Handling
 
 Use r exclusively:
@@ -376,7 +383,7 @@ auth.register_user("demo", "demo@example.com", "SecurePass123!")
 result = auth.authenticate_user("demo", "SecurePass123!")
 ```
 
-______________________________________________________________________
+---
 
 ## Debugging
 
@@ -403,10 +410,12 @@ result = auth.register_user("test", "test@example.com", "password123")
 u.Cli.info(f"Registration result: {result}")
 ```
 
-______________________________________________________________________
+---
 
 This development guide reflects the current implementation state as of April 14, 2026.
-For additional FLEXT patterns, see [flext-core documentation][flext-core-development].
+For additional FLEXT patterns, see
+[flext-core documentation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/development.md).
 
-[flext-core-development]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/development.md
-````
+```
+
+```

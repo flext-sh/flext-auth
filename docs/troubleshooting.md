@@ -43,13 +43,14 @@ documentation.
 
 **Problem**: User registration fails with validation errors
 
-``` python
+```python
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("user", "invalid-email", "weak")
 # Returns failure result
 ```
+
 **Solutions**:
 
 1. **Email Validation**:
@@ -59,7 +60,9 @@ result = auth.register_user("user", "invalid-email", "weak")
 
    auth = FlextAuth.quick_start(create_admin_user=False)
    result = auth.register_user("user", "user@example.com", "password123")
-```
+   ```
+
+````
 
 1. **Password Requirements**:
 
@@ -68,7 +71,7 @@ result = auth.register_user("user", "invalid-email", "weak")
 
    auth = FlextAuth.quick_start(create_admin_user=False)
    result = auth.register_user("user", "user@example.com", "SecurePassword123!")
-   ```
+````
 
 1. **Username Uniqueness**:
 
@@ -86,7 +89,7 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 **Problem**: User authentication fails unexpectedly
 
-````python notest
+`````python notest
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -534,4 +537,4 @@ ______________________________________________________________________
 
 This troubleshooting guide reflects common issues as of April 14, 2026. For additional
 help, see the Development guide.
-````
+`````
