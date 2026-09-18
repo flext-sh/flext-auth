@@ -280,11 +280,11 @@ Person(user, "User", "Application user requiring authentication")
 
 System_Boundary(flext_auth_system, "flext-auth System") {
 
-    Container(auth_service, "flext-auth Service", "Python/FastAPI", "Authentication orchestration, provider management, token lifecycle")
+    Container(auth_service, "flext-auth", "FastAPI", "Auth orchestration")
 
-    ContainerDb(database, "Database", "PostgreSQL/Redis", "User data, sessions, audit logs, token storage")
+    ContainerDb(database, "Database", "PostgreSQL/Redis", "Users, sessions, tokens")
 
-    Container(ext_providers, "Identity Providers", "LDAP/OAuth2/SAML", "External authentication services")
+    Container(ext_providers, "Identity Providers", "LDAP/OAuth2/SAML", "External auth")
 
     Container(monitoring, "Monitoring", "Prometheus/ELK", "Metrics, logs, alerts, tracing")
 }

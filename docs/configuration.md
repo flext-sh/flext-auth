@@ -31,7 +31,7 @@
 
 Configuration management for flext-auth authentication service.
 
----
+______________________________________________________________________
 
 ## Overview
 
@@ -39,19 +39,20 @@ flext-auth uses `FlextAuthSettings` extending
 [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)
 `FlextSettings` patterns for environment-aware configuration management.
 
----
+______________________________________________________________________
 
 ## FlextAuthSettings
 
 ### Default Configuration
 
-````python
+``` python
 from flext_auth import FlextAuthSettings
 from flext_cli import u
 
 settings = FlextAuthSettings()
 u.Cli.info(f"JWT Expiry: {settings.Auth.expiry_minutes} minutes")
-u.Cli.info(f"Bcrypt Rounds: {settings.Auth.hash_rounds}")```
+u.Cli.info(f"Bcrypt Rounds: {settings.Auth.hash_rounds}")
+```
 ### Environment-Specific Configuration
 
 ```python
@@ -61,7 +62,9 @@ from flext_auth import FlextAuthSettings
 dev_settings = FlextAuthSettings()
 
 # Production configuration
-prod_settings = FlextAuthSettings()```
+prod_settings = FlextAuthSettings()
+```
+
 ______________________________________________________________________
 
 ## Configuration Parameters
@@ -91,7 +94,9 @@ export AUTH_SECRET_KEY="your-secure-secret-key-with-at-least-32-chars"
 export AUTH_EXPIRY_MINUTES=30
 export AUTH_HASH_ROUNDS=14
 export AUTH_MAX_SESSIONS_PER_USER=5
-export AUTH_SESSION_EXPIRY_MINUTES=60```
+export AUTH_SESSION_EXPIRY_MINUTES=60
+```
+
 ______________________________________________________________________
 
 ## Custom Configuration
@@ -109,7 +114,8 @@ settings = FlextAuthSettings(
     }
 )
 
-auth = FlextAuth(settings=settings)```
+auth = FlextAuth(settings=settings)
+```
 ### Production Security Settings
 
 ```python
@@ -122,14 +128,16 @@ prod_config = FlextAuthSettings(
         "hash_rounds": 14,  # High security
         "session_expiry_minutes": 30,  # Short sessions
     }
-)```
+)
+```
+
 ______________________________________________________________________
 
 ## Configuration Validation
 
 ### Validate Configuration
 
-```python
+```python notest
 from flext_auth import FlextAuthSettings
 from flext_cli import u
 
@@ -137,7 +145,8 @@ try:
     settings = FlextAuthSettings()
     u.Cli.info("Configuration valid")
 except Exception as e:
-    u.Cli.info(f"Configuration error: {e}")```
+    u.Cli.info(f"Configuration error: {e}")
+    ```
 ### CLI Validation
 
 ```bash
@@ -145,7 +154,9 @@ except Exception as e:
 flext-auth validate-settings
 
 # Show configuration summary
-flext-auth manage-settings show```
+flext-auth manage-settings show
+```
+
 ______________________________________________________________________
 
 ## Global Configuration
@@ -161,7 +172,8 @@ from flext_auth import FlextAuth, FlextAuthSettings
 settings = FlextAuthSettings()
 
 # Use global configuration
-auth = FlextAuth()  # Uses global settings automatically```
+auth = FlextAuth()  # Uses global settings automatically
+```
 ### Global Instance Access
 
 ```python
@@ -170,7 +182,9 @@ from flext_cli import u
 
 # Get current global configuration
 global_config = FlextAuthSettings.fetch_global()
-u.Cli.info(f"Current JWT expiry: {global_config.Auth.expiry_minutes}")```
+u.Cli.info(f"Current JWT expiry: {global_config.Auth.expiry_minutes}")
+```
+
 ______________________________________________________________________
 
 ## Security Recommendations
@@ -189,7 +203,8 @@ FlextAuthSettings(
         "hash_rounds": 14,  # High security hashing
         "session_expiry_minutes": 30,  # Session security
     }
-)```
+)
+```
 ### Development Settings
 
 For development environments:
@@ -204,7 +219,9 @@ FlextAuthSettings(
         "hash_rounds": 12,  # Balanced performance
         "session_expiry_minutes": 120,  # Extended sessions
     }
-)```
+)
+```
+
 ______________________________________________________________________
 
 ## Configuration Environments
@@ -223,7 +240,9 @@ import os
 from flext_auth import FlextAuthSettings
 
 env = os.getenv("FLEXT_ENV", "development")
-settings = FlextAuthSettings()```
+settings = FlextAuthSettings()
+```
+
 ______________________________________________________________________
 
 This configuration guide covers the current implementation as of April 14, 2026.

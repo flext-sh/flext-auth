@@ -66,7 +66,7 @@ uv run python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
 
 ### Quick Start Service
 
-````python
+```python
 from flext_auth import FlextAuth
 from flext_cli import u
 
@@ -82,7 +82,9 @@ if result.success:
     identity = result.unwrap()
     u.Cli.info(f"User created: {identity.name}")
 else:
-    u.Cli.info(f"Registration failed: {result.error}")```
+    u.Cli.info(f"Registration failed: {result.error}")
+```
+
 ### User Authentication
 
 ```python
@@ -100,7 +102,9 @@ if auth_result.success:
     u.Cli.info(f"Session ID: {identity.session_id}")
     u.Cli.info(f"Token: {identity.token}")
 else:
-    u.Cli.info(f"Authentication failed: {auth_result.error}")```
+    u.Cli.info(f"Authentication failed: {auth_result.error}")
+```
+
 ### Token Validation
 
 ```python
@@ -116,8 +120,10 @@ if token_result.success:
     token = token_result.unwrap()
     u.Cli.info(f"Token created: {token}")
 else:
-    u.Cli.info(f"Token creation failed: {token_result.error}")```
-______________________________________________________________________
+    u.Cli.info(f"Token creation failed: {token_result.error}")
+```
+
+---
 
 ## Configuration
 
@@ -130,7 +136,9 @@ from flext_cli import u
 settings = FlextAuthSettings()
 
 u.Cli.info(f"JWT expiry: {settings.Auth.expiry_minutes} minutes")
-u.Cli.info(f"bcrypt rounds: {settings.Auth.hash_rounds}")```
+u.Cli.info(f"bcrypt rounds: {settings.Auth.hash_rounds}")
+```
+
 ### Custom Configuration
 
 ```python
@@ -147,8 +155,10 @@ settings = FlextAuthSettings(
 )
 
 # Use custom configuration
-auth = FlextAuth(settings=settings)```
-______________________________________________________________________
+auth = FlextAuth(settings=settings)
+```
+
+---
 
 ## CLI Usage
 
@@ -164,7 +174,9 @@ flext-auth create-user \
 # Authenticate user
 flext-auth authenticate \
     --username bob \
-    --password securepass456```
+    --password securepass456
+```
+
 ### Configuration Management
 
 ```bash
@@ -172,8 +184,10 @@ flext-auth authenticate \
 flext-auth validate-settings
 
 # Show configuration summary
-flext-auth manage-settings show```
-______________________________________________________________________
+flext-auth manage-settings show
+```
+
+---
 
 ## FLEXT Integration Patterns
 
@@ -210,12 +224,13 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[m.
 result = process_authentication_workflow("alice", "secure123")
 if result.success:
     data = result.unwrap()
-    u.Cli.info(f"User {data['user']} authenticated")```
+    u.Cli.info(f"User {data['user']} authenticated")
+```
+
 ### Container Integration
 
-```python
+```python notest
 from flext_cli import u
-from flext_core import FlextContainer, FlextSettings
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service in container
@@ -230,8 +245,10 @@ container.bind("auth_service", auth_service)
 auth_result = container.resolve("auth_service")
 if auth_result.success:
     auth = auth_result.unwrap()
-    u.Cli.info("Authentication service resolved")```
-______________________________________________________________________
+    u.Cli.info("Authentication service resolved")
+```
+
+---
 
 ## Domain Models
 
@@ -253,7 +270,9 @@ result = auth.register_user(
 
 if result.success:
     identity = result.unwrap()
-    u.Cli.info(f"Identity created: {identity.name}")```
+    u.Cli.info(f"Identity created: {identity.name}")
+```
+
 ### Session Management
 
 ```python
@@ -272,8 +291,10 @@ session = auth_m.Auth.Session(
 
 # Check session validity
 if session.is_active:
-    u.Cli.info("Session is valid")```
-______________________________________________________________________
+    u.Cli.info("Session is valid")
+```
+
+---
 
 ## Testing Your Integration
 
@@ -308,8 +329,10 @@ def test_authentication_workflow():
 
     # Create token
     token_result = auth.create_token(identity.unique_id)
-    assert token_result.success```
-______________________________________________________________________
+    assert token_result.success
+```
+
+---
 
 ## Next Steps
 
@@ -323,7 +346,9 @@ make test
 make check
 
 # Complete validation
-make val```
+make val
+```
+
 ### Documentation
 
 - **Architecture** - System design and patterns
@@ -338,9 +363,10 @@ make val```
 - Implement monitoring and logging
 - Set up proper secret management
 
-______________________________________________________________________
+---
 
-This guide covers basic usage patterns. For production deployment and additional features, see the documentation.
+This guide covers basic usage patterns. For production deployment and additional
+features, see the documentation.
 
 ## Related Documentation
 
@@ -353,12 +379,16 @@ This guide covers basic usage patterns. For production deployment and additional
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
-- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
-- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) - CLI authentication patterns
+- [flext-core Foundation][flext-core-foundation] - Clean architecture and CQRS patterns
+- [flext-core Service Patterns][flext-core-service-patterns] - Service patterns and
+  dependency injection
+- [flext-cli Authentication][flext-cli-authentication] - CLI authentication patterns
 
 **External Resources**:
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
-````
+
+[flext-core-foundation]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md
+[flext-core-service-patterns]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md
+[flext-cli-authentication]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md

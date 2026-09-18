@@ -49,17 +49,19 @@ documentation.
 
 Initialize the authentication service for development and testing.
 
-````python
+```python
 from flext_auth import FlextAuth
 
-auth = FlextAuth.quick_start(create_admin_user=False)```
+auth = FlextAuth.quick_start(create_admin_user=False)
+```
+
 **Parameters**:
 
 - `create_admin_user` (bool): Create the default admin user (default: True)
 
 **Returns**: `FlextAuth` instance
 
-______________________________________________________________________
+---
 
 ## FlextAuth Service
 
@@ -69,12 +71,14 @@ ______________________________________________________________________
 from flext_auth import FlextAuth, FlextAuthSettings
 
 settings = FlextAuthSettings()
-auth = FlextAuth(settings=settings)```
+auth = FlextAuth(settings=settings)
+```
+
 ### register_user()
 
 Register a new user with username, email, and password.
 
-```python
+```python notest
 from __future__ import annotations
 
 
@@ -85,7 +89,9 @@ def register_user(
     password: str,
     roles: t.StrSequence | None = None,
     role: str | None = None,
-) -> p.Result[m.Auth.AuthIdentity]: ...```
+) -> p.Result[m.Auth.AuthIdentity]: ...
+```
+
 **Parameters**:
 
 - `username` (str): Unique username
@@ -106,12 +112,14 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     user = result.unwrap()
-    u.Cli.info(f"User created: {user.name}")```
+    u.Cli.info(f"User created: {user.name}")
+```
+
 ### authenticate_user()
 
 Authenticate a user with username and password.
 
-```python
+```python notest
 from __future__ import annotations
 
 
@@ -121,7 +129,9 @@ def authenticate_user(
     password: str,
     ip_address: str | None = None,
     user_agent: str | None = None,
-) -> p.Result[m.Auth.AuthIdentity]: ...```
+) -> p.Result[m.Auth.AuthIdentity]: ...
+```
+
 **Parameters**:
 
 - `username` (str): Username to authenticate
@@ -141,27 +151,33 @@ auth_result = auth.authenticate_user("demo", "secure123")
 if auth_result.success:
     identity = auth_result.unwrap()
     token = identity.token
-    session_id = identity.session_id```
+    session_id = identity.session_id
+```
+
 ### authenticate()
 
 Authenticate with a credentials mapping.
 
-```python
+```python notest
 from __future__ import annotations
 
 
-def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]: ...```
+def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]: ...
+```
+
 **Example**:
 
-```python
+```python notest
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.authenticate({"username": "demo", "password": "secure123"})
 if result.success:
     identity = result.unwrap()
-    u.Cli.info(f"Authenticated: {identity.name}")```
-______________________________________________________________________
+    u.Cli.info(f"Authenticated: {identity.name}")
+```
+
+---
 
 ## Domain Models
 
@@ -169,7 +185,7 @@ ______________________________________________________________________
 
 Authentication identity extending `FlextModels.Entity`.
 
-```python
+```python notest
 from __future__ import annotations
 from flext_auth import m
 
@@ -179,25 +195,31 @@ class AuthIdentity(m.BaseModel):
     contact: str
     credential_hash: str
     roles: t.StrSequence
-    is_active: bool = True```
+    is_active: bool = True
+```
+
 **Methods**:
 
 #### set_password()
 
-```python
+```python notest
 from __future__ import annotations
 
 
-def set_password(self, password: str) -> p.Result[bool]: ...```
+def set_password(self, password: str) -> p.Result[bool]: ...
+```
+
 Hash and set the user password using bcrypt.
 
 #### verify_password()
 
-```python
+```python notest
 from __future__ import annotations
 
 
-def verify_password(self, password: str) -> p.Result[bool]: ...```
+def verify_password(self, password: str) -> p.Result[bool]: ...
+```
+
 Verify the password against the stored hash.
 
 ### Session
@@ -207,13 +229,16 @@ Session model for managing user sessions.
 ```python
 from __future__ import annotations
 from flext_auth import m
+from datetime import datetime
 
 
 class Session(m.BaseModel):
     user_id: str
     session_token: str
     expires_at: datetime
-    is_active: bool = True```
+    is_active: bool = True
+```
+
 ### UserCreationRequest
 
 Request model for user registration.
@@ -229,8 +254,10 @@ class UserCreationRequest(m.BaseModel):
     email: str
     password: str
     full_name: str | None = None
-    roles: t.StrSequence = u.Field(default_factory=list)```
-______________________________________________________________________
+    roles: t.StrSequence = u.Field(default_factory=list)
+```
+
+---
 
 ## Configuration
 
@@ -245,7 +272,9 @@ from flext_cli import u
 
 
 class FlextAuthSettings(FlextSettings):
-    Auth: AuthSettings```
+    Auth: AuthSettings
+```
+
 JWT and security settings are available under `settings.Auth`:
 
 - `secret_key` (str): JWT signing secret
@@ -257,12 +286,14 @@ JWT and security settings are available under `settings.Auth`:
 
 #### create_for_environment()
 
-```python
+```python notest
 from __future__ import annotations
 
 
 @classmethod
-def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]: ...```
+def create_for_environment(cls, env: str) -> p.Result[FlextAuthSettings]: ...
+```
+
 Create configuration for a specific environment.
 
 **Parameters**:
@@ -274,8 +305,10 @@ Create configuration for a specific environment.
 ```python
 from flext_auth import FlextAuthSettings
 
-settings = FlextAuthSettings()```
-______________________________________________________________________
+settings = FlextAuthSettings()
+```
+
+---
 
 ## CLI Interface
 
@@ -287,7 +320,9 @@ Create a user via the command line.
 flext-auth create-user \
     --username alice \
     --email alice@example.com \
-    --password securepass123```
+    --password securepass123
+```
+
 ### authenticate
 
 Test user authentication.
@@ -295,14 +330,18 @@ Test user authentication.
 ```bash
 flext-auth authenticate \
     --username alice \
-    --password securepass123```
+    --password securepass123
+```
+
 ### validate-settings
 
 Validate the current configuration.
 
 ```bash
-flext-auth validate-settings```
-______________________________________________________________________
+flext-auth validate-settings
+```
+
+---
 
 ## Error Handling
 
@@ -320,7 +359,9 @@ if result.success:
     user = result.unwrap()
     u.Cli.info(f"User created: {user.name}")
 else:
-    u.Cli.info(f"Error: {result.error}")```
+    u.Cli.info(f"Error: {result.error}")
+```
+
 ### Chaining Pattern
 
 ```python
@@ -333,8 +374,10 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 
 
 def complete_auth_flow(username: str, password: str) -> p.Result[m.Auth.AuthIdentity]:
-    return auth.authenticate_user(username, password)```
-______________________________________________________________________
+    return auth.authenticate_user(username, password)
+```
+
+---
 
 ## Integration with FLEXT Ecosystem
 
@@ -352,7 +395,9 @@ container.bind("auth_service", auth)
 auth_result = container.resolve("auth_service")
 if auth_result.success:
     service = auth_result.unwrap()
-    u.Cli.info("Authentication service resolved")```
+    u.Cli.info("Authentication service resolved")
+```
+
 ### r Usage
 
 All flext-auth operations follow the `r` pattern from flext-core:
@@ -362,7 +407,7 @@ All flext-auth operations follow the `r` pattern from flext-core:
 - Use `.error` to get the error message on failure
 - Chain operations with `.flat_map()` and `.map()`
 
-______________________________________________________________________
+---
 
 ## Security Considerations
 
@@ -385,10 +430,10 @@ ______________________________________________________________________
 - Session tokens are cryptographically secure
 - Expired sessions are automatically invalid
 
-______________________________________________________________________
+---
 
-This API reference covers the current implementation as of April 14, 2026.
-For usage examples, see Getting Started.
+This API reference covers the current implementation as of April 14, 2026. For usage
+examples, see Getting Started.
 
 ## Related Documentation
 
@@ -401,12 +446,16 @@ For usage examples, see Getting Started.
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/api-reference/foundation.md) - Core APIs and patterns
-- [flext-core Railway-Oriented Programming](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/railway-oriented-programming.md) - r patterns
-- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) - CLI authentication patterns
+- [flext-core Foundation][flext-core-foundation] - Core APIs and patterns
+- [flext-core Railway-Oriented Programming][flext-core-railway-oriented-programming] - r
+  patterns
+- [flext-cli Authentication][flext-cli-authentication] - CLI authentication patterns
 
 **External Resources**:
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
-````
+
+[flext-core-foundation]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/api-reference/foundation.md
+[flext-core-railway-oriented-programming]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/railway-oriented-programming.md
+[flext-cli-authentication]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md

@@ -204,7 +204,7 @@ patterns and production quality.
 
 **Public API**:
 
-````python
+```python
 from __future__ import annotations
 from typing import Protocol
 from flext_core import p, s, t
@@ -236,7 +236,9 @@ class FlextAuth(s):
 
 
 class FlextAuthBaseProvider(Protocol):
-    def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]: ...```
+    def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]: ...
+```
+
 ### 2. FlextAuthRegistry (`registry.py`)
 
 **Responsibilities**:
@@ -248,7 +250,7 @@ class FlextAuthBaseProvider(Protocol):
 
 **Interface**:
 
-```python
+```python notest
 from __future__ import annotations
 from flext_core import p, s, t
 
@@ -269,7 +271,9 @@ class FlextAuthRegistry(s):
 
     def list_providers(self) -> t.StrSequence: ...
 
-    def get_capabilities(self, name: str) -> p.Result[t.StrSequence]: ...```
+    def get_capabilities(self, name: str) -> p.Result[t.StrSequence]: ...
+```
+
 ### 3. Base Provider Protocol (`providers/base.py`)
 
 **Protocol Definition**:
@@ -308,8 +312,10 @@ class FlextAuthBaseProvider(Protocol):
 
     def get_metadata(self) -> t.JsonMapping:
         """Return provider metadata."""
-        ...```
-______________________________________________________________________
+        ...
+```
+
+---
 
 ## PROVIDER ECOSYSTEM
 
@@ -336,7 +342,8 @@ ______________________________________________________________________
 **OAuth2 Provider** (`providers/oauth2.py`)
 
 - **Technology**: authlib
-- **Capabilities**: `{"oauth2", "authorization_code", "client_credentials", "password_grant", "refresh"}`
+- **Capabilities**:
+  `{"oauth2", "authorization_code", "client_credentials", "password_grant", "refresh"}`
 - **Configuration**: client_id, client_secret, authorization_url, token_url
 - **Status**: Implementation (Phase 2)
 
@@ -352,7 +359,8 @@ ______________________________________________________________________
 **SAML Provider** (`providers/saml.py`)
 
 - **Technology**: python3-saml
-- **Capabilities**: `{"saml", "sso", "slo", "metadata", "sp_initiated", "idp_initiated"}`
+- **Capabilities**:
+  `{"saml", "sso", "slo", "metadata", "sp_initiated", "idp_initiated"}`
 - **Configuration**: idp_metadata, sp_entity_id, assertion_consumer_service
 - **Status**: Implementation (Phase 3)
 
@@ -456,8 +464,10 @@ class FlextAuthExampleProvider(s):
 
     def _generate_token(self, credentials: dict) -> auth_m.Auth.AuthToken:
         """Generate a token from credentials."""
-        ...```
-______________________________________________________________________
+        ...
+```
+
+---
 
 ## TRANSPORT LAYER
 
@@ -486,7 +496,9 @@ class BaseTransportAdapter(Protocol):
 
     def get_transport_metadata(self) -> t.JsonMapping:
         """Return transport metadata."""
-        ...```
+        ...
+```
+
 ### HTTP Transport (`transports/http.py`)
 
 **CRITICAL**: Uses **flext-api** (NOT direct httpx/requests)
@@ -514,7 +526,9 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         if result.failure:
             return r[m.Dict].fail(f"HTTP transport failed: {result.error}")
 
-        return r[m.Dict].ok(result.unwrap())```
+        return r[m.Dict].ok(result.unwrap())
+```
+
 ### gRPC Transport (`transports/grpc.py`)
 
 **CRITICAL**: Uses **flext-grpc** (NOT direct grpc/grpcio)
@@ -547,7 +561,9 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         if result.failure:
             return r[m.Dict].fail(f"gRPC transport failed: {result.error}")
 
-        return r[m.Dict].ok(result.unwrap())```
+        return r[m.Dict].ok(result.unwrap())
+```
+
 ### WebSocket Transport (`transports/websocket.py`)
 
 ```text
@@ -567,8 +583,10 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
     ) -> p.Result[m.Dict]:
         """Send authentication request via WebSocket."""
-        ...```
-______________________________________________________________________
+        ...
+```
+
+---
 
 ## PROTOCOL HANDLERS
 
@@ -577,8 +595,6 @@ ______________________________________________________________________
 ```text
 from __future__ import annotations
 from typing import Protocol
-from flext_core import c, m, p, r, t
-
 
 class BaseProtocolHandler(Protocol):
     """Base protocol for protocol-specific handlers."""
@@ -591,7 +607,9 @@ class BaseProtocolHandler(Protocol):
 
     def parse_auth_response(self, response: bytes | str) -> p.Result[m.Dict]:
         """Parse authentication response from protocol."""
-        ...```
+        ...
+```
+
 ### REST Protocol Handler (`protocol_handlers/rest.py`)
 
 ```text
@@ -619,7 +637,9 @@ class RestProtocolHandler(BaseProtocolHandler):
             parsed = json.loads(response)
             return r[m.Dict].ok(parsed)
         except Exception as e:
-            return r[m.Dict].fail(f"JSON parsing failed: {e}")```
+            return r[m.Dict].fail(f"JSON parsing failed: {e}")
+```
+
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
 
 ```text
@@ -638,8 +658,10 @@ class SoapProtocolHandler(BaseProtocolHandler):
 
     def parse_auth_response(self, response: str) -> p.Result[m.Dict]:
         """Parse SOAP XML response."""
-        ...```
-______________________________________________________________________
+        ...
+```
+
+---
 
 ## TOKEN MANAGEMENT
 
@@ -655,7 +677,7 @@ ______________________________________________________________________
 
 **Interface**:
 
-```python
+```python notest
 from __future__ import annotations
 from flext_core import p, r, s, t
 from flext_auth import m as auth_m
@@ -720,7 +742,9 @@ class TokenManager(s):
 
     def validate_token(self, token: auth_m.Auth.AuthToken) -> p.Result[bool]:
         """Validate token."""
-        return self._provider.validate(token)```
+        return self._provider.validate(token)
+```
+
 ### Token Retry Logic (`tokens/retry.py`)
 
 ```python
@@ -758,7 +782,9 @@ class RetryPolicy:
                     return r[t.JsonValue].fail(f"Non-retryable error: {e}")
 
                 wait_time = backoff_factor**attempt
-                sleep(wait_time)```
+                sleep(wait_time)
+```
+
 ### Token Cache (`tokens/cache.py`)
 
 ```python
@@ -800,8 +826,10 @@ class TokenCache:
 
     def _create_backend(
         self, backend: str, settings: t.JsonMapping | None
-    ) -> t.JsonValue: ...```
-______________________________________________________________________
+    ) -> t.JsonValue: ...
+```
+
+---
 
 ## SECURITY ARCHITECTURE
 
@@ -816,7 +844,7 @@ ______________________________________________________________________
 
 ### Credential Management (`credentials/manager.py`)
 
-```python
+```python notest
 from __future__ import annotations
 from flext_cli import u
 from flext_core import m, p, r, t
@@ -857,7 +885,9 @@ class CredentialManager:
 
         return self.store_credential(identifier, new_credential)
 
-    def _init_cipher(self, encryption_key: bytes) -> t.JsonValue: ...```
+    def _init_cipher(self, encryption_key: bytes) -> t.JsonValue: ...
+```
+
 ### Security Validations
 
 ```python
@@ -885,8 +915,10 @@ class SecurityValidator:
     @staticmethod
     def validate_certificate(cert: bytes) -> p.Result[bool]:
         """Validate X.509 certificate."""
-        ...```
-______________________________________________________________________
+        ...
+```
+
+---
 
 ## FLEXT INTEGRATION
 
@@ -908,10 +940,8 @@ ______________________________________________________________________
 
 ```python
 # ABSOLUTELY FORBIDDEN in flext-auth
-import httpx  # Use flext-api instead
-import requests  # Use flext-api instead
-import grpc  # Use flext-grpc instead
-import ldap3  # Use flext-ldap instead```
+```
+
 #### Correct Integration Pattern
 
 ```python
@@ -941,7 +971,9 @@ class FlextAuthLdapProvider:
     def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]:
         return self._ldap.bind(
             username=credentials["username"], password=credentials["password"]
-        )```
+        )
+```
+
 ### s Integration
 
 All providers and managers extend `s` for consistency:
@@ -961,8 +993,10 @@ class FlextAuthJwtProvider(s):
         self.config = settings
         self.logger = u.fetch_logger(__name__)
 
-    def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]: ...```
-______________________________________________________________________
+    def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]: ...
+```
+
+---
 
 ## API DESIGN
 
@@ -974,7 +1008,9 @@ ______________________________________________________________________
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.authenticate_user("username", "password")```
+result = auth.authenticate_user("username", "password")
+```
+
 #### Pattern 2: Multi-Provider
 
 ```python
@@ -990,7 +1026,9 @@ auth = FlextAuth()
 result = auth.authenticate({"username": "user", "password": "pass"})
 
 # List available providers
-providers = registry.list_providers()```
+providers = registry.list_providers()
+```
+
 #### Pattern 3: Custom Transport
 
 ```text
@@ -1009,7 +1047,9 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 provider = FlextAuthJwtProvider(settings={})
 auth = FlextAuth.with_provider(provider)
-result = auth.authenticate({"username": "user", "password": "pass"})```
+result = auth.authenticate({"username": "user", "password": "pass"})
+```
+
 #### Pattern 4: Token Retry
 
 ```python
@@ -1019,8 +1059,10 @@ from flext_auth import FlextAuth
 auth = FlextAuth.quick_start(create_admin_user=False)
 identity_result = auth.authenticate_user("user", "pass")
 if identity_result.success:
-    token = identity_result.unwrap().token```
-______________________________________________________________________
+    token = identity_result.unwrap().token
+```
+
+---
 
 ## IMPLEMENTATION PHASES
 
@@ -1038,8 +1080,9 @@ ______________________________________________________________________
 - Validate: 228/558 tests passing (significant test failures need resolution)
 - Quality gates: Mixed results (linting OK, type safety OK, tests pending)
 
-**Success Criteria**: Registry operational, JWT provider extracted, zero CLI code, comprehensive provider architecture
-**Actual Status**: Foundation complete but test suite needs stabilization
+**Success Criteria**: Registry operational, JWT provider extracted, zero CLI code,
+comprehensive provider architecture **Actual Status**: Foundation complete but test
+suite needs stabilization
 
 ### Phase 2: Core Providers (Week 2) COMPLETE
 
@@ -1053,8 +1096,9 @@ ______________________________________________________________________
 - Provider tests (~75% average coverage, individual provider issues)
 - Quality gates: Mixed (linting OK, type safety OK, integration tests pending)
 
-**Success Criteria**: 4 new providers operational, comprehensive architecture, documentation framework
-**Actual Status**: All core providers implemented but testing and integration need stabilization
+**Success Criteria**: 4 new providers operational, comprehensive architecture,
+documentation framework **Actual Status**: All core providers implemented but testing
+and integration need stabilization
 
 ### Phase 3: Advanced Providers (Week 3) MOSTLY COMPLETE
 
@@ -1067,8 +1111,9 @@ ______________________________________________________________________
 - Security validation per provider (partial implementation)
 - Quality gates: Mixed (linting OK, type safety OK, provider tests pending)
 
-**Success Criteria**: 3 advanced providers operational, LDAP using flext-ldap, comprehensive provider ecosystem
-**Actual Status**: 4/4 advanced providers implemented but with testing and integration issues
+**Success Criteria**: 3 advanced providers operational, LDAP using flext-ldap,
+comprehensive provider ecosystem **Actual Status**: 4/4 advanced providers implemented
+but with testing and integration issues
 
 ### Phase 4: Transport & Protocol (Week 4) PARTIALLY COMPLETE
 
@@ -1082,8 +1127,9 @@ ______________________________________________________________________
 - Provider-transport integration (basic HTTP integration only)
 - Quality gates: Mixed (transport tests failing)
 
-**Success Criteria**: Transport abstraction complete, HTTP/gRPC using FLEXT libraries (HTTP OK, gRPC partial)
-**Actual Status**: Basic HTTP transport implemented, gRPC and protocols pending
+**Success Criteria**: Transport abstraction complete, HTTP/gRPC using FLEXT libraries
+(HTTP OK, gRPC partial) **Actual Status**: Basic HTTP transport implemented, gRPC and
+protocols pending
 
 ### Phase 5: Token & Credential Management (Week 5)
 
@@ -1120,9 +1166,10 @@ ______________________________________________________________________
 - API stability verification
 - Release candidate preparation
 
-**Success Criteria**: All quality gates passing, security audit passed, ready for release
+**Success Criteria**: All quality gates passing, security audit passed, ready for
+release
 
-______________________________________________________________________
+---
 
 ## QUALITY STANDARDS
 
@@ -1133,7 +1180,9 @@ make val          # Complete pipeline
 make lint
 make type-check   # MyPy/PyRight: ZERO errors in src/
 make security     # Bandit: ZERO critical issues
-make test         # Tests: 100% pass rate```
+make test         # Tests: 100% pass rate
+```
+
 ### Coverage Requirements
 
 - **Providers**: 95%+ test coverage per provider
@@ -1148,7 +1197,7 @@ make test         # Tests: 100% pass rate```
 - **Provider Switching**: <1ms overhead for registry lookup
 - **Memory**: No memory leaks, efficient caching
 
-______________________________________________________________________
+---
 
 ## APPENDIX
 
@@ -1171,15 +1220,16 @@ ______________________________________________________________________
 - **v2.5.0** (+6 months): Final warnings
 - **v3.0.0** (+12 months): Remove v1 API completely
 
-______________________________________________________________________
+---
 
-**Document Status**: Multi-Provider Architecture - Implementation Complete (Phases 1-3), Transport Layer In Progress (Phase 4)
-**Next Review**: After test suite stabilization and Phase 4 completion
-**Maintained By**: FLEXT Auth Team
+**Document Status**: Multi-Provider Architecture - Implementation Complete (Phases 1-3),
+Transport Layer In Progress (Phase 4) **Next Review**: After test suite stabilization
+and Phase 4 completion **Maintained By**: FLEXT Auth Team
 
-______________________________________________________________________
+---
 
-_This architecture document is the authoritative reference for the flext-auth v2.0.0 transformation. All implementation must follow these patterns and principles._
+_This architecture document is the authoritative reference for the flext-auth v2.0.0
+transformation. All implementation must follow these patterns and principles._
 
 ## Related Documentation
 
@@ -1192,12 +1242,16 @@ _This architecture document is the authoritative reference for the flext-auth v2
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
-- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
-- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) - CLI authentication patterns
+- [flext-core Foundation][flext-core-foundation] - Clean architecture and CQRS patterns
+- [flext-core Service Patterns][flext-core-service-patterns] - Service patterns and
+  dependency injection
+- [flext-cli Authentication][flext-cli-authentication] - CLI authentication patterns
 
 **External Resources**:
 
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
-````
+
+[flext-core-foundation]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md
+[flext-core-service-patterns]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md
+[flext-cli-authentication]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md

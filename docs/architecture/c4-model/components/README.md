@@ -359,19 +359,19 @@ title Component diagram for flext-auth
 
 Container_Boundary(auth_service, "flext-auth Service") {
 
-    Component(api_facade, "FlextAuth API", "Python/FastAPI", "Main authentication facade and API orchestration")
+    Component(api_facade, "FlextAuth API", "Python/FastAPI", "Main auth facade")
 
-    Component(provider_registry, "FlextAuthRegistry", "Python", "Provider registration and discovery system")
+    Component(provider_registry, "FlextAuthRegistry", "Python", "Provider registry")
 
-    Component(jwt_provider, "FlextAuthJwtProvider", "Python/PyJWT", "JWT authentication implementation")
-    Component(oauth2_provider, "FlextAuthOAuth2Provider", "Python/authlib", "OAuth2 authentication implementation")
-    Component(saml_provider, "FlextAuthSamlProvider", "Python/python3-saml", "SAML authentication implementation")
+    Component(jwt_provider, "FlextAuthJwtProvider", "Python/PyJWT", "JWT authentication")
+    Component(oauth2_provider, "FlextAuthOAuth2Provider", "Python/authlib", "OAuth2 authentication")
+    Component(saml_provider, "FlextAuthSamlProvider", "Python/python3-saml", "SAML authentication")
 
     Component(user_service, "FlextAuthUserService", "Python", "User management and lifecycle")
     Component(token_service, "FlextAuthTokenService", "Python", "Token generation and validation")
-    Component(session_service, "FlextAuthSessionService", "Python", "Session management and persistence")
+    Component(session_service, "FlextAuthSessionService", "Python", "Session management")
 
-    Component(http_transport, "FlextWebTransportAdapter", "Python/FastAPI", "HTTP transport and middleware")
+    Component(http_transport, "TransportAdapter", "FastAPI", "HTTP transport")
     Component(grpc_transport, "GrpcTransportAdapter", "Python/grpcio", "gRPC transport implementation")
 
     Component(settings, "FlextAuthSettings", "Python/Pydantic", "Configuration management")

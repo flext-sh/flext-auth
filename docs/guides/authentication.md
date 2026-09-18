@@ -80,7 +80,7 @@ The main authentication orchestrator handles all authentication operations:
 
 **Current Implementation**:
 
-````python
+```python
 from __future__ import annotations
 from flext_auth import FlextAuth
 
@@ -88,7 +88,9 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 
 # Passwords are hashed using bcrypt when registering users
 result = auth.register_user("alice", "alice@example.com", "SecurePassword123!")
-assert result.success```
+assert result.success
+```
+
 **Security Settings**:
 
 - bcrypt rounds: 12 (production default)
@@ -127,7 +129,7 @@ assert result.success```
 - Session revocation capabilities
 - User session mapping
 
-______________________________________________________________________
+---
 
 ## Authentication Workflows
 
@@ -155,7 +157,7 @@ ______________________________________________________________________
 1. **Claims Extraction**: Extract user information from payload
 1. **Session Validation**: Verify associated session is active
 
-______________________________________________________________________
+---
 
 ## Integration Patterns
 
@@ -166,7 +168,9 @@ The CLI provides user management commands via the workspace `flext-cli` surface:
 ```bash
 flext-auth create-user --username alice --email alice@example.com --password securepass123
 flext-auth authenticate --username alice --password securepass123
-flext-auth validate-settings```
+flext-auth validate-settings
+```
+
 ### API Integration
 
 For web applications and services:
@@ -183,8 +187,10 @@ if auth_result.success:
     identity = auth_result.unwrap()
     u.Cli.info(f"Authenticated: {identity.name}")
     token = identity.token
-    session_id = identity.session_id```
-______________________________________________________________________
+    session_id = identity.session_id
+```
+
+---
 
 ## Current Limitations
 
@@ -235,7 +241,7 @@ ______________________________________________________________________
 - Configuration test isolation
 - Integration test coverage
 
-______________________________________________________________________
+---
 
 ## Development Roadmap
 
@@ -287,7 +293,7 @@ ______________________________________________________________________
 - Advanced audit logging
 - Security event monitoring
 
-______________________________________________________________________
+---
 
-This authentication guide provides implementation-specific details without duplicating general FLEXT patterns documented elsewhere.
-````
+This authentication guide provides implementation-specific details without duplicating
+general FLEXT patterns documented elsewhere.

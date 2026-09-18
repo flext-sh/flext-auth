@@ -41,7 +41,7 @@ Development workflow and contributing guidelines for flext-auth with multi-provi
 authentication architecture. Implementation complete for Phases 1-3, transport layer in
 progress.
 
----
+______________________________________________________________________
 
 ## Development Setup
 
@@ -68,7 +68,7 @@ make setup
 python -c "from flext_auth import FlextAuth; u.Cli.print('Development setup complete')"
 ```
 
----
+______________________________________________________________________
 
 ## Development Commands
 
@@ -104,7 +104,7 @@ pytest -m security # Security tests
 pytest --cov=src/flext_auth --cov-report=term-missing
 ```
 
----
+______________________________________________________________________
 
 ## Quality Standards
 
@@ -125,7 +125,7 @@ All contributions must pass:
 1. **Security**: No security vulnerabilities
 1. **Tests**: All new tests must pass
 
----
+______________________________________________________________________
 
 ## Code Standards
 
@@ -133,7 +133,7 @@ All contributions must pass:
 
 All code must follow FLEXT patterns:
 
-````python
+``` python
 from __future__ import annotations
 
 from flext_auth import m, p, r
@@ -154,7 +154,8 @@ def authenticate_user_legacy(username: str, password: str) -> m.Auth.AuthIdentit
     if not username:
         raise ValueError("Username required")
 
-    return m.Auth.AuthIdentity(username=username, contact="user@example.com")```
+    return m.Auth.AuthIdentity(username=username, contact="user@example.com")
+```
 ### Domain Model Patterns
 
 ```text
@@ -176,7 +177,9 @@ class User(m.Auth.AuthIdentity):
 class UserPlain:
     def __init__(self, username, email):
         self.username = username
-        self.email = email```
+        self.email = email
+```
+
 ______________________________________________________________________
 
 ## Current Development Areas
@@ -200,7 +203,8 @@ pytest tests/ -v --tb=short
 
 # Focus on specific failing areas
 pytest tests/unit/test_cli_coverage.py -v
-pytest tests/unit/test_config_coverage.py -v```
+pytest tests/unit/test_config_coverage.py -v
+```
 ### Priority 2: Security Enhancements
 
 **Missing Features**:
@@ -230,7 +234,8 @@ ______________________________________________________________________
 git checkout -b feature/your-feature-name
 
 # Ensure clean starting state
-make val```
+make val
+```
 ### 2. Development Process
 
 ```bash
@@ -241,7 +246,8 @@ pytest tests/unit/test_your_module.py -v
 
 # Check code quality
 make lint
-make type-check```
+make type-check
+```
 ### 3. Before Committing
 
 ```bash
@@ -252,7 +258,8 @@ make val
 make test
 
 # Format code
-make format```
+make format
+```
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns
@@ -265,7 +272,8 @@ ______________________________________________________________________
 
 ## Testing Strategy
 
-### Current Test Structure```
+### Current Test Structure
+```
 tests/
 ├── unit/                   # Unit tests for individual components
 │   ├── test_auth.py       # Authentication service tests
@@ -285,7 +293,7 @@ tests/
 
 ### Adding Tests
 
-````python
+``` python
 from __future__ import annotations
 
 from flext_auth import FlextAuth
@@ -303,7 +311,9 @@ class TestNewFeature:
 
         # Assert
         assert result.success
-        assert result.unwrap().name == "test_user"```
+        assert result.unwrap().name == "test_user"
+```
+
 ______________________________________________________________________
 
 ## Architecture Guidelines
@@ -327,7 +337,8 @@ class AuthenticationService:
 
     def process(self, request: t.StrMapping) -> p.Result[t.StrMapping]:
         # Service implementation
-        return r[t.StrMapping].ok({"status": "processed"})```
+        return r[t.StrMapping].ok({"status": "processed"})
+```
 ### Error Handling
 
 Use r exclusively:
@@ -362,7 +373,9 @@ class AuthFlow:
 # Or using the public facade
 auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user("demo", "demo@example.com", "SecurePass123!")
-result = auth.authenticate_user("demo", "SecurePass123!")```
+result = auth.authenticate_user("demo", "SecurePass123!")
+```
+
 ______________________________________________________________________
 
 ## Debugging
@@ -387,8 +400,13 @@ logging.basicConfig(level=logging.DEBUG)
 # Test specific functionality
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("test", "test@example.com", "password123")
-u.Cli.info(f"Registration result: {result}")```
+u.Cli.info(f"Registration result: {result}")
+```
+
 ______________________________________________________________________
 
-This development guide reflects the current implementation state as of April 14, 2026. For additional FLEXT patterns, see [flext-core documentation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/development.md).
+This development guide reflects the current implementation state as of April 14, 2026.
+For additional FLEXT patterns, see [flext-core documentation][flext-core-development].
+
+[flext-core-development]: https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/development.md
 ````

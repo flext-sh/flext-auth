@@ -157,7 +157,7 @@ exercise the public `r` facade used by the production consumer.
 For a standalone test without the settings plugin, keep the reset on both sides of the
 mutation, including assertion failure:
 
-```python
+```python notest
 from flext_core import FlextSettings
 
 

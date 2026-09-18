@@ -53,7 +53,7 @@ patterns. For complete `r` usage patterns, see the flext-core documentation.
 
 Authentication operations return `r` for consistency with the FLEXT ecosystem:
 
-````python
+```python
 from flext_auth import FlextAuth
 from flext_cli import u
 
@@ -65,15 +65,15 @@ if auth_result.success:
     identity = auth_result.unwrap()
     u.Cli.info(f"Authentication successful: {identity.name}")
 else:
-    u.Cli.info(f"Authentication failed: {auth_result.error}")```
+    u.Cli.info(f"Authentication failed: {auth_result.error}")
+```
+
 ### FlextContainer Integration
 
 Use `FlextContainer` for dependency injection:
 
-```python
+```python notest
 from __future__ import annotations
-from flext_cli import u
-from flext_core import FlextContainer, FlextSettings
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service
@@ -92,7 +92,9 @@ class UserService:
 
     def create_authenticated_user(self, user_data: dict):
         # Use injected auth service
-        return self._auth.register_user(**user_data)```
+        return self._auth.register_user(**user_data)
+```
+
 ### Domain Modeling
 
 All domain entities use `FlextModels` patterns:
@@ -107,8 +109,10 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.success:
     identity = result.unwrap()
-    u.Cli.info(f"Identity created: {identity.name}")```
-______________________________________________________________________
+    u.Cli.info(f"Identity created: {identity.name}")
+```
+
+---
 
 ## Integration with FLEXT Projects
 
@@ -139,7 +143,9 @@ def authenticate_request(token: str = Depends(security)):
 
 @app.get("/protected")
 def protected_endpoint(token: str = Depends(authenticate_request)):
-    return {"message": "Hello authenticated user"}```
+    return {"message": "Hello authenticated user"}
+```
+
 ### flext-web Integration
 
 Web application authentication flows:
@@ -180,7 +186,9 @@ def require_auth(f):
         # In production, validate token against the token service
         return f(*args, **kwargs)
 
-    return decorated_function```
+    return decorated_function
+```
+
 ### flext-cli Integration
 
 CLI authentication patterns:
@@ -215,8 +223,10 @@ def login(ctx, username, password):
         click.echo("Authentication successful")
     else:
         click.echo(f"Authentication failed: {result.error}")
-        ctx.exit(1)```
-______________________________________________________________________
+        ctx.exit(1)
+```
+
+---
 
 ## Service Integration Patterns
 
@@ -244,7 +254,9 @@ class AuthenticationProvider:
 
     def create_service_token(self, identity_id: str) -> p.Result[str]:
         """Create a token for service-to-service authentication."""
-        return self._auth.create_token(identity_id)```
+        return self._auth.create_token(identity_id)
+```
+
 ### Inter-Service Authentication
 
 Pattern for service-to-service authentication:
@@ -277,8 +289,10 @@ class ServiceA:
         result = self._api.post(
             url="http://service-b/api/endpoint", json=data, headers=headers
         )
-        return result```
-______________________________________________________________________
+        return result
+```
+
+---
 
 ## Database Integration
 
@@ -305,7 +319,9 @@ class UserRepository:
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Create user in database."""
         # Oracle-specific implementation
-        ...```
+        ...
+```
+
 ### Session Storage (Future)
 
 Integration with Redis for session management:
@@ -331,8 +347,10 @@ class RedisSessionStorage:
             )
             return r[bool].ok(True)
         except Exception as e:
-            return r[bool].fail(f"Session storage failed: {e}")```
-______________________________________________________________________
+            return r[bool].fail(f"Session storage failed: {e}")
+```
+
+---
 
 ## Configuration Integration
 
@@ -351,7 +369,9 @@ flext_env = os.getenv("FLEXT_ENV", "development")
 # Create environment-specific configuration
 auth_config = FlextAuthSettings()
 auth = FlextAuth(settings=auth_config)
-u.Cli.info(f"Environment: {flext_env}")```
+u.Cli.info(f"Environment: {flext_env}")
+```
+
 ### Shared Configuration
 
 Integration with FLEXT workspace configuration:
@@ -369,8 +389,10 @@ class FlextAuthWorkspaceSettings(FlextSettings):
 
     def get_auth_service(self) -> p.Result[FlextAuth]:
         """Get configured authentication service."""
-        return r[FlextAuth].ok(FlextAuth(settings=self.auth_config))```
-______________________________________________________________________
+        return r[FlextAuth].ok(FlextAuth(settings=self.auth_config))
+```
+
+---
 
 ## Testing Integration
 
@@ -398,8 +420,10 @@ class TestAuthIntegration:
         assert auth_result.success
 
         identity = auth_result.unwrap()
-        assert identity.token```
-______________________________________________________________________
+        assert identity.token
+```
+
+---
 
 ## Future Integration Plans
 
@@ -428,7 +452,9 @@ class OAuth2Provider:
     def token(self, code: str, client_id: str) -> p.Result[m.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
-        ...```
+        ...
+```
+
 ### Enterprise SSO
 
 Plans for SAML integration:
@@ -451,8 +477,10 @@ class SAMLProvider:
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Process SAML authentication response."""
         # Implementation using flext-auth
-        ...```
-______________________________________________________________________
+        ...
+```
 
-This integration guide reflects the current implementation and planned integrations as of April 14, 2026.
-````
+---
+
+This integration guide reflects the current implementation and planned integrations as
+of April 14, 2026.

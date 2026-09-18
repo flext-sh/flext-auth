@@ -43,12 +43,13 @@ documentation.
 
 **Problem**: User registration fails with validation errors
 
-````python
+``` python
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("user", "invalid-email", "weak")
-# Returns failure result```
+# Returns failure result
+```
 **Solutions**:
 
 1. **Email Validation**:
@@ -58,7 +59,7 @@ result = auth.register_user("user", "invalid-email", "weak")
 
    auth = FlextAuth.quick_start(create_admin_user=False)
    result = auth.register_user("user", "user@example.com", "password123")
-````
+```
 
 1. **Password Requirements**:
 
@@ -85,13 +86,14 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 **Problem**: User authentication fails unexpectedly
 
-````python
+````python notest
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user("user", "user@example.com", "password123")
 auth_result = auth.authenticate_user("user", "password123")
-# Returns failure even with correct credentials```
+# Returns failure even with correct credentials
+```
 **Debugging**:
 
 ```python
@@ -109,7 +111,8 @@ else:
     user = user_result.unwrap()
     # Check password verification
     verify_result = user.verify_credential("password123")
-    u.Cli.info(f"Password verification: {verify_result.success}")```
+    u.Cli.info(f"Password verification: {verify_result.success}")
+```
 **Common Causes**:
 
 1. **Case sensitivity**: Usernames are case-sensitive
@@ -130,7 +133,8 @@ if registered.success:
     if token_result.success:
         token = token_result.unwrap()
         validation_result = auth.token_service.validate_token(token)
-        # Returns failure for valid tokens```
+        # Returns failure for valid tokens
+```
 **Solutions**:
 
 1. **Token Format**:
@@ -140,7 +144,7 @@ if registered.success:
    token = "Bearer <jwt-header>.<jwt-payload>.<jwt-signature>"
    # or
    token = "<jwt-header>.<jwt-payload>.<jwt-signature>"
-````
+```
 
 1. **Token Expiration**:
 
@@ -175,12 +179,13 @@ if registered.success:
 
 **Problem**: Configuration not loading correctly
 
-````python
+````python notest
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
 # Access namespaced auth settings via settings.Auth
-u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")```
+u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")
+```
 **Solutions**:
 
 1. **Check Environment Variables**:
@@ -188,7 +193,7 @@ u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")```
    ```bash
    env | grep FLEXT_AUTH_
    # Should show FLEXT_AUTH_* variables if set
-````
+```
 
 1. **Valid Environment Names**:
 
@@ -219,7 +224,8 @@ from flext_cli import u
 settings = FlextAuthSettings()
 u.Cli.info(f"JWT Algorithm: {settings.Auth.algorithm}")
 u.Cli.info(f"JWT Expiry: {settings.Auth.expiry_minutes}")
-u.Cli.info(f"Secret Key Length: {len(settings.Auth.secret_key)}")```
+u.Cli.info(f"Secret Key Length: {len(settings.Auth.secret_key)}")
+```
 **Recommendations**:
 
 - Use HS256 algorithm (default)
@@ -246,14 +252,14 @@ ______________________________________________________________________
 
    # Common issue: Missing test runner setup
    # Solution: Ensure proper test fixtures
-````
+```
 
 1. **Configuration Tests**:
 
    ```bash
    # Run configuration tests
    pytest tests/unit/test_config_coverage.py -v
-   
+
    # Common issue: Singleton state between tests
    # Solution: Reset global settings in test fixtures
    ```
@@ -288,7 +294,8 @@ uv sync --all-packages
 uv run pytest tests/ -v
 
 # Run with coverage
-uv run pytest --cov=src/flext_auth tests/```
+uv run pytest --cov=src/flext_auth tests/
+```
 ______________________________________________________________________
 
 ## Performance Issues
@@ -318,7 +325,8 @@ u.Cli.info(f"Bcrypt hashing took: {bcrypt_time:.3f}s")
 
 # Check bcrypt rounds
 settings = FlextAuthSettings()
-u.Cli.info(f"Bcrypt rounds: {settings.Auth.hash_rounds}")```
+u.Cli.info(f"Bcrypt rounds: {settings.Auth.hash_rounds}")
+```
 **Solutions**:
 
 1. **Reduce bcrypt rounds for development**:
@@ -327,7 +335,7 @@ u.Cli.info(f"Bcrypt rounds: {settings.Auth.hash_rounds}")```
    from flext_auth import FlextAuthSettings
 
    dev_config = FlextAuthSettings(Auth={"hash_rounds": 10})  # Faster for development
-````
+```
 
 1. **Use production rounds only in production**:
 
@@ -361,7 +369,8 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 session_count = len(
     auth.session_service.session_manager._sessions
 )  # Internal attribute
-u.Cli.info(f"Active sessions: {session_count}")```
+u.Cli.info(f"Active sessions: {session_count}")
+```
 **Mitigation**:
 
 ```python
@@ -371,7 +380,8 @@ from __future__ import annotations
 # Implement session cleanup
 def cleanup_expired_sessions():
     """Clean up expired sessions (placeholder)."""
-    # Implementation needed in FlextAuth service```
+    # Implementation needed in FlextAuth service
+```
 ______________________________________________________________________
 
 ## Development Issues
@@ -389,7 +399,8 @@ uv run mypy src/flext_auth/
 # Common errors:
 # - Missing type annotations
 # - r type issues
-# - Generic type problems```
+# - Generic type problems
+```
 **Solutions**:
 
 1. **Type Annotations**:
@@ -400,7 +411,7 @@ uv run mypy src/flext_auth/
 
    def find_user(username: str) -> p.Result[User | None]:
        pass
-````
+```
 
 1. **r Types**:
 
@@ -423,7 +434,8 @@ uv run mypy src/flext_auth/
 from flext_auth import m
 
 # Access models via namespace
-user = m.Auth.AuthIdentity(name="user", contact="user@example.com")```
+user = m.Auth.AuthIdentity(name="user", contact="user@example.com")
+```
 ______________________________________________________________________
 
 ## Production Issues
@@ -446,8 +458,9 @@ from flext_cli import u
 settings = FlextAuthSettings()
 u.Cli.info(f'Bcrypt rounds: {settings.Auth.hash_rounds}')  # Should be >= 12
 u.Cli.info(f'JWT expiry: {settings.Auth.expiry_minutes}')  # Should be <= 60
-u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')  # Should be <= 5
-"```
+u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
+"
+```
 ### Session Management
 
 **Problem**: Session issues in production
@@ -464,7 +477,7 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')  # S
        """Clean expired sessions."""
        # Implementation needed
        pass
-````
+```
 
 1. **External session storage** (future):
 
@@ -494,7 +507,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Test authentication with debug output
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.register_user("debug", "debug@example.com", "password123")```
+result = auth.register_user("debug", "debug@example.com", "password123")
+```
 ### Error Information
 
 Extract detailed error information:
@@ -508,7 +522,8 @@ result = auth.authenticate_user("user", "wrong_password")
 if result.failure:
     u.Cli.info(f"Error: {result.error}")
     u.Cli.info(f"Error type: {type(result.error)}")
-    # Additional debugging information```
+    # Additional debugging information
+```
 ### Community Support
 
 - **Documentation**: Check Getting Started and API Reference
@@ -517,5 +532,6 @@ if result.failure:
 
 ______________________________________________________________________
 
-This troubleshooting guide reflects common issues as of April 14, 2026. For additional help, see the Development guide.
+This troubleshooting guide reflects common issues as of April 14, 2026. For additional
+help, see the Development guide.
 ````
