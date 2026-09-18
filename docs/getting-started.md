@@ -33,7 +33,8 @@
 
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
-Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FLEXT integration.
+Installation and first steps for implementing enterprise authentication in your FLEXT
+projects using flext-auth with complete FLEXT integration.
 
 ---
 
@@ -43,7 +44,8 @@ Installation and first steps for implementing enterprise authentication in your 
 
 - Python 3.13+
 - uv for dependency management
-- **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)** foundation library
+- **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)**
+  foundation library
 
 ### Installation
 

@@ -31,11 +31,14 @@
 
 ## Overview
 
-The Container diagram shows the high-level technology choices and how the system is deployed as containers/services. This view abstracts away code and focuses on technology stacks and deployment architecture.
+The Container diagram shows the high-level technology choices and how the system is
+deployed as containers/services. This view abstracts away code and focuses on technology
+stacks and deployment architecture.
 
 ## Container Architecture
 
-flext-auth is deployed as a Python-based container with external dependencies for authentication providers, data storage, and monitoring.
+flext-auth is deployed as a Python-based container with external dependencies for
+authentication providers, data storage, and monitoring.
 
 ### Technology Choices
 
@@ -301,4 +304,5 @@ Rel(auth_service, flext_core, "Uses foundation patterns", "Python imports")
 @enduml
 ```
 
-_Note: This diagram is generated from PlantUML source. See diagrams/plantuml/container-architecture.puml for the source file._
+_Note: This diagram is generated from PlantUML source. See
+diagrams/plantuml/container-architecture.puml for the source file._

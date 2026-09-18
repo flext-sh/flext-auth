@@ -31,7 +31,9 @@
 
 Common issues and solutions for flext-auth authentication service.
 
-For general FLEXT troubleshooting, see **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)** documentation.
+For general FLEXT troubleshooting, see
+**[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)**
+documentation.
 
 ---
 
@@ -251,7 +253,7 @@ ______________________________________________________________________
    ```bash
    # Run configuration tests
    pytest tests/unit/test_config_coverage.py -v
-
+   
    # Common issue: Singleton state between tests
    # Solution: Reset global settings in test fixtures
    ```

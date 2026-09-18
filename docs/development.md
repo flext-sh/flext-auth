@@ -37,7 +37,9 @@
 
 **Version**: 0.9.0 Multi-Provider Implementation | **Updated**: October 10, 2025
 
-Development workflow and contributing guidelines for flext-auth with multi-provider authentication architecture. Implementation complete for Phases 1-3, transport layer in progress.
+Development workflow and contributing guidelines for flext-auth with multi-provider
+authentication architecture. Implementation complete for Phases 1-3, transport layer in
+progress.
 
 ---
 
@@ -47,7 +49,8 @@ Development workflow and contributing guidelines for flext-auth with multi-provi
 
 - Python 3.13+
 - Poetry for dependency management
-- [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md) foundation library
+- [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)
+  foundation library
 
 ### Setup Environment
 
@@ -73,29 +76,29 @@ python -c "from flext_auth import FlextAuth; u.Cli.print('Development setup comp
 
 ```bash
 # Complete validation pipeline
-make val        # lint + type + test
+make val # lint + type + test
 
 # Individual quality checks
-make lint           # Ruff code linting
-make type-check     # MyPy type checking
-make format         # Code formatting
-make test           # Run test suite
+make lint       # Ruff code linting
+make type-check # MyPy type checking
+make format     # Code formatting
+make test       # Run test suite
 ```
 
 ### Testing Commands
 
 ```bash
 # Full test suite
-make test                    # All tests (71/72 = 99%)
+make test # All tests (71/72 = 99%)
 
 # Specific test suites
-pytest tests/unit/test_auth.py              # Core auth tests (28/28 passing)
-pytest tests/test_auth_complete.py          # Integration tests (22/22 passing)
-pytest tests/test_real_functionality.py     # Real tests (21/22 passing)
+pytest tests/unit/test_auth.py          # Core auth tests (28/28 passing)
+pytest tests/test_auth_complete.py      # Integration tests (22/22 passing)
+pytest tests/test_real_functionality.py # Real tests (21/22 passing)
 
 # Specific test categories
-pytest -m auth              # Authentication tests
-pytest -m security          # Security tests
+pytest -m auth     # Authentication tests
+pytest -m security # Security tests
 
 # Coverage reporting
 pytest --cov=src/flext_auth --cov-report=term-missing

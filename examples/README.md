@@ -18,7 +18,8 @@ Use only:
 - `session_service.session_manager.end_session_by_id(...)`
 - `session_service.cleanup_expired_sessions(...)`
 
-No legacy helper functions or wrapper factories are part of the supported examples contract.
+No legacy helper functions or wrapper factories are part of the supported examples
+contract.
 
 ## Minimal Flow
 

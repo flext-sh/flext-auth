@@ -40,7 +40,9 @@
 
 ## Overview
 
-This directory contains comprehensive architecture documentation for the flext-auth project, following modern architectural documentation practices including the C4 model, Architecture Decision Records (ADRs), and automated diagram generation.
+This directory contains comprehensive architecture documentation for the flext-auth
+project, following modern architectural documentation practices including the C4 model,
+Architecture Decision Records (ADRs), and automated diagram generation.
 
 ## 📚 Documentation Structure
 
@@ -83,7 +85,8 @@ ADRs document important architectural decisions, their context, and rationale.
 
 ### PlantUML Diagrams
 
-All diagrams are generated from PlantUML source files for consistency and maintainability.
+All diagrams are generated from PlantUML source files for consistency and
+maintainability.
 
 ## 🚀 Quick Start
 
@@ -123,7 +126,8 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 
 ### 1. System Context (C4 Context)
 
-**Purpose**: Shows how flext-auth fits into the broader FLEXT ecosystem and external systems.
+**Purpose**: Shows how flext-auth fits into the broader FLEXT ecosystem and external
+systems.
 
 **Key Elements**:
 
@@ -164,7 +168,8 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 
 ### 4. Security Architecture
 
-**Purpose**: Documents security boundaries, authentication flows, and compliance requirements.
+**Purpose**: Documents security boundaries, authentication flows, and compliance
+requirements.
 
 **Key Elements**:
 
@@ -313,6 +318,5 @@ When making architectural changes:
 
 ---
 
-**Last Updated**: October 10, 2025
-**Version**: v0.9.0
-**Maintainer**: FLEXT Architecture Team
+**Last Updated**: October 10, 2025 **Version**: v0.9.0 **Maintainer**: FLEXT
+Architecture Team

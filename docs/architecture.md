@@ -61,9 +61,7 @@
 
 ## Generic Authentication API Framework
 
-**Version**: 2.0.0-dev
-**Status**: In Development
-**Last Updated**: 2025-10-01
+**Version**: 2.0.0-dev **Status**: In Development **Last Updated**: 2025-10-01
 **Parent**: FLEXT Workspace
 
 ---
@@ -90,7 +88,10 @@
 
 ### Mission
 
-Transform flext-auth from a specific JWT/bcrypt authentication implementation into a **generic, extensible authentication API framework** that supports multiple authentication technologies, protocols, and transports while maintaining FLEXT ecosystem patterns and production quality.
+Transform flext-auth from a specific JWT/bcrypt authentication implementation into a
+**generic, extensible authentication API framework** that supports multiple
+authentication technologies, protocols, and transports while maintaining FLEXT ecosystem
+patterns and production quality.
 
 ### Current State (v1.0.0)
 
@@ -102,7 +103,8 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 ### Target State (v2.0.0)
 
 - **Purpose**: Generic authentication API framework
-- **Providers**: 9+ authentication providers (JWT, OAuth2, OIDC, SAML, API Key, Basic, Certificate, LDAP, Kerberos)
+- **Providers**: 9+ authentication providers (JWT, OAuth2, OIDC, SAML, API Key, Basic,
+  Certificate, LDAP, Kerberos)
 - **Transports**: HTTP (flext-api), gRPC (flext-grpc), WebSocket
 - **Protocols**: REST, SOAP, GraphQL
 - **Architecture**: Registry-based with provider discovery

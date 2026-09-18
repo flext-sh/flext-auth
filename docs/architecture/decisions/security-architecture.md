@@ -53,7 +53,9 @@
 
 ## Overview
 
-This document outlines the security architecture of flext-auth, covering authentication, authorization, data protection, compliance, and threat modeling. The security architecture follows defense-in-depth principles and enterprise security best practices.
+This document outlines the security architecture of flext-auth, covering authentication,
+authorization, data protection, compliance, and threat modeling. The security
+architecture follows defense-in-depth principles and enterprise security best practices.
 
 ## Security Principles
 
@@ -114,7 +116,8 @@ This document outlines the security architecture of flext-auth, covering authent
 
 ### Attribute-Based Access Control (ABAC)
 
-- **Context-Aware**: Authorization based on user attributes, resource properties, and environmental factors
+- **Context-Aware**: Authorization based on user attributes, resource properties, and
+  environmental factors
 - **Policy Language**: Domain-specific language for complex authorization rules
 - **Integration**: Works alongside RBAC for fine-grained control
 
@@ -382,8 +385,13 @@ This document outlines the security architecture of flext-auth, covering authent
 The flext-auth security architecture provides enterprise-grade security through:
 
 - **Multi-layered Defense**: Authentication, authorization, encryption, and monitoring
-- **Provider-specific Security**: Tailored security controls for each authentication protocol
-- **Compliance Focus**: Built-in support for regulatory and industry compliance requirements
-- **Operational Security**: Comprehensive monitoring, incident response, and security operations
+- **Provider-specific Security**: Tailored security controls for each authentication
+  protocol
+- **Compliance Focus**: Built-in support for regulatory and industry compliance
+  requirements
+- **Operational Security**: Comprehensive monitoring, incident response, and security
+  operations
 
-This security architecture ensures that flext-auth can be deployed in the most demanding enterprise environments while maintaining the flexibility and extensibility of the multi-provider authentication framework.
+This security architecture ensures that flext-auth can be deployed in the most demanding
+enterprise environments while maintaining the flexibility and extensibility of the
+multi-provider authentication framework.

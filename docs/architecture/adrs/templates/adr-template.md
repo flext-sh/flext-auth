@@ -47,7 +47,8 @@
 
 ### Problem Statement
 
-[Describe the problem or question that needs to be answered. What issue is this ADR addressing?]
+[Describe the problem or question that needs to be answered. What issue is this ADR
+addressing?]
 
 ### Background
 
@@ -170,5 +171,5 @@
 
 ---
 
-**ADR Template Version**: 1.0
-**Template Source**: docs/architecture/adrs/templates/adr-template.md
+**ADR Template Version**: 1.0 **Template Source**:
+docs/architecture/adrs/templates/adr-template.md

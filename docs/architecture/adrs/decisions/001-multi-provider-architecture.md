@@ -51,11 +51,13 @@
 
 ### Problem Statement
 
-How should flext-auth support multiple authentication protocols (JWT, OAuth2, SAML, LDAP, etc.) while maintaining clean architecture, extensibility, and production quality?
+How should flext-auth support multiple authentication protocols (JWT, OAuth2, SAML,
+LDAP, etc.) while maintaining clean architecture, extensibility, and production quality?
 
 ### Background
 
-The original flext-auth was designed as a simple JWT/bcrypt authentication library. As the FLEXT ecosystem grew, there was increasing demand for:
+The original flext-auth was designed as a simple JWT/bcrypt authentication library. As
+the FLEXT ecosystem grew, there was increasing demand for:
 
 - Enterprise SSO integration (SAML, OAuth2/OIDC)
 - Directory service authentication (LDAP)
@@ -63,7 +65,8 @@ The original flext-auth was designed as a simple JWT/bcrypt authentication libra
 - Certificate-based authentication
 - Multi-protocol support within the same application
 
-The existing monolithic JWT implementation couldn't easily accommodate these requirements without significant code duplication and architectural compromise.
+The existing monolithic JWT implementation couldn't easily accommodate these
+requirements without significant code duplication and architectural compromise.
 
 ### Current State
 
@@ -93,13 +96,16 @@ The existing monolithic JWT implementation couldn't easily accommodate these req
 
 ### Decision Statement
 
-Implement a provider-centric architecture where authentication protocols are encapsulated in interchangeable provider implementations, orchestrated through a central registry system.
+Implement a provider-centric architecture where authentication protocols are
+encapsulated in interchangeable provider implementations, orchestrated through a central
+registry system.
 
 ### Implementation Approach
 
 1. **Provider Protocol**: Define `FlextAuthBaseProvider` abstract interface
 1. **Registry System**: Implement `FlextAuthRegistry` for provider management
-1. **Provider Implementations**: Extract JWT to `FlextAuthJwtProvider`, create stubs for other protocols
+1. **Provider Implementations**: Extract JWT to `FlextAuthJwtProvider`, create stubs for
+   other protocols
 1. **Facade Pattern**: Maintain `FlextAuth` as clean API facade
 1. **Backward Compatibility**: Preserve existing API while adding new capabilities
 
@@ -137,15 +143,19 @@ Implement a provider-centric architecture where authentication protocols are enc
 
 ### Trade-offs
 
-- **Complexity vs. Flexibility**: More complex architecture enables much greater flexibility
-- **Immediate vs. Future Needs**: Investment in architecture now enables future requirements
-- **Consistency vs. Protocol-Specific**: Standardized interface may not capture all protocol nuances
+- **Complexity vs. Flexibility**: More complex architecture enables much greater
+  flexibility
+- **Immediate vs. Future Needs**: Investment in architecture now enables future
+  requirements
+- **Consistency vs. Protocol-Specific**: Standardized interface may not capture all
+  protocol nuances
 
 ## Alternatives Considered
 
 ### Option 1: Monolithic Protocol Support
 
-**Description**: Extend single authentication class to support multiple protocols internally
+**Description**: Extend single authentication class to support multiple protocols
+internally
 
 **Pros**:
 
@@ -161,11 +171,13 @@ Implement a provider-centric architecture where authentication protocols are enc
 - Tight coupling between protocols
 - Difficult to add new protocols
 
-**Why Rejected**: Doesn't scale for enterprise requirements, violates single responsibility principle
+**Why Rejected**: Doesn't scale for enterprise requirements, violates single
+responsibility principle
 
 ### Option 2: Plugin System with Duck Typing
 
-**Description**: Use duck typing instead of formal interfaces, load providers dynamically
+**Description**: Use duck typing instead of formal interfaces, load providers
+dynamically
 
 **Pros**:
 
@@ -180,11 +192,13 @@ Implement a provider-centric architecture where authentication protocols are enc
 - Less predictable behavior
 - Documentation challenges
 
-**Why Rejected**: Python's dynamic nature makes formal interfaces valuable for large codebases
+**Why Rejected**: Python's dynamic nature makes formal interfaces valuable for large
+codebases
 
 ### Option 3: Strategy Pattern per Protocol
 
-**Description**: Use strategy pattern but keep all implementations in single file/class hierarchy
+**Description**: Use strategy pattern but keep all implementations in single file/class
+hierarchy
 
 **Pros**:
 
@@ -198,7 +212,8 @@ Implement a provider-centric architecture where authentication protocols are enc
 - Harder to work on individual protocols
 - All protocols must be loaded even when not used
 
-**Why Rejected**: Doesn't provide the modularity needed for enterprise deployment scenarios
+**Why Rejected**: Doesn't provide the modularity needed for enterprise deployment
+scenarios
 
 ## Implementation Plan
 

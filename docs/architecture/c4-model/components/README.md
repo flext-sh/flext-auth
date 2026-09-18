@@ -32,11 +32,15 @@
 
 ## Overview
 
-The Component diagram shows the internal structure of flext-auth, focusing on the key components, their responsibilities, and relationships. This view zooms into the container to show the architectural building blocks.
+The Component diagram shows the internal structure of flext-auth, focusing on the key
+components, their responsibilities, and relationships. This view zooms into the
+container to show the architectural building blocks.
 
 ## Component Architecture
 
-flext-auth follows a provider-centric architecture with clear separation of concerns. The system is organized around a facade pattern with specialized components for different aspects of authentication.
+flext-auth follows a provider-centric architecture with clear separation of concerns.
+The system is organized around a facade pattern with specialized components for
+different aspects of authentication.
 
 ### Core Components
 
@@ -408,4 +412,5 @@ Rel(api_facade, monitoring, "Sends metrics/logs")
 @enduml
 ```
 
-_Note: This diagram is generated from PlantUML source. See diagrams/plantuml/component-architecture.puml for the source file._
+_Note: This diagram is generated from PlantUML source. See
+diagrams/plantuml/component-architecture.puml for the source file._

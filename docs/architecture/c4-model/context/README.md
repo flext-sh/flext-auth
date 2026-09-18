@@ -26,11 +26,13 @@
 
 ## Overview
 
-The System Context diagram shows flext-auth in relation to its users, external systems, and the broader FLEXT ecosystem. This is the highest level view of the system.
+The System Context diagram shows flext-auth in relation to its users, external systems,
+and the broader FLEXT ecosystem. This is the highest level view of the system.
 
 ## System Context
 
-flext-auth is a generic, extensible authentication library that provides multi-provider authentication capabilities within the FLEXT enterprise data integration platform.
+flext-auth is a generic, extensible authentication library that provides multi-provider
+authentication capabilities within the FLEXT enterprise data integration platform.
 
 ### Key Elements
 
@@ -178,4 +180,5 @@ Rel(flext_auth, monitoring, "Sends logs/metrics to")
 @enduml
 ```
 
-_Note: This diagram is generated from PlantUML source. See diagrams/plantuml/system-context.puml for the source file._
+_Note: This diagram is generated from PlantUML source. See
+diagrams/plantuml/system-context.puml for the source file._

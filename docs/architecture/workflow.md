@@ -35,7 +35,9 @@
 
 ## Overview
 
-This document outlines the complete workflow for maintaining and updating FLEXT Auth architecture documentation. The workflow integrates automated tools with manual review processes to ensure comprehensive, accurate, and up-to-date documentation.
+This document outlines the complete workflow for maintaining and updating FLEXT Auth
+architecture documentation. The workflow integrates automated tools with manual review
+processes to ensure comprehensive, accurate, and up-to-date documentation.
 
 ## Workflow Phases
 
@@ -416,6 +418,5 @@ python main.py comprehensive | grep -A 20 "Link Validation"
 
 ---
 
-**Last Updated**: October 10, 2025
-**Version**: 1.0
-**Maintainer**: FLEXT Architecture Team
+**Last Updated**: October 10, 2025 **Version**: 1.0 **Maintainer**: FLEXT Architecture
+Team
