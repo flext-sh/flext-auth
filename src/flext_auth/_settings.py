@@ -18,8 +18,6 @@ from __future__ import annotations
 import secrets
 from typing import TYPE_CHECKING, Annotated, Final
 
-from pydantic_settings import SettingsConfigDict
-
 from flext_auth.models import m
 from flext_auth.typings import t
 from flext_core import FlextSettings
@@ -30,7 +28,7 @@ _SECRET_MIN_LENGTH: Final[int] = 32
 class FlextAuthSettings(FlextSettings):
     """Auth settings; all project fields under ``settings.Auth.*``."""
 
-    model_config = SettingsConfigDict(
+    model_config = m.SettingsConfigDict(
         env_prefix="FLEXT_AUTH_", env_nested_delimiter="__", extra="ignore"
     )
 

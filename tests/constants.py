@@ -23,6 +23,6 @@ class TestsFlextAuthConstants(c):
         """Test-specific constants."""
 
 
-c: type[TestsFlextAuthConstants] = TestsFlextAuthConstants
+c = TestsFlextAuthConstants
 
 __all__: list[str] = ["TestsFlextAuthConstants", "c"]

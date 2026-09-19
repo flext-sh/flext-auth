@@ -7,6 +7,7 @@ from flext_api import u
 from flext_auth import t
 
 from ._utilities.auth import FlextAuthUtilitiesAuth
+from ._utilities.identity_audit import FlextAuthIdentityAudit
 from ._utilities.managers import FlextAuthUtilitiesManagers
 
 
@@ -19,4 +20,8 @@ class FlextAuthUtilities(u):
 
 u = FlextAuthUtilities
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthUtilities", "u"]
+__all__: t.MutableSequenceOf[str] = [
+    "FlextAuthIdentityAudit",
+    "FlextAuthUtilities",
+    "u",
+]

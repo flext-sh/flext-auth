@@ -7,8 +7,7 @@ from typing import override
 from flext_api import r
 
 from flext_auth import c, m, p, s, t, u
-
-from .._utilities.identity_audit import FlextAuthIdentityAudit
+from flext_auth.utilities import FlextAuthIdentityAudit
 
 
 class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
