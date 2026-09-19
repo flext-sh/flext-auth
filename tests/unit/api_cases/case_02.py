@@ -5,14 +5,14 @@ from __future__ import annotations
 from flext_tests import tm
 
 from flext_auth import FlextAuth, FlextAuthSettings, m
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase02:
     """FlextAuth API case group 02."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_revoke_session(self) -> None:
         """Test revoking a session — authenticate_user creates a session."""

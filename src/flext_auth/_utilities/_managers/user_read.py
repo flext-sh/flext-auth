@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING
 
 from flext_api import r
 
-from flext_auth import e, m, p, t
+from flext_auth import m, p, t
+from flext_core import e
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping

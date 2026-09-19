@@ -7,12 +7,13 @@ from flext_api import m
 from flext_auth import t
 
 from ._models.auth import FlextAuthModelsAuth
+from ._models.base import FlextAuthModelsBase
 
 
 class FlextAuthModels(m):
     """Authentication models extending the API model namespace."""
 
-    class Auth(FlextAuthModelsAuth):
+    class Auth(FlextAuthModelsBase, FlextAuthModelsAuth):
         """Authentication model namespace."""
 
 

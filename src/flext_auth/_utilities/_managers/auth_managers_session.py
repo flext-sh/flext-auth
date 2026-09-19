@@ -7,8 +7,8 @@ from uuid import uuid4
 
 from flext_api import r, u
 
-from flext_auth import e, m, p, t
-from flext_core import FlextContainer, FlextContext
+from flext_auth import m, p, t
+from flext_core import FlextContainer, FlextContext, e
 
 
 class FlextAuthSessionManagers:

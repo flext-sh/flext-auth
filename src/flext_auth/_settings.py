@@ -16,15 +16,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from typing import TYPE_CHECKING, Annotated, Final
+from typing import TYPE_CHECKING, Annotated
 
 from pydantic_settings import SettingsConfigDict
 
+from flext_auth import c
 from flext_auth.models import m
 from flext_auth.typings import t
 from flext_core import FlextSettings
-
-_SECRET_MIN_LENGTH: Final[int] = 32
 
 
 class FlextAuthSettings(FlextSettings):
@@ -77,7 +76,7 @@ class FlextAuthSettings(FlextSettings):
         secret_key: Annotated[
             str,
             m.Field(
-                default_factory=lambda: secrets.token_urlsafe(_SECRET_MIN_LENGTH),
+                default_factory=lambda: secrets.token_urlsafe(c.Auth.SECRET_MIN_LENGTH),
                 description="JWT signing secret (env-provided; auto-generated).",
             ),
         ]
@@ -114,7 +113,7 @@ class FlextAuthSettings(FlextSettings):
             plain = (
                 value.get_secret_value() if isinstance(value, t.SecretStr) else value
             )
-            if plain and len(plain) < _SECRET_MIN_LENGTH:
+            if plain and len(plain) < c.Auth.SECRET_MIN_LENGTH:
                 msg = "secret_key must be at least 32 characters when provided"
                 raise ValueError(msg)
             return plain

@@ -8,7 +8,8 @@ from typing import Annotated, Self
 
 from flext_api import m, u
 
-from flext_auth import c, p, r, t
+from flext_auth import c, p, t
+from flext_core import r
 
 from .auth_password import FlextAuthModelsAuthPassword
 

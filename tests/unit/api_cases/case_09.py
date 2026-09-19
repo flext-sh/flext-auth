@@ -5,14 +5,14 @@ from __future__ import annotations
 from flext_tests import r, tm
 
 from flext_auth import FlextAuth, m
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase09:
     """FlextAuth API case group 09."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_flext_auth_validate_token(self) -> None:
         """Test that create_token succeeds for a registered identity."""

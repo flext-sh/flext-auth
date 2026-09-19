@@ -19,10 +19,10 @@ class TestsFlextAuthConstants(c):
     class _AuthConstants:
         """Auth-specific test constants."""
 
-    class TestsFlextAuth(_AuthConstants):
+    class Tests(_AuthConstants):
         """Test-specific constants."""
 
 
-c: type[TestsFlextAuthConstants] = TestsFlextAuthConstants
+c = TestsFlextAuthConstants
 
 __all__: list[str] = ["TestsFlextAuthConstants", "c"]

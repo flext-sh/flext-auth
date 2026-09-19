@@ -9,13 +9,13 @@ import string
 from flext_auth import FlextAuth, c, p, r, t, u
 
 
-def _demo_credential(prefix: str) -> str:
-    """Per-run demo credential; the example never embeds a reusable secret."""
-    return f"{prefix}-{secrets.token_hex(6)}"
-
-
 class FlextAuthBasicUsageWorkflow:
     """Reusable full workflow usage examples."""
+
+    @staticmethod
+    def _demo_credential(prefix: str) -> str:
+        """Per-run demo credential; the example never embeds a reusable secret."""
+        return f"{prefix}-{secrets.token_hex(6)}"
 
     logger = u.fetch_logger(__name__)
 
@@ -24,7 +24,7 @@ class FlextAuthBasicUsageWorkflow:
         """Demonstrate advanced user registration with roles."""
         cls.logger.info("Starting advanced registration example")
         auth: FlextAuth = FlextAuth()
-        password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD") or _demo_credential(
+        password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD") or cls._demo_credential(
             "advanced"
         )
         register_result = auth.register_user(
@@ -68,7 +68,7 @@ class FlextAuthBasicUsageWorkflow:
         """Demonstrate complete authentication workflow."""
         cls.logger.info("Starting complete workflow example")
         auth: FlextAuth = FlextAuth()
-        password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD") or _demo_credential(
+        password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD") or cls._demo_credential(
             "workflow"
         )
         cls.logger.info("Step 1: User registration")

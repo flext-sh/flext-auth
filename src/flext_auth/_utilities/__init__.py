@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from .auth_response import FlextAuthUtilitiesAuthResponse
     from .auth_token import FlextAuthUtilitiesAuthToken
     from .auth_validation import FlextAuthUtilitiesAuthValidation
+    from .base import FlextAuthUtilitiesBase
     from .identity_audit import FlextAuthIdentityAudit
     from .managers import FlextAuthUtilitiesManagers
 __all__: tuple[str, ...] = (
@@ -34,6 +35,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthUtilitiesAuthResponse",
     "FlextAuthUtilitiesAuthToken",
     "FlextAuthUtilitiesAuthValidation",
+    "FlextAuthUtilitiesBase",
     "FlextAuthUtilitiesManagers",
     "_managers",
 )
@@ -54,6 +56,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".auth_validation": ("FlextAuthUtilitiesAuthValidation",),
             ".identity_audit": ("FlextAuthIdentityAudit",),
             ".managers": ("FlextAuthUtilitiesManagers",),
+            ".base": ("FlextAuthUtilitiesBase",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
