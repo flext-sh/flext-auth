@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 from typing import ClassVar
 from uuid import uuid4
 
-from flext_api import r, u
+from flext_api import e, r, u
 
-from flext_auth import e, m, p, t
+from flext_auth import m, p, t
 from flext_core import FlextContainer, FlextContext
 
 
