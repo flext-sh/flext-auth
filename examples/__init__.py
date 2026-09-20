@@ -15,10 +15,20 @@ if TYPE_CHECKING:
     from .basic_usage_flows import FlextAuthBasicUsageFlows
     from .basic_usage_workflow import FlextAuthBasicUsageWorkflow
 __all__: tuple[str, ...] = (
-    "FlextAuthBasicUsageFlows", "FlextAuthBasicUsageWorkflow", "_utilities", "c",
-    "d", "e", "h", "m",
-    "p", "r", "s", "t",
-    "u", "x",
+    "FlextAuthBasicUsageFlows",
+    "FlextAuthBasicUsageWorkflow",
+    "_utilities",
+    "c",
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "u",
+    "x",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
