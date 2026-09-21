@@ -15,7 +15,10 @@ if TYPE_CHECKING:
     from .auth_security import FlextAuthConstantsAuthSecurity
     from .auth_values import FlextAuthConstantsAuthValues
 __all__: tuple[str, ...] = (
-    "FlextAuthConstantsAuth", "FlextAuthConstantsAuthClaims", "FlextAuthConstantsAuthEnums", "FlextAuthConstantsAuthSecurity",
+    "FlextAuthConstantsAuth",
+    "FlextAuthConstantsAuthClaims",
+    "FlextAuthConstantsAuthEnums",
+    "FlextAuthConstantsAuthSecurity",
     "FlextAuthConstantsAuthValues",
 )
 

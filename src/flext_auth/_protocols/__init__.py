@@ -17,8 +17,13 @@ if TYPE_CHECKING:
     from .auth_token import FlextAuthProtocolsAuthToken
     from .auth_transport import FlextAuthProtocolsAuthTransport
 __all__: tuple[str, ...] = (
-    "FlextAuthProtocolsAuth", "FlextAuthProtocolsAuthIdentity", "FlextAuthProtocolsAuthProvider", "FlextAuthProtocolsAuthService",
-    "FlextAuthProtocolsAuthSession", "FlextAuthProtocolsAuthToken", "FlextAuthProtocolsAuthTransport",
+    "FlextAuthProtocolsAuth",
+    "FlextAuthProtocolsAuthIdentity",
+    "FlextAuthProtocolsAuthProvider",
+    "FlextAuthProtocolsAuthService",
+    "FlextAuthProtocolsAuthSession",
+    "FlextAuthProtocolsAuthToken",
+    "FlextAuthProtocolsAuthTransport",
 )
 
 _LAZY_IMPORTS = MappingProxyType(

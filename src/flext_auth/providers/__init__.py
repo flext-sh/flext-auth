@@ -29,11 +29,25 @@ if TYPE_CHECKING:
     from .oidc import FlextAuthOidcProvider
     from .rfc import FlextAuthRfcProvider
 __all__: tuple[str, ...] = (
-    "FlextAuthApiKeyProvider", "FlextAuthBasicProvider", "FlextAuthCertificateProvider", "FlextAuthJwtProvider",
-    "FlextAuthJwtTokenValidator", "FlextAuthKerberosProvider", "FlextAuthKerberosSupport", "FlextAuthLdapProvider",
-    "FlextAuthOAuth2Config", "FlextAuthOAuth2Introspection", "FlextAuthOAuth2Provider", "FlextAuthOAuth2Tokens",
-    "FlextAuthOidcProvider", "FlextAuthProviderCodecMixin", "FlextAuthProviderMixin", "FlextAuthProviderTokenMixin",
-    "FlextAuthProviderValidationMixin", "FlextAuthRfcProvider", "_mixins",
+    "FlextAuthApiKeyProvider",
+    "FlextAuthBasicProvider",
+    "FlextAuthCertificateProvider",
+    "FlextAuthJwtProvider",
+    "FlextAuthJwtTokenValidator",
+    "FlextAuthKerberosProvider",
+    "FlextAuthKerberosSupport",
+    "FlextAuthLdapProvider",
+    "FlextAuthOAuth2Config",
+    "FlextAuthOAuth2Introspection",
+    "FlextAuthOAuth2Provider",
+    "FlextAuthOAuth2Tokens",
+    "FlextAuthOidcProvider",
+    "FlextAuthProviderCodecMixin",
+    "FlextAuthProviderMixin",
+    "FlextAuthProviderTokenMixin",
+    "FlextAuthProviderValidationMixin",
+    "FlextAuthRfcProvider",
+    "_mixins",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
