@@ -13,33 +13,12 @@ if TYPE_CHECKING:
 
     from . import api_cases
     from .test_api import TestsFlextAuthApi
-    from .test_config import TestsFlextAuthConfig
-    from .test_constants import TestsFlextAuthConstants
-    from .test_token_real_flows import TestsFlextAuthTokenRealFlows
-    from .test_typings import TestsFlextAuthTypings
 __all__: tuple[str, ...] = (
-    "TestsFlextAuthApi",
-    "TestsFlextAuthConfig",
-    "TestsFlextAuthConstants",
-    "TestsFlextAuthTokenRealFlows",
-    "TestsFlextAuthTypings",
-    "api_cases",
-    "c",
-    "d",
-    "e",
-    "h",
-    "m",
-    "p",
-    "r",
-    "s",
-    "t",
-    "td",
-    "tf",
-    "tk",
-    "tm",
-    "tv",
-    "u",
-    "x",
+    "TestsFlextAuthApi", "api_cases", "c", "d",
+    "e", "h", "m", "p",
+    "r", "s", "t", "td",
+    "tf", "tk", "tm", "tv",
+    "u", "x",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
@@ -47,27 +26,9 @@ _LAZY_IMPORTS = MappingProxyType(
         MappingProxyType({
             ".api_cases": ("api_cases",),
             ".test_api": ("TestsFlextAuthApi",),
-            ".test_config": ("TestsFlextAuthConfig",),
-            ".test_constants": ("TestsFlextAuthConstants",),
-            ".test_token_real_flows": ("TestsFlextAuthTokenRealFlows",),
-            ".test_typings": ("TestsFlextAuthTypings",),
             "flext_tests": (
-                "c",
-                "d",
-                "e",
-                "h",
-                "m",
-                "p",
-                "r",
-                "s",
-                "t",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-                "u",
-                "x",
+                "c", "d", "e", "h", "m", "p", "r", "s", "t", "td", "tf", "tk", "tm",
+                "tv", "u", "x",
             ),
         }),
         alias_groups=MappingProxyType({}),

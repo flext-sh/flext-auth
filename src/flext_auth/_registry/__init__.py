@@ -15,10 +15,7 @@ if TYPE_CHECKING:
     from .mutation import FlextAuthRegistryMutation
     from .plugins import FlextAuthRegistryPlugins
 __all__: tuple[str, ...] = (
-    "FlextAuthRegistryBase",
-    "FlextAuthRegistryLookup",
-    "FlextAuthRegistryMetadata",
-    "FlextAuthRegistryMutation",
+    "FlextAuthRegistryBase", "FlextAuthRegistryLookup", "FlextAuthRegistryMetadata", "FlextAuthRegistryMutation",
     "FlextAuthRegistryPlugins",
 )
 
