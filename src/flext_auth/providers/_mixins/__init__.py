@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from .tokens import FlextAuthProviderTokenMixin
     from .validation import FlextAuthProviderValidationMixin
 __all__: tuple[str, ...] = (
-    "FlextAuthProviderCodecMixin", "FlextAuthProviderTokenMixin", "FlextAuthProviderValidationMixin",
+    "FlextAuthProviderCodecMixin",
+    "FlextAuthProviderTokenMixin",
+    "FlextAuthProviderValidationMixin",
 )
 
 _LAZY_IMPORTS = MappingProxyType(

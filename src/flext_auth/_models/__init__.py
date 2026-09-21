@@ -19,8 +19,14 @@ if TYPE_CHECKING:
     from .auth_token import FlextAuthModelsAuthToken
     from .auth_user_identity_extras import FlextAuthModelsAuthUserIdentityExtras
 __all__: tuple[str, ...] = (
-    "FlextAuthModelsAuth", "FlextAuthModelsAuthIdentity", "FlextAuthModelsAuthIdentityRequest", "FlextAuthModelsAuthPassword",
-    "FlextAuthModelsAuthProviderConfig", "FlextAuthModelsAuthResponse", "FlextAuthModelsAuthSession", "FlextAuthModelsAuthToken",
+    "FlextAuthModelsAuth",
+    "FlextAuthModelsAuthIdentity",
+    "FlextAuthModelsAuthIdentityRequest",
+    "FlextAuthModelsAuthPassword",
+    "FlextAuthModelsAuthProviderConfig",
+    "FlextAuthModelsAuthResponse",
+    "FlextAuthModelsAuthSession",
+    "FlextAuthModelsAuthToken",
     "FlextAuthModelsAuthUserIdentityExtras",
 )
 
