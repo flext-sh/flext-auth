@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from flext_api import d, e, h, r, x
 
     from . import providers, services
+    from .__version__ import FlextAuthVersion
     from ._config import FlextAuthConfig, config
     from ._settings import FlextAuthSettings, settings
     from .api import FlextAuth, auth
@@ -52,7 +53,11 @@ if TYPE_CHECKING:
     from .services.session_service import FlextAuthSessionService
     from .services.token_service import FlextAuthTokenService
     from .typings import FlextAuthTypes, FlextAuthTypes as t
-    from .utilities import FlextAuthUtilities, FlextAuthUtilities as u
+    from .utilities import (
+        FlextAuthIdentityAudit,
+        FlextAuthUtilities,
+        FlextAuthUtilities as u,
+    )
 __all__: tuple[str, ...] = (
     "FlextAuth",
     "FlextAuthApiKeyProvider",
@@ -61,6 +66,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
+    "FlextAuthIdentityAudit",
     "FlextAuthIdentityService",
     "FlextAuthJwtProvider",
     "FlextAuthJwtTokenValidator",
@@ -84,6 +90,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthTokenService",
     "FlextAuthTypes",
     "FlextAuthUtilities",
+    "FlextAuthVersion",
     "__author__",
     "__author_email__",
     "__description__",
@@ -113,6 +120,7 @@ __all__: tuple[str, ...] = (
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
+            ".__version__": ("FlextAuthVersion",),
             "._config": ("FlextAuthConfig", "config"),
             "._settings": ("FlextAuthSettings", "settings"),
             ".api": ("FlextAuth", "auth"),
@@ -144,7 +152,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
-            ".utilities": ("FlextAuthUtilities", "u"),
+            ".utilities": ("FlextAuthIdentityAudit", "FlextAuthUtilities", "u"),
             "flext_api": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
