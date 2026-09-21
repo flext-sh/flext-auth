@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from flext_auth.models import m
 from flext_core import FlextConfig, FlextSettings
 
@@ -29,7 +31,10 @@ class FlextAuthConfig(FlextSettings, FlextConfig):
     construction machinery stays intact.
     """
 
-    Auth: _AuthNamespace = _AuthNamespace()
+    Auth: Annotated[
+        _AuthNamespace,
+        m.Field(description="Open namespace exposing ``config/*.yaml`` under ``Auth``."),
+    ] = _AuthNamespace()
 
 
 config: FlextAuthConfig = FlextAuthConfig.fetch_global()
