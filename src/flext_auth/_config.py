@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth.models import m
-from flext_core import FlextConfig
+from flext_core import FlextConfig, FlextSettings
 
 
 class _AuthNamespace(m.BaseModel):
@@ -20,8 +20,14 @@ class _AuthNamespace(m.BaseModel):
     model_config = m.ConfigDict(extra="allow", frozen=True)
 
 
-class FlextAuthConfig(FlextConfig):
-    """Auth config auto-loaded model-less from ``config/*.yaml``."""
+class FlextAuthConfig(FlextSettings, FlextConfig):
+    """Auth config auto-loaded model-less from ``config/*.yaml``.
+
+    MRO carries ``FlextSettings`` FIRST (ENFORCE-042); unlike never-instantiated
+    namespace holders, this class IS instantiated by ``fetch_global``, so the
+    instance-inert holder contract does not apply and pydantic settings
+    construction machinery stays intact.
+    """
 
     Auth: _AuthNamespace = _AuthNamespace()
 
