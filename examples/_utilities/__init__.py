@@ -10,28 +10,12 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth import c, d, e, h, m, p, r, s, t, u, x
-
-    from .example_utilities import FlextAuthExampleUtilities
-__all__: tuple[str, ...] = (
-    "FlextAuthExampleUtilities",
-    "c",
-    "d",
-    "e",
-    "h",
-    "m",
-    "p",
-    "r",
-    "s",
-    "t",
-    "u",
-    "x",
-)
+__all__: tuple[str, ...] = ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x")
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
-            ".example_utilities": ("FlextAuthExampleUtilities",),
-            "flext_auth": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x"),
+            "flext_auth": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x")
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
