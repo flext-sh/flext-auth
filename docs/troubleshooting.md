@@ -4,14 +4,6 @@
 
 - [Authentication Issues](#authentication-issues)
   - [User Registration Failures](#user-registration-failures)
-  - [Authentication Failures](#authentication-failures)
-  - [Token Validation Issues](#token-validation-issues)
-- [Configuration Issues](#configuration-issues)
-  - [Environment Configuration](#environment-configuration)
-  - [JWT Configuration](#jwt-configuration)
-- [Testing Issues](#testing-issues)
-  - [Test Failures](#test-failures)
-  - [Test Environment Setup](#test-environment-setup)
 - [Performance Issues](#performance-issues)
   - [Slow Authentication](#slow-authentication)
   - [Memory Usage](#memory-usage)
@@ -291,13 +283,13 @@ ______________________________________________________________________
 
 ````bash
 # Ensure test environment is clean
-uv sync --all-packages
+make setup
 
 # Run tests with proper environment
-uv run pytest tests/ -v
+make test
 
 # Run with coverage
-uv run pytest --cov=src/flext_auth tests/
+make test
 ```
 ______________________________________________________________________
 
@@ -397,7 +389,7 @@ ______________________________________________________________________
 
 ```bash
 # Run type checking
-uv run mypy src/flext_auth/
+make check
 
 # Common errors:
 # - Missing type annotations
@@ -451,10 +443,10 @@ ______________________________________________________________________
 
 ```bash
 # Check for security issues
-uv run bandit -r src/flext_auth/
+make check
 
 # Verify secure configuration
-uv run python -c "
+python -c "
 from flext_auth import FlextAuthSettings
 from flext_cli import u
 

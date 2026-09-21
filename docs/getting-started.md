@@ -4,7 +4,7 @@
 
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
+  - [Installation](#installation_1)
 - [Basic Authentication](#basic-authentication)
   - [Quick Start Service](#quick-start-service)
   - [User Authentication](#user-authentication)
@@ -43,9 +43,8 @@ projects using flext-auth with complete FLEXT integration.
 ### Prerequisites
 
 - Python 3.13+
-- uv for dependency management
-- **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)**
-  foundation library
+- **Make** for build automation
+- **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)** foundation library
 
 ### Installation
 
@@ -54,10 +53,10 @@ projects using flext-auth with complete FLEXT integration.
 cd flext-auth
 
 # Install dependencies
-uv sync
+make setup
 
 # Verify installation
-uv run python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
+python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
 ```
 
 ---
@@ -348,9 +347,8 @@ make test
 make check
 
 # Complete validation
-make val
+make check
 ```
-
 ### Documentation
 
 - **Architecture** - System design and patterns
@@ -381,12 +379,9 @@ features, see the documentation.
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) -
-  Clean architecture and CQRS patterns
-- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) -
-  Service patterns and dependency injection
-- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) -
-  CLI authentication patterns
+- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
+- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
+- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference/README.md) - CLI authentication patterns
 
 **External Resources**:
 
