@@ -99,7 +99,7 @@ class TestsFlextAuthTypings:
         ],
     )
     def test_test_scoped_literal_resolves_to_promised_values(
-        self, literal_name: str, expected_values: tuple[str, ...]
+        self, literal_name: str, expected_values: t.VariadicTuple[str]
     ) -> None:
         # Act: resolve the Literal alias declared in the Tests namespace.
         literal_alias = getattr(t.Tests, literal_name)
