@@ -20,12 +20,16 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
+<<<<<<< HEAD
     from flext_api import api
     from flext_cli import cli
     from flext_web import main, web
     from pydantic_core import from_json, to_json, to_jsonable_python
 
     from flext_core import core, d, e, h, lazy_attribute, r, x
+=======
+    from flext_core import d, e, h, r, x
+>>>>>>> origin/0.12.0-dev
 
     from . import providers, services
     from ._config import FlextAuthConfig, config
@@ -158,12 +162,17 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
+<<<<<<< HEAD
             ".utilities": ("FlextAuthUtilities", "u"),
             "flext_api": ("api",),
             "flext_cli": ("cli",),
             "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
             "flext_web": ("main", "web"),
             "pydantic_core": ("from_json", "to_json", "to_jsonable_python"),
+=======
+            ".utilities": ("FlextAuthIdentityAudit", "FlextAuthUtilities", "u"),
+            "flext_core": ("d", "e", "h", "r", "x"),
+>>>>>>> origin/0.12.0-dev
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
