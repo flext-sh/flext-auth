@@ -11,13 +11,17 @@ from flext_core import FlextContext
 from ._managers.auth_managers_session import FlextAuthSessionManagers
 from ._managers.rate_limiter import FlextAuthRateLimiterManagers
 from ._managers.user import FlextAuthUserManagers
+from .base import FlextAuthUtilitiesBase
 
 if TYPE_CHECKING:
     from flext_auth import p, t
 
 
 class FlextAuthUtilitiesManagers(
-    FlextAuthSessionManagers, FlextAuthRateLimiterManagers, FlextAuthUserManagers
+    FlextAuthUtilitiesBase,
+    FlextAuthSessionManagers,
+    FlextAuthRateLimiterManagers,
+    FlextAuthUserManagers,
 ):
     """Namespace class for all authentication managers following FLEXT patterns."""
 

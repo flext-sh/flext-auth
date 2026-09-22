@@ -13,18 +13,6 @@
   - [Quality Gates](#quality-gates)
 - [Code Standards](#code-standards)
   - [FLEXT Pattern Compliance](#flext-pattern-compliance)
-  - [Domain Model Patterns](#domain-model-patterns)
-- [Current Development Areas](#current-development-areas)
-  - [Priority 1: Test Stabilization](#priority-1-test-stabilization)
-  - [Priority 2: Security Enhancements](#priority-2-security-enhancements)
-  - [Priority 3: Production Features](#priority-3-production-features)
-- [Contributing Workflow](#contributing-workflow)
-  - [1. Before Development](#1-before-development)
-  - [2. Development Process](#2-development-process)
-  - [3. Before Committing](#3-before-committing)
-  - [4. Contribution Guidelines](#4-contribution-guidelines)
-- [Testing Strategy](#testing-strategy)
-  - [Current Test Structure```](#current-test-structure)
   - [Test Categories](#test-categories)
   - [Adding Tests](#adding-tests)
 - [Architecture Guidelines](#architecture-guidelines)
@@ -48,9 +36,7 @@ progress.
 ### Prerequisites
 
 - Python 3.13+
-- Poetry for dependency management
-- [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)
-  foundation library
+- [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md) foundation library
 
 ### Setup Environment
 
@@ -58,8 +44,8 @@ progress.
 # Navigate to flext-auth
 cd flext-auth
 
-# Install development dependencies
-poetry install
+    # Install development dependencies
+    make setup
 
 # Install pre-commit hooks (if available)
 make setup
@@ -75,14 +61,10 @@ python -c "from flext_auth import FlextAuth; u.Cli.print('Development setup comp
 ### Essential Commands
 
 ```bash
-# Complete validation pipeline
-make val # lint + type + test
-
-# Individual quality checks
-make lint       # Ruff code linting
-make type-check # MyPy type checking
-make format     # Code formatting
-make test       # Run test suite
+# Canonical workspace lifecycle gates
+make fmt
+make check
+make test
 ```
 
 ### Testing Commands
@@ -236,35 +218,29 @@ pytest tests/unit/test_config_coverage.py -v
 git checkout -b feature/your-feature-name
 
 # Ensure clean starting state
-make val
+make check
 ```
-
 ### 2. Development Process
 
 ```bash
 # Make changes following FLEXT patterns
 
-# Test frequently during development
-pytest tests/unit/test_your_module.py -v
-
-# Check code quality
-make lint
-make type-check
+# Test and check through the root dispatcher
+make test
+make check
 ```
-
 ### 3. Before Committing
 
 ```bash
 # Complete validation
-make val
+make check
 
 # Ensure all tests pass (or at least don't add new failures)
 make test
 
 # Format code
-make format
+make fmt
 ```
-
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns

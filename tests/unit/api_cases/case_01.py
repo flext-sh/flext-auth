@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 from flext_auth import FlextAuth, FlextAuthSettings
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase01:
     """FlextAuth API case group 01."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_auth_service_initialization_exposes_public_services(self) -> None:
         """FlextAuth quick_start initializes the public service properties."""

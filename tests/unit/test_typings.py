@@ -20,11 +20,11 @@ from flext_tests import tm
 from flext_auth import FlextAuthTypes
 from tests.typings import TestsFlextAuthTypes as t
 
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
-
 
 class TestsFlextAuthTypings:
     """Observable contract of the composed FlextAuthTypes facade."""
+
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     def test_composes_flext_api_types_via_mro(self) -> None:
         # Arrange / Act / Assert: the facade IS a specialization of the API layer.

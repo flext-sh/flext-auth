@@ -17,13 +17,13 @@ import string
 from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings, p, r, t, u
 
 
-def _demo_credential(prefix: str) -> str:
-    """Per-run demo credential; the example never embeds a reusable secret."""
-    return f"{prefix}-{secrets.token_hex(6)}"
-
-
 class FlextAuthAdvancedFeaturesExample:
     """Single owner for the advanced features example flow."""
+
+    @staticmethod
+    def _demo_credential(prefix: str) -> str:
+        """Per-run demo credential; the example never embeds a reusable secret."""
+        return f"{prefix}-{secrets.token_hex(6)}"
 
     logger = u.fetch_logger(__name__)
 
@@ -38,7 +38,9 @@ class FlextAuthAdvancedFeaturesExample:
     def example_jwt_operations() -> p.Result[None]:
         """Advanced JWT operations example using REAL current API."""
         auth: FlextAuth = FlextAuth()
-        demo_password = os.getenv("EXAMPLE_PASSWORD") or _demo_credential("jwt")
+        demo_password = os.getenv(
+            "EXAMPLE_PASSWORD"
+        ) or FlextAuthAdvancedFeaturesExample._demo_credential("jwt")
         user_result = auth.register_user(
             username="advanced_user",
             email="advanced@example.com",
@@ -63,19 +65,19 @@ class FlextAuthAdvancedFeaturesExample:
             (
                 "admin",
                 "admin@company.com",
-                _demo_credential("admin"),
+                FlextAuthAdvancedFeaturesExample._demo_credential("admin"),
                 ["admin", "user"],
             ),
             (
                 "manager",
                 "manager@company.com",
-                _demo_credential("manager"),
+                FlextAuthAdvancedFeaturesExample._demo_credential("manager"),
                 ["manager", "user"],
             ),
             (
                 "employee",
                 "employee@company.com",
-                _demo_credential("employee"),
+                FlextAuthAdvancedFeaturesExample._demo_credential("employee"),
                 ["user"],
             ),
         ]
@@ -89,7 +91,7 @@ class FlextAuthAdvancedFeaturesExample:
     def example_session_management() -> p.Result[None]:
         """Demonstrate authentication session handling."""
         auth: FlextAuth = FlextAuth()
-        session_password = _demo_credential("session")
+        session_password = FlextAuthAdvancedFeaturesExample._demo_credential("session")
         user_result = auth.register_user(
             "sessionuser", "session@example.com", session_password
         )
@@ -129,7 +131,9 @@ class FlextAuthAdvancedFeaturesExample:
         """Demonstrate advanced token validation."""
         auth: FlextAuth = FlextAuth()
         user_result = auth.register_user(
-            "tokenuser", "token@example.com", _demo_credential("token")
+            "tokenuser",
+            "token@example.com",
+            FlextAuthAdvancedFeaturesExample._demo_credential("token"),
         )
         if user_result.failure:
             return r[None].from_failure(user_result)

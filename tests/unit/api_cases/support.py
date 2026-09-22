@@ -10,17 +10,17 @@ from tests.utilities import TestsFlextAuthUtilities as u
 if TYPE_CHECKING:
     from flext_auth import t
 
-UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "flext-auth-unit-" + "9f2k"
 
-
-class FlextAuthApiTestDataHelper:
+class TestsFlextAuthApiTestDataHelper:
     """Nested helper class for test data creation."""
+
+    UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "flext-auth-unit-" + "9f2k"
 
     @staticmethod
     def registered_session() -> tuple[FlextAuth, m.Auth.AuthIdentity, t.JsonMapping]:
         """Register and authenticate one identity through the public facade."""
         auth = FlextAuth()
-        test_data = FlextAuthApiTestDataHelper.create_test_auth_data()
+        test_data = TestsFlextAuthApiTestDataHelper.create_test_auth_data()
         register_result = auth.register_user(
             username=str(test_data["username"]),
             email=str(test_data["email"]),
@@ -41,7 +41,7 @@ class FlextAuthApiTestDataHelper:
         return {
             "username": "test_user",
             "email": "test@example.com",
-            "password": UNIT_TEST_CREDENTIAL_TOKEN,
+            "password": TestsFlextAuthApiTestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
             "role": "user",
         }
 
@@ -51,7 +51,7 @@ class FlextAuthApiTestDataHelper:
         return {
             "username": "test_user",
             "email": "test@example.com",
-            "password": UNIT_TEST_CREDENTIAL_TOKEN,
+            "password": TestsFlextAuthApiTestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
         }
 
     @staticmethod
@@ -64,4 +64,4 @@ class FlextAuthApiTestDataHelper:
         }
 
 
-__all__: list[str] = ["FlextAuthApiTestDataHelper"]
+__all__: list[str] = ["TestsFlextAuthApiTestDataHelper"]

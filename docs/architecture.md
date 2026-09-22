@@ -12,28 +12,28 @@
   - [Design Principles](#design-principles)
   - [Architectural Layers](#architectural-layers)
 - [CORE COMPONENTS](#core-components)
-  - [1. FlextAuth Facade (`api.py`)](#1-flextauth-facade-apipy)
-  - [2. FlextAuthRegistry (`registry.py`)](#2-flextauthregistry-registrypy)
-  - [3. Base Provider Protocol (`providers/base.py`)](#3-base-provider-protocol-providersbasepy)
+  - [1. FlextAuth Facade (api.py)](#1-flextauth-facade-apipy)
+  - [2. FlextAuthRegistry (registry.py)](#2-flextauthregistry-registrypy)
+  - [3. Base Provider Protocol (providers/base.py)](#3-base-provider-protocol-providersbasepy)
 - [PROVIDER ECOSYSTEM](#provider-ecosystem)
   - [Provider Categories](#provider-categories)
   - [Provider Implementation Pattern](#provider-implementation-pattern)
 - [TRANSPORT LAYER](#transport-layer)
-  - [Transport Abstraction (`transports/base.py`)](#transport-abstraction-transportsbasepy)
-  - [HTTP Transport (`transports/http.py`)](#http-transport-transportshttppy)
-  - [gRPC Transport (`transports/grpc.py`)](#grpc-transport-transportsgrpcpy)
-  - [WebSocket Transport (`transports/websocket.py`)](#websocket-transport-transportswebsocketpy)
+  - [Transport Abstraction (transports/base.py)](#transport-abstraction-transportsbasepy)
+  - [HTTP Transport (transports/http.py)](#http-transport-transportshttppy)
+  - [gRPC Transport (transports/grpc.py)](#grpc-transport-transportsgrpcpy)
+  - [WebSocket Transport (transports/websocket.py)](#websocket-transport-transportswebsocketpy)
 - [PROTOCOL HANDLERS](#protocol-handlers)
-  - [Protocol Handler Base (`protocol_handlers/base.py`)](#protocol-handler-base-protocolhandlersbasepy)
-  - [REST Protocol Handler (`protocol_handlers/rest.py`)](#rest-protocol-handler-protocolhandlersrestpy)
-  - [SOAP Protocol Handler (`protocol_handlers/soap.py`)](#soap-protocol-handler-protocolhandlerssoappy)
+  - [Protocol Handler Base (protocol_handlers/base.py)](#protocol-handler-base-protocol_handlersbasepy)
+  - [REST Protocol Handler (protocol_handlers/rest.py)](#rest-protocol-handler-protocol_handlersrestpy)
+  - [SOAP Protocol Handler (protocol_handlers/soap.py)](#soap-protocol-handler-protocol_handlerssoappy)
 - [TOKEN MANAGEMENT](#token-management)
-  - [Token Manager (`tokens/manager.py`)](#token-manager-tokensmanagerpy)
-  - [Token Retry Logic (`tokens/retry.py`)](#token-retry-logic-tokensretrypy)
-  - [Token Cache (`tokens/cache.py`)](#token-cache-tokenscachepy)
+  - [Token Manager (tokens/manager.py)](#token-manager-tokensmanagerpy)
+  - [Token Retry Logic (tokens/retry.py)](#token-retry-logic-tokensretrypy)
+  - [Token Cache (tokens/cache.py)](#token-cache-tokenscachepy)
 - [SECURITY ARCHITECTURE](#security-architecture)
   - [Security Principles](#security-principles)
-  - [Credential Management (`credentials/manager.py`)](#credential-management-credentialsmanagerpy)
+  - [Credential Management (credentials/manager.py)](#credential-management-credentialsmanagerpy)
   - [Security Validations](#security-validations)
 - [FLEXT INTEGRATION](#flext-integration)
   - [Mandatory FLEXT Domain Library Usage](#mandatory-flext-domain-library-usage)
@@ -1139,7 +1139,7 @@ protocols pending
 - Token caching (Redis/Memcached)
 - Credential manager with encryption
 - Session manager refactoring
-- Quality gates: make val passing
+- Quality gates: make check passing
 
 **Success Criteria**: Advanced token/credential management operational
 
@@ -1150,7 +1150,7 @@ protocols pending
 - `docs/MIGRATION.md` (v1 to v2 guide)
 - Provider documentation (`docs/providers/*.md`)
 - Transport documentation (`docs/transports/*.md`)
-- Update `docs/api-reference.md`
+- Update the generated API owner exposed through `docs/api-reference/README.md`
 - Update `README.md` (remove CLI, add multi-provider)
 - Code examples
 
@@ -1176,13 +1176,10 @@ release
 ### Quality Gates (MANDATORY after each phase)
 
 ```bash
-make val          # Complete pipeline
-make lint
-make type-check   # MyPy/PyRight: ZERO errors in src/
-make security     # Bandit: ZERO critical issues
-make test         # Tests: 100% pass rate
+make check          # Complete pipeline
+make test           # Runtime and behavioral suites
+make build          # Package candidate
 ```
-
 ### Coverage Requirements
 
 - **Providers**: 95%+ test coverage per provider
@@ -1242,12 +1239,9 @@ transformation. All implementation must follow these patterns and principles._
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) -
-  Clean architecture and CQRS patterns
-- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) -
-  Service patterns and dependency injection
-- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference.md) -
-  CLI authentication patterns
+- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
+- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
+- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference/README.md) - CLI authentication patterns
 
 **External Resources**:
 

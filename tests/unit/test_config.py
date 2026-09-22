@@ -16,11 +16,11 @@ import pytest
 from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
 from tests.utilities import TestsFlextAuthUtilities as u
 
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
-
 
 class TestsFlextAuthConfig:
     """Behavioral contract for FlextAuthSettings and its consumers."""
+
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     @pytest.fixture
     def settings(self) -> FlextAuthSettings:

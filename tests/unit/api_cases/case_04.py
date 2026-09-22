@@ -6,14 +6,14 @@ from flext_tests import tm
 
 from flext_auth import FlextAuth, m
 from tests.constants import TestsFlextAuthConstants as c
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase04:
     """FlextAuth API case group 04."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_token_validation_bearer_prefix(self) -> None:
         """Test that token creation fails — JWT provider not implemented."""

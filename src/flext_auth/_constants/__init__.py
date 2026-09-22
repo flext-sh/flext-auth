@@ -14,12 +14,14 @@ if TYPE_CHECKING:
     from .auth_enums import FlextAuthConstantsAuthEnums
     from .auth_security import FlextAuthConstantsAuthSecurity
     from .auth_values import FlextAuthConstantsAuthValues
+    from .base import FlextAuthConstantsBase
 __all__: tuple[str, ...] = (
     "FlextAuthConstantsAuth",
     "FlextAuthConstantsAuthClaims",
     "FlextAuthConstantsAuthEnums",
     "FlextAuthConstantsAuthSecurity",
     "FlextAuthConstantsAuthValues",
+    "FlextAuthConstantsBase",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
@@ -30,6 +32,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".auth_enums": ("FlextAuthConstantsAuthEnums",),
             ".auth_security": ("FlextAuthConstantsAuthSecurity",),
             ".auth_values": ("FlextAuthConstantsAuthValues",),
+            ".base": ("FlextAuthConstantsBase",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
