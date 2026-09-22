@@ -20,7 +20,7 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_api import d, e, h, r, x
+    from flext_core import d, e, h, r, x
 
     from . import providers, services
     from .__version__ import FlextAuthVersion
@@ -153,7 +153,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
             ".utilities": ("FlextAuthIdentityAudit", "FlextAuthUtilities", "u"),
-            "flext_api": ("d", "e", "h", "r", "x"),
+            "flext_core": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
