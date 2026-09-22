@@ -8,16 +8,16 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsUtilities
 
-from flext_auth import FlextAuthUtilities
+from flext_auth import u
 
 
-class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
+class TestsFlextAuthUtilities(FlextTestsUtilities, u):
     """Test utilities for flext-auth — extends flext_auth.u and flext_tests.u."""
 
     class _AuthUtilities:
         """Auth-specific test utilities."""
 
-    class TestsFlextAuth(_AuthUtilities, FlextTestsUtilities.Tests):
+    class Tests(_AuthUtilities, FlextTestsUtilities.Tests):
         """Test-specific utilities."""
 
 

@@ -7,14 +7,14 @@ from threading import Thread
 
 from flext_auth import FlextAuth
 from tests.constants import TestsFlextAuthConstants as c
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase11:
     """FlextAuth API case group 11."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_flext_auth_concurrent_operations(self) -> None:
         """Test auth concurrent operations."""

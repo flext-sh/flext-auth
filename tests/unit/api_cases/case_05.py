@@ -7,14 +7,14 @@ from flext_tests import tm
 
 from flext_auth import FlextAuth, FlextAuthSettings
 from tests.constants import TestsFlextAuthConstants as c
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase05:
     """FlextAuth API case group 05."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_empty_username_registration(self) -> None:
         """Test registration with empty username."""

@@ -23,11 +23,11 @@ from flext_tests import tm
 
 from flext_auth import c, t
 
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
-
 
 class TestsFlextAuthConstants:
     """Public-contract behavior of the FlextAuthConstants facade."""
+
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     # ----- Composition reachability (observable, not structural) -----
 

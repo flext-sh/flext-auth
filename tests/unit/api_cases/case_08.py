@@ -5,14 +5,14 @@ from __future__ import annotations
 from flext_tests import r
 
 from flext_auth import FlextAuth, m
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase08:
     """FlextAuth API case group 08."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_token_expiry_edge_cases(self) -> None:
         """Test that token creation fails — JWT provider not implemented."""

@@ -8,11 +8,11 @@ from flext_auth import FlextAuth
 from tests.constants import TestsFlextAuthConstants as c
 from tests.utilities import TestsFlextAuthUtilities as u
 
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
-
 
 class TestsFlextAuthTokenRealFlows:
     """Token flow tests using only FlextAuth public API."""
+
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     def test_create_token_for_registered_user(self) -> None:
         auth = FlextAuth.quick_start(create_admin_user=False)

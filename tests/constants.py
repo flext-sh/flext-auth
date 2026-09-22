@@ -19,7 +19,7 @@ class TestsFlextAuthConstants(c):
     class _AuthConstants:
         """Auth-specific test constants."""
 
-    class TestsFlextAuth(_AuthConstants):
+    class Tests(_AuthConstants):
         """Test-specific constants."""
 
 

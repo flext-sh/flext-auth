@@ -6,14 +6,14 @@ import secrets
 
 from flext_auth import FlextAuth, FlextAuthSettings, m
 from tests.constants import TestsFlextAuthConstants as c
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase03:
     """FlextAuth API case group 03."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
