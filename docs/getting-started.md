@@ -212,13 +212,11 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[m.
     if token_result.failure:
         return r[m.Dict].fail(token_result.error)
 
-    return r[m.Dict].ok(
-        {
-            "authenticated": True,
-            "user": identity.name,
-            "token": token_result.unwrap(),
-        }
-    )
+    return r[m.Dict].ok({
+        "authenticated": True,
+        "user": identity.name,
+        "token": token_result.unwrap(),
+    })
 
 
 # Usage
