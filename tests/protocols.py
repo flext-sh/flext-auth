@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsProtocols
 
-from flext_auth import FlextAuthProtocols
+from flext_auth import p
 
 
-class TestsFlextAuthProtocols(FlextTestsProtocols, FlextAuthProtocols):
+class TestsFlextAuthProtocols(FlextTestsProtocols, p):
     """Test protocols for flext-auth."""
 
     class Tests(FlextTestsProtocols.Tests):

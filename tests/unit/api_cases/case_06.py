@@ -6,14 +6,14 @@ from datetime import UTC, datetime
 
 from flext_auth import FlextAuth, m
 from tests.constants import TestsFlextAuthConstants as c
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase06:
     """FlextAuth API case group 06."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_authenticate_user_failure_paths(self) -> None:
         """Test authenticate_user method failure scenarios."""

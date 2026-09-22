@@ -22,9 +22,8 @@ if TYPE_CHECKING:
     from .case_09 import TestsFlextAuthApiCase09
     from .case_10 import TestsFlextAuthApiCase10
     from .case_11 import TestsFlextAuthApiCase11
-    from .support import FlextAuthApiTestDataHelper
+    from .support import TestsFlextAuthApiTestDataHelper
 __all__: tuple[str, ...] = (
-    "FlextAuthApiTestDataHelper",
     "TestsFlextAuthApiCase01",
     "TestsFlextAuthApiCase02",
     "TestsFlextAuthApiCase03",
@@ -36,6 +35,7 @@ __all__: tuple[str, ...] = (
     "TestsFlextAuthApiCase09",
     "TestsFlextAuthApiCase10",
     "TestsFlextAuthApiCase11",
+    "TestsFlextAuthApiTestDataHelper",
     "c",
     "d",
     "e",
@@ -68,7 +68,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".case_09": ("TestsFlextAuthApiCase09",),
             ".case_10": ("TestsFlextAuthApiCase10",),
             ".case_11": ("TestsFlextAuthApiCase11",),
-            ".support": ("FlextAuthApiTestDataHelper",),
+            ".support": ("TestsFlextAuthApiTestDataHelper",),
             "flext_tests": (
                 "c",
                 "d",

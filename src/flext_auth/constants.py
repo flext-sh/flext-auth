@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from flext_api import c
 
 from ._constants.auth import FlextAuthConstantsAuth
+from ._constants.base import FlextAuthConstantsBase
 
 if TYPE_CHECKING:
     from flext_auth import t
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 class FlextAuthConstants(c):
     """FlextAuth domain constants extending the API constants namespace."""
 
-    class Auth(FlextAuthConstantsAuth):
+    class Auth(FlextAuthConstantsBase, FlextAuthConstantsAuth):
         """Authentication constants namespace."""
 
 

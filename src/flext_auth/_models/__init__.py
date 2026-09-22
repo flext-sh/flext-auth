@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from .auth_session import FlextAuthModelsAuthSession
     from .auth_token import FlextAuthModelsAuthToken
     from .auth_user_identity_extras import FlextAuthModelsAuthUserIdentityExtras
+    from .base import FlextAuthModelsBase
 __all__: tuple[str, ...] = (
     "FlextAuthModelsAuth",
     "FlextAuthModelsAuthIdentity",
@@ -28,6 +29,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthModelsAuthSession",
     "FlextAuthModelsAuthToken",
     "FlextAuthModelsAuthUserIdentityExtras",
+    "FlextAuthModelsBase",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
@@ -42,6 +44,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".auth_session": ("FlextAuthModelsAuthSession",),
             ".auth_token": ("FlextAuthModelsAuthToken",),
             ".auth_user_identity_extras": ("FlextAuthModelsAuthUserIdentityExtras",),
+            ".base": ("FlextAuthModelsBase",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

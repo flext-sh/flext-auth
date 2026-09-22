@@ -6,14 +6,14 @@ from flext_tests import tm
 
 from flext_auth import FlextAuth
 from tests.constants import TestsFlextAuthConstants as c
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase07:
     """FlextAuth API case group 07."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_get_user_method(self) -> None:
         """Test get_user method functionality."""

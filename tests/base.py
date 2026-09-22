@@ -26,6 +26,4 @@ class TestsFlextAuthServiceBase(tests_s):
         return m.RuntimeBootstrapOptions(settings_type=TestsFlextAuthSettings)
 
 
-s = TestsFlextAuthServiceBase
-
-__all__: list[str] = ["TestsFlextAuthServiceBase", "s"]
+__all__: list[str] = ["TestsFlextAuthServiceBase"]

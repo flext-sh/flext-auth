@@ -7,17 +7,14 @@ import time
 from flext_tests import r
 
 from flext_auth import FlextAuth, m
-from tests.unit.api_cases.support import (
-    UNIT_TEST_CREDENTIAL_TOKEN,
-    FlextAuthApiTestDataHelper,
-)
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase10:
     """FlextAuth API case group 10."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_flext_auth_error_handling(self) -> None:
         """Test auth module error handling patterns."""
@@ -42,11 +39,11 @@ class TestsFlextAuthApiCase10:
         test_user_data = {
             "username": "flext_test_user",
             "email": "flext_test@example.com",
-            "password": UNIT_TEST_CREDENTIAL_TOKEN,
+            "password": TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
         }
         test_auth_data = {
             "username": "flext_test_user",
-            "password": UNIT_TEST_CREDENTIAL_TOKEN,
+            "password": TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
         }
         result = auth.register_user(
             username=test_user_data["username"],
@@ -73,19 +70,19 @@ class TestsFlextAuthApiCase10:
             {
                 "username": "admin_user",
                 "email": "admin@company.com",
-                "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-admin",
+                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-admin",
                 "role": "admin",
             },
             {
                 "username": "regular_user",
                 "email": "user@company.com",
-                "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-regular",
+                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-regular",
                 "role": "user",
             },
             {
                 "username": "guest_user",
                 "email": "guest@company.com",
-                "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-guest",
+                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-guest",
                 "role": "guest",
             },
         ]
