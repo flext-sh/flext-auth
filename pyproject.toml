@@ -53,8 +53,7 @@ email = "team@flext.sh"
 name = "FLEXT Team"
 
 [project.scripts]
-flext-auth = "flext_auth.cli_new:cli"
-flext-auth-legacy = "flext_auth.cli:main"
+flext-auth = "flext_auth.cli:main"
 
 [project.urls]
 Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
