@@ -36,7 +36,8 @@ progress.
 ### Prerequisites
 
 - Python 3.13+
-- [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md) foundation library
+- [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)
+  foundation library
 
 ### Setup Environment
 
@@ -220,6 +221,7 @@ git checkout -b feature/your-feature-name
 # Ensure clean starting state
 make check
 ```
+
 ### 2. Development Process
 
 ```bash
@@ -229,6 +231,7 @@ make check
 make test
 make check
 ```
+
 ### 3. Before Committing
 
 ```bash
@@ -241,6 +244,7 @@ make test
 # Format code
 make fmt
 ```
+
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns

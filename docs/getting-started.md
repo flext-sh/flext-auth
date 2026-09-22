@@ -44,7 +44,8 @@ projects using flext-auth with complete FLEXT integration.
 
 - Python 3.13+
 - **Make** for build automation
-- **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)** foundation library
+- **[flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)**
+  foundation library
 
 ### Installation
 
@@ -347,6 +348,7 @@ make check
 # Complete validation
 make check
 ```
+
 ### Documentation
 
 - **Architecture** - System design and patterns
@@ -377,9 +379,12 @@ features, see the documentation.
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
-- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
-- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference/README.md) - CLI authentication patterns
+- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) -
+  Clean architecture and CQRS patterns
+- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) -
+  Service patterns and dependency injection
+- [flext-cli Authentication](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-cli/docs/api-reference/README.md) -
+  CLI authentication patterns
 
 **External Resources**:
 
