@@ -162,8 +162,11 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/flext_auth"]
 
+[tool.hatch.build.targets.wheel.force-include]
+config = "flext_auth/config"
+
 [tool.hatch.build.targets.sdist]
-only-include = ["src/flext_auth"]
+only-include = ["src/flext_auth", "config"]
 
 [tool.mypy]
 disable_error_code = [
