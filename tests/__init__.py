@@ -9,9 +9,12 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api import api, d, e, h, r, services, web, x
+    from flext_api import api
+    from flext_cli import cli
+    from flext_web import web
 
     from flext_auth import auth, config, main, s, settings, t, u
+    from flext_core import core, d, e, h, lazy_attribute, r, x
 
     from . import fixtures, unit
     from .base import TestsFlextAuthServiceBase
@@ -21,6 +24,8 @@ if TYPE_CHECKING:
     from .settings import TestsFlextAuthSettings
     from .typings import TestsFlextAuthTypes
     from .utilities import TestsFlextAuthUtilities
+
+
 __all__: tuple[str, ...] = (
     "TestsFlextAuthConstants",
     "TestsFlextAuthModels",
@@ -32,17 +37,19 @@ __all__: tuple[str, ...] = (
     "api",
     "auth",
     "c",
+    "cli",
     "config",
+    "core",
     "d",
     "e",
     "fixtures",
     "h",
+    "lazy_attribute",
     "m",
     "main",
     "p",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "u",
@@ -63,8 +70,11 @@ _LAZY_IMPORTS = MappingProxyType(
             ".typings": ("TestsFlextAuthTypes",),
             ".unit": ("unit",),
             ".utilities": ("TestsFlextAuthUtilities",),
-            "flext_api": ("api", "d", "e", "h", "r", "services", "web", "x"),
+            "flext_api": ("api",),
             "flext_auth": ("auth", "config", "main", "s", "settings", "t", "u"),
+            "flext_cli": ("cli",),
+            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
+            "flext_web": ("web",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

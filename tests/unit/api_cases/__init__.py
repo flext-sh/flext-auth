@@ -21,6 +21,8 @@ if TYPE_CHECKING:
     from .case_10 import TestsFlextAuthApiCase10
     from .case_11 import TestsFlextAuthApiCase11
     from .support import TestsFlextAuthApiTestDataHelper
+
+
 __all__: tuple[str, ...] = (
     "TestsFlextAuthApiCase01",
     "TestsFlextAuthApiCase02",

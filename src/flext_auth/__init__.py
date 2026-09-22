@@ -20,7 +20,11 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_api import api, d, e, h, r, web, x
+    from flext_api import api
+    from flext_cli import cli
+    from flext_web import web
+
+    from flext_core import core, d, e, h, lazy_attribute, r, x
 
     from . import providers, services
     from ._config import FlextAuthConfig, config
@@ -54,6 +58,8 @@ if TYPE_CHECKING:
     from .services.token_service import FlextAuthTokenService
     from .typings import FlextAuthTypes, t
     from .utilities import FlextAuthUtilities, u
+
+
 __all__: tuple[str, ...] = (
     "FlextAuth",
     "FlextAuthApiKeyProvider",
@@ -96,10 +102,13 @@ __all__: tuple[str, ...] = (
     "api",
     "auth",
     "c",
+    "cli",
     "config",
+    "core",
     "d",
     "e",
     "h",
+    "lazy_attribute",
     "m",
     "main",
     "p",
@@ -150,7 +159,10 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
             ".utilities": ("FlextAuthUtilities", "u"),
-            "flext_api": ("api", "d", "e", "h", "r", "web", "x"),
+            "flext_api": ("api",),
+            "flext_cli": ("cli",),
+            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
+            "flext_web": ("web",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

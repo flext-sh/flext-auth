@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from .user_create import FlextAuthUserManagerCreate
     from .user_read import FlextAuthUserManagerRead
     from .user_write import FlextAuthUserManagerWrite
+
+
 __all__: tuple[str, ...] = (
     "FlextAuthRateLimiterManagers",
     "FlextAuthSessionManagers",

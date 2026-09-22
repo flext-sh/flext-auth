@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from .codec import FlextAuthProviderCodecMixin
     from .tokens import FlextAuthProviderTokenMixin
     from .validation import FlextAuthProviderValidationMixin
+
+
 __all__: tuple[str, ...] = (
     "FlextAuthProviderCodecMixin",
     "FlextAuthProviderTokenMixin",
