@@ -13,6 +13,18 @@
   - [Quality Gates](#quality-gates)
 - [Code Standards](#code-standards)
   - [FLEXT Pattern Compliance](#flext-pattern-compliance)
+  - [Domain Model Patterns](#domain-model-patterns)
+- [Current Development Areas](#current-development-areas)
+  - [Priority 1: Test Stabilization](#priority-1-test-stabilization)
+  - [Priority 2: Security Enhancements](#priority-2-security-enhancements)
+  - [Priority 3: Production Features](#priority-3-production-features)
+- [Contributing Workflow](#contributing-workflow)
+  - [1. Before Development](#1-before-development)
+  - [2. Development Process](#2-development-process)
+  - [3. Before Committing](#3-before-committing)
+  - [4. Contribution Guidelines](#4-contribution-guidelines)
+- [Testing Strategy](#testing-strategy)
+  - [Current Test Structure](#current-test-structure)
   - [Test Categories](#test-categories)
   - [Adding Tests](#adding-tests)
 - [Architecture Guidelines](#architecture-guidelines)
@@ -21,7 +33,8 @@
 - [Debugging](#debugging)
   - [Common Issues](#common-issues)
   - [Debug Mode](#debug-mode)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 **Version**: 0.9.0 Multi-Provider Implementation | **Updated**: October 10, 2025
 
@@ -312,8 +325,8 @@ Follow FLEXT service patterns:
 from __future__ import annotations
 
 from flext_auth import p, r, t
-from flext_core import FlextContainer
 from flext_cli import u
+from flext_core import FlextContainer
 
 
 class AuthenticationService:

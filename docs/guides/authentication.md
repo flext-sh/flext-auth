@@ -24,7 +24,8 @@
   - [Priority 1: Foundation Stabilization](#priority-1-foundation-stabilization)
   - [Priority 2: Modern Authentication (2025 Standards)](#priority-2-modern-authentication-2025-standards)
   - [Priority 3: Advanced Security](#priority-3-advanced-security)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
@@ -82,6 +83,7 @@ The main authentication orchestrator handles all authentication operations:
 
 ```python
 from __future__ import annotations
+
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)

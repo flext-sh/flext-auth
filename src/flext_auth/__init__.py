@@ -20,18 +20,14 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_api import api
-    from flext_cli import cli
-    from flext_web import main, web
-    from pydantic_core import from_json, to_json, to_jsonable_python
-
-    from flext_core import core, d, e, h, lazy_attribute, r, x
+    from flext_api import api, d, e, h, r, web, x
 
     from . import providers, services
     from ._config import FlextAuthConfig, config
     from ._settings import FlextAuthSettings, settings
     from .api import FlextAuth, auth
     from .base import FlextAuthServiceBase, s
+    from .cli import main
     from .constants import FlextAuthConstants, c
     from .models import FlextAuthModels, m
     from .protocols import FlextAuthProtocols, p
@@ -100,14 +96,10 @@ __all__: tuple[str, ...] = (
     "api",
     "auth",
     "c",
-    "cli",
     "config",
-    "core",
     "d",
     "e",
-    "from_json",
     "h",
-    "lazy_attribute",
     "m",
     "main",
     "p",
@@ -117,8 +109,6 @@ __all__: tuple[str, ...] = (
     "services",
     "settings",
     "t",
-    "to_json",
-    "to_jsonable_python",
     "u",
     "web",
     "x",
@@ -131,6 +121,7 @@ _LAZY_IMPORTS = MappingProxyType(
             "._settings": ("FlextAuthSettings", "settings"),
             ".api": ("FlextAuth", "auth"),
             ".base": ("FlextAuthServiceBase", "s"),
+            ".cli": ("main",),
             ".constants": ("FlextAuthConstants", "c"),
             ".models": ("FlextAuthModels", "m"),
             ".protocols": ("FlextAuthProtocols", "p"),
@@ -159,11 +150,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
             ".utilities": ("FlextAuthUtilities", "u"),
-            "flext_api": ("api",),
-            "flext_cli": ("cli",),
-            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
-            "flext_web": ("main", "web"),
-            "pydantic_core": ("from_json", "to_json", "to_jsonable_python"),
+            "flext_api": ("api", "d", "e", "h", "r", "web", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

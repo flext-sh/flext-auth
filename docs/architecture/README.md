@@ -36,7 +36,8 @@
 - [📚 Additional Resources](#additional-resources)
 - [🤝 Contributing](#contributing)
   - [Standards](#standards)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 

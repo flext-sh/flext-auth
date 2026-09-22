@@ -37,7 +37,8 @@
   - [Implementation Challenges](#implementation-challenges)
   - [Future Considerations](#future-considerations)
   - [Lessons Learned](#lessons-learned)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Status
 

@@ -39,7 +39,8 @@
 - [📝 Recommendations](#recommendations)
   - [For Current Phase](#for-current-phase)
   - [For Next Phases](#for-next-phases)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 
