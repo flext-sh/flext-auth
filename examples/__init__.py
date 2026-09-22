@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_api import d, e, h, r, x
     from flext_auth import c, m, p, s, t, u
-    from flext_core import d, e, h, r, x
 
     from . import _utilities
     from .basic_usage_flows import FlextAuthBasicUsageFlows
@@ -38,8 +38,8 @@ _LAZY_IMPORTS = MappingProxyType(
             "._utilities": ("_utilities",),
             ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
             ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
+            "flext_api": ("d", "e", "h", "r", "x"),
             "flext_auth": ("c", "m", "p", "s", "t", "u"),
-            "flext_core": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
