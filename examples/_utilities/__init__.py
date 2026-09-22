@@ -1,5 +1,5 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Examples package."""
+"""Examples. Utilities package."""
 
 from __future__ import annotations
 
@@ -11,33 +11,11 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 if TYPE_CHECKING:
     from flext_auth import c, m, p, s, t, u
     from flext_core import d, e, h, r, x
-
-    from . import _utilities
-    from .basic_usage_flows import FlextAuthBasicUsageFlows
-    from .basic_usage_workflow import FlextAuthBasicUsageWorkflow
-__all__: tuple[str, ...] = (
-    "FlextAuthBasicUsageFlows",
-    "FlextAuthBasicUsageWorkflow",
-    "_utilities",
-    "c",
-    "d",
-    "e",
-    "h",
-    "m",
-    "p",
-    "r",
-    "s",
-    "t",
-    "u",
-    "x",
-)
+__all__: tuple[str, ...] = ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x")
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
-            "._utilities": ("_utilities",),
-            ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
-            ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
             "flext_auth": ("c", "m", "p", "s", "t", "u"),
             "flext_core": ("d", "e", "h", "r", "x"),
         }),

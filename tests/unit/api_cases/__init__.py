@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_tests import c, d, e, h, m, p, r, s, t, td, tf, tk, tm, tv, u, x
+
     from .case_01 import TestsFlextAuthApiCase01
     from .case_02 import TestsFlextAuthApiCase02
     from .case_03 import TestsFlextAuthApiCase03
@@ -34,6 +36,22 @@ __all__: tuple[str, ...] = (
     "TestsFlextAuthApiCase10",
     "TestsFlextAuthApiCase11",
     "TestsFlextAuthApiTestDataHelper",
+    "c",
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "td",
+    "tf",
+    "tk",
+    "tm",
+    "tv",
+    "u",
+    "x",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
@@ -51,6 +69,24 @@ _LAZY_IMPORTS = MappingProxyType(
             ".case_10": ("TestsFlextAuthApiCase10",),
             ".case_11": ("TestsFlextAuthApiCase11",),
             ".support": ("TestsFlextAuthApiTestDataHelper",),
+            "flext_tests": (
+                "c",
+                "d",
+                "e",
+                "h",
+                "m",
+                "p",
+                "r",
+                "s",
+                "t",
+                "td",
+                "tf",
+                "tk",
+                "tm",
+                "tv",
+                "u",
+                "x",
+            ),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
