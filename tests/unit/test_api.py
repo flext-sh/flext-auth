@@ -11,7 +11,15 @@ from __future__ import annotations
 import pytest
 from flext_tests import tm
 
-from flext_auth import FlextAuth, FlextAuthSettings, t
+from flext_auth import (
+    FlextAuth,
+    FlextAuthIdentityService,
+    FlextAuthRegistry,
+    FlextAuthSessionService,
+    FlextAuthSettings,
+    FlextAuthTokenService,
+    t,
+)
 from tests import c
 
 
@@ -29,10 +37,14 @@ class TestsFlextAuthApi:
         """quick_start yields a facade whose public services are available."""
         auth = TestsFlextAuthApi._fresh_auth()
 
-        tm.that(auth.identity_service, none=False)
-        tm.that(auth.token_service, none=False)
-        tm.that(auth.session_service, none=False)
-        tm.that(auth.registry, none=False)
+        # The payload vocabulary is deliberately closed over comparable
+        # shapes, so service availability asserts the published contract
+        # types through the payload-free ``is_`` probe (arbitrary domain
+        # objects are not payload leaves by design).
+        tm.that(auth.identity_service, is_=FlextAuthIdentityService)
+        tm.that(auth.token_service, is_=FlextAuthTokenService)
+        tm.that(auth.session_service, is_=FlextAuthSessionService)
+        tm.that(auth.registry, is_=FlextAuthRegistry)
 
     def test_settings_property_returns_injected_settings(self) -> None:
         """The settings property returns the exact settings instance supplied."""
