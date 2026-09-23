@@ -9,9 +9,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api import api, cli, core, d, e, h, lazy_attribute, r, services, web, x
-
-    from flext_auth import auth, c, config, m, main, p, s, settings, t, u
+    from flext_auth import c, d, e, h, m, p, r, s, t, u, x
 
     from .basic_usage_flows import FlextAuthBasicUsageFlows
     from .basic_usage_workflow import FlextAuthBasicUsageWorkflow
@@ -20,26 +18,16 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextAuthBasicUsageFlows",
     "FlextAuthBasicUsageWorkflow",
-    "api",
-    "auth",
     "c",
-    "cli",
-    "config",
-    "core",
     "d",
     "e",
     "h",
-    "lazy_attribute",
     "m",
-    "main",
     "p",
     "r",
     "s",
-    "services",
-    "settings",
     "t",
     "u",
-    "web",
     "x",
 )
 
@@ -48,31 +36,7 @@ _LAZY_IMPORTS = MappingProxyType(
         MappingProxyType({
             ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
             ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
-            "flext_api": (
-                "api",
-                "cli",
-                "core",
-                "d",
-                "e",
-                "h",
-                "lazy_attribute",
-                "r",
-                "services",
-                "web",
-                "x",
-            ),
-            "flext_auth": (
-                "auth",
-                "c",
-                "config",
-                "m",
-                "main",
-                "p",
-                "s",
-                "settings",
-                "t",
-                "u",
-            ),
+            "flext_auth": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
