@@ -101,8 +101,9 @@ auth_result = auth.authenticate_user("user", "password123")
 **Debugging**:
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user("user", "user@example.com", "password123")
@@ -313,8 +314,9 @@ ______________________________________________________________________
 ```python
 import time
 
-from flext_auth import FlextAuth, FlextAuthSettings
 from flext_cli import u
+
+from flext_auth import FlextAuth, FlextAuthSettings
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 registered = auth.register_user("bench", "bench@example.com", "password123")
@@ -517,8 +519,9 @@ result = auth.register_user("debug", "debug@example.com", "password123")
 Extract detailed error information:
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.authenticate_user("user", "wrong_password")

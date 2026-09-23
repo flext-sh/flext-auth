@@ -178,8 +178,9 @@ flext-auth validate-settings
 For web applications and services:
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
