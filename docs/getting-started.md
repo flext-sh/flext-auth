@@ -67,8 +67,9 @@ python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
 ### Quick Start Service
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 # Initialize authentication service
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -88,8 +89,9 @@ else:
 ### User Authentication
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -108,8 +110,9 @@ else:
 ### Token Validation
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -130,8 +133,9 @@ else:
 ### Environment Configuration
 
 ```python
-from flext_auth import FlextAuthSettings
 from flext_cli import u
+
+from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
 
@@ -196,8 +200,9 @@ flext-auth manage-settings show
 ```python
 from __future__ import annotations
 
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 from flext_core import m, p, r
 
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -256,8 +261,9 @@ if auth_result.success:
 ### Working with User Entities
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -281,8 +287,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from flext_auth import m as auth_m
 from flext_cli import u
+
+from flext_auth import m as auth_m
 
 # Create session
 session = auth_m.Auth.Session(

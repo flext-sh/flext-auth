@@ -408,8 +408,9 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_auth import m as auth_m
 from flext_cli import u
+
+from flext_auth import m as auth_m
 from flext_core import p, r, s, t
 
 
@@ -796,8 +797,9 @@ class RetryPolicy:
 ```python
 from __future__ import annotations
 
-from flext_auth import m as auth_m
 from flext_cli import u
+
+from flext_auth import m as auth_m
 from flext_core import t
 
 
@@ -955,9 +957,10 @@ class SecurityValidator:
 from __future__ import annotations
 
 from flext_api import FlextApi
+from flext_ldap import ldap
+
 from flext_auth import m as auth_m
 from flext_core import m, p
-from flext_ldap import ldap
 
 
 class FlextWebTransportAdapter:
@@ -989,8 +992,9 @@ All providers and managers extend `s` for consistency:
 ```python
 from __future__ import annotations
 
-from flext_auth import m as auth_m
 from flext_cli import u
+
+from flext_auth import m as auth_m
 from flext_core import p, s
 
 
