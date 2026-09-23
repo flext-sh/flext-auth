@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from .base import FlextAuthUtilitiesBase
     from .identity_audit import FlextAuthIdentityAudit
     from .managers import FlextAuthUtilitiesManagers
+
+
 __all__: tuple[str, ...] = (
     "FlextAuthIdentityAudit",
     "FlextAuthRateLimiterManagers",

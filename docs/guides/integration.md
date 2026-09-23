@@ -25,7 +25,8 @@
 - [Future Integration Plans](#future-integration-plans)
   - [Modern Authentication Protocols](#modern-authentication-protocols)
   - [Enterprise SSO](#enterprise-sso)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
@@ -72,7 +73,7 @@ else:
 
 Use `FlextContainer` for dependency injection:
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 from flext_auth import FlextAuth, FlextAuthSettings
 
@@ -122,9 +123,11 @@ Authentication middleware for REST APIs:
 
 ```python
 from __future__ import annotations
-from flext_auth import FlextAuth
+
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import HTTPBearer
+
+from flext_auth import FlextAuth
 
 app = FastAPI()
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -152,7 +155,9 @@ Web application authentication flows:
 
 ```python
 from __future__ import annotations
+
 from flask import Flask, flash, redirect, request, session, url_for
+
 from flext_auth import FlextAuth
 
 app = Flask(__name__)
@@ -197,6 +202,7 @@ CLI authentication patterns:
 from __future__ import annotations
 
 import click
+
 from flext_auth import FlextAuth
 
 
@@ -236,6 +242,7 @@ flext-auth acts as an authentication service provider for the ecosystem:
 
 ```python
 from __future__ import annotations
+
 from flext_auth import FlextAuth
 from flext_core import FlextContainer, m, p
 
@@ -263,8 +270,9 @@ Pattern for service-to-service authentication:
 
 ```python
 from __future__ import annotations
-from flext_auth import FlextAuth
+
 from flext_api import FlextApi
+from flext_auth import FlextAuth
 from flext_core import m, p
 
 
@@ -302,6 +310,7 @@ Integration with flext-db-oracle for user storage:
 
 ```python
 from __future__ import annotations
+
 from flext_auth import m as auth_m
 from flext_core import p
 
@@ -312,14 +321,12 @@ class UserRepository:
     def find_by_username(self, username: str) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Find user by username."""
         # Oracle-specific implementation
-        ...
 
     def create_user(
         self, user: auth_m.Auth.AuthIdentity
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Create user in database."""
         # Oracle-specific implementation
-        ...
 ```
 
 ### Session Storage (Future)
@@ -328,6 +335,7 @@ Integration with Redis for session management:
 
 ```python
 from __future__ import annotations
+
 from flext_auth import m as auth_m
 from flext_core import p, r
 
@@ -360,6 +368,7 @@ Integration with FLEXT environment management:
 
 ```python
 import os
+
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_cli import u
 
@@ -378,6 +387,7 @@ Integration with FLEXT workspace configuration:
 
 ```python
 from __future__ import annotations
+
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import FlextSettings, p, r
 
@@ -433,6 +443,7 @@ Plans for OAuth2 provider integration:
 
 ```python
 from __future__ import annotations
+
 from flext_auth import FlextAuth
 from flext_core import m, p
 
@@ -447,12 +458,10 @@ class OAuth2Provider:
     def authorize(self, client_id: str, redirect_uri: str) -> p.Result[str]:
         """OAuth2 authorization endpoint."""
         # Implementation using flext-auth
-        ...
 
     def token(self, code: str, client_id: str) -> p.Result[m.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
-        ...
 ```
 
 ### Enterprise SSO
@@ -461,6 +470,7 @@ Plans for SAML integration:
 
 ```python
 from __future__ import annotations
+
 from flext_auth import FlextAuth, m as auth_m
 from flext_core import p
 
@@ -477,7 +487,6 @@ class SAMLProvider:
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Process SAML authentication response."""
         # Implementation using flext-auth
-        ...
 ```
 
 ---

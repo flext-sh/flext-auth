@@ -4,6 +4,14 @@
 
 - [Authentication Issues](#authentication-issues)
   - [User Registration Failures](#user-registration-failures)
+  - [Authentication Failures](#authentication-failures)
+  - [Token Validation Issues](#token-validation-issues)
+- [Configuration Issues](#configuration-issues)
+  - [Environment Configuration](#environment-configuration)
+  - [JWT Configuration](#jwt-configuration)
+- [Testing Issues](#testing-issues)
+  - [Test Failures](#test-failures)
+  - [Test Environment Setup](#test-environment-setup)
 - [Performance Issues](#performance-issues)
   - [Slow Authentication](#slow-authentication)
   - [Memory Usage](#memory-usage)
@@ -17,7 +25,8 @@
   - [Debug Mode](#debug-mode)
   - [Error Information](#error-information)
   - [Community Support](#community-support)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
@@ -304,8 +313,7 @@ ______________________________________________________________________
 ```python
 import time
 
-from flext_auth import FlextAuth
-from flext_auth import FlextAuthSettings
+from flext_auth import FlextAuth, FlextAuthSettings
 from flext_cli import u
 
 auth = FlextAuth.quick_start(create_admin_user=False)

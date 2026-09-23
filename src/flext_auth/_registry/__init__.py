@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from .metadata import FlextAuthRegistryMetadata
     from .mutation import FlextAuthRegistryMutation
     from .plugins import FlextAuthRegistryPlugins
+
+
 __all__: tuple[str, ...] = (
     "FlextAuthRegistryBase",
     "FlextAuthRegistryLookup",

@@ -195,6 +195,7 @@ flext-auth manage-settings show
 
 ```python
 from __future__ import annotations
+
 from flext_auth import FlextAuth
 from flext_cli import u
 from flext_core import m, p, r
@@ -229,7 +230,7 @@ if result.success:
 
 ### Container Integration
 
-```python notest
+```{.python .notest}
 from flext_cli import u
 from flext_auth import FlextAuth, FlextAuthSettings
 
@@ -277,7 +278,8 @@ if result.success:
 
 ```python
 from __future__ import annotations
-from datetime import datetime, UTC
+
+from datetime import UTC, datetime
 
 from flext_auth import m as auth_m
 from flext_cli import u

@@ -11,6 +11,8 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 if TYPE_CHECKING:
     from . import api_cases
     from .test_api import TestsFlextAuthApi
+
+
 __all__: tuple[str, ...] = ("TestsFlextAuthApi", "api_cases")
 
 _LAZY_IMPORTS = MappingProxyType(

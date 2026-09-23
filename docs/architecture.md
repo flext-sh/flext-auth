@@ -206,9 +206,11 @@ patterns and production quality.
 
 ```python
 from __future__ import annotations
+
 from typing import Protocol
-from flext_core import p, s, t
+
 from flext_auth import m as auth_m
+from flext_core import p, s, t
 
 
 class FlextAuth(s):
@@ -250,7 +252,7 @@ class FlextAuthBaseProvider(Protocol):
 
 **Interface**:
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 from flext_core import p, s, t
 
@@ -280,9 +282,11 @@ class FlextAuthRegistry(s):
 
 ```python
 from __future__ import annotations
+
 from typing import Protocol
-from flext_core import p, t
+
 from flext_auth import m as auth_m
+from flext_core import p, t
 
 
 class FlextAuthBaseProvider(Protocol):
@@ -401,10 +405,12 @@ class FlextAuthBaseProvider(Protocol):
 
 ```python
 from __future__ import annotations
+
 from typing import Protocol
-from flext_core import p, r, s, t
-from flext_cli import u
+
 from flext_auth import m as auth_m
+from flext_cli import u
+from flext_core import p, r, s, t
 
 
 class FlextAuthBaseProvider(Protocol):
@@ -433,7 +439,6 @@ class FlextAuthExampleProvider(s):
 
     def validate(self, token: str | auth_m.Auth.AuthToken) -> p.Result[bool]:
         """Validate token using provider-specific logic."""
-        ...
 
     def refresh(
         self, token: str | auth_m.Auth.AuthToken
@@ -443,11 +448,9 @@ class FlextAuthExampleProvider(s):
             return r[auth_m.Auth.AuthToken].fail(
                 "Refresh not supported by this provider"
             )
-        ...
 
     def revoke(self, token: str | auth_m.Auth.AuthToken) -> p.Result[bool]:
         """Revoke token if provider supports it."""
-        ...
 
     def supports(self) -> t.StrSequence:
         """Return provider capabilities."""
@@ -464,7 +467,6 @@ class FlextAuthExampleProvider(s):
 
     def _generate_token(self, credentials: dict) -> auth_m.Auth.AuthToken:
         """Generate a token from credentials."""
-        ...
 ```
 
 ---
@@ -475,7 +477,9 @@ class FlextAuthExampleProvider(s):
 
 ```python
 from __future__ import annotations
+
 from typing import Protocol
+
 from flext_core import m, p, t
 
 
@@ -677,7 +681,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
 
 **Interface**:
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 from flext_core import p, r, s, t
 from flext_auth import m as auth_m
@@ -749,8 +753,10 @@ class TokenManager(s):
 
 ```python
 from __future__ import annotations
+
 from collections.abc import Callable
 from time import sleep
+
 from flext_core import p, r, t
 
 
@@ -789,9 +795,10 @@ class RetryPolicy:
 
 ```python
 from __future__ import annotations
+
+from flext_auth import m as auth_m
 from flext_cli import u
 from flext_core import t
-from flext_auth import m as auth_m
 
 
 class TokenCache:
@@ -844,7 +851,7 @@ class TokenCache:
 
 ### Credential Management (`credentials/manager.py`)
 
-```python notest
+```{.python .notest}
 from __future__ import annotations
 from flext_cli import u
 from flext_core import m, p, r, t
@@ -892,9 +899,11 @@ class CredentialManager:
 
 ```python
 from __future__ import annotations
-from datetime import datetime, UTC
-from flext_core import p, r
+
+from datetime import UTC, datetime
+
 from flext_auth import m as auth_m
+from flext_core import p, r
 
 
 class SecurityValidator:
@@ -910,12 +919,10 @@ class SecurityValidator:
     @staticmethod
     def validate_token_signature(token: str, secret: str) -> p.Result[bool]:
         """Validate token signature."""
-        ...
 
     @staticmethod
     def validate_certificate(cert: bytes) -> p.Result[bool]:
         """Validate X.509 certificate."""
-        ...
 ```
 
 ---
@@ -946,10 +953,11 @@ class SecurityValidator:
 
 ```python
 from __future__ import annotations
+
 from flext_api import FlextApi
-from flext_ldap import ldap
-from flext_core import m, p
 from flext_auth import m as auth_m
+from flext_core import m, p
+from flext_ldap import ldap
 
 
 class FlextWebTransportAdapter:
@@ -980,9 +988,10 @@ All providers and managers extend `s` for consistency:
 
 ```python
 from __future__ import annotations
+
+from flext_auth import m as auth_m
 from flext_cli import u
 from flext_core import p, s
-from flext_auth import m as auth_m
 
 
 class FlextAuthJwtProvider(s):
@@ -1015,7 +1024,6 @@ result = auth.authenticate_user("username", "password")
 
 ```python
 from flext_auth import FlextAuth, FlextAuthRegistry
-
 
 registry = FlextAuthRegistry()
 # Providers are registered through the registry plugin mechanism
@@ -1054,7 +1062,6 @@ result = auth.authenticate({"username": "user", "password": "pass"})
 
 ```python
 from flext_auth import FlextAuth
-
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 identity_result = auth.authenticate_user("user", "pass")

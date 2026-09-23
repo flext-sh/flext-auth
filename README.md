@@ -57,7 +57,7 @@ verification).
   classes listed under Module Map above.
 - Public extensions exposed by this project: `FlextAuth`, `FlextAuthApiKeyProvider`,
   `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
-  `FlextAuthCertificateProvider`, `FlextAuthConfig` (+26 more).
+  `FlextAuthCertificateProvider`, `FlextAuthConfig` (+24 more).
 - Library abstraction boundaries: see AGENTS.md §2.7.
 
 ## Quality Gates

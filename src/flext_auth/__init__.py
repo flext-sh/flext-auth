@@ -58,6 +58,8 @@ if TYPE_CHECKING:
     from .services.token_service import FlextAuthTokenService
     from .typings import FlextAuthTypes, t
     from .utilities import FlextAuthUtilities, u
+
+
 __all__: tuple[str, ...] = (
     "FlextAuth",
     "FlextAuthApiKeyProvider",

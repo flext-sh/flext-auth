@@ -16,8 +16,6 @@
 - [Configuration Validation](#configuration-validation)
   - [Validate Configuration](#validate-configuration)
   - [CLI Validation](#cli-validation)
-- [Global Configuration](#global-configuration)
-  - [Singleton Pattern](#singleton-pattern)
   - [Global Instance Access](#global-instance-access)
 - [Security Recommendations](#security-recommendations)
   - [Production Settings](#production-settings)
@@ -25,7 +23,8 @@
 - [Configuration Environments](#configuration-environments)
   - [Available Environments](#available-environments)
   - [Environment Detection](#environment-detection)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 **Version**: 0.12.0-dev | **Updated**: April 14, 2026
 
@@ -241,6 +240,7 @@ FlextAuthSettings(
 
 ```python
 import os
+
 from flext_auth import FlextAuthSettings
 
 env = os.getenv("FLEXT_ENV", "development")

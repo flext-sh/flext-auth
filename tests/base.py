@@ -22,7 +22,7 @@ class TestsFlextAuthServiceBase(tests_s):
 
     @classmethod
     @override
-    def _runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
+    def runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
         return m.RuntimeBootstrapOptions(settings_type=TestsFlextAuthSettings)
 
 

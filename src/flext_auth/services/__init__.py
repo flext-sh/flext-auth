@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from .provider_service import FlextAuthProviderService
     from .session_service import FlextAuthSessionService
     from .token_service import FlextAuthTokenService
+
+
 __all__: tuple[str, ...] = (
     "FlextAuthApplicationLifecycle",
     "FlextAuthApplicationService",

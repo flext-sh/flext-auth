@@ -31,7 +31,8 @@
 - [Resources](#resources)
   - [Documentation](#documentation)
   - [Tools](#tools)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 

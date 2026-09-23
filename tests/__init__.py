@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from .settings import TestsFlextAuthSettings
     from .typings import TestsFlextAuthTypes
     from .utilities import TestsFlextAuthUtilities
+
+
 __all__: tuple[str, ...] = (
     "TestsFlextAuthConstants",
     "TestsFlextAuthModels",

@@ -28,6 +28,8 @@ if TYPE_CHECKING:
     from .oauth2_tokens import FlextAuthOAuth2Tokens
     from .oidc import FlextAuthOidcProvider
     from .rfc import FlextAuthRfcProvider
+
+
 __all__: tuple[str, ...] = (
     "FlextAuthApiKeyProvider",
     "FlextAuthBasicProvider",
