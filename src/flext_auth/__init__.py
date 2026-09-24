@@ -20,7 +20,7 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_api import api, cli, core, d, e, h, lazy_attribute, r, web, x
+    from flext_api import d, e, h, r, x
 
     from . import providers, services
     from ._config import FlextAuthConfig, config
@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from .services.session_service import FlextAuthSessionService
     from .services.token_service import FlextAuthTokenService
     from .typings import FlextAuthTypes, t
-    from .utilities import FlextAuthUtilities, u
+    from .utilities import FlextAuthIdentityAudit, FlextAuthUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -64,6 +64,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
+    "FlextAuthIdentityAudit",
     "FlextAuthIdentityService",
     "FlextAuthJwtProvider",
     "FlextAuthJwtTokenValidator",
@@ -95,16 +96,12 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "api",
     "auth",
     "c",
-    "cli",
     "config",
-    "core",
     "d",
     "e",
     "h",
-    "lazy_attribute",
     "m",
     "main",
     "p",
@@ -115,7 +112,6 @@ __all__: tuple[str, ...] = (
     "settings",
     "t",
     "u",
-    "web",
     "x",
 )
 
@@ -154,19 +150,8 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
-            ".utilities": ("FlextAuthUtilities", "u"),
-            "flext_api": (
-                "api",
-                "cli",
-                "core",
-                "d",
-                "e",
-                "h",
-                "lazy_attribute",
-                "r",
-                "web",
-                "x",
-            ),
+            ".utilities": ("FlextAuthIdentityAudit", "FlextAuthUtilities", "u"),
+            "flext_api": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
