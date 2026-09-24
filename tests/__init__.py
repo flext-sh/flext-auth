@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 
     from . import fixtures, unit
     from .base import TestsFlextAuthServiceBase
-    from .constants import TestsFlextAuthConstants, c
-    from .models import TestsFlextAuthModels, m
-    from .protocols import TestsFlextAuthProtocols, p
+    from .constants import TestsFlextAuthConstants, TestsFlextAuthConstants as c
+    from .models import TestsFlextAuthModels, TestsFlextAuthModels as m
+    from .protocols import TestsFlextAuthProtocols, TestsFlextAuthProtocols as p
     from .settings import TestsFlextAuthSettings
     from .typings import TestsFlextAuthTypes
     from .utilities import TestsFlextAuthUtilities

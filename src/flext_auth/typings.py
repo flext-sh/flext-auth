@@ -6,13 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import t
+from flext_api import FlextApiTypes
 
 from ._typings.auth import FlextAuthTypesAuth
 from ._typings.base import FlextAuthTypesBase
 
 
-class FlextAuthTypes(t):
+class FlextAuthTypes(FlextApiTypes):
     """Authentication-specific type definitions extending t via MRO."""
 
     class Auth(FlextAuthTypesBase, FlextAuthTypesAuth):

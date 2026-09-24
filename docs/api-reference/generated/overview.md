@@ -22,12 +22,12 @@
   `typed`
 - Main facades: `FlextAuth`, `FlextAuthApiKeyProvider`, `FlextAuthApplicationService`,
   `FlextAuthBasicProvider`, `FlextAuthCertificateProvider`, `FlextAuthConfig`,
-  `FlextAuthConstants`, `FlextAuthIdentityService` (+22 more)
+  `FlextAuthConstants`, `FlextAuthIdentityAudit` (+23 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
 - Public symbol exports: `FlextAuth`, `FlextAuthApiKeyProvider`,
   `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
   `FlextAuthCertificateProvider`, `FlextAuthConfig`, `FlextAuthConstants`,
-  `FlextAuthIdentityService`, `FlextAuthJwtProvider`, `FlextAuthJwtTokenValidator` (+24
+  `FlextAuthIdentityAudit`, `FlextAuthIdentityService`, `FlextAuthJwtProvider` (+25
   more)
 - Exported module shortcuts: `providers`, `services`
 - Generated module pages: `31`

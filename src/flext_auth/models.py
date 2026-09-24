@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_api import m
+from flext_api import FlextApiModels
 
 from flext_auth import t
 
@@ -10,7 +10,7 @@ from ._models.auth import FlextAuthModelsAuth
 from ._models.base import FlextAuthModelsBase
 
 
-class FlextAuthModels(m):
+class FlextAuthModels(FlextApiModels):
     """Authentication models extending the API model namespace."""
 
     class Auth(FlextAuthModelsBase, FlextAuthModelsAuth):
