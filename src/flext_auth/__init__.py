@@ -20,7 +20,24 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_api import api, cli, core, d, e, h, lazy_attribute, r, web, x
+    from flext_api import api
+    from flext_cli import cli
+    from flext_infra import docs_main, infra
+    from flext_tests import (
+        active_rules,
+        discover_repository_root,
+        install_local_packages,
+        load_infra_report,
+        split_csv,
+        td,
+        tf,
+        tk,
+        tm,
+        tv,
+    )
+    from flext_web import web
+
+    from flext_core import core, d, e, h, lazy_attribute, r, x
 
     from . import providers, services
     from ._config import FlextAuthConfig, config
@@ -53,7 +70,7 @@ if TYPE_CHECKING:
     from .services.session_service import FlextAuthSessionService
     from .services.token_service import FlextAuthTokenService
     from .typings import FlextAuthTypes, t
-    from .utilities import FlextAuthUtilities, u
+    from .utilities import FlextAuthIdentityAudit, FlextAuthUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -64,6 +81,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
+    "FlextAuthIdentityAudit",
     "FlextAuthIdentityService",
     "FlextAuthJwtProvider",
     "FlextAuthJwtTokenValidator",
@@ -95,6 +113,7 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
+    "active_rules",
     "api",
     "auth",
     "c",
@@ -102,9 +121,14 @@ __all__: tuple[str, ...] = (
     "config",
     "core",
     "d",
+    "discover_repository_root",
+    "docs_main",
     "e",
     "h",
+    "infra",
+    "install_local_packages",
     "lazy_attribute",
+    "load_infra_report",
     "m",
     "main",
     "p",
@@ -113,7 +137,13 @@ __all__: tuple[str, ...] = (
     "s",
     "services",
     "settings",
+    "split_csv",
     "t",
+    "td",
+    "tf",
+    "tk",
+    "tm",
+    "tv",
     "u",
     "web",
     "x",
@@ -154,19 +184,24 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
-            ".utilities": ("FlextAuthUtilities", "u"),
-            "flext_api": (
-                "api",
-                "cli",
-                "core",
-                "d",
-                "e",
-                "h",
-                "lazy_attribute",
-                "r",
-                "web",
-                "x",
+            ".utilities": ("FlextAuthIdentityAudit", "FlextAuthUtilities", "u"),
+            "flext_api": ("api",),
+            "flext_cli": ("cli",),
+            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
+            "flext_infra": ("docs_main", "infra"),
+            "flext_tests": (
+                "active_rules",
+                "discover_repository_root",
+                "install_local_packages",
+                "load_infra_report",
+                "split_csv",
+                "td",
+                "tf",
+                "tk",
+                "tm",
+                "tv",
             ),
+            "flext_web": ("web",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

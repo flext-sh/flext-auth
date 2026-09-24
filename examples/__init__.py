@@ -9,9 +9,25 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api import api, cli, core, d, e, h, lazy_attribute, r, services, web, x
+    from flext_api import api
+    from flext_cli import cli
+    from flext_infra import docs_main, infra
+    from flext_tests import (
+        active_rules,
+        discover_repository_root,
+        install_local_packages,
+        load_infra_report,
+        split_csv,
+        td,
+        tf,
+        tk,
+        tm,
+        tv,
+    )
+    from flext_web import web
 
     from flext_auth import auth, c, config, m, main, p, s, settings, t, u
+    from flext_core import core, d, e, h, lazy_attribute, r, x
 
     from .basic_usage_flows import FlextAuthBasicUsageFlows
     from .basic_usage_workflow import FlextAuthBasicUsageWorkflow
@@ -20,6 +36,7 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextAuthBasicUsageFlows",
     "FlextAuthBasicUsageWorkflow",
+    "active_rules",
     "api",
     "auth",
     "c",
@@ -27,17 +44,27 @@ __all__: tuple[str, ...] = (
     "config",
     "core",
     "d",
+    "discover_repository_root",
+    "docs_main",
     "e",
     "h",
+    "infra",
+    "install_local_packages",
     "lazy_attribute",
+    "load_infra_report",
     "m",
     "main",
     "p",
     "r",
     "s",
-    "services",
     "settings",
+    "split_csv",
     "t",
+    "td",
+    "tf",
+    "tk",
+    "tm",
+    "tv",
     "u",
     "web",
     "x",
@@ -48,19 +75,7 @@ _LAZY_IMPORTS = MappingProxyType(
         MappingProxyType({
             ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
             ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
-            "flext_api": (
-                "api",
-                "cli",
-                "core",
-                "d",
-                "e",
-                "h",
-                "lazy_attribute",
-                "r",
-                "services",
-                "web",
-                "x",
-            ),
+            "flext_api": ("api",),
             "flext_auth": (
                 "auth",
                 "c",
@@ -73,6 +88,22 @@ _LAZY_IMPORTS = MappingProxyType(
                 "t",
                 "u",
             ),
+            "flext_cli": ("cli",),
+            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
+            "flext_infra": ("docs_main", "infra"),
+            "flext_tests": (
+                "active_rules",
+                "discover_repository_root",
+                "install_local_packages",
+                "load_infra_report",
+                "split_csv",
+                "td",
+                "tf",
+                "tk",
+                "tm",
+                "tv",
+            ),
+            "flext_web": ("web",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
