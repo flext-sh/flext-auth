@@ -273,7 +273,7 @@ class FlextAuthRegistry(s):
 
     def list_providers(self) -> t.StrSequence: ...
 
-    def get_capabilities(self, name: str) -> p.Result[t.StrSequence]: ...
+    def resolve_capabilities(self, name: str) -> p.Result[t.StrSequence]: ...
 ```
 
 ### 3. Base Provider Protocol (`providers/base.py`)
@@ -314,7 +314,8 @@ class FlextAuthBaseProvider(Protocol):
         """Return supported capabilities."""
         ...
 
-    def get_metadata(self) -> t.JsonMapping:
+    @property
+    def metadata(self) -> t.JsonMapping:
         """Return provider metadata."""
         ...
 ```
@@ -457,7 +458,8 @@ class FlextAuthExampleProvider(s):
         """Return provider capabilities."""
         return ["token", "validate", "refresh"]
 
-    def get_metadata(self) -> t.JsonMapping:
+    @property
+    def metadata(self) -> t.JsonMapping:
         """Return provider metadata."""
         return {
             "name": "example",

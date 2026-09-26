@@ -28,8 +28,9 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         self._auth_manager = self._KerberosAuthManager(self)
         self._active_tickets: t.MappingKV[str, m.Auth.KerberosTicketData] = {}
 
-    def get_metadata(self) -> m.Auth.Providers.Metadata:
-        """Get Kerberos provider metadata."""
+    @property
+    def metadata(self) -> m.Auth.Providers.Metadata:
+        """Kerberos provider metadata."""
         return m.Auth.Providers.Metadata(
             name="kerberos", version="5", capabilities=tuple(self.supports())
         )

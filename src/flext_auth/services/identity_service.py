@@ -7,10 +7,9 @@ from typing import override
 from flext_api import r
 
 from flext_auth import c, m, p, s, t, u
-from flext_auth.utilities import FlextAuthIdentityAudit
 
 
-class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
+class FlextAuthIdentityService(s, u.IdentityAudit):
     """Identity service using flext-core patterns and railway-oriented programming."""
 
     def __init__(
@@ -43,7 +42,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         self, name: str, credential: str
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
-        identity_result = self.identity_manager.get_user_by_username(name)
+        identity_result = self.identity_manager.fetch_user_by_username(name)
         if identity_result.failure:
             return r[m.Auth.AuthIdentity].fail(identity_result.error)
         identity = identity_result.value
@@ -70,7 +69,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         """Railway-oriented authorization with audit logging."""
         return (
             self.identity_manager
-            .get_user(identity_id)
+            .fetch_user(identity_id)
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: self._log_authorization_result(
@@ -84,7 +83,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
     ) -> p.Result[bool]:
         """Railway-oriented credential change with validation."""
         result: p.Result[bool]
-        identity_result = self.identity_manager.get_user(identity_id)
+        identity_result = self.identity_manager.fetch_user(identity_id)
         if identity_result.failure:
             result = r[bool].fail(identity_result.error)
         else:
@@ -156,7 +155,7 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
 
     def reset_credential(self, identity_id: str, new_credential: str) -> p.Result[bool]:
         """Railway-oriented credential reset for admin operations."""
-        identity_result = self.identity_manager.get_user(identity_id)
+        identity_result = self.identity_manager.fetch_user(identity_id)
         if identity_result.failure:
             return r[bool].fail(identity_result.error)
         identity = identity_result.value

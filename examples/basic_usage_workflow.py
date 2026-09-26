@@ -96,7 +96,7 @@ class FlextAuthBasicUsageWorkflow:
             cls.logger.error("Token validation failed", error=token_validation.error)
         cls.logger.info("Step 4: Get user information")
         identity_id: str = user.name
-        user_info = auth.identity_service.identity_manager.get_user(identity_id)
+        user_info = auth.identity_service.identity_manager.fetch_user(identity_id)
         if user_info.success:
             retrieved_user = user_info.value
             cls.logger.info("User information retrieved", name=retrieved_user.name)

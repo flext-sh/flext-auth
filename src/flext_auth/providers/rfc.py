@@ -56,14 +56,11 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             if isinstance(value, (bool, int, str))
         }
 
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
+    @property
+    def rfc_version(self) -> str:
+        """RFC version this provider implements.
 
-        Returns:
-            str: RFC version (e.g., "RFC 7617", "RFC 6749")
-
-        This method must be overridden by subclasses.
-
+        Subclasses override this property with their own RFC identifier.
         """
         return "RFC Base"
 

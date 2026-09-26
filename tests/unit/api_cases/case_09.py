@@ -35,7 +35,7 @@ class TestsFlextAuthApiCase09:
         auth, identity, _test_data = self._TestDataHelper.registered_session()
         token_result = auth.create_token(identity_id=identity.unique_id)
         u.Tests.Matchers.that(token_result.success, eq=True)
-        result = auth.identity_service.identity_manager.get_user(identity.unique_id)
+        result = auth.identity_service.identity_manager.fetch_user(identity.unique_id)
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(result.success, eq=True)
 

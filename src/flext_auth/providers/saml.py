@@ -55,14 +55,11 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         _ = credentials
         return r[p.Auth.Token].fail("SAML provider not yet fully implemented")
 
-    def get_metadata(self) -> t.AttributeMapping:
-        """Get provider metadata.
-
-        Returns:
-            t.AttributeMapping: Provider metadata (name, version, capabilities, etc.)
+    @property
+    def metadata(self) -> t.AttributeMapping:
+        """Provider metadata (name, version, capabilities, etc.).
 
         Business Rule: Returns metadata for provider discovery and configuration.
-
         """
         return {
             "name": "saml",

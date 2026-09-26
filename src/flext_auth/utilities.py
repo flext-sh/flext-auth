@@ -14,6 +14,8 @@ from ._utilities.managers import FlextAuthUtilitiesManagers
 class FlextAuthUtilities(FlextApiUtilities):
     """FlextAuth advanced utilities extending the API utility namespace."""
 
+    IdentityAudit = FlextAuthIdentityAudit
+
     class Auth(FlextAuthUtilitiesAuth, FlextAuthUtilitiesManagers):
         """Auth-specific utility namespace."""
 
@@ -21,7 +23,6 @@ class FlextAuthUtilities(FlextApiUtilities):
 u = FlextAuthUtilities
 
 __all__: t.MutableSequenceOf[str] = [
-    "FlextAuthIdentityAudit",
     "FlextAuthUtilities",
     "u",
 ]

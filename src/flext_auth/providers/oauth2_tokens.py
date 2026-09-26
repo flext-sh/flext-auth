@@ -51,8 +51,9 @@ class FlextAuthOAuth2Tokens(
             expiry_minutes=expiry_minutes,
         )
 
-    def get_metadata(self) -> m.Auth.Providers.Metadata:
-        """Get OAuth2 provider metadata using composition."""
+    @property
+    def metadata(self) -> m.Auth.Providers.Metadata:
+        """OAuth2 provider metadata using composition."""
         return m.Auth.Providers.Metadata(
             name="oauth2",
             version=c.Auth.PROVIDER_VERSION,
@@ -63,14 +64,10 @@ class FlextAuthOAuth2Tokens(
             },
         )
 
+    @property
     @override
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (e.g., "RFC 7617", "RFC 6749")
-
-        """
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (RFC 6749 for OAuth2)."""
         return "RFC 6749"
 
     @override

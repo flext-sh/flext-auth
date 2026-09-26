@@ -27,21 +27,21 @@ class FlextAuthRegistryMetadata(FlextAuthRegistryMutation):
         )
         if provided:
             return provided
-        get_metadata_fn = getattr(service, "get_metadata", None)
-        if callable(get_metadata_fn):
-            try:
-                raw = get_metadata_fn()
-                metadata: m.Auth.Providers.Metadata = (
-                    m.Auth.Providers.Metadata.model_validate(raw)
-                )
-            except c.EXC_BASIC_TYPE as exc:
-                u.fetch_logger(__name__).debug(
-                    f"Provider {name} metadata extraction failed, using base: {exc}"
-                )
-                return base
-            else:
-                return metadata
-        return base
+        sentinel = object()
+        raw = getattr(service, "metadata", sentinel)
+        if raw is sentinel:
+            return base
+        try:
+            metadata: m.Auth.Providers.Metadata = (
+                m.Auth.Providers.Metadata.model_validate(raw)
+            )
+        except c.EXC_BASIC_TYPE as exc:
+            u.fetch_logger(__name__).debug(
+                f"Provider {name} metadata extraction failed, using base: {exc}"
+            )
+            return base
+        else:
+            return metadata
 
 
 __all__: list[str] = ["FlextAuthRegistryMetadata"]

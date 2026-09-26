@@ -41,7 +41,8 @@ class FlextAuthUtilitiesManagers(
                 dispatcher
             )
 
-    def execute(self) -> p.Result[bool]:
+    @staticmethod
+    def execute() -> p.Result[bool]:
         """Execute method for s interface.
 
         FlextAuthUtilitiesManagers is a namespace class - use specific manager classes instead.

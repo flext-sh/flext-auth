@@ -53,11 +53,7 @@ if TYPE_CHECKING:
     from .services.session_service import FlextAuthSessionService
     from .services.token_service import FlextAuthTokenService
     from .typings import FlextAuthTypes, FlextAuthTypes as t
-    from .utilities import (
-        FlextAuthIdentityAudit,
-        FlextAuthUtilities,
-        FlextAuthUtilities as u,
-    )
+    from .utilities import FlextAuthUtilities, FlextAuthUtilities as u
 
 
 __all__: tuple[str, ...] = (
@@ -68,7 +64,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
-    "FlextAuthIdentityAudit",
     "FlextAuthIdentityService",
     "FlextAuthJwtProvider",
     "FlextAuthJwtTokenValidator",
@@ -154,7 +149,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.session_service": ("FlextAuthSessionService",),
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
-            ".utilities": ("FlextAuthIdentityAudit", "FlextAuthUtilities", "u"),
+            ".utilities": ("FlextAuthUtilities", "u"),
             "flext_api": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
