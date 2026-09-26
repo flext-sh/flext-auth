@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_api import r
-
 from flext_core import FlextContext
 
 from ._managers.auth_managers_session import FlextAuthSessionManagers
@@ -40,16 +38,6 @@ class FlextAuthUtilitiesManagers(
             self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
                 dispatcher
             )
-
-    @staticmethod
-    def execute() -> p.Result[bool]:
-        """Execute method for s interface.
-
-        FlextAuthUtilitiesManagers is a namespace class - use specific manager classes instead.
-        """
-        return r[bool].fail(
-            "FlextAuthUtilitiesManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
-        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthUtilitiesManagers"]

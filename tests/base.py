@@ -4,21 +4,14 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_tests import s as tests_s
+from flext_tests import FlextTestsServiceBase
 
+from flext_auth import m
 from tests.settings import TestsFlextAuthSettings
 
-from . import m
 
-
-class TestsFlextAuthServiceBase(tests_s):
+class TestsFlextAuthServiceBase(FlextTestsServiceBase):
     """Auth test service base with source and test settings namespaces."""
-
-    @classmethod
-    @override
-    def fetch_settings(cls) -> TestsFlextAuthSettings:
-        """Return the typed Auth+Tests settings singleton."""
-        return TestsFlextAuthSettings.fetch_global()
 
     @classmethod
     @override
@@ -26,4 +19,6 @@ class TestsFlextAuthServiceBase(tests_s):
         return m.RuntimeBootstrapOptions(settings_type=TestsFlextAuthSettings)
 
 
-__all__: list[str] = ["TestsFlextAuthServiceBase"]
+s = TestsFlextAuthServiceBase
+
+__all__: list[str] = ["TestsFlextAuthServiceBase", "s"]

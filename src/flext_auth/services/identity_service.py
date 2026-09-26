@@ -8,8 +8,10 @@ from flext_api import r
 
 from flext_auth import c, m, p, s, t, u
 
+from ._identity_audit import FlextAuthIdentityAudit
 
-class FlextAuthIdentityService(s, u.IdentityAudit):
+
+class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
     """Identity service using flext-core patterns and railway-oriented programming."""
 
     def __init__(

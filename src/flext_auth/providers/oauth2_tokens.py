@@ -52,19 +52,6 @@ class FlextAuthOAuth2Tokens(
         )
 
     @property
-    def metadata(self) -> m.Auth.Providers.Metadata:
-        """OAuth2 provider metadata using composition."""
-        return m.Auth.Providers.Metadata(
-            name="oauth2",
-            version=c.Auth.PROVIDER_VERSION,
-            capabilities=tuple(self.supports()),
-            extras={
-                "flows": [c.Auth.OAUTH2_FLOW_DEFAULT, "client_credentials"],
-                "pkce_supported": self.use_pkce,
-            },
-        )
-
-    @property
     @override
     def rfc_version(self) -> str:
         """RFC version this provider implements (RFC 6749 for OAuth2)."""

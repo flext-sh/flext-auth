@@ -11,7 +11,6 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 if TYPE_CHECKING:
     from .base import FlextAuthRegistryBase
     from .lookup import FlextAuthRegistryLookup
-    from .metadata import FlextAuthRegistryMetadata
     from .mutation import FlextAuthRegistryMutation
     from .plugins import FlextAuthRegistryPlugins
 
@@ -19,7 +18,6 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextAuthRegistryBase",
     "FlextAuthRegistryLookup",
-    "FlextAuthRegistryMetadata",
     "FlextAuthRegistryMutation",
     "FlextAuthRegistryPlugins",
 )
@@ -29,7 +27,6 @@ _LAZY_IMPORTS = MappingProxyType(
         MappingProxyType({
             ".base": ("FlextAuthRegistryBase",),
             ".lookup": ("FlextAuthRegistryLookup",),
-            ".metadata": ("FlextAuthRegistryMetadata",),
             ".mutation": ("FlextAuthRegistryMutation",),
             ".plugins": ("FlextAuthRegistryPlugins",),
         }),
