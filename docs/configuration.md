@@ -45,9 +45,8 @@ flext-auth uses `FlextAuthSettings` extending
 ### Default Configuration
 
 ```python
-from flext_cli import u
-
 from flext_auth import FlextAuthSettings
+from flext_cli import u
 
 settings = FlextAuthSettings()
 u.Cli.info(f"JWT Expiry: {settings.Auth.expiry_minutes} minutes")
@@ -180,9 +179,8 @@ auth = FlextAuth()  # Uses global settings automatically
 ### Global Instance Access
 
 ```python
-from flext_cli import u
-
 from flext_auth import FlextAuthSettings
+from flext_cli import u
 
 # Get current global configuration
 global_config = FlextAuthSettings.fetch_global()
