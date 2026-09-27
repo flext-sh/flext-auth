@@ -10,7 +10,6 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from ._auth_lifecycle import FlextAuthApplicationLifecycle
-    from ._identity_audit import FlextAuthIdentityAudit
     from ._provider_builtin import FlextAuthProviderBuiltinRegistration
     from .auth_service import FlextAuthApplicationService
     from .identity_service import FlextAuthIdentityService
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextAuthApplicationLifecycle",
     "FlextAuthApplicationService",
-    "FlextAuthIdentityAudit",
     "FlextAuthIdentityService",
     "FlextAuthProviderBuiltinRegistration",
     "FlextAuthProviderService",
@@ -34,7 +32,6 @@ _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
             "._auth_lifecycle": ("FlextAuthApplicationLifecycle",),
-            "._identity_audit": ("FlextAuthIdentityAudit",),
             "._provider_builtin": ("FlextAuthProviderBuiltinRegistration",),
             ".auth_service": ("FlextAuthApplicationService",),
             ".identity_service": ("FlextAuthIdentityService",),

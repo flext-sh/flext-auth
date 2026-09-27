@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-from typing import override
+from datetime import timedelta
 
 from flext_api import r
 
 from flext_auth import c, m, p, s, t, u
 
-from ._identity_audit import FlextAuthIdentityAudit
 
-
-class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
+class FlextAuthIdentityService(s):
     """Identity service using flext-core patterns and railway-oriented programming."""
 
     def __init__(
@@ -31,9 +29,23 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
 
-    @override
-    def _persist_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
-        """Persist failed-attempt state through the concrete user manager."""
+    def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
+        """Count the failed attempt, lock after the configured limit, and persist it."""
+        identity.failed_attempts += 1
+        max_attempts = c.Auth.SECURITY_MAX_LOGIN_ATTEMPTS
+        locked = identity.failed_attempts >= max_attempts
+        if locked:
+            identity.locked_until = u.generate_datetime_utc() + timedelta(
+                minutes=c.Auth.SECURITY_LOCKOUT_DURATION_MINUTES
+            )
+        self.logger.warning(
+            "Authentication failure",
+            username=identity.name,
+            provider="internal",
+            reason=f"Account locked after {identity.failed_attempts} failed attempts"
+            if locked
+            else f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
+        )
         return self.identity_manager.update_user(
             identity.unique_id,
             failed_attempts=identity.failed_attempts,
@@ -69,16 +81,23 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         self, identity_id: str, permission: str, resource: str | None = None
     ) -> p.Result[bool]:
         """Railway-oriented authorization with audit logging."""
-        return (
-            self.identity_manager
-            .fetch_user(identity_id)
-            .map(lambda identity: (identity, permission in identity.permissions))
-            .map(
-                lambda ip: self._log_authorization_result(
-                    ip[0], permission, resource, allowed=ip[1]
-                )
-            )
+        return self.identity_manager.fetch_user(identity_id).map(
+            lambda identity: self._log_authorization(identity, permission, resource)
         )
+
+    def _log_authorization(
+        self, identity: m.Auth.AuthIdentity, permission: str, resource: str | None
+    ) -> bool:
+        """Log the authorization decision and return it."""
+        allowed = permission in identity.permissions
+        self.logger.debug(
+            "Authorization check",
+            username=identity.name,
+            resource=resource if resource is not None else "",
+            action=permission,
+            allowed=allowed,
+        )
+        return allowed
 
     def change_credential(
         self, identity_id: str, current_credential: str, new_credential: str
@@ -104,9 +123,10 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
                 if set_result.failure:
                     result = r[bool].fail(set_result.error)
                 else:
-                    result = r[bool].ok(
-                        self._log_success("Password change successful", identity.name)
+                    self.logger.info(
+                        "Password change successful", identity=identity.name
                     )
+                    result = r[bool].ok(True)
         return result
 
     def create_identity(
@@ -168,7 +188,8 @@ class FlextAuthIdentityService(s, FlextAuthIdentityAudit):
         set_result = identity.update_credential(new_credential)
         if set_result.failure:
             return r[bool].fail(set_result.error)
-        return r[bool].ok(self._log_success("Password reset successful", identity.name))
+        self.logger.info("Password reset successful", identity=identity.name)
+        return r[bool].ok(True)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityService"]

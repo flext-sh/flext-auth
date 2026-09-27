@@ -14,31 +14,17 @@ class FlextAuthBasicUsageExample(FlextAuthBasicUsageFlows, FlextAuthBasicUsageWo
     logger = u.fetch_logger(__name__)
 
     @classmethod
-    def _run_examples(cls) -> None:
-        """Run each basic usage example in order."""
+    def main(cls) -> None:
+        """Run every basic usage example; the first failure escapes with its cause."""
         for example in (
             cls.example_basic_authentication,
-            cls.example_password_operations,
-            cls.example_email_validation,
             cls.example_user_lifecycle,
             cls.example_direct_auth,
             cls.example_advanced_registration,
             cls.example_complete_workflow,
         ):
-            example()
-
-    @classmethod
-    def main(cls) -> None:
-        """Run all examples."""
-        cls.logger.info("Starting FLEXT Auth comprehensive examples")
-        try:
-            cls._run_examples()
-            cls.logger.info(
-                "All examples completed successfully - FLEXT Auth is working correctly"
-            )
-        except Exception as exc:
-            cls.logger.exception("Example execution failed", error=str(exc))
-            raise
+            example().unwrap()
+        cls.logger.info("All basic usage examples completed")
 
 
 if __name__ == "__main__":
