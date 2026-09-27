@@ -20,24 +20,7 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_api import api
-    from flext_cli import cli
-    from flext_infra import docs_main, infra
-    from flext_tests import (
-        active_rules,
-        discover_repository_root,
-        install_local_packages,
-        load_infra_report,
-        split_csv,
-        td,
-        tf,
-        tk,
-        tm,
-        tv,
-    )
-    from flext_web import web
-
-    from flext_core import core, d, e, h, lazy_attribute, r, x
+    from flext_api import d, e, h, r, x
 
     from . import providers, services
     from ._config import FlextAuthConfig, config
@@ -45,9 +28,9 @@ if TYPE_CHECKING:
     from .api import FlextAuth, auth
     from .base import FlextAuthServiceBase, s
     from .cli import main
-    from .constants import FlextAuthConstants, c
-    from .models import FlextAuthModels, m
-    from .protocols import FlextAuthProtocols, p
+    from .constants import FlextAuthConstants, FlextAuthConstants as c
+    from .models import FlextAuthModels, FlextAuthModels as m
+    from .protocols import FlextAuthProtocols, FlextAuthProtocols as p
     from .providers.apikey import FlextAuthApiKeyProvider
     from .providers.basic import FlextAuthBasicProvider
     from .providers.certificate import FlextAuthCertificateProvider
@@ -69,8 +52,12 @@ if TYPE_CHECKING:
     from .services.provider_service import FlextAuthProviderService
     from .services.session_service import FlextAuthSessionService
     from .services.token_service import FlextAuthTokenService
-    from .typings import FlextAuthTypes, t
-    from .utilities import FlextAuthIdentityAudit, FlextAuthUtilities, u
+    from .typings import FlextAuthTypes, FlextAuthTypes as t
+    from .utilities import (
+        FlextAuthIdentityAudit,
+        FlextAuthUtilities,
+        FlextAuthUtilities as u,
+    )
 
 
 __all__: tuple[str, ...] = (
@@ -113,22 +100,12 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "active_rules",
-    "api",
     "auth",
     "c",
-    "cli",
     "config",
-    "core",
     "d",
-    "discover_repository_root",
-    "docs_main",
     "e",
     "h",
-    "infra",
-    "install_local_packages",
-    "lazy_attribute",
-    "load_infra_report",
     "m",
     "main",
     "p",
@@ -137,15 +114,8 @@ __all__: tuple[str, ...] = (
     "s",
     "services",
     "settings",
-    "split_csv",
     "t",
-    "td",
-    "tf",
-    "tk",
-    "tm",
-    "tv",
     "u",
-    "web",
     "x",
 )
 
@@ -185,23 +155,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".services.token_service": ("FlextAuthTokenService",),
             ".typings": ("FlextAuthTypes", "t"),
             ".utilities": ("FlextAuthIdentityAudit", "FlextAuthUtilities", "u"),
-            "flext_api": ("api",),
-            "flext_cli": ("cli",),
-            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
-            "flext_infra": ("docs_main", "infra"),
-            "flext_tests": (
-                "active_rules",
-                "discover_repository_root",
-                "install_local_packages",
-                "load_infra_report",
-                "split_csv",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-            ),
-            "flext_web": ("web",),
+            "flext_api": ("d", "e", "h", "r", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

@@ -9,31 +9,13 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api import api
-    from flext_cli import cli
-    from flext_infra import docs_main, infra
-    from flext_tests import (
-        active_rules,
-        discover_repository_root,
-        install_local_packages,
-        load_infra_report,
-        split_csv,
-        td,
-        tf,
-        tk,
-        tm,
-        tv,
-    )
-    from flext_web import web
-
-    from flext_auth import auth, config, main, s, settings, t, u
-    from flext_core import core, d, e, h, lazy_attribute, r, x
+    from flext_auth import d, e, h, r, s, t, u, x
 
     from . import fixtures, unit
     from .base import TestsFlextAuthServiceBase
-    from .constants import TestsFlextAuthConstants, c
-    from .models import TestsFlextAuthModels, m
-    from .protocols import TestsFlextAuthProtocols, p
+    from .constants import TestsFlextAuthConstants, TestsFlextAuthConstants as c
+    from .models import TestsFlextAuthModels, TestsFlextAuthModels as m
+    from .protocols import TestsFlextAuthProtocols, TestsFlextAuthProtocols as p
     from .settings import TestsFlextAuthSettings
     from .typings import TestsFlextAuthTypes
     from .utilities import TestsFlextAuthUtilities
@@ -47,39 +29,18 @@ __all__: tuple[str, ...] = (
     "TestsFlextAuthSettings",
     "TestsFlextAuthTypes",
     "TestsFlextAuthUtilities",
-    "active_rules",
-    "api",
-    "auth",
     "c",
-    "cli",
-    "config",
-    "core",
     "d",
-    "discover_repository_root",
-    "docs_main",
     "e",
     "fixtures",
     "h",
-    "infra",
-    "install_local_packages",
-    "lazy_attribute",
-    "load_infra_report",
     "m",
-    "main",
     "p",
     "r",
     "s",
-    "settings",
-    "split_csv",
     "t",
-    "td",
-    "tf",
-    "tk",
-    "tm",
-    "tv",
     "u",
     "unit",
-    "web",
     "x",
 )
 
@@ -95,24 +56,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".typings": ("TestsFlextAuthTypes",),
             ".unit": ("unit",),
             ".utilities": ("TestsFlextAuthUtilities",),
-            "flext_api": ("api",),
-            "flext_auth": ("auth", "config", "main", "s", "settings", "t", "u"),
-            "flext_cli": ("cli",),
-            "flext_core": ("core", "d", "e", "h", "lazy_attribute", "r", "x"),
-            "flext_infra": ("docs_main", "infra"),
-            "flext_tests": (
-                "active_rules",
-                "discover_repository_root",
-                "install_local_packages",
-                "load_infra_report",
-                "split_csv",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-            ),
-            "flext_web": ("web",),
+            "flext_auth": ("d", "e", "h", "r", "s", "t", "u", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
