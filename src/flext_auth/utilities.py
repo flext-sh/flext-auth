@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_api import u
+from flext_api import FlextApiUtilities
 
 from flext_auth import t
 
@@ -11,7 +11,7 @@ from ._utilities.identity_audit import FlextAuthIdentityAudit
 from ._utilities.managers import FlextAuthUtilitiesManagers
 
 
-class FlextAuthUtilities(u):
+class FlextAuthUtilities(FlextApiUtilities):
     """FlextAuth advanced utilities extending the API utility namespace."""
 
     class Auth(FlextAuthUtilitiesAuth, FlextAuthUtilitiesManagers):

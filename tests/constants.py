@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from typing import Final
 
-from flext_auth import c
+from flext_auth import FlextAuthConstants
 
 
-class TestsFlextAuthConstants(c):
+class TestsFlextAuthConstants(FlextAuthConstants):
     """Test constants for flext-auth — extends flext_auth.c."""
 
     TEST_PASSWORD: Final[str] = "TestPassword123!"

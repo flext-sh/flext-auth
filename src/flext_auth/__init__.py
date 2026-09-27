@@ -28,9 +28,9 @@ if TYPE_CHECKING:
     from .api import FlextAuth, auth
     from .base import FlextAuthServiceBase, s
     from .cli import main
-    from .constants import FlextAuthConstants, c
-    from .models import FlextAuthModels, m
-    from .protocols import FlextAuthProtocols, p
+    from .constants import FlextAuthConstants, FlextAuthConstants as c
+    from .models import FlextAuthModels, FlextAuthModels as m
+    from .protocols import FlextAuthProtocols, FlextAuthProtocols as p
     from .providers.apikey import FlextAuthApiKeyProvider
     from .providers.basic import FlextAuthBasicProvider
     from .providers.certificate import FlextAuthCertificateProvider
@@ -52,8 +52,12 @@ if TYPE_CHECKING:
     from .services.provider_service import FlextAuthProviderService
     from .services.session_service import FlextAuthSessionService
     from .services.token_service import FlextAuthTokenService
-    from .typings import FlextAuthTypes, t
-    from .utilities import FlextAuthIdentityAudit, FlextAuthUtilities, u
+    from .typings import FlextAuthTypes, FlextAuthTypes as t
+    from .utilities import (
+        FlextAuthIdentityAudit,
+        FlextAuthUtilities,
+        FlextAuthUtilities as u,
+    )
 
 
 __all__: tuple[str, ...] = (
