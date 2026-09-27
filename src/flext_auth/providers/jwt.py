@@ -18,13 +18,9 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (RFC 7519 for JWT)
-
-        """
+    @property
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (RFC 7519 for JWT)."""
         return "RFC 7519"
 
     @override

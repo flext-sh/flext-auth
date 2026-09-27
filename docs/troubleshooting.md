@@ -81,7 +81,7 @@ result = auth.register_user("user", "invalid-email", "weak")
    from flext_cli import u
 
    auth = FlextAuth.quick_start(create_admin_user=False)
-   existing_user = auth.identity_service.identity_manager.get_user_by_username("username")
+   existing_user = auth.identity_service.identity_manager.fetch_user_by_username("username")
    if existing_user.success:
        u.Cli.info("User already exists")
    ```
@@ -109,7 +109,7 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user("user", "user@example.com", "password123")
 
 # Check if user exists
-user_result = auth.identity_service.identity_manager.get_user_by_username("user")
+user_result = auth.identity_service.identity_manager.fetch_user_by_username("user")
 if user_result.failure:
     u.Cli.info("User not found")
 else:

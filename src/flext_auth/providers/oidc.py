@@ -31,14 +31,10 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
 
     """
 
+    @property
     @override
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (OpenID Connect Core 1.0)
-
-        """
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (OpenID Connect Core 1.0)."""
         return "OpenID Connect Core 1.0"
 
     @override

@@ -60,6 +60,7 @@ class FlextAuthSessionManagers:
             }
             self._sessions[session_id] = session_data
             session = m.Auth.Session(
+                unique_id=session_id,
                 identity_id=str(session_data["identity_id"]),
                 session_token=str(session_data["session_token"]),
                 expires_at=session_data["expires_at"]

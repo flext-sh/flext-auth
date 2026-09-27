@@ -50,8 +50,8 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
             f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider"
         )
 
-    def get_capabilities(self, name: str) -> p.Result[set[str]]:
-        """Get provider capabilities."""
+    def resolve_capabilities(self, name: str) -> p.Result[set[str]]:
+        """Resolve provider capabilities."""
         provider_result = self.get(name)
         if provider_result.failure:
             return r[set[str]].fail(str(provider_result.error))

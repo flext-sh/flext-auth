@@ -18,7 +18,7 @@ class FlextAuthBasicAuthExample:
         cli.print(message)
 
     @staticmethod
-    def main() -> p.Result[None]:
+    def main() -> p.Result[bool]:
         """Demonstrate core auth workflow with the supported API surface."""
         auth = FlextAuth(settings=FlextAuthSettings())
         password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
@@ -32,26 +32,26 @@ class FlextAuthBasicAuthExample:
             FlextAuthBasicAuthExample._emit(
                 f"registration failed: {registration.error}"
             )
-            return r[None].from_failure(registration)
+            return r[bool].from_failure(registration)
         authentication = auth.authenticate_user("demouser", password)
         if authentication.failure:
             FlextAuthBasicAuthExample._emit(
                 f"authentication failed: {authentication.error}"
             )
-            return r[None].from_failure(authentication)
+            return r[bool].from_failure(authentication)
         identity = authentication.value
         token_result = auth.create_token(identity_id=identity.unique_id)
         if token_result.failure:
             FlextAuthBasicAuthExample._emit(
                 f"token generation failed: {token_result.error}"
             )
-            return r[None].from_failure(token_result)
+            return r[bool].from_failure(token_result)
         validation_result = auth.token_service.validate_token(token_result.value)
         FlextAuthBasicAuthExample._emit(
             f"token valid: {validation_result.success and validation_result.value}"
         )
-        return r[None].ok(None)
+        return validation_result
 
 
 if __name__ == "__main__":
-    FlextAuthBasicAuthExample.main()
+    FlextAuthBasicAuthExample.main().unwrap()

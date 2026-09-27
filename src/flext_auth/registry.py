@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from flext_auth import t
 
-from ._registry.metadata import FlextAuthRegistryMetadata
+from ._registry.mutation import FlextAuthRegistryMutation
 
 
-class FlextAuthRegistry(FlextAuthRegistryMetadata):
+class FlextAuthRegistry(FlextAuthRegistryMutation):
     """Auth provider registry backed by the canonical registry DSL."""
 
 

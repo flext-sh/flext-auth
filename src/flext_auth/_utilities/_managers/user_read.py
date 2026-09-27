@@ -16,20 +16,14 @@ if TYPE_CHECKING:
 class FlextAuthUserManagerRead:
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
-    def get_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Get user by ID."""
+    def fetch_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
+        """Fetch user by ID."""
         return self._find_user_by_id(user_id).map(
             lambda ud: self._create_identity_from_storage(ud[1])
         )
 
-    def get_user_by_id(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Get a user by their ID."""
-        return self._find_user_by_id(user_id).map(
-            lambda ud: self._create_identity_from_storage(ud[1])
-        )
-
-    def get_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Get user by username."""
+    def fetch_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
+        """Fetch user by username."""
         if username not in self._users:
             return e.fail_not_found("User", "", result_type=r[m.Auth.AuthIdentity])
         storage_data = self._users[username]

@@ -70,7 +70,7 @@ class TestsFlextAuthApiCase05:
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
         nonexistent_result = (
-            auth.identity_service.identity_manager.get_user_by_username(
+            auth.identity_service.identity_manager.fetch_user_by_username(
                 "nonexistent_user"
             )
         )
