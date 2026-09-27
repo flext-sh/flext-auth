@@ -15,8 +15,8 @@ class TestsFlextAuthApiCase07:
 
     _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
-    def test_get_user_method(self) -> None:
-        """Test get_user method functionality."""
+    def test_fetch_user_method(self) -> None:
+        """Test fetch_user method functionality."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="test_get_user",
@@ -25,13 +25,13 @@ class TestsFlextAuthApiCase07:
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
-        get_result = auth.identity_service.identity_manager.get_user(user.unique_id)
+        get_result = auth.identity_service.identity_manager.fetch_user(user.unique_id)
         u.Tests.Matchers.that(get_result.success, eq=True)
         retrieved_user = get_result.value
         u.Tests.Matchers.that(retrieved_user.unique_id, eq=user.unique_id)
 
-    def test_get_user_by_username_method(self) -> None:
-        """Test get_user_by_username method functionality."""
+    def test_fetch_user_by_username_method(self) -> None:
+        """Test fetch_user_by_username method functionality."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="test_username_lookup",
@@ -39,7 +39,7 @@ class TestsFlextAuthApiCase07:
             password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
-        get_result = auth.identity_service.identity_manager.get_user_by_username(
+        get_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "test_username_lookup"
         )
         u.Tests.Matchers.that(get_result.success, is_=bool)
@@ -56,7 +56,7 @@ class TestsFlextAuthApiCase07:
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
         u.Tests.Matchers.that(token_result.success, eq=True)
-        get_result = auth.identity_service.identity_manager.get_user(user.unique_id)
+        get_result = auth.identity_service.identity_manager.fetch_user(user.unique_id)
         u.Tests.Matchers.that(get_result.success, eq=True)
 
     def test_logout_user_method(self) -> None:

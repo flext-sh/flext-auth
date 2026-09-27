@@ -94,7 +94,7 @@ extensive provider ecosystem, but with significant test failures requiring resol
 - ✅ Abstract base class with protocol definition
 - ✅ authenticate(), validate(), refresh() methods
 - ✅ supports() capability reporting
-- ✅ get_metadata() provider information
+- ✅ metadata property provider information
 - ✅ Proper typing and documentation
 
 **Core Services**

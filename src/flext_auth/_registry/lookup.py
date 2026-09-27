@@ -30,8 +30,8 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         ]
         return r[t.StrSequence].ok(matching)
 
-    def get_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
-        """Get provider configuration."""
+    def fetch_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
+        """Fetch provider configuration."""
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
         config_result = self.fetch_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
@@ -43,8 +43,8 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             return r[t.ScalarMapping].fail("Invalid settings format")
         return r[t.ScalarMapping].ok(settings)
 
-    def get_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
-        """Get provider metadata."""
+    def fetch_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
+        """Fetch provider metadata."""
         if not self.has_provider(name):
             return r[m.Auth.Providers.Metadata].fail(
                 f"Provider '{name}' not registered"
@@ -74,7 +74,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
 
     def has_capability(self, name: str, capability: str) -> p.Result[bool]:
         """Check if provider has capability."""
-        caps_result = self.get_capabilities(name)
+        caps_result = self.resolve_capabilities(name)
         if caps_result.failure:
             return r[bool].from_failure(caps_result)
         caps = caps_result.unwrap()

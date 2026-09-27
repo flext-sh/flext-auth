@@ -99,32 +99,26 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Authenticate and provision token + session for the user."""
         auth_result = self._identity_service.authenticate_identity(username, password)
-        if auth_result.success:
-            identity = auth_result.value
-            token_result = self._token_service.generate_jwt_token(
-                user_id=identity.unique_id,
-                expires_in_minutes=settings.Auth.expiry_minutes,
-            )
-            if token_result.success:
-                session_result = self._session_service.session_manager.create_session(
-                    user_id=identity.unique_id,
-                    token=token_result.value,
-                    expires_in_minutes=settings.Auth.session_expiry_minutes,
-                    ip_address=ip_address or "",
-                    user_agent=user_agent or "",
-                )
-
-                session_result.tap_error(
-                    lambda err: (
-                        self.logger.warning(
-                            "Failed to create session for user %s: %s",
-                            identity.name,
-                            err,
-                        ),
-                        None,
-                    )[-1]
-                )
-        return auth_result
+        if auth_result.failure:
+            return auth_result
+        identity = auth_result.value
+        token_result = self._token_service.generate_jwt_token(
+            user_id=identity.unique_id, expires_in_minutes=settings.Auth.expiry_minutes
+        )
+        if token_result.failure:
+            return r[m.Auth.AuthIdentity].from_failure(token_result)
+        session_result = self._session_service.session_manager.create_session(
+            user_id=identity.unique_id,
+            token=token_result.value,
+            expires_in_minutes=settings.Auth.session_expiry_minutes,
+            ip_address=ip_address or "",
+            user_agent=user_agent or "",
+        )
+        if session_result.failure:
+            return r[m.Auth.AuthIdentity].from_failure(session_result)
+        identity.token = token_result.value
+        identity.session_id = session_result.value.unique_id
+        return r[m.Auth.AuthIdentity].ok(identity)
 
     @override
     def register_user(

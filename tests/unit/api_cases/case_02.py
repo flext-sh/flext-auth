@@ -34,7 +34,7 @@ class TestsFlextAuthApiCase02:
         """Test that token creation fails — JWT provider not implemented."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("tokenuser", "token@example.com", "TokenPass123!")
-        user_result = auth.identity_service.identity_manager.get_user_by_username(
+        user_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "tokenuser"
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
@@ -77,7 +77,7 @@ class TestsFlextAuthApiCase02:
     def test_get_nonexistent_user(self) -> None:
         """Test retrieving non-existent user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        result = auth.identity_service.identity_manager.get_user_by_username(
+        result = auth.identity_service.identity_manager.fetch_user_by_username(
             "nonexistent"
         )
         u.Tests.Matchers.that(not result.success, eq=True)

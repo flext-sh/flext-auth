@@ -71,7 +71,7 @@ class FlextAuthTokenService(s):
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
     ) -> p.Result[str]:
         """Railway-oriented JWT token generation with audit logging."""
-        user_result = self.user_manager.get_user(user_id)
+        user_result = self.user_manager.fetch_user(user_id)
         if user_result.failure:
             return self._fail_token_creation(
                 user_id, token_kind, user_result.error, "User lookup failed"

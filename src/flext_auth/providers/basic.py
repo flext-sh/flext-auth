@@ -21,13 +21,9 @@ class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvide
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).
     """
 
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (RFC 7617 for Basic Auth)
-
-        """
+    @property
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (RFC 7617 for Basic Auth)."""
         return "RFC 7617"
 
     @override
