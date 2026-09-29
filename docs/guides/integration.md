@@ -55,9 +55,8 @@ patterns. For complete `r` usage patterns, see the flext-core documentation.
 Authentication operations return `r` for consistency with the FLEXT ecosystem:
 
 ```python
-from flext_cli import u
-
 from flext_auth import FlextAuth
+from flext_cli import u
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -102,9 +101,8 @@ class UserService:
 All domain entities use `FlextModels` patterns:
 
 ```python
-from flext_cli import u
-
 from flext_auth import FlextAuth
+from flext_cli import u
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -274,7 +272,6 @@ Pattern for service-to-service authentication:
 from __future__ import annotations
 
 from flext_api import FlextApi
-
 from flext_auth import FlextAuth
 from flext_core import m, p
 
@@ -372,9 +369,8 @@ Integration with FLEXT environment management:
 ```python
 import os
 
-from flext_cli import u
-
 from flext_auth import FlextAuth, FlextAuthSettings
+from flext_cli import u
 
 # Environment detection
 flext_env = os.getenv("FLEXT_ENV", "development")
