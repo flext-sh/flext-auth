@@ -324,9 +324,8 @@ Follow FLEXT service patterns:
 ```python
 from __future__ import annotations
 
-from flext_cli import u
-
 from flext_auth import p, r, t
+from flext_cli import u
 from flext_core import FlextContainer
 
 
@@ -392,9 +391,8 @@ result = auth.authenticate_user("demo", "SecurePass123!")
 ```python
 import logging
 
-from flext_cli import u
-
 from flext_auth import FlextAuth
+from flext_cli import u
 
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)
