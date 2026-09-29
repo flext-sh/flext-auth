@@ -299,8 +299,8 @@ adr generate index
 ## Quick Reference
 
 **Create ADR**: `adr new "Decision Title"` **List ADRs**: `adr list` **Update Status**:
-Edit status field in ADR file **Link ADRs**: Use "Related ADRs" section **Review
-Cycle**: Quarterly review of all ADRs
+Edit status field in ADR file **Link ADRs**: Use "Related ADRs" section
+**Review Cycle**: Quarterly review of all ADRs
 
 For more information, see [ADR GitHub Repository](https://adr.github.io/) and
 [ADR Tools](https://github.com/npryce/adr-tools).
