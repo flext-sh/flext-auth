@@ -23,7 +23,7 @@ class FlextAuthOAuth2Tokens(
     def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: t.ConfigurationMapping = {
-            k: v for k, v in credentials.items() if isinstance(v, t.PRIMITIVES_TYPES)
+            k: v for k, v in credentials.items() if isinstance(v, c.PRIMITIVES_TYPES)
         }
         token_model = m.Auth.AuthToken(
             identity_id=str(
