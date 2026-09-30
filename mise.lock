@@ -239,6 +239,12 @@ url = "https://github.com/kucherenko/jscpd/releases/download/v5.3.3/jscpd-darwin
 url_api = "https://api.github.com/repos/kucherenko/jscpd/releases/assets/595512991"
 provenance = "github-attestations"
 
+[tools."github:kucherenko/jscpd"."platforms.windows-x64"]
+checksum = "sha256:75152cab799db1b894b4c8ba57934291d90174459f2db394bd1243a389c78071"
+url = "https://github.com/kucherenko/jscpd/releases/download/v5.3.3/jscpd-windows-x64-msvc.tar.gz"
+url_api = "https://api.github.com/repos/kucherenko/jscpd/releases/assets/595513031"
+provenance = "github-attestations"
+
 [[tools."github:microsoft/waza"]]
 version = "0.38.7"
 backend = "github:microsoft/waza"
