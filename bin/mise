@@ -87,11 +87,11 @@ __mise_bootstrap() {
           if type ldd >/dev/null 2>/dev/null; then
             if [ "${MISE_INSTALL_MUSL-}" = "1" ] || [ "${MISE_INSTALL_MUSL-}" = "true" ]; then
               musl="-musl"
-            elif [ "$(uname -o)" = "Android" ]; then
+            elif [ "$(uname -o || true)" = "Android" ]; then
               # Android (Termux) always uses musl
               musl="-musl"
             else
-              libc=$(ldd /bin/ls | grep 'musl' | head -1 | cut -d ' ' -f1)
+              libc=$(ldd /bin/ls | grep 'musl' | head -1 | cut -d ' ' -f1 || true)
               if [ -n "${libc}" ]; then
                 musl="-musl"
               fi
@@ -192,17 +192,17 @@ __mise_bootstrap() {
                 elif [ "${arch}" = "arm64-musl" ]; then
                   echo "${checksum_linux_arm64_musl_zstd}"
                 elif [ "${arch}" = "armv7" ]; then
-                  echo "${checksum_linux_armv7_zstd}"
+                  echo "${checksum_linux_armv7}_zstd"
                 elif [ "${arch}" = "armv7-musl" ]; then
-                  echo "${checksum_linux_armv7_musl_zstd}"
+                  echo "${checksum_linux_armv7}_musl_zstd"
                 else
                   warn "no checksum for ${os}-${arch}"
                 fi
               elif [ "${os}" = "macos" ]; then
                 if [ "${arch}" = "x64" ]; then
-                  echo "${checksum_macos_x86_64_zstd}"
+                  echo "${checksum_macos_x86_64}_zstd"
                 elif [ "${arch}" = "arm64" ]; then
-                  echo "${checksum_macos_arm64_zstd}"
+                  echo "${checksum_macos_arm64}_zstd"
                 else
                   warn "no checksum for ${os}-${arch}"
                 fi
@@ -222,7 +222,7 @@ __mise_bootstrap() {
                 elif [ "${arch}" = "armv7" ]; then
                   echo "${checksum_linux_armv7}"
                 elif [ "${arch}" = "armv7-musl" ]; then
-                  echo "${checksum_linux_armv7_musl}"
+                  echo "${checksum_linux_armv7}_musl"
                 else
                   warn "no checksum for ${os}-${arch}"
                 fi
@@ -278,7 +278,7 @@ __mise_bootstrap() {
             if command -v wget >/dev/null 2>&1; then
               debug ">" wget -qO "${file}" "${url}"
               stderr=$(mktemp)
-              wget -O "${file}" "${url}" >"${stderr}" 2>&1 || error "wget failed: $(cat "${stderr}")"
+              wget -O "${file}" "${url}" >"${stderr}" 2>&1 || error "wget failed: $(cat "${stderr}" || true)"
               rm "${stderr}"
             else
               error "mise standalone install requires curl or wget but neither is installed. Aborting."
@@ -294,7 +294,7 @@ __mise_bootstrap() {
         installed_mise_version() {
           bin="$1"
           if [ -x "${bin}" ]; then
-            installed_version="$("${bin}" version 2>/dev/null | head -n1 | cut -d' ' -f1)"
+            installed_version="$("${bin}" version 2>/dev/null | head -n1 | cut -d' ' -f1 || true)"
             echo "${installed_version#v}"
           fi
         }
@@ -352,7 +352,7 @@ __mise_bootstrap() {
           else
             tar --no-same-owner -xf "${cache_file}"
           fi
-          if [ "$(id -u)" = "0" ]; then
+          if [ "$(id -u || true)" = "0" ]; then
             chown 0:0 mise/bin/mise
             chmod 755 mise/bin/mise
           fi

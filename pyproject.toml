@@ -28,7 +28,7 @@ dependencies = [
   "packaging>=26.3",
   "pydantic>=2.13.5",
   "pydantic-settings>=2.14.2,<2.16",
-  "PyJWT>=2.15.0",
+  "PyJWT>=2.15.1",
   "pyyaml>=6.0.3",
   "structlog>=25.5.0,<27",
   "typing-extensions>=4.16.0",
@@ -488,7 +488,7 @@ namespace-packages = ["tests", "examples", "scripts"]
 preview = true
 respect-gitignore = true
 show-fixes = true
-src = ["examples", "scripts", "src", "tests"]
+src = ["examples", "src", "tests"]
 target-version = "py313"
 
 [tool.ruff.format]
@@ -499,6 +499,7 @@ quote-style = "double"
 skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
+extend-safe-fixes = []
 ignore = [
   "ambiguous-unicode-character-comment",
   "ambiguous-unicode-character-docstring",
@@ -533,6 +534,17 @@ ignore = [
   "typing-only-third-party-import",
 ]
 select = ["ALL"]
+unfixable = [
+  "duplicate-value",
+  "multi-value-repeated-key-literal",
+  "multi-value-repeated-key-variable",
+  "outdated-version-block",
+  "p-print",
+  "print",
+  "pytest-duplicate-parametrize-test-cases",
+  "redefined-while-unused",
+  "unused-variable",
+]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.argparse]
 msg = "Use cli.register_result_command + Pydantic model from flext_cli."
