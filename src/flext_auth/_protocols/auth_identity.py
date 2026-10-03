@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_auth import p, t
+from flext_api import p
 
 if TYPE_CHECKING:
     from datetime import datetime
+
+    from flext_auth import t
 
 
 class FlextAuthProtocolsAuthIdentity:

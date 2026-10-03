@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
 from flext_api import r, u
+
 from flext_auth import m, p, t
 
 from .user_write import FlextAuthUserManagerWrite
