@@ -4,21 +4,22 @@ from __future__ import annotations
 
 from flext_tests import tm
 
-from flext_auth import FlextAuth
-from tests import c, m, u
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from flext_auth import FlextAuth, m
+from tests.constants import TestsFlextAuthConstants as c
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase04:
     """FlextAuth API case group 04."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_token_validation_bearer_prefix(self) -> None:
         """Test that token creation fails — JWT provider not implemented."""
         auth: FlextAuth = FlextAuth()
         username = "beareruser"
-        password = "BearerPassword123!"
+        password = c.TEST_PASSWORD
         register_result = auth.register_user(username, "bearer@example.com", password)
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
@@ -32,7 +33,7 @@ class TestsFlextAuthApiCase04:
         """Test session management functionality."""
         auth: FlextAuth = FlextAuth()
         username = "sessionuser"
-        password = "SessionPassword123!"
+        password = c.TEST_PASSWORD
         auth.register_user(username, "session@example.com", password)
         auth_result = auth.authenticate_user(
             username, password, "127.0.0.1", "test-user-agent"
@@ -52,7 +53,7 @@ class TestsFlextAuthApiCase04:
         """Test user logout functionality."""
         auth: FlextAuth = FlextAuth()
         username = "logoutuser"
-        password = "LogoutPassword123!"
+        password = c.TEST_PASSWORD
         auth.register_user(username, "logout@example.com", password)
         auth_result = auth.authenticate_user(username, password)
         u.Tests.Matchers.that(auth_result.success, eq=True)
@@ -83,7 +84,7 @@ class TestsFlextAuthApiCase04:
         """Test synchronous API methods work as expected."""
         auth: FlextAuth = FlextAuth()
         username = "syncuser"
-        password = "SyncPassword123!"
+        password = c.TEST_PASSWORD
         create_result = auth.register_user(username, "sync@example.com", password)
         u.Tests.Matchers.that(create_result.success, eq=True)
         auth_result = auth.authenticate_user(username, password)
@@ -94,18 +95,18 @@ class TestsFlextAuthApiCase04:
         auth = FlextAuth.quick_start()
         tm.that(auth, is_=FlextAuth)
 
-    def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start with REDACTED_LDAP_BIND_PASSWORD user creation."""
+    def test_quick_start_with_admin_user(self) -> None:
+        """Test FlextAuth.quick_start with admin user creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
-    def test_quick_start_custom_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
+    def test_quick_start_custom_admin_credentials(self) -> None:
+        """Test FlextAuth.quick_start with custom admin credentials."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
-    def test_quick_start_no_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start without REDACTED_LDAP_BIND_PASSWORD user."""
+    def test_quick_start_no_admin_user(self) -> None:
+        """Test FlextAuth.quick_start without admin user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
 
@@ -113,10 +114,10 @@ class TestsFlextAuthApiCase04:
         """Test account lockout after multiple failed login attempts."""
         auth: FlextAuth = FlextAuth()
         username = "locktest"
-        password = "LockTestPassword123!"
+        password = c.TEST_PASSWORD
         auth.register_user(username, "lock@example.com", password)
         for _ in range(c.Auth.MAX_ATTEMPTS_DEFAULT):
-            failed_auth = auth.authenticate_user(username, "wrong_password")
+            failed_auth = auth.authenticate_user(username, c.TEST_PASSWORD + "_wrong")
             u.Tests.Matchers.that(not failed_auth.success, eq=True)
         locked_auth = auth.authenticate_user(username, password)
         u.Tests.Matchers.that(not locked_auth.success, eq=True)

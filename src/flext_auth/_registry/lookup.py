@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from flext_auth import c, m, p, r, t
-from flext_auth._registry.base import FlextAuthRegistryBase
+
+from .base import FlextAuthRegistryBase
 
 
 class FlextAuthRegistryLookup(FlextAuthRegistryBase):
@@ -29,8 +30,8 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         ]
         return r[t.StrSequence].ok(matching)
 
-    def get_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
-        """Get provider configuration."""
+    def fetch_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
+        """Fetch provider configuration."""
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
         config_result = self.fetch_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
@@ -42,34 +43,40 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             return r[t.ScalarMapping].fail("Invalid settings format")
         return r[t.ScalarMapping].ok(settings)
 
-    def get_metadata(self, name: str) -> p.Result[p.Auth.Providers.Metadata]:
-        """Get provider metadata."""
+    def fetch_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
+        """Fetch provider metadata."""
         if not self.has_provider(name):
-            return r[p.Auth.Providers.Metadata].fail(
+            return r[m.Auth.Providers.Metadata].fail(
                 f"Provider '{name}' not registered"
             )
         metadata_result = self.fetch_plugin(c.Auth.REGISTRY_METADATA_CATEGORY, name)
         if metadata_result.failure:
-            return r[p.Auth.Providers.Metadata].ok(
+            return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name, version="1.0.0", capabilities=(), extras={}
+                    name=name,
+                    version=c.Auth.PROVIDER_VERSION,
+                    capabilities=(),
+                    extras={},
                 )
             )
         wrapper = metadata_result.value
         metadata = getattr(wrapper, "data", None)
         if metadata is None:
-            return r[p.Auth.Providers.Metadata].ok(
+            return r[m.Auth.Providers.Metadata].ok(
                 m.Auth.Providers.Metadata(
-                    name=name, version="1.0.0", capabilities=(), extras={}
+                    name=name,
+                    version=c.Auth.PROVIDER_VERSION,
+                    capabilities=(),
+                    extras={},
                 )
             )
-        return r[p.Auth.Providers.Metadata].ok(metadata)
+        return r[m.Auth.Providers.Metadata].ok(metadata)
 
     def has_capability(self, name: str, capability: str) -> p.Result[bool]:
         """Check if provider has capability."""
-        caps_result = self.get_capabilities(name)
+        caps_result = self.resolve_capabilities(name)
         if caps_result.failure:
-            return r[bool].fail(caps_result.error or f"Provider '{name}' not found")
+            return r[bool].from_failure(caps_result)
         caps = caps_result.unwrap()
         return r[bool].ok(capability in caps)
 

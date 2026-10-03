@@ -11,14 +11,15 @@ Use only:
 - `register_user(...)`
 - `authenticate_user(...)`
 - `create_token(...)`
-- `identity_service.identity_manager.get_user(...)`
-- `identity_service.identity_manager.get_user_by_username(...)`
+- `identity_service.identity_manager.fetch_user(...)`
+- `identity_service.identity_manager.fetch_user_by_username(...)`
 - `token_service.validate_token(...)`
 - `session_service.session_manager.get_active_sessions(...)`
 - `session_service.session_manager.end_session_by_id(...)`
 - `session_service.cleanup_expired_sessions(...)`
 
-No legacy helper functions or wrapper factories are part of the supported examples contract.
+No legacy helper functions or wrapper factories are part of the supported examples
+contract.
 
 ## Minimal Flow
 

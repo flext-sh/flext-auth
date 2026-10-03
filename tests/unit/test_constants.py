@@ -14,22 +14,20 @@ avoid poking implementation internals such as ``__mro__``.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Mapping, MutableMapping
+from enum import StrEnum
+from typing import cast
 
 import pytest
 from flext_tests import tm
 
-from tests import c
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
-    from enum import StrEnum
-
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+from flext_auth import c, t
 
 
 class TestsFlextAuthConstants:
     """Public-contract behavior of the FlextAuthConstants facade."""
+
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     # ----- Composition reachability (observable, not structural) -----
 
@@ -91,7 +89,7 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_published_scalar_constants_hold_their_contract_value(
-        self, value: str | float | bool, expected: str | float | bool
+        self, value: str | float, expected: str | float
     ) -> None:
         tm.that(value, eq=expected)
 
@@ -127,14 +125,14 @@ class TestsFlextAuthConstants:
             (c.Auth.ProviderTypes.CERTIFICATE, "certificate"),
             (c.Auth.ProviderTypes.KERBEROS, "kerberos"),
             (c.Auth.ProviderTypes.APIKEY, "apikey"),
-            (c.Auth.RoleTypes.ADMIN, "REDACTED_LDAP_BIND_PASSWORD"),
+            (c.Auth.RoleTypes.ADMIN, "admin"),
             (c.Auth.RoleTypes.USER, "user"),
             (c.Auth.RoleTypes.MODERATOR, "moderator"),
             (c.Auth.RoleTypes.GUEST, "guest"),
             (c.Auth.PermissionTypes.READ, "read"),
             (c.Auth.PermissionTypes.WRITE, "write"),
             (c.Auth.PermissionTypes.DELETE, "delete"),
-            (c.Auth.PermissionTypes.ADMIN, "REDACTED_LDAP_BIND_PASSWORD"),
+            (c.Auth.PermissionTypes.ADMIN, "admin"),
             (c.Auth.Algorithms.HS256, "HS256"),
             (c.Auth.Algorithms.RS256, "RS256"),
             (c.Auth.Algorithms.ES256, "ES256"),
@@ -224,19 +222,21 @@ class TestsFlextAuthConstants:
         self, valid_set: frozenset[str]
     ) -> None:
         tm.that(valid_set, is_=frozenset)
+        # Why: frozenset has no add; the cast lets the call type-check so the
+        # test can assert the AttributeError the runtime actually raises.
+        mutable = cast("set[str]", valid_set)
         with pytest.raises(AttributeError):
-            getattr(valid_set, "add")(
-                "mutated"
-            )  # Why: frozenset has no add; asserting immutability.
+            mutable.add("mutated")
 
     @pytest.mark.parametrize(
         "mapping", [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE]
     )
     def test_exposed_mappings_reject_mutation(
-        self, mapping: Mapping[str, object]
+        self, mapping: Mapping[str, t.JsonValue]
     ) -> None:
+        mutable = cast("MutableMapping[str, t.JsonValue]", mapping)
         with pytest.raises((TypeError, AttributeError)):
-            getattr(mapping, "__setitem__")("injected", 1)
+            mutable["injected"] = 1
 
     # ----- Mapping contract: required keys and payload shape -----
 

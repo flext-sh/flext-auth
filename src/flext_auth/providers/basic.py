@@ -11,7 +11,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthProviderMixin, p, r, t
+from flext_auth import p, t
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
 class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -20,23 +21,9 @@ class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvide
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).
     """
 
-    def __init__(self, settings: t.ConfigurationMapping | None = None) -> None:
-        """Initialize provider with configuration."""
-        super().__init__(settings)
-
-    @override
-    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate using HTTP Basic credentials."""
-        _ = credentials
-        return r[p.Auth.Token].fail("Not implemented")
-
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (RFC 7617 for Basic Auth)
-
-        """
+    @property
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (RFC 7617 for Basic Auth)."""
         return "RFC 7617"
 
     @override
@@ -48,12 +35,6 @@ class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvide
 
         """
         return {"basic", "validate"}
-
-    @override
-    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate authentication token."""
-        _ = token
-        return r[bool].fail("Not implemented")
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthBasicProvider"]

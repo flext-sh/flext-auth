@@ -2,19 +2,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from flext_api import FlextApiModels
 
-from flext_api import m
-from flext_auth._models.auth import FlextAuthModelsAuth
+from flext_auth import t
 
-if TYPE_CHECKING:
-    from flext_auth import t
+from ._models.auth import FlextAuthModelsAuth
+from ._models.base import FlextAuthModelsBase
 
 
-class FlextAuthModels(m):
+class FlextAuthModels(FlextApiModels):
     """Authentication models extending the API model namespace."""
 
-    class Auth(FlextAuthModelsAuth):
+    class Auth(FlextAuthModelsBase, FlextAuthModelsAuth):
         """Authentication model namespace."""
 
 

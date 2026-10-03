@@ -14,7 +14,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthProviderMixin, p, r, t
+from flext_auth import p, r, t
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
 class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -55,14 +56,11 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             if isinstance(value, (bool, int, str))
         }
 
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
+    @property
+    def rfc_version(self) -> str:
+        """RFC version this provider implements.
 
-        Returns:
-            str: RFC version (e.g., "RFC 7617", "RFC 6749")
-
-        This method must be overridden by subclasses.
-
+        Subclasses override this property with their own RFC identifier.
         """
         return "RFC Base"
 
@@ -116,7 +114,7 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         )
 
     @override
-    def validate(self, token: str) -> p.Result[bool]:
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate authentication token.
 
         This is an abstract method that must be implemented by RFC-specific providers.

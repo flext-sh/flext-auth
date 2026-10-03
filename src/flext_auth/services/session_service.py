@@ -7,9 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
-
-from flext_auth import p, r, s, t, u
+from flext_auth import p, s, t, u
 
 
 class FlextAuthSessionService(s):
@@ -33,17 +31,6 @@ class FlextAuthSessionService(s):
         """Railway-oriented cleanup of expired sessions from the system."""
         u.fetch_logger(__name__).info("Cleanup of expired sessions requested")
         return self.session_manager.cleanup_expired_sessions()
-
-    @override
-    def execute(self) -> p.Result[p.BaseModel]:
-        """Execute method for s interface.
-
-        Session service doesn't use generic execute pattern.
-        Use specific session methods instead.
-        """
-        return r[p.BaseModel].fail(
-            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()"
-        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthSessionService"]

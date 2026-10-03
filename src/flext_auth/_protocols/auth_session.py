@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Protocol, override, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_auth import p, t
+from flext_api import p
+
+if TYPE_CHECKING:
+    from flext_auth import t
 
 
 class FlextAuthProtocolsAuthSession:
@@ -28,7 +31,6 @@ class FlextAuthProtocolsAuthSession:
             """Check if session is expired."""
             ...
 
-        @override
         def valid(self) -> bool:
             """Check if session is valid (active and not expired)."""
             ...

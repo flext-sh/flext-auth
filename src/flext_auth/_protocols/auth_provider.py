@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_auth import c, p, t
+from flext_auth import c, t
 
 if TYPE_CHECKING:
-    from flext_auth._protocols.auth_token import FlextAuthProtocolsAuthToken
+    from flext_api import p
+
+    from .auth_token import FlextAuthProtocolsAuthToken
 
 
 class FlextAuthProtocolsAuthProvider:
@@ -139,33 +141,6 @@ class FlextAuthProtocolsAuthProvider:
 
             """
             ...
-
-    class Providers:
-        """Provider-related protocol namespace."""
-
-        @runtime_checkable
-        class Metadata(Protocol):
-            """Contract for provider registry metadata."""
-
-            @property
-            def name(self) -> str:
-                """Provider name."""
-                ...
-
-            @property
-            def version(self) -> str:
-                """Provider version."""
-                ...
-
-            @property
-            def capabilities(self) -> t.VariadicTuple[str]:
-                """Provider capabilities."""
-                ...
-
-            @property
-            def extras(self) -> t.JsonMapping:
-                """Extra provider attributes."""
-                ...
 
 
 __all__: list[str] = ["FlextAuthProtocolsAuthProvider"]

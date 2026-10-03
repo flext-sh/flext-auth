@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import c, m, p, r, t
-from flext_auth._registry.lookup import FlextAuthRegistryLookup
+
+from .lookup import FlextAuthRegistryLookup
 
 
 class FlextAuthRegistryMutation(FlextAuthRegistryLookup):

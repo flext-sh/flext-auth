@@ -1,22 +1,25 @@
+"""Real-world token flow tests for the flext-auth public API."""
+
 from __future__ import annotations
 
 import pytest
 
 from flext_auth import FlextAuth
-from tests import u
-
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+from tests.constants import TestsFlextAuthConstants as c
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthTokenRealFlows:
     """Token flow tests using only FlextAuth public API."""
+
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     def test_create_token_for_registered_user(self) -> None:
         auth = FlextAuth.quick_start(create_admin_user=False)
         registered = auth.register_user(
             username="token-flow-user",
             email="token-flow-user@example.com",
-            password="TokenFlowPass123!",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.ok(registered)
 
@@ -31,7 +34,7 @@ class TestsFlextAuthTokenRealFlows:
         registered = auth.register_user(
             username="token-validate-user",
             email="token-validate-user@example.com",
-            password="TokenValidatePass123!",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.ok(registered)
 
@@ -49,7 +52,7 @@ class TestsFlextAuthTokenRealFlows:
     def test_authenticate_user_and_create_token_sequence(self) -> None:
         auth = FlextAuth.quick_start(create_admin_user=False)
         username = "sequence-user"
-        password = "SequencePass123!"
+        password = c.TEST_PASSWORD
         register_result = auth.register_user(
             username=username, email="sequence-user@example.com", password=password
         )

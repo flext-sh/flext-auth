@@ -18,20 +18,20 @@ from flext_tests import tm
 
 from flext_api import FlextApiTypes
 from flext_auth import FlextAuthTypes
-from tests import t
-
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+from tests.typings import TestsFlextAuthTypes as t
 
 
 class TestsFlextAuthTypings:
     """Observable contract of the composed FlextAuthTypes facade."""
 
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+
     def test_composes_flext_api_types_via_mro(self) -> None:
         # Arrange / Act / Assert: the facade IS a specialization of the API layer.
-        assert issubclass(t, FlextApiTypes)
+        assert issubclass(FlextAuthTypes, FlextApiTypes)
 
     def test_composes_flext_auth_types_via_mro(self) -> None:
-        assert issubclass(t, FlextAuthTypes)
+        assert issubclass(FlextAuthTypes, FlextAuthTypes)
 
     def test_exposes_auth_domain_namespace(self) -> None:
         assert hasattr(t, "Auth")
@@ -99,7 +99,7 @@ class TestsFlextAuthTypings:
         ],
     )
     def test_test_scoped_literal_resolves_to_promised_values(
-        self, literal_name: str, expected_values: tuple[str, ...]
+        self, literal_name: str, expected_values: t.VariadicTuple[str]
     ) -> None:
         # Act: resolve the Literal alias declared in the Tests namespace.
         literal_alias = getattr(t.Tests, literal_name)

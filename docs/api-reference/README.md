@@ -1,6 +1,14 @@
-<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
-
 # flext-auth API Reference
+
+<!-- TOC START -->
+
+- [Source of Truth](#source-of-truth)
+- [Generated Pages](#generated-pages)
+- [Surface Summary](#surface-summary)
+
+<!-- TOC END -->
+
+<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 This section is generated from public exports and real docstrings.
 
@@ -19,7 +27,9 @@ This section is generated from public exports and real docstrings.
 
 ## Surface Summary
 
-- Primary facades: `FlextAuth`, `FlextAuthApiKeyProvider`, `FlextAuthApplicationService`, `FlextAuthBasicProvider`, `FlextAuthCertificateProvider`, `FlextAuthConstants` (+24 more)
-- Generated module pages: `29`
+- Primary facades: `FlextAuth`, `FlextAuthApiKeyProvider`,
+  `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
+  `FlextAuthCertificateProvider`, `FlextAuthConfig` (+24 more)
+- Generated module pages: `31`
 
-- [Back to project docs](../index.md)
+Back to [project docs](../index.md).

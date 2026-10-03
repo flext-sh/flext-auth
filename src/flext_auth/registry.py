@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from flext_auth import t
 
-from flext_auth._registry.metadata import FlextAuthRegistryMetadata
-
-if TYPE_CHECKING:
-    from flext_auth import t
+from ._registry.mutation import FlextAuthRegistryMutation
 
 
-class FlextAuthRegistry(FlextAuthRegistryMetadata):
+class FlextAuthRegistry(FlextAuthRegistryMutation):
     """Auth provider registry backed by the canonical registry DSL."""
 
 

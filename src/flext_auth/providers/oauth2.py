@@ -57,14 +57,10 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
         self._token_endpoint_auth_method = self._init_token_endpoint_auth_method()
         self._http_client: http.client.HTTPSConnection | None = None
 
+    @property
     @override
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (e.g., "RFC 7617", "RFC 6749")
-
-        """
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (RFC 6749 for OAuth2)."""
         return "RFC 6749"
 
 

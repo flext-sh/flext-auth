@@ -4,15 +4,15 @@ from __future__ import annotations
 
 from flext_tests import r
 
-from flext_auth import FlextAuth
-from tests import m, u
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from flext_auth import FlextAuth, m
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase08:
     """FlextAuth API case group 08."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_token_expiry_edge_cases(self) -> None:
         """Test that token creation fails — JWT provider not implemented."""
@@ -30,11 +30,11 @@ class TestsFlextAuthApiCase08:
         """Test operations with invalid user IDs."""
         auth = FlextAuth()
         invalid_user_id = "nonexistent_user_id"
-        get_result = auth.identity_service.identity_manager.get_user(invalid_user_id)
+        get_result = auth.identity_service.identity_manager.fetch_user(invalid_user_id)
         u.Tests.Matchers.that(not get_result.success, eq=True)
         u.Tests.Matchers.that(get_result.error, none=False)
         u.Tests.Matchers.that((get_result.error or "").lower(), has="not found")
-        username_result = auth.identity_service.identity_manager.get_user_by_username(
+        username_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "nonexistent_username"
         )
         u.Tests.Matchers.that(not username_result.success, eq=True)
@@ -90,8 +90,8 @@ class TestsFlextAuthApiCase08:
             )
             u.Tests.Matchers.that(result, is_=r)
 
-    def test_flext_auth_get_user_by_username(self) -> None:
-        """Test FlextAuth get_user_by_username functionality."""
+    def test_flext_auth_fetch_user_by_username(self) -> None:
+        """Test FlextAuth fetch_user_by_username functionality."""
         auth = FlextAuth()
         test_data = self._TestDataHelper.create_test_user_data()
         register_result = auth.register_user(
@@ -100,13 +100,13 @@ class TestsFlextAuthApiCase08:
             password=str(test_data["password"]),
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
-        result = auth.identity_service.identity_manager.get_user_by_username(
+        result = auth.identity_service.identity_manager.fetch_user_by_username(
             str(test_data["username"])
         )
         u.Tests.Matchers.that(result, is_=r)
 
-    def test_flext_auth_get_user(self) -> None:
-        """Test FlextAuth get_user functionality."""
+    def test_flext_auth_fetch_user(self) -> None:
+        """Test FlextAuth fetch_user functionality."""
         auth = FlextAuth()
         test_data = self._TestDataHelper.create_test_user_data()
         register_result = auth.register_user(
@@ -117,7 +117,7 @@ class TestsFlextAuthApiCase08:
         u.Tests.Matchers.that(register_result.success, eq=True)
         user = register_result.value
         user_id = user.unique_id
-        result = auth.identity_service.identity_manager.get_user(user_id)
+        result = auth.identity_service.identity_manager.fetch_user(user_id)
         u.Tests.Matchers.that(result, is_=r)
 
 

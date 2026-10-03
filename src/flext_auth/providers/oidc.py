@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthRfcProvider, p, r, t
+from flext_auth import t
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthOidcProvider(FlextAuthRfcProvider):
@@ -26,32 +27,14 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
         >>> result = provider.authenticate({"id_token": "oidc-token"})
         >>> if result.success:
         ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
+        ...     u.Cli.print(f"Authenticated with token: {token.token}")
 
     """
 
+    @property
     @override
-    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate using OIDC credentials.
-
-        Args:
-            credentials: Dictionary containing OIDC authentication data
-
-        Returns:
-            r[AuthToken]: Authentication token on success, error on failure
-
-        """
-        _ = credentials
-        return r[p.Auth.Token].fail("Not implemented")
-
-    @override
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (OpenID Connect Core 1.0)
-
-        """
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (OpenID Connect Core 1.0)."""
         return "OpenID Connect Core 1.0"
 
     @override
@@ -63,20 +46,6 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider):
 
         """
         return {"oidc", "validate", "refresh"}
-
-    @override
-    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate OIDC token.
-
-        Args:
-            token: Token to validate
-
-        Returns:
-            r[bool]: True if valid, False if invalid, error on failure
-
-        """
-        _ = token
-        return r[bool].fail("Not implemented")
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthOidcProvider"]

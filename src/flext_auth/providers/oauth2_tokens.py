@@ -6,9 +6,10 @@ import secrets
 from datetime import timedelta
 from typing import override
 
-from flext_auth import FlextAuthRfcProvider, c, m, p, r, t, u
+from flext_auth import c, m, p, r, t, u
 from flext_auth.providers.oauth2_config import FlextAuthOAuth2Config
 from flext_auth.providers.oauth2_introspection import FlextAuthOAuth2Introspection
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthOAuth2Tokens(
@@ -22,14 +23,14 @@ class FlextAuthOAuth2Tokens(
     def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: t.ConfigurationMapping = {
-            k: v for k, v in credentials.items() if isinstance(v, t.PRIMITIVES_TYPES)
+            k: v for k, v in credentials.items() if isinstance(v, c.PRIMITIVES_TYPES)
         }
         token_model = m.Auth.AuthToken(
             identity_id=str(
                 credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user"
             ),
             token=str(credential_payload.get("access_token") or ""),
-            token_type="Bearer",
+            token_type=c.Auth.TokenTypes.BEARER.value,
             expires_at=u.generate_datetime_utc() + timedelta(hours=1),
         )
         return r[p.Auth.Token].ok(token_model)
@@ -37,8 +38,8 @@ class FlextAuthOAuth2Tokens(
     @override
     def generate_token_for_user(
         self,
-        user: p.Auth.AuthIdentity | t.JsonMapping,
-        token_kind: str = "oauth2_access",
+        user: m.Auth.AuthIdentity | t.JsonMapping,
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
@@ -50,26 +51,10 @@ class FlextAuthOAuth2Tokens(
             expiry_minutes=expiry_minutes,
         )
 
-    def get_metadata(self) -> p.Auth.Providers.Metadata:
-        """Get OAuth2 provider metadata using composition."""
-        return m.Auth.Providers.Metadata(
-            name="oauth2",
-            version="1.0.0",
-            capabilities=tuple(self.supports()),
-            extras={
-                "flows": [c.Auth.OAUTH2_FLOW_DEFAULT, "client_credentials"],
-                "pkce_supported": self.use_pkce,
-            },
-        )
-
+    @property
     @override
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (e.g., "RFC 7617", "RFC 6749")
-
-        """
+    def rfc_version(self) -> str:
+        """RFC version this provider implements (RFC 6749 for OAuth2)."""
         return "RFC 6749"
 
     @override
@@ -99,7 +84,7 @@ class FlextAuthOAuth2Tokens(
         refreshed_model = m.Auth.AuthToken(
             identity_id=identity_id,
             token=f"access_token_{secrets.token_hex(16)}",
-            token_type="Bearer",
+            token_type=c.Auth.TokenTypes.BEARER.value,
             expires_at=u.generate_datetime_utc() + timedelta(seconds=3600),
             refresh_token=f"refresh_token_{secrets.token_hex(16)}",
         )
@@ -133,21 +118,18 @@ class FlextAuthOAuth2Tokens(
             on_success=lambda _: r[bool].ok(value=True),
         )
 
-    def validate_token(self, token: str) -> p.Result[p.Auth.AuthIdentity]:
+    def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user."""
         introspection_endpoint_result = self._introspection_endpoint()
         if introspection_endpoint_result.success:
             introspection_result = self._introspect_token(token)
             if introspection_result.failure:
-                return r[p.Auth.AuthIdentity].fail(
-                    introspection_result.error
-                    or "OAuth2 introspection token validation failed"
-                )
+                return r[m.Auth.AuthIdentity].from_failure(introspection_result)
             active_value = introspection_result.value.get("active")
             is_active = active_value if isinstance(active_value, bool) else False
             if not is_active:
-                return r[p.Auth.AuthIdentity].fail("OAuth2 token is inactive")
-            return r[p.Auth.AuthIdentity].from_validation(
+                return r[m.Auth.AuthIdentity].fail("OAuth2 token is inactive")
+            return r[m.Auth.AuthIdentity].from_validation(
                 {
                     **introspection_result.value,
                     c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN,
@@ -156,10 +138,8 @@ class FlextAuthOAuth2Tokens(
             )
         claims_result = self._decode_token_claims(token)
         if claims_result.failure:
-            return r[p.Auth.AuthIdentity].fail(
-                claims_result.error or "OAuth2 token validation failed"
-            )
-        return r[p.Auth.AuthIdentity].from_validation(
+            return r[m.Auth.AuthIdentity].from_failure(claims_result)
+        return r[m.Auth.AuthIdentity].from_validation(
             {
                 **claims_result.value,
                 c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN,

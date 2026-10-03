@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from flext_api import FlextApiUtilities
 
-from flext_api import u
-from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
+from flext_auth import t
 
-if TYPE_CHECKING:
-    from flext_auth import t
+from ._utilities.auth import FlextAuthUtilitiesAuth
+from ._utilities.managers import FlextAuthUtilitiesManagers
 
 
-class FlextAuthUtilities(u):
+class FlextAuthUtilities(FlextApiUtilities):
     """FlextAuth advanced utilities extending the API utility namespace."""
 
     class Auth(FlextAuthUtilitiesAuth, FlextAuthUtilitiesManagers):

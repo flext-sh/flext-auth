@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth.providers._mixins.tokens import FlextAuthProviderTokenMixin
-from flext_auth.providers._mixins.validation import FlextAuthProviderValidationMixin
+from ._mixins.tokens import FlextAuthProviderTokenMixin
+from ._mixins.validation import FlextAuthProviderValidationMixin
 
 if TYPE_CHECKING:
     from flext_auth import t

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from flext_auth._constants.auth_security import FlextAuthConstantsAuthSecurity
+from .auth_security import FlextAuthConstantsAuthSecurity
 
 
 class FlextAuthConstantsAuthValues(FlextAuthConstantsAuthSecurity):
@@ -13,6 +13,7 @@ class FlextAuthConstantsAuthValues(FlextAuthConstantsAuthSecurity):
     REGISTRY_PROVIDERS_CATEGORY: Final[str] = "auth_providers"
     REGISTRY_CONFIG_CATEGORY: Final[str] = f"{REGISTRY_PROVIDERS_CATEGORY}config"
     REGISTRY_METADATA_CATEGORY: Final[str] = f"{REGISTRY_PROVIDERS_CATEGORY}_metadata"
+    PROVIDER_VERSION: Final[str] = "1.0.0"
 
 
 __all__: list[str] = ["FlextAuthConstantsAuthValues"]

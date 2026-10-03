@@ -4,20 +4,21 @@ from __future__ import annotations
 
 import os
 
-from flext_auth import FlextAuth, FlextAuthSettings
-from flext_cli import u as cli_u
+from flext_cli import cli
 
-
-def _emit(message: str) -> None:
-    """Emit example output through the canonical CLI facade."""
-    cli_u.Cli.formatters_print(message)
+from flext_auth import FlextAuth, FlextAuthSettings, p, r
 
 
 class FlextAuthBasicAuthExample:
     """Single owner for the basic auth example flow."""
 
     @staticmethod
-    def main() -> None:
+    def _emit(message: str) -> None:
+        """Emit example output through the canonical CLI facade."""
+        cli.print(message)
+
+    @staticmethod
+    def main() -> p.Result[bool]:
         """Demonstrate core auth workflow with the supported API surface."""
         auth = FlextAuth(settings=FlextAuthSettings())
         password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
@@ -28,20 +29,29 @@ class FlextAuthBasicAuthExample:
             roles=["user"],
         )
         if registration.failure:
-            _emit(f"registration failed: {registration.error}")
-            return
+            FlextAuthBasicAuthExample._emit(
+                f"registration failed: {registration.error}"
+            )
+            return r[bool].from_failure(registration)
         authentication = auth.authenticate_user("demouser", password)
         if authentication.failure:
-            _emit(f"authentication failed: {authentication.error}")
-            return
+            FlextAuthBasicAuthExample._emit(
+                f"authentication failed: {authentication.error}"
+            )
+            return r[bool].from_failure(authentication)
         identity = authentication.value
         token_result = auth.create_token(identity_id=identity.unique_id)
         if token_result.failure:
-            _emit(f"token generation failed: {token_result.error}")
-            return
+            FlextAuthBasicAuthExample._emit(
+                f"token generation failed: {token_result.error}"
+            )
+            return r[bool].from_failure(token_result)
         validation_result = auth.token_service.validate_token(token_result.value)
-        _emit(f"token valid: {validation_result.success and validation_result.value}")
+        FlextAuthBasicAuthExample._emit(
+            f"token valid: {validation_result.success and validation_result.value}"
+        )
+        return validation_result
 
 
 if __name__ == "__main__":
-    FlextAuthBasicAuthExample.main()
+    FlextAuthBasicAuthExample.main().unwrap()

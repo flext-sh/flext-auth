@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_auth._constants.auth_values import FlextAuthConstantsAuthValues
+from .auth_values import FlextAuthConstantsAuthValues
 
 
 class FlextAuthConstantsAuth(FlextAuthConstantsAuthValues):

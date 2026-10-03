@@ -10,10 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
-
 from flext_api import r
-from flext_auth import FlextAuthProviderService, c, m, p, s, u
+
+from flext_auth import c, m, p, s, u
 
 
 class FlextAuthTokenService(s):
@@ -26,7 +25,7 @@ class FlextAuthTokenService(s):
     def __init__(
         self,
         *,
-        provider_service: FlextAuthProviderService,
+        provider_service: p.Auth.ProviderService,
         dispatcher: p.Dispatcher,
         managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
@@ -51,12 +50,19 @@ class FlextAuthTokenService(s):
             return token
         return f"{token[:length]}..."
 
-    @override
-    def execute(self) -> p.Result[p.BaseModel]:
-        """Railway-oriented execute with focused service pattern."""
-        return r[p.BaseModel].fail(
-            "Use specific token methods: validate_token, generate_jwt_token, etc."
+    @staticmethod
+    def _fail_token_creation(
+        user_id: str, token_kind: str, error: str | None, fallback: str
+    ) -> p.Result[str]:
+        """Log a failed token creation and return the failure result."""
+        u.fetch_logger(__name__).info(
+            "Token creation",
+            user_id=user_id,
+            token_type=token_kind,
+            success=False,
+            reason=error or "",
         )
+        return r[str].fail(error or fallback)
 
     def generate_jwt_token(
         self,
@@ -65,17 +71,11 @@ class FlextAuthTokenService(s):
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
     ) -> p.Result[str]:
         """Railway-oriented JWT token generation with audit logging."""
-        user_result = self.user_manager.get_user(user_id)
+        user_result = self.user_manager.fetch_user(user_id)
         if user_result.failure:
-            error = user_result.error
-            u.fetch_logger(__name__).info(
-                "Token creation",
-                user_id=user_id,
-                token_type=token_kind,
-                success=False,
-                reason=error or "",
+            return self._fail_token_creation(
+                user_id, token_kind, user_result.error, "User lookup failed"
             )
-            return r[str].fail(error or "User lookup failed")
         user = user_result.value
         user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
@@ -84,22 +84,16 @@ class FlextAuthTokenService(s):
             )
         )
         if token_result.failure:
-            error = token_result.error
-            u.fetch_logger(__name__).info(
-                "Token creation",
-                user_id=user_id,
-                token_type=token_kind,
-                success=False,
-                reason=error or "",
+            return self._fail_token_creation(
+                user_id, token_kind, token_result.error, "Token generation failed"
             )
-            return r[str].fail(error or "Token generation failed")
         token_value = token_result.value
         u.fetch_logger(__name__).debug(
             "Token creation successful", user_id=user_id, token_type=token_kind
         )
         return r[str].ok(token_value)
 
-    def refresh_token(self, token: str) -> p.Result[p.Auth.AuthToken]:
+    def refresh_token(self, token: str) -> p.Result[m.Auth.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token)
@@ -112,7 +106,7 @@ class FlextAuthTokenService(s):
                 old_token_id=self._short_token(token),
                 reason=error or "",
             )
-            return r[p.Auth.AuthToken].fail(error or "Token refresh failed")
+            return r[m.Auth.AuthToken].fail(error or "Token refresh failed")
         refreshed = result.value
         auth_token = m.Auth.AuthToken(
             identity_id=refreshed.user_id,
@@ -125,7 +119,7 @@ class FlextAuthTokenService(s):
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(auth_token.token),
         )
-        return r[p.Auth.AuthToken].ok(auth_token)
+        return r[m.Auth.AuthToken].ok(auth_token)
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Railway-oriented token validation with audit logging."""

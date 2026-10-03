@@ -1,23 +1,26 @@
+"""Test constants for flext-auth.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 from __future__ import annotations
 
 from typing import Final
 
-from flext_tests import FlextTestsConstants
-
-from flext_auth import c
+from flext_auth import FlextAuthConstants
 
 
-class TestsFlextAuthConstants(FlextTestsConstants, c):
-    """Test constants for flext-auth."""
+class TestsFlextAuthConstants(FlextAuthConstants):
+    """Test constants for flext-auth — extends flext_auth.c."""
 
-    class Tests(FlextTestsConstants.Tests):
+    TEST_PASSWORD: Final[str] = "TestPassword123!"
+
+    class _AuthConstants:
+        """Auth-specific test constants."""
+
+    class Tests(_AuthConstants):
         """Test-specific constants."""
-
-        TEST_PASSWORD: Final[str] = "TestPassword123!"
-
-        TEST_INPUT_DIR: Final[str] = "tests/fixtures/data/input"
-        TEST_OUTPUT_DIR: Final[str] = "tests/fixtures/data/output"
-        TEST_TEMP_PREFIX: Final[str] = "flext_auth_test_"
 
 
 c = TestsFlextAuthConstants

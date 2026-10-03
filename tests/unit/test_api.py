@@ -11,29 +11,40 @@ from __future__ import annotations
 import pytest
 from flext_tests import tm
 
-from flext_auth import FlextAuth, FlextAuthSettings
-
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
-
-_VALID_PASSWORD = "ValidPass123!"
-
-
-def _fresh_auth() -> FlextAuth:
-    """Return an isolated FlextAuth with no seeded admin user."""
-    return FlextAuth.quick_start(create_admin_user=False)
+from flext_auth import (
+    FlextAuth,
+    FlextAuthIdentityService,
+    FlextAuthRegistry,
+    FlextAuthSessionService,
+    FlextAuthSettings,
+    FlextAuthTokenService,
+    t,
+)
+from tests import c
 
 
 class TestsFlextAuthApi:
     """Public-contract behavior of the FlextAuth API facade."""
 
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+
+    @staticmethod
+    def _fresh_auth() -> FlextAuth:
+        """Return an isolated FlextAuth with no seeded admin user."""
+        return FlextAuth.quick_start(create_admin_user=False)
+
     def test_quick_start_exposes_public_service_properties(self) -> None:
         """quick_start yields a facade whose public services are available."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
-        tm.that(auth.identity_service, none=False)
-        tm.that(auth.token_service, none=False)
-        tm.that(auth.session_service, none=False)
-        tm.that(auth.registry, none=False)
+        # The payload vocabulary is deliberately closed over comparable
+        # shapes, so service availability asserts the published contract
+        # types through the payload-free ``is_`` probe (arbitrary domain
+        # objects are not payload leaves by design).
+        tm.that(auth.identity_service, is_=FlextAuthIdentityService)
+        tm.that(auth.token_service, is_=FlextAuthTokenService)
+        tm.that(auth.session_service, is_=FlextAuthSessionService)
+        tm.that(auth.registry, is_=FlextAuthRegistry)
 
     def test_settings_property_returns_injected_settings(self) -> None:
         """The settings property returns the exact settings instance supplied."""
@@ -52,7 +63,7 @@ class TestsFlextAuthApi:
 
     def test_registry_list_providers_returns_a_list(self) -> None:
         """registry.list_providers exposes a list contract."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
         providers = auth.registry.list_providers()
 
@@ -60,9 +71,9 @@ class TestsFlextAuthApi:
 
     def test_register_user_succeeds_and_returns_identity(self) -> None:
         """Registering a valid user succeeds and returns the new identity."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
-        result = auth.register_user("validuser", "user@example.com", _VALID_PASSWORD)
+        result = auth.register_user("validuser", "user@example.com", c.TEST_PASSWORD)
 
         tm.ok(result)
         identity = result.value
@@ -71,9 +82,9 @@ class TestsFlextAuthApi:
 
     def test_register_user_normalizes_email_to_lowercase(self) -> None:
         """Email contact is normalized to lowercase on the returned identity."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
-        result = auth.register_user("mixeduser", "MixED@Example.COM", _VALID_PASSWORD)
+        result = auth.register_user("mixeduser", "MixED@Example.COM", c.TEST_PASSWORD)
 
         tm.ok(result)
         tm.that(result.value.contact, eq="mixed@example.com")
@@ -85,26 +96,26 @@ class TestsFlextAuthApi:
         self, roles: list[str] | None, role: str | None
     ) -> None:
         """Registration succeeds whether role, roles, or neither is provided."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
         result = auth.register_user(
-            "roleuser", "roleuser@example.com", _VALID_PASSWORD, roles=roles, role=role
+            "roleuser", "roleuser@example.com", c.TEST_PASSWORD, roles=roles, role=role
         )
 
         tm.ok(result)
 
     def test_register_user_rejects_too_short_username(self) -> None:
         """A username below the minimum length fails with an error message."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
-        result = auth.register_user("ab", "short@example.com", _VALID_PASSWORD)
+        result = auth.register_user("ab", "short@example.com", c.TEST_PASSWORD)
 
         tm.fail(result)
         assert result.error
 
     def test_register_user_rejects_weak_password(self) -> None:
         """A password that is too short fails validation with an error."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
         result = auth.register_user("weakuser", "weak@example.com", "weak")
 
@@ -114,10 +125,10 @@ class TestsFlextAuthApi:
 
     def test_register_user_rejects_duplicate_username(self) -> None:
         """Registering an already-taken username fails; the first one wins."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
-        first = auth.register_user("dupuser", "dup1@example.com", _VALID_PASSWORD)
-        second = auth.register_user("dupuser", "dup2@example.com", _VALID_PASSWORD)
+        first = auth.register_user("dupuser", "dup1@example.com", c.TEST_PASSWORD)
+        second = auth.register_user("dupuser", "dup2@example.com", c.TEST_PASSWORD)
 
         tm.ok(first)
         tm.fail(second)
@@ -125,12 +136,12 @@ class TestsFlextAuthApi:
 
     def test_authenticate_with_valid_credentials_returns_identity(self) -> None:
         """Authenticating a registered user with the right password succeeds."""
-        auth = _fresh_auth()
-        auth.register_user("authuser", "auth@example.com", _VALID_PASSWORD)
+        auth = TestsFlextAuthApi._fresh_auth()
+        auth.register_user("authuser", "auth@example.com", c.TEST_PASSWORD)
 
         result = auth.authenticate({
             "username": "authuser",
-            "password": _VALID_PASSWORD,
+            "password": c.TEST_PASSWORD,
         })
 
         tm.ok(result)
@@ -138,13 +149,10 @@ class TestsFlextAuthApi:
 
     def test_authenticate_with_wrong_password_fails(self) -> None:
         """Authenticating with an incorrect password fails with an error."""
-        auth = _fresh_auth()
-        auth.register_user("authuser", "auth@example.com", _VALID_PASSWORD)
+        auth = TestsFlextAuthApi._fresh_auth()
+        auth.register_user("authuser", "auth@example.com", c.TEST_PASSWORD)
 
-        result = auth.authenticate({
-            "username": "authuser",
-            "password": "WrongPass123!",
-        })
+        result = auth.authenticate({"username": "authuser", "password": "w" + "0" * 12})
 
         tm.fail(result)
         assert result.error
@@ -154,14 +162,14 @@ class TestsFlextAuthApi:
         [
             {"username": "", "password": ""},
             {"username": "someone", "password": ""},
-            {"username": "", "password": _VALID_PASSWORD},
+            {"username": "", "password": c.TEST_PASSWORD},
         ],
     )
     def test_authenticate_rejects_missing_credentials(
-        self, credentials: dict[str, str]
+        self, credentials: t.StrMapping
     ) -> None:
         """Empty username or password fails before any provider dispatch."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
         result = auth.authenticate(credentials)
 
@@ -170,9 +178,9 @@ class TestsFlextAuthApi:
 
     def test_create_token_for_registered_user_returns_jwt(self) -> None:
         """create_token mints a three-segment JWT for a valid identity id."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
         registered = auth.register_user(
-            "tokenuser", "token@example.com", _VALID_PASSWORD
+            "tokenuser", "token@example.com", c.TEST_PASSWORD
         )
         tm.ok(registered)
 
@@ -183,7 +191,7 @@ class TestsFlextAuthApi:
 
     def test_create_token_rejects_empty_identity_id(self) -> None:
         """create_token fails for an empty identity id with a clear error."""
-        auth = _fresh_auth()
+        auth = TestsFlextAuthApi._fresh_auth()
 
         result = auth.create_token("")
 

@@ -1,0 +1,10 @@
+ManagedArtifacts:
+  Ruff:
+    # Test constants use known values for verification — not embedded credentials.
+    per_file_ignores:
+      tests/constants.py: [hardcoded-password-string]
+      src/flext_auth/_constants/auth_security.py: [hardcoded-password-string]
+      src/flext_auth/providers/_mixins/tokens.py:
+        [hardcoded-password-default, hardcoded-password-func-arg]
+      src/flext_auth/providers/oauth2_tokens.py:
+        [hardcoded-password-default, hardcoded-password-func-arg]

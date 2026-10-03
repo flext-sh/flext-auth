@@ -6,6 +6,16 @@ from flext_auth import p, r, t, u
 
 
 class FlextAuthProviderValidationMixin:
+    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
+        """Authenticate credentials. Stub providers inherit this unimplemented owner."""
+        _ = credentials
+        return r[p.Auth.Token].fail("Not implemented")
+
+    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
+        """Validate a token. Stub providers inherit this unimplemented owner."""
+        _ = token
+        return r[bool].fail("Not implemented")
+
     def revoke(self, token: str) -> p.Result[bool]:
         """Revoke authentication token.
 
@@ -30,45 +40,6 @@ class FlextAuthProviderValidationMixin:
         """
         return set()
 
-    def _check_capability_supported(self, capability: str) -> p.Result[bool]:
-        """Check if a capability is supported by this provider.
-
-        Args:
-            capability: Capability to check
-
-        Returns:
-            r[bool]: True if supported, False if not, error message on failure
-
-        Example:
-            >>> result = self._check_capability_supported("refresh")
-            >>> if result.failure or not result.value:
-            ...     return r[AuthToken].fail("Refresh not supported")
-
-        """
-        if capability not in self.supports():
-            return r[bool].fail(
-                f"Provider does not support '{capability}' capability. Supported capabilities: {', '.join(sorted(self.supports()))}"
-            )
-        return r[bool].ok(value=True)
-
-    def _get_capability_metadata(self) -> t.JsonMapping:
-        """Get metadata about provider capabilities.
-
-        Returns:
-            t.JsonMapping: Metadata including supported capabilities
-
-        Example:
-            >>> metadata = provider._get_capability_metadata()
-            >>> print(f"Capabilities: {', '.join(metadata['capabilities'])}")
-
-        """
-        capabilities: t.JsonValueList = list(self.supports())
-        metadata: t.JsonMapping = {
-            "capabilities": capabilities,
-            "provider_type": self.__class__.__name__,
-        }
-        return metadata
-
     def _validate_credentials_dict(
         self, credentials: t.JsonMapping, required_fields: t.StrSequence
     ) -> p.Result[bool]:
@@ -82,9 +53,14 @@ class FlextAuthProviderValidationMixin:
         r[bool]: True if valid, False if invalid, error message on failure
 
         """
-        missing_fields = u.filter(
-            required_fields, lambda field: field not in credentials
-        )
+
+        def _is_missing(field: str) -> bool:
+            return field not in credentials
+
+        # Why: a bare lambda leaves pyrefly with no annotation to bind the
+        # overloaded u.filter's item type to, producing implicit-any-lambda;
+        # a named, explicitly-typed predicate resolves the overload cleanly.
+        missing_fields = u.filter(required_fields, _is_missing)
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
             return r[bool].fail(error_msg)

@@ -6,14 +6,15 @@ import pytest
 from flext_tests import tm
 
 from flext_auth import FlextAuth, FlextAuthSettings
-from tests import u
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from tests.constants import TestsFlextAuthConstants as c
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase05:
     """FlextAuth API case group 05."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_empty_username_registration(self) -> None:
         """Test registration with empty username."""
@@ -64,12 +65,12 @@ class TestsFlextAuthApiCase05:
         u.Tests.Matchers.that(auth.settings, none=False)
         u.Tests.Matchers.that(auth.registry, none=False)
 
-    def test_flext_auth_quick_start_no_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start() without creating REDACTED_LDAP_BIND_PASSWORD user."""
+    def test_flext_auth_quick_start_no_admin_user(self) -> None:
+        """Test FlextAuth.quick_start() without creating admin user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
         nonexistent_result = (
-            auth.identity_service.identity_manager.get_user_by_username(
+            auth.identity_service.identity_manager.fetch_user_by_username(
                 "nonexistent_user"
             )
         )
@@ -77,8 +78,8 @@ class TestsFlextAuthApiCase05:
         u.Tests.Matchers.that(nonexistent_result.error, none=False)
         u.Tests.Matchers.that((nonexistent_result.error or "").lower(), has="not found")
 
-    def test_flext_auth_quick_start_custom_redacted_ldap_bind_password(self) -> None:
-        """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
+    def test_flext_auth_quick_start_custom_admin_creation(self) -> None:
+        """Test FlextAuth.quick_start() with admin creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
@@ -89,11 +90,9 @@ class TestsFlextAuthApiCase05:
             u.Tests.Matchers.that(auth.config, none=False)
         except RuntimeError as e:
             pytest.fail(f"FlextAuth creation failed with RuntimeError: {e}")
-        except Exception as e:
-            pytest.fail(f"Unexpected exception during FlextAuth creation: {e}")
 
-    def test_quick_start_redacted_ldap_bind_password_creation_failure(self) -> None:
-        """Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation (reserved for future)."""
+    def test_quick_start_admin_creation_failure(self) -> None:
+        """Test quick_start with admin creation (reserved for future)."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
@@ -108,7 +107,7 @@ class TestsFlextAuthApiCase05:
         settings = FlextAuthSettings.model_validate({
             "expiry_minutes": 120,
             "hash_rounds": 10,
-            "secret_key": "test-secret-key-with-minimum-32-characters-length",
+            "secret_key": "s" + "0" * 40,
         })
         auth = FlextAuth(settings=settings)
         u.Tests.Matchers.that(auth.config.expiry_minutes, eq=120)
@@ -118,9 +117,7 @@ class TestsFlextAuthApiCase05:
         """Test register_user method error paths."""
         auth = FlextAuth()
         result = auth.register_user(
-            username="testuser",
-            email="invalid-email-format",
-            password="ValidPassword123!",
+            username="testuser", email="invalid-email-format", password=c.TEST_PASSWORD
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         error_msg = result.error or ""

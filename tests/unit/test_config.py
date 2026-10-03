@@ -14,13 +14,13 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
-from tests import u
-
-pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthConfig:
     """Behavioral contract for FlextAuthSettings and its consumers."""
+
+    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     @pytest.fixture
     def settings(self) -> FlextAuthSettings:
@@ -93,7 +93,7 @@ class TestsFlextAuthConfig:
         ],
     )
     def test_construction_rejects_out_of_contract_values(
-        self, overrides: dict[str, str | int]
+        self, overrides: t.JsonMapping
     ) -> None:
         """Values outside the declared bounds fail model validation."""
         with pytest.raises(m.ValidationError):
@@ -123,17 +123,19 @@ class TestsFlextAuthConfig:
         u.Tests.Matchers.that(settings.Auth.secret_key, is_=str)
         u.Tests.Matchers.that(settings.Auth.secret_key, eq=raw)
 
-    def test_environment_prefix_overrides_defaults(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_environment_prefix_overrides_defaults(self) -> None:
         """FLEXT_AUTH_ prefixed env vars override the field defaults."""
-        monkeypatch.setenv("FLEXT_AUTH_AUTH__EXPIRY_MINUTES", "123")
-        monkeypatch.setenv("FLEXT_AUTH_AUTH__ALGORITHM", "HS512")
-
-        settings = FlextAuthSettings()
-
-        u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=123)
-        u.Tests.Matchers.that(settings.Auth.algorithm, eq="HS512")
+        env_prefix = FlextAuthSettings.model_config.get("env_prefix")
+        nested_delimiter = FlextAuthSettings.model_config.get("env_nested_delimiter")
+        expiry_minutes = c.Auth.DEFAULT_JWT_EXPIRY_MINUTES + 1
+        algorithm = c.Auth.Algorithms.RS256.value
+        with u.Tests.env_vars_context({
+            f"{env_prefix}AUTH{nested_delimiter}EXPIRY_MINUTES": expiry_minutes,
+            f"{env_prefix}AUTH{nested_delimiter}ALGORITHM": algorithm,
+        }):
+            settings = FlextAuthSettings()
+            u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=expiry_minutes)
+            u.Tests.Matchers.that(settings.Auth.algorithm, eq=algorithm)
 
     def test_create_token_fails_for_unknown_identity(
         self, settings: FlextAuthSettings

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from typing import ClassVar
 
 from flext_auth import m, p, r, settings, t
@@ -38,13 +38,13 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def validate_ticket(
-            self, _ticket_data: p.Auth.KerberosTicketData
-        ) -> p.Result[p.Auth.KerberosTicketData]:
+            self, _ticket_data: m.Auth.KerberosTicketData
+        ) -> p.Result[m.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             result = m.Auth.KerberosTicketData(
                 ticket="validated_ticket", principal="kerberos_user"
             )
-            return r[p.Auth.KerberosTicketData].ok(result)
+            return r[m.Auth.KerberosTicketData].ok(result)
 
     ticket_validator: _KerberosTicketValidator
 
@@ -58,10 +58,10 @@ class FlextAuthKerberosSupport:
             """Initialize service handler."""
             self.provider = provider
 
-    def handle_service_ticket(self, ticket: str) -> p.Result[p.Auth.KerberosTicketData]:
+    def handle_service_ticket(self, ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
         """Handle Kerberos service ticket."""
         result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
-        return r[p.Auth.KerberosTicketData].ok(result)
+        return r[m.Auth.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
@@ -74,15 +74,15 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def authenticate_ticket(
-            self, ticket_data: p.Auth.KerberosTicketData
-        ) -> p.Result[p.Auth.KerberosTicketData]:
+            self, ticket_data: m.Auth.KerberosTicketData
+        ) -> p.Result[m.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
     def _ticket_validator_callable(
         self,
     ) -> (
-        Callable[[str], m.Auth.AuthIdentity | t.JsonMapping | p.Auth.KerberosTicketData]
+        Callable[[str], m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData]
         | None
     ):
         validator_candidate = self._external_ticket_validator
@@ -91,16 +91,20 @@ class FlextAuthKerberosSupport:
 
         def validated(
             ticket: str,
-        ) -> p.Auth.AuthIdentity | t.JsonMapping | p.Auth.KerberosTicketData:
+        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             raw_payload = validator_candidate(ticket)
             if isinstance(
                 raw_payload, (m.Auth.AuthIdentity, m.Auth.KerberosTicketData)
             ):
                 return raw_payload
-            if isinstance(raw_payload, Mapping):
+            # The declared candidate contract narrows every payload that is
+            # not an owned model to a JSON mapping; the adapter rejects any
+            # unsupported shape, and this boundary re-raises it as TypeError.
+            try:
                 return t.json_mapping_adapter().validate_python(raw_payload)
-            msg = "Kerberos ticket_validator returned unsupported payload"
-            raise TypeError(msg)
+            except m.ValidationError as exc:
+                msg = "Kerberos ticket_validator returned unsupported payload"
+                raise TypeError(msg) from exc
 
         return validated
 

@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
+from collections.abc import MutableMapping
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 from flext_api import u
+
 from flext_auth import FlextAuthSettings, m, p, t
-from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
 from flext_core import FlextContext
 
-if TYPE_CHECKING:
-    from collections.abc import MutableMapping
+from .user_create import FlextAuthUserManagerCreate
 
 
 class FlextAuthUserManagers:
@@ -28,7 +28,7 @@ class FlextAuthUserManagers:
         _users: MutableMapping[str, t.Auth.ManagersUserData]
         _DATETIME_ADAPTER: ClassVar[u.TypeAdapter[datetime]] = u.TypeAdapter(datetime)
         _MIN_DATETIME: ClassVar[datetime] = datetime.min.replace(tzinfo=UTC)
-        IdentityExtras: ClassVar[type[p.Auth.UserIdentityExtras]] = (
+        IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
             m.Auth.UserIdentityExtras
         )
 

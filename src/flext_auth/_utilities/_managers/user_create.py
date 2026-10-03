@@ -7,7 +7,8 @@ from uuid import uuid4
 
 from flext_api import r, u
 from flext_auth import m, p, t
-from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
+
+from .user_write import FlextAuthUserManagerWrite
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping

@@ -6,7 +6,8 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
 from flext_api import c
-from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
+
+from .auth_enums import FlextAuthConstantsAuthEnums
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Set as AbstractSet
@@ -61,22 +62,22 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     "OAuth scope claim key."
     KEY_CONTACT_DOMAIN: Final[str] = "contact_domain"
     "Local contact-domain override key for identity claim normalization."
-    TOKEN_IDENTITY_KEYS: Final[tuple[str, ...]] = (
+    TOKEN_IDENTITY_KEYS: Final[t.VariadicTuple[str]] = (
         KEY_SUBJECT,
         KEY_IDENTITY_ID,
         KEY_USER_ID,
         KEY_USERNAME,
     )
     "Identity claim keys in priority order."
-    TOKEN_NAME_KEYS: Final[tuple[str, ...]] = (
+    TOKEN_NAME_KEYS: Final[t.VariadicTuple[str]] = (
         KEY_NAME,
         KEY_PREFERRED_USERNAME,
         KEY_USERNAME,
     )
     "Display-name claim keys in priority order."
-    TOKEN_CONTACT_KEYS: Final[tuple[str, ...]] = (KEY_CONTACT, KEY_EMAIL)
+    TOKEN_CONTACT_KEYS: Final[t.VariadicTuple[str]] = (KEY_CONTACT, KEY_EMAIL)
     "Contact claim keys in priority order."
-    TOKEN_IDENTITY_PASSTHROUGH_FIELDS: Final[tuple[str, ...]] = (
+    TOKEN_IDENTITY_PASSTHROUGH_FIELDS: Final[t.VariadicTuple[str]] = (
         "credential_hash",
         "failed_attempts",
         "full_name",
@@ -137,6 +138,9 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     MAX_ATTEMPTS_DEFAULT: Final[int] = 5
     "Default max authentication attempts."
     LOCKOUT_DURATION_MINUTES: Final[int] = 30
+    # RFC 7662 wire literal, not a credential; bandit name-heuristic false positive.
+    OAUTH2_INTROSPECTION_TYPE_HINT_ACCESS: Final[str] = "access_token"
+    "RFC 7662 introspection token_type_hint wire value for access tokens."
     "Lockout duration in minutes."
     SECRET_MIN_LENGTH: Final[int] = 32
     "Minimum secret key length."
@@ -153,7 +157,8 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
         "status": c.Status.SUCCESS.value,
         "message": "Authentication successful",
-        "token_type": None,
+        # Null sentinel in response template; "token" in key trips B105.
+        "token_type": None,  # nosec B105 - null sentinel in response template
     })
     "Template for successful authentication responses."
 

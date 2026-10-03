@@ -6,15 +6,15 @@ import time
 
 from flext_tests import r
 
-from flext_auth import FlextAuth
-from tests import m, u
-from tests.unit.api_cases.support import FlextAuthApiTestDataHelper
+from flext_auth import FlextAuth, m
+from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase10:
     """FlextAuth API case group 10."""
 
-    _TestDataHelper = FlextAuthApiTestDataHelper
+    _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
     def test_flext_auth_error_handling(self) -> None:
         """Test auth module error handling patterns."""
@@ -25,7 +25,7 @@ class TestsFlextAuthApiCase10:
         result = auth.authenticate_user("invalid_user", "invalid_password")
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(not result.success, eq=True)
-        result = auth.identity_service.identity_manager.get_user_by_username(
+        result = auth.identity_service.identity_manager.fetch_user_by_username(
             "non_existent_user"
         )
         u.Tests.Matchers.that(result, is_=r)
@@ -39,9 +39,12 @@ class TestsFlextAuthApiCase10:
         test_user_data = {
             "username": "flext_test_user",
             "email": "flext_test@example.com",
-            "password": "TestPassword123!",
+            "password": TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
         }
-        test_auth_data = {"username": "flext_test_user", "password": "TestPassword123!"}
+        test_auth_data = {
+            "username": "flext_test_user",
+            "password": TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
+        }
         result = auth.register_user(
             username=test_user_data["username"],
             email=test_user_data["email"],
@@ -65,21 +68,21 @@ class TestsFlextAuthApiCase10:
         auth = FlextAuth()
         realistic_users = [
             {
-                "username": "REDACTED_LDAP_BIND_PASSWORD_user",
-                "email": "REDACTED_LDAP_BIND_PASSWORD@company.com",
-                "password": "SecurePassword123!",
-                "role": "REDACTED_LDAP_BIND_PASSWORD",
+                "username": "admin_user",
+                "email": "admin@company.com",
+                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-admin",
+                "role": "admin",
             },
             {
                 "username": "regular_user",
                 "email": "user@company.com",
-                "password": "UserPassword456!",
+                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-regular",
                 "role": "user",
             },
             {
                 "username": "guest_user",
                 "email": "guest@company.com",
-                "password": "GuestPassword789!",
+                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-guest",
                 "role": "guest",
             },
         ]

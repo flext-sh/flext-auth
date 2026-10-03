@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthProviderMixin, p, r, t
+from flext_auth import p, r, t
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
 class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -53,23 +54,6 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         """
         _ = credentials
         return r[p.Auth.Token].fail("SAML provider not yet fully implemented")
-
-    def get_metadata(self) -> t.AttributeMapping:
-        """Get provider metadata.
-
-        Returns:
-            t.AttributeMapping: Provider metadata (name, version, capabilities, etc.)
-
-        Business Rule: Returns metadata for provider discovery and configuration.
-
-        """
-        return {
-            "name": "saml",
-            "version": "1.0.0",
-            "protocol": "SAML 2.0",
-            "capabilities": list(self.supports()),
-            "status": "basic_implementation",
-        }
 
     @override
     def supports(self) -> set[str]:

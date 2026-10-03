@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from typing import override
-
-from flext_api import r
 from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, s, t
-from flext_auth.services._provider_builtin import FlextAuthProviderBuiltinRegistration
+
+from ._provider_builtin import FlextAuthProviderBuiltinRegistration
 
 
 class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
@@ -37,16 +35,9 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
             )
         )
 
-    @override
-    def execute(self) -> p.Result[p.BaseModel]:
-        """Railway-oriented execute with focused service pattern."""
-        return r[p.BaseModel].fail(
-            "Use specific provider methods: get_provider, authenticate_user, etc."
-        )
-
     def generate_token_for_user(
         self,
-        user: p.Auth.AuthIdentity,
+        user: m.Auth.AuthIdentity,
         provider: str = "jwt",
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
