@@ -6,7 +6,7 @@ import threading
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, ClassVar, Self
 
-from flext_auth import c, m, p, t
+from flext_auth import c, p, t
 
 
 class FlextAuthApplicationLifecycle(ABC):
@@ -28,7 +28,7 @@ class FlextAuthApplicationLifecycle(ABC):
         password: str,
         roles: t.StrSequence | None = None,
         role: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         raise NotImplementedError
 
     @classmethod

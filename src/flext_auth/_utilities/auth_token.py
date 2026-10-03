@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import jwt
-from flext_api import r
 
+from flext_api import r
 from flext_auth import c, m, p, t
 
 
@@ -12,7 +12,7 @@ class FlextAuthUtilitiesAuthToken:
     @staticmethod
     def decode_token(
         token: str,
-        config: m.Auth.ProviderConfig | t.ScalarMapping,
+        config: p.Auth.ProviderConfig | t.ScalarMapping,
         *,
         verify: bool = True,
     ) -> p.Result[t.Auth.TokensClaimMap]:

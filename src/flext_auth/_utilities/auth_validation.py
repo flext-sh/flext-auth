@@ -6,8 +6,8 @@ import secrets
 from datetime import datetime, timedelta
 
 import bcrypt
-from flext_api import r, u
 
+from flext_api import r, u
 from flext_auth import c, p
 
 
