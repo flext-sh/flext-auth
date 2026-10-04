@@ -50,7 +50,7 @@ class TestsFlextAuthTokenRealFlows:
         u.Tests.Matchers.ok(token_result)
 
         validation_result = auth.token_service.validate_token(token_result.value)
-        u.Tests.Matchers.that(validation_result.success, eq=True)
+        u.Tests.Matchers.ok(validation_result)
 
     @staticmethod
     def test_validate_token_rejects_invalid_token() -> None:
