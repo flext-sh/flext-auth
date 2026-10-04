@@ -1,10 +1,13 @@
-"""FLEXT Auth registry over the canonical core registry DSL."""
+"""FLEXT Auth registry over the canonical core registry DSL.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from flext_auth import t
-
-from ._registry.mutation import FlextAuthRegistryMutation
+from flext_auth._registry.mutation import FlextAuthRegistryMutation
 
 
 class FlextAuthRegistry(FlextAuthRegistryMutation):

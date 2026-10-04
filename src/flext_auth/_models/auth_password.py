@@ -1,4 +1,8 @@
-"""Authentication password model helpers."""
+"""Authentication password model helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -13,13 +17,21 @@ class FlextAuthModelsAuthPassword:
 
         @staticmethod
         def hash_password(password: str) -> str:
-            """Hash a password using bcrypt."""
+            """Hash a password using bcrypt.
+
+            Returns:
+                The resulting ``str``.
+            """
             salt = bcrypt.gensalt(rounds=c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS)
             return bcrypt.hashpw(password.encode(), salt).decode()
 
         @staticmethod
         def verify_password(password: str, hashed: str) -> bool:
-            """Verify a password against its hash."""
+            """Verify a password against its hash.
+
+            Returns:
+                The resulting ``bool``.
+            """
             return bcrypt.checkpw(password.encode(), hashed.encode())
 
 

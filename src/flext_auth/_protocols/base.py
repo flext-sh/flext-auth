@@ -1,4 +1,8 @@
-"""FlextAuth protocols base — foundational contracts owner of the private family."""
+"""FlextAuth protocols base — foundational contracts owner of the private family.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""FlextAuth API test case group 06."""
+"""FlextAuth API test case group 06.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -15,16 +19,19 @@ class TestsFlextAuthApiCase06:
 
     _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
-    def test_authenticate_user_failure_paths(self) -> None:
+    @staticmethod
+    def test_authenticate_user_failure_paths() -> None:
         """Test authenticate_user method failure scenarios."""
         auth = FlextAuth()
         result = auth.authenticate_user(
-            username="nonexistent_user", password=c.TEST_PASSWORD
+            username="nonexistent_user",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, is_=str)
 
-    def test_validate_token_invalid_cases(self) -> None:
+    @staticmethod
+    def test_validate_token_invalid_cases() -> None:
         """Test token validation with invalid tokens."""
         auth = FlextAuth()
         result = auth.token_service.validate_token("invalid.malformed.token")
@@ -34,7 +41,8 @@ class TestsFlextAuthApiCase06:
         result = auth.token_service.validate_token("invalid.token.format")
         u.Tests.Matchers.that(not result.success, eq=True)
 
-    def test_hash_password_method(self) -> None:
+    @staticmethod
+    def test_hash_password_method() -> None:
         """Test hash_password method functionality."""
         identity = m.Auth.AuthIdentity(
             unique_id="test-id",
@@ -57,7 +65,8 @@ class TestsFlextAuthApiCase06:
         u.Tests.Matchers.that(identity.credential_hash, ne="StrongTestPass123!@#")
         u.Tests.Matchers.that(len(identity.credential_hash), gt=10)
 
-    def test_verify_password_method(self) -> None:
+    @staticmethod
+    def test_verify_password_method() -> None:
         """Test verify_password method functionality."""
         strong_password = c.TEST_PASSWORD
         identity = m.Auth.AuthIdentity(
@@ -84,11 +93,14 @@ class TestsFlextAuthApiCase06:
         u.Tests.Matchers.that(wrong_result.success, eq=True)
         u.Tests.Matchers.that(wrong_result.value is False, eq=True)
 
-    def test_generate_token_method(self) -> None:
+    @staticmethod
+    def test_generate_token_method() -> None:
         """Test that create_token succeeds for a registered user."""
         auth = FlextAuth()
         user_result = auth.register_user(
-            username="jwt_test_user", email="jwt@example.com", password=c.TEST_PASSWORD
+            username="jwt_test_user",
+            email="jwt@example.com",
+            password=c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -96,11 +108,14 @@ class TestsFlextAuthApiCase06:
         u.Tests.Matchers.that(result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=True)
 
-    def test_generate_token_alternative_method(self) -> None:
+    @staticmethod
+    def test_generate_token_alternative_method() -> None:
         """Test that create_token fails via alternative path — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser", "test@example.com", c.TEST_PASSWORD
+            "testuser",
+            "test@example.com",
+            c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
@@ -110,11 +125,14 @@ class TestsFlextAuthApiCase06:
         u.Tests.Matchers.that(token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=True)
 
-    def test_validate_token_success_path(self) -> None:
+    @staticmethod
+    def test_validate_token_success_path() -> None:
         """Test that validate_token fails — JWT provider not implemented."""
         auth = FlextAuth()
         register_result = auth.register_user(
-            "testuser", "test@example.com", c.TEST_PASSWORD
+            "testuser",
+            "test@example.com",
+            c.TEST_PASSWORD,
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
@@ -126,6 +144,3 @@ class TestsFlextAuthApiCase06:
         u.Tests.Matchers.that(token_result.success, eq=True)
         val_result = auth.token_service.validate_token("any.fake.token")
         u.Tests.Matchers.that(not val_result.success, eq=True)
-
-
-__all__: list[str] = ["TestsFlextAuthApiCase06"]

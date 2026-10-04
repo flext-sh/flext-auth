@@ -1,4 +1,8 @@
-"""FlextAuth API test case group 10."""
+"""FlextAuth API test case group 10.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -16,7 +20,8 @@ class TestsFlextAuthApiCase10:
 
     _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
-    def test_flext_auth_error_handling(self) -> None:
+    @staticmethod
+    def test_flext_auth_error_handling() -> None:
         """Test auth module error handling patterns."""
         auth = FlextAuth()
         result = auth.register_user(username="", email="invalid_email", password="")
@@ -26,14 +31,15 @@ class TestsFlextAuthApiCase10:
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(not result.success, eq=True)
         result = auth.identity_service.identity_manager.fetch_user_by_username(
-            "non_existent_user"
+            "non_existent_user",
         )
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
         u.Tests.Matchers.that((result.error or "").lower(), has="not found")
 
-    def test_flext_auth_with_flext_tests(self) -> None:
+    @staticmethod
+    def test_flext_auth_with_flext_tests() -> None:
         """Test auth functionality with flext_tests infrastructure."""
         auth = FlextAuth()
         test_user_data = {
@@ -53,17 +59,20 @@ class TestsFlextAuthApiCase10:
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(result.success, eq=True)
         result = auth.authenticate_user(
-            test_auth_data["username"], test_auth_data["password"]
+            test_auth_data["username"],
+            test_auth_data["password"],
         )
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(result.success, eq=True)
 
-    def test_flext_auth_docstring(self) -> None:
+    @staticmethod
+    def test_flext_auth_docstring() -> None:
         """Test that FlextAuth has proper docstring."""
         u.Tests.Matchers.that(FlextAuth.__doc__, none=False)
         u.Tests.Matchers.that(len((FlextAuth.__doc__ or "").strip()) > 0, eq=True)
 
-    def test_flext_auth_with_real_data(self) -> None:
+    @staticmethod
+    def test_flext_auth_with_real_data() -> None:
         """Test auth functionality with realistic data scenarios."""
         auth = FlextAuth()
         realistic_users = [
@@ -97,7 +106,8 @@ class TestsFlextAuthApiCase10:
             u.Tests.Matchers.that(result.success, eq=True)
         for user_data in realistic_users:
             result = auth.authenticate_user(
-                user_data["username"], user_data["password"]
+                user_data["username"],
+                user_data["password"],
             )
             u.Tests.Matchers.that(result, is_=r)
             u.Tests.Matchers.that(result.success, eq=True)
@@ -114,7 +124,8 @@ class TestsFlextAuthApiCase10:
         )
         u.Tests.Matchers.that(register_result, is_=r, ok=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]), str(test_auth_data["password"])
+            str(test_auth_data["username"]),
+            str(test_auth_data["password"]),
         )
         u.Tests.Matchers.that(auth_result, is_=r, ok=True)
         authenticated_identity = auth_result.value
@@ -137,6 +148,3 @@ class TestsFlextAuthApiCase10:
             u.Tests.Matchers.that(result.success, eq=True)
         end_time = time.time()
         u.Tests.Matchers.that(end_time - start_time, lt=30.0)
-
-
-__all__: list[str] = ["TestsFlextAuthApiCase10"]

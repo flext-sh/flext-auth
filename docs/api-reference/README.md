@@ -30,6 +30,6 @@ This section is generated from public exports and real docstrings.
 - Primary facades: `FlextAuth`, `FlextAuthApiKeyProvider`,
   `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
   `FlextAuthCertificateProvider`, `FlextAuthConfig` (+24 more)
-- Generated module pages: `31`
+- Generated module pages: `9`
 
 Back to [project docs](../index.md).

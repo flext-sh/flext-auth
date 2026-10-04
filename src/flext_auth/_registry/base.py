@@ -1,12 +1,15 @@
-"""Auth registry base lookup behavior."""
+"""Auth registry base lookup behavior.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import TypeIs
 
 from flext_auth import c, p, r, t, u
-
-from .plugins import FlextAuthRegistryPlugins
+from flext_auth._registry.plugins import FlextAuthRegistryPlugins
 
 
 class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
@@ -18,7 +21,11 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
     def _is_auth_provider(
         value: t.JsonPayload | p.Auth.FlextAuthBaseProvider,
     ) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
-        """Check if value implements FlextAuthBaseProvider protocol."""
+        """Check if value implements FlextAuthBaseProvider protocol.
+
+        Returns:
+            The resulting ``TypeIs[p.Auth.FlextAuthBaseProvider]``.
+        """
         required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
         return all(callable(getattr(value, attr, None)) for attr in required)
 
@@ -32,14 +39,18 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
         return self._registry
 
     def get(self, data: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
-        """Get provider by name."""
+        """Get provider by name.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.FlextAuthBaseProvider]``.
+        """
         result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, data)
         if result.failure:
             return r[p.Auth.FlextAuthBaseProvider].from_failure(result)
         wrapped = result.unwrap()
         if wrapped is None:
             return r[p.Auth.FlextAuthBaseProvider].fail(
-                f"Provider '{data}' is not registered"
+                f"Provider '{data}' is not registered",
             )
         inner = getattr(wrapped, "provider", None)
         if inner is not None and self._is_auth_provider(inner):
@@ -47,11 +58,15 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
         if self._is_auth_provider(wrapped):
             return r[p.Auth.FlextAuthBaseProvider].ok(wrapped)
         return r[p.Auth.FlextAuthBaseProvider].fail(
-            f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider"
+            f"Provider '{data}' is not a p.Auth.FlextAuthBaseProvider",
         )
 
     def resolve_capabilities(self, name: str) -> p.Result[set[str]]:
-        """Resolve provider capabilities."""
+        """Resolve provider capabilities.
+
+        Returns:
+            The resulting ``p.Result[set[str]]``.
+        """
         provider_result = self.get(name)
         if provider_result.failure:
             return r[set[str]].fail(str(provider_result.error))
@@ -61,7 +76,7 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
             return r[set[str]].ok(set(caps))
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[set[str]].fail(
-                f"Provider '{name}' capabilities resolution failed: {exc}"
+                f"Provider '{name}' capabilities resolution failed: {exc}",
             )
 
 

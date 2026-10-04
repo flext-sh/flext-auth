@@ -1,4 +1,8 @@
-"""Auth user manager read operations."""
+"""Auth user manager read operations.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -17,13 +21,21 @@ class FlextAuthUserManagerRead:
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
     def fetch_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Fetch user by ID."""
+        """Fetch user by ID.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+        """
         return self._find_user_by_id(user_id).map(
-            lambda ud: self._create_identity_from_storage(ud[1])
+            lambda ud: self._create_identity_from_storage(ud[1]),
         )
 
     def fetch_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Fetch user by username."""
+        """Fetch user by username.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+        """
         if username not in self._users:
             return e.fail_not_found("User", "", result_type=r[m.Auth.AuthIdentity])
         storage_data = self._users[username]
@@ -31,9 +43,13 @@ class FlextAuthUserManagerRead:
         return r[m.Auth.AuthIdentity].ok(user)
 
     def _create_identity_from_storage(
-        self, storage_data: t.Auth.ManagersUserData
+        self, storage_data: t.Auth.ManagersUserData,
     ) -> m.Auth.AuthIdentity:
-        """Create Identity model from storage data, filtering out non-model fields."""
+        """Create Identity model from storage data, filtering out non-model fields.
+
+        Returns:
+            The resulting ``m.Auth.AuthIdentity``.
+        """
         identity_data: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
             field: storage_data[field]
             for field in m.Auth.AuthIdentity.model_fields
@@ -41,12 +57,21 @@ class FlextAuthUserManagerRead:
         }
         identity_data["unique_id"] = self._extract_identity_id(storage_data)
         identity: m.Auth.AuthIdentity = m.Auth.AuthIdentity.model_validate(
-            identity_data
+            identity_data,
         )
         return identity
 
-    def _extract_identity_id(self, storage_data: t.Auth.ManagersUserData) -> str:
-        """Extract identity ID from storage data with fast fail."""
+    @staticmethod
+    def _extract_identity_id(storage_data: t.Auth.ManagersUserData) -> str:
+        """Extract identity ID from storage data with fast fail.
+
+        Returns:
+            The resulting ``str``.
+
+        Raises:
+            ValueError: If Storage data missing required 'unique_id', 'id', or
+                'identity_id' field.
+        """
         for field in ("unique_id", "id", "identity_id"):
             value = storage_data.get(field)
             match value:
@@ -58,11 +83,14 @@ class FlextAuthUserManagerRead:
         raise ValueError(msg)
 
     def _find_user_by_id(
-        self, user_id: str
+        self, user_id: str,
     ) -> p.Result[t.Pair[str, t.Auth.ManagersUserData]]:
         """Find user by ID (either identity_id, unique_id, or id field).
 
         Eliminates duplication across 7 methods.
+
+        Returns:
+            The resulting ``p.Result[t.Pair[str, t.Auth.ManagersUserData]]``.
         """
         for username, user_data in self._users.items():
             if (
@@ -72,7 +100,7 @@ class FlextAuthUserManagerRead:
             ):
                 return r[tuple[str, t.Auth.ManagersUserData]].ok((username, user_data))
         return e.fail_not_found(
-            "User", "", result_type=r[tuple[str, t.Auth.ManagersUserData]]
+            "User", "", result_type=r[tuple[str, t.Auth.ManagersUserData]],
         )
 
 

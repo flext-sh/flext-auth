@@ -1,11 +1,14 @@
-"""FLEXT Auth - Basic usage examples."""
+"""FLEXT Auth - Basic usage examples.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
+from examples.basic_usage_flows import FlextAuthBasicUsageFlows
+from examples.basic_usage_workflow import FlextAuthBasicUsageWorkflow
 from flext_auth import u
-
-from .basic_usage_flows import FlextAuthBasicUsageFlows
-from .basic_usage_workflow import FlextAuthBasicUsageWorkflow
 
 
 class FlextAuthBasicUsageExample(FlextAuthBasicUsageFlows, FlextAuthBasicUsageWorkflow):

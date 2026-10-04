@@ -1,4 +1,8 @@
-"""Kerberos authentication provider implementation."""
+"""Kerberos authentication provider implementation.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -17,6 +21,9 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
 
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
+
+        Raises:
+            ValueError: If Kerberos configuration validation failed.
         """
         super().__init__()
         validation_result = self._validate_kerberos_configuration()
@@ -34,10 +41,14 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         return {"kerberos", "sso", "enterprise", "ticket", "validate"}
 
     def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Validate Kerberos token and return user."""
+        """Validate Kerberos token and return user.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+        """
         if not token.strip():
             return r[m.Auth.AuthIdentity].fail(
-                "Kerberos token must be a non-empty string"
+                "Kerberos token must be a non-empty string",
             )
         validator = self._ticket_validator_callable()
         if validator is None:
@@ -52,14 +63,14 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 )
                 if claims_result.success
                 else r[m.Auth.AuthIdentity].fail(
-                    "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)"
+                    "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)",
                 )
             )
         try:
             validator_payload = validator(token)
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[m.Auth.AuthIdentity].fail_op(
-                "Kerberos ticket validator execution", exc
+                "Kerberos ticket validator execution", exc,
             )
         if isinstance(validator_payload, m.Auth.AuthIdentity):
             return r[m.Auth.AuthIdentity].ok(validator_payload)

@@ -1,4 +1,8 @@
-"""Authentication token encode/decode utilities."""
+"""Authentication token encode/decode utilities.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -53,7 +57,7 @@ class FlextAuthUtilitiesAuthToken:
             return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}", exception=exc)
         except c.ValidationError as exc:
             return r[t.Auth.TokensClaimMap].fail_op(
-                "Decoded token payload validation", exc
+                "Decoded token payload validation", exc,
             )
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[t.Auth.TokensClaimMap].fail_op("Decoding", exc)

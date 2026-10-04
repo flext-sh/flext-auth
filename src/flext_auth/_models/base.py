@@ -1,4 +1,8 @@
-"""FlextAuth models base — foundational models owner of the private family."""
+"""FlextAuth models base — foundational models owner of the private family.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

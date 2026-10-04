@@ -14,10 +14,14 @@ class FlextAuthBasicUsagePortugueseExample:
 
     @staticmethod
     def exemplo_flext_auth() -> p.Result[bool]:
-        """Exemplo de uso da API atual FlextAuth."""
+        """Exemplo de uso da API atual FlextAuth.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         register_result = auth.register_user(
-            "usuario_teste", "usuario@example.com", "MinhaSenh@123!"
+            "usuario_teste", "usuario@example.com", "MinhaSenh@123!",
         )
         if register_result.failure:
             return r[bool].from_failure(register_result)
@@ -29,7 +33,7 @@ class FlextAuthBasicUsagePortugueseExample:
         if validation.failure:
             return validation
         return auth.session_service.session_manager.end_session_by_id(
-            auth_data.session_id
+            auth_data.session_id,
         )
 
 

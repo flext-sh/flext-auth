@@ -1,4 +1,8 @@
-"""FlextAuth API test case group 11."""
+"""FlextAuth API test case group 11.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -16,7 +20,8 @@ class TestsFlextAuthApiCase11:
 
     _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
-    def test_flext_auth_concurrent_operations(self) -> None:
+    @staticmethod
+    def test_flext_auth_concurrent_operations() -> None:
         """Test auth concurrent operations."""
         auth = FlextAuth()
 
@@ -45,7 +50,9 @@ class TestsFlextAuthApiCase11:
         for thread in auth_threads:
             thread.join()
 
-    def test_public_api_create_token_for_registered_user(self) -> None:
+    @staticmethod
+    def test_public_api_create_token_for_registered_user() -> None:
+        """Test public api create token for registered user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         registered = auth.register_user(
             username="public-api-token-user",
@@ -58,7 +65,9 @@ class TestsFlextAuthApiCase11:
         u.Tests.Matchers.ok(token_result)
         u.Tests.Matchers.that(token_result.value.count("."), eq=2)
 
-    def test_public_api_validate_token_success(self) -> None:
+    @staticmethod
+    def test_public_api_validate_token_success() -> None:
+        """Test public api validate token success."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         registered = auth.register_user(
             username="public-api-validate-user",
@@ -74,10 +83,9 @@ class TestsFlextAuthApiCase11:
         u.Tests.Matchers.ok(validation_result)
         u.Tests.Matchers.that(validation_result.value, eq=True)
 
-    def test_public_api_validate_token_failure(self) -> None:
+    @staticmethod
+    def test_public_api_validate_token_failure() -> None:
+        """Test public api validate token failure."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         validation_result = auth.token_service.validate_token("invalid.jwt.token")
         u.Tests.Matchers.fail(validation_result)
-
-
-__all__: list[str] = ["TestsFlextAuthApiCase11"]

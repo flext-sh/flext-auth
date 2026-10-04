@@ -1,4 +1,8 @@
-"""Authentication identity models."""
+"""Authentication identity models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -9,8 +13,7 @@ from typing import Annotated, Self
 from flext_api import m, r, u
 
 from flext_auth import c, p, t
-
-from .auth_password import FlextAuthModelsAuthPassword
+from flext_auth._models.auth_password import FlextAuthModelsAuthPassword
 
 
 class FlextAuthModelsAuthIdentity:
@@ -33,19 +36,19 @@ class FlextAuthModelsAuthIdentity:
         ]
         contact: Annotated[str, u.Field(..., description="Contact info")]
         credential_hash: Annotated[
-            str, u.Field(description="Hashed credential", exclude=True)
+            str, u.Field(description="Hashed credential", exclude=True),
         ] = ""
         full_name: Annotated[str, u.Field(description="Full name")] = ""
         is_active: Annotated[bool, u.Field(description="Active status")] = True
         roles: t.StrSequence = u.Field(
-            default_factory=lambda: [c.Auth.RoleTypes.USER.value], description="Roles"
+            default_factory=lambda: [c.Auth.RoleTypes.USER.value], description="Roles",
         )
         permissions: t.StrSequence = u.Field(
             default_factory=tuple,
             description="List of permissions assigned to the identity",
         )
         failed_attempts: Annotated[
-            t.NonNegativeInt, u.Field(description="Failed attempts")
+            t.NonNegativeInt, u.Field(description="Failed attempts"),
         ] = 0
         locked_until: datetime = u.Field(
             default_factory=lambda: datetime.min.replace(tzinfo=UTC),
@@ -65,9 +68,13 @@ class FlextAuthModelsAuthIdentity:
         @u.model_validator(mode="before")
         @classmethod
         def normalize_token_claims(
-            cls, data: t.MappingKV[str, t.JsonPayload | datetime] | Self
+            cls, data: t.MappingKV[str, t.JsonPayload | datetime] | Self,
         ) -> t.MappingKV[str, t.JsonPayload | datetime] | Self:
-            """Normalize OAuth/Kerberos claim payloads into identity fields."""
+            """Normalize OAuth/Kerberos claim payloads into identity fields.
+
+            Returns:
+                The resulting ``t.MappingKV[str, t.JsonPayload | datetime] | Self``.
+            """
             if isinstance(data, cls):
                 return data
             if not isinstance(data, Mapping):
@@ -134,14 +141,22 @@ class FlextAuthModelsAuthIdentity:
             return normalized
 
         def locked(self) -> bool:
-            """Check if identity is locked."""
+            """Check if identity is locked.
+
+            Returns:
+                The resulting ``bool``.
+            """
             if self.locked_until == datetime.min.replace(tzinfo=UTC):
                 return False
             current_time: datetime = u.now()
             return current_time < self.locked_until
 
         def update_credential(self, credential: str) -> p.Result[bool]:
-            """Update credential with bcrypt hashing via domain verb."""
+            """Update credential with bcrypt hashing via domain verb.
+
+            Returns:
+                The resulting ``p.Result[bool]``.
+            """
             try:
                 self.credential_hash = (
                     FlextAuthModelsAuthPassword.PasswordUtil.hash_password(credential)
@@ -151,17 +166,25 @@ class FlextAuthModelsAuthIdentity:
                 return r[bool].fail(f"Failed to hash credential: {exc}", exception=exc)
 
         def verify_credential(self, credential: str) -> p.Result[bool]:
-            """Verify a credential against stored hash using bcrypt."""
+            """Verify a credential against stored hash using bcrypt.
+
+            Returns:
+                The resulting ``p.Result[bool]``.
+            """
             try:
                 valid = FlextAuthModelsAuthPassword.PasswordUtil.verify_password(
-                    credential, self.credential_hash
+                    credential, self.credential_hash,
                 )
                 return r[bool].ok(valid)
             except c.EXC_BROAD_IO_TYPE as exc:
                 return r[bool].fail_op("Credential verification", exc)
 
         def with_successful_access(self) -> Self:
-            """Record successful access (fluent interface)."""
+            """Record successful access (fluent interface).
+
+            Returns:
+                The resulting ``Self``.
+            """
             self.last_access = u.now()
             self.failed_attempts = 0
             self.locked_until = datetime.min.replace(tzinfo=UTC)

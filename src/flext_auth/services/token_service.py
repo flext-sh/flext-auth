@@ -52,9 +52,13 @@ class FlextAuthTokenService(s):
 
     @staticmethod
     def _fail_token_creation(
-        user_id: str, token_kind: str, error: str | None, fallback: str
+        user_id: str, token_kind: str, error: str | None, fallback: str,
     ) -> p.Result[str]:
-        """Log a failed token creation and return the failure result."""
+        """Log a failed token creation and return the failure result.
+
+        Returns:
+            The resulting ``p.Result[str]``.
+        """
         u.fetch_logger(__name__).info(
             "Token creation",
             user_id=user_id,
@@ -70,33 +74,41 @@ class FlextAuthTokenService(s):
         expires_in_minutes: int | None = None,
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
     ) -> p.Result[str]:
-        """Railway-oriented JWT token generation with audit logging."""
+        """Railway-oriented JWT token generation with audit logging.
+
+        Returns:
+            The resulting ``p.Result[str]``.
+        """
         user_result = self.user_manager.fetch_user(user_id)
         if user_result.failure:
             return self._fail_token_creation(
-                user_id, token_kind, user_result.error, "User lookup failed"
+                user_id, token_kind, user_result.error, "User lookup failed",
             )
         user = user_result.value
         user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.generate_token_for_user(
-                user_dict, token_kind=token_kind, expiry_minutes=expires_in_minutes
-            )
+                user_dict, token_kind=token_kind, expiry_minutes=expires_in_minutes,
+            ),
         )
         if token_result.failure:
             return self._fail_token_creation(
-                user_id, token_kind, token_result.error, "Token generation failed"
+                user_id, token_kind, token_result.error, "Token generation failed",
             )
         token_value = token_result.value
         u.fetch_logger(__name__).debug(
-            "Token creation successful", user_id=user_id, token_type=token_kind
+            "Token creation successful", user_id=user_id, token_type=token_kind,
         )
         return r[str].ok(token_value)
 
     def refresh_token(self, token: str) -> p.Result[m.Auth.AuthToken]:
-        """Railway-oriented token refresh with audit logging."""
+        """Railway-oriented token refresh with audit logging.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.AuthToken]``.
+        """
         result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.refresh(token)
+            lambda provider: provider.refresh(token),
         )
         if result.failure:
             error = result.error
@@ -122,7 +134,11 @@ class FlextAuthTokenService(s):
         return r[m.Auth.AuthToken].ok(auth_token)
 
     def validate_token(self, token: str) -> p.Result[bool]:
-        """Railway-oriented token validation with audit logging."""
+        """Railway-oriented token validation with audit logging.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
 
         def _log_token_validation_error(error: str) -> None:
             u.fetch_logger(__name__).debug(
@@ -140,7 +156,11 @@ class FlextAuthTokenService(s):
         )
 
     def _get_jwt_provider_cached(self) -> p.Result[p.Auth.FlextAuthBaseProvider]:
-        """Get JWT provider with lazy caching to eliminate repeated lookups."""
+        """Get JWT provider with lazy caching to eliminate repeated lookups.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.FlextAuthBaseProvider]``.
+        """
         if self._jwt_provider_cache is not None:
             return r[p.Auth.FlextAuthBaseProvider].ok(self._jwt_provider_cache)
         result = self._provider_service.fetch_jwt_provider()

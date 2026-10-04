@@ -1,4 +1,8 @@
-"""Auth user manager namespace."""
+"""Auth user manager namespace.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -9,9 +13,8 @@ from typing import ClassVar
 from flext_api import u
 
 from flext_auth import FlextAuthSettings, m, p, t
+from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
 from flext_core import FlextContext
-
-from .user_create import FlextAuthUserManagerCreate
 
 
 class FlextAuthUserManagers:

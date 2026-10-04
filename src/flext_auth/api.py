@@ -1,13 +1,15 @@
 """FLEXT Auth API facade.
 
 Public entrypoint kept as a strict facade over service classes.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
 from flext_auth import t
-
-from .services.auth_service import FlextAuthApplicationService
+from flext_auth.services.auth_service import FlextAuthApplicationService
 
 
 class FlextAuth(FlextAuthApplicationService):

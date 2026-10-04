@@ -1,4 +1,8 @@
-"""Test models for the flext-auth test suite."""
+"""Test models for the flext-auth test suite.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -19,14 +23,14 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
         """Certificate fixture data."""
 
         model_config: ClassVar[FlextAuthModels.ConfigDict] = FlextAuthModels.ConfigDict(
-            frozen=True
+            frozen=True,
         )
 
         cert_pem: Annotated[str, u.Field(description="PEM-encoded certificate")]
         key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]
         fingerprint: Annotated[str, u.Field(description="Certificate fingerprint hash")]
         subject_cn: Annotated[
-            str, u.Field(description="Certificate subject common name")
+            str, u.Field(description="Certificate subject common name"),
         ]
 
         @classmethod
@@ -36,7 +40,11 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
             organization: str = "Test Organization",
             valid_days: int = 365,
         ) -> TestsFlextAuthModels.CertificateFixture:
-            """Generate a mock certificate fixture for testing."""
+            """Generate a mock certificate fixture for testing.
+
+            Returns:
+                The resulting ``TestsFlextAuthModels.CertificateFixture``.
+            """
             mock_cert_pem = (
                 "-----BEGIN CERTIFICATE-----\n"
                 "MOCK CERTIFICATE FOR TESTING\n"
@@ -66,7 +74,11 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
             common_name: str = "client.example.com",
             organization: str = "Test Client",
         ) -> TestsFlextAuthModels.CertificateFixture:
-            """Generate a mock client certificate fixture for testing."""
+            """Generate a mock client certificate fixture for testing.
+
+            Returns:
+                The resulting ``TestsFlextAuthModels.CertificateFixture``.
+            """
             mock_cert_pem = (
                 "-----BEGIN CERTIFICATE-----\n"
                 "MOCK CLIENT CERTIFICATE FOR TESTING\n"

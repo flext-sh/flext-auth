@@ -1,4 +1,8 @@
-"""Auth application lifecycle helpers."""
+"""Auth application lifecycle helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -33,7 +37,11 @@ class FlextAuthApplicationLifecycle(ABC):
 
     @classmethod
     def fetch_global(cls) -> Self:
-        """Thread-safe singleton accessor."""
+        """Thread-safe singleton accessor.
+
+        Returns:
+            The resulting ``Self``.
+        """
         instance = cls._instance
         if isinstance(instance, cls):
             return instance
@@ -53,7 +61,11 @@ class FlextAuthApplicationLifecycle(ABC):
 
     @classmethod
     def quick_start(cls, *, create_admin_user: bool = True) -> Self:
-        """Quick start factory with default configuration."""
+        """Quick start factory with default configuration.
+
+        Returns:
+            The resulting ``Self``.
+        """
         auth: Self = cls()
         if create_admin_user:
             result = auth.register_user(
@@ -64,7 +76,7 @@ class FlextAuthApplicationLifecycle(ABC):
             )
             if result.failure and result.error is not None:
                 auth.logger.warning(
-                    "Quick start admin user provisioning failed: %s", result.error
+                    "Quick start admin user provisioning failed: %s", result.error,
                 )
         return auth
 

@@ -1,10 +1,14 @@
-"""Authentication utility namespace."""
+"""Authentication utility namespace.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from .auth_response import FlextAuthUtilitiesAuthResponse
-from .auth_token import FlextAuthUtilitiesAuthToken
-from .auth_validation import FlextAuthUtilitiesAuthValidation
+from flext_auth._utilities.auth_response import FlextAuthUtilitiesAuthResponse
+from flext_auth._utilities.auth_token import FlextAuthUtilitiesAuthToken
+from flext_auth._utilities.auth_validation import FlextAuthUtilitiesAuthValidation
 
 
 class FlextAuthUtilitiesAuth(

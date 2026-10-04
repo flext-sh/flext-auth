@@ -1,10 +1,14 @@
-"""Authentication constants namespace values."""
+"""Authentication constants namespace values.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import Final
 
-from .auth_security import FlextAuthConstantsAuthSecurity
+from flext_auth._constants.auth_security import FlextAuthConstantsAuthSecurity
 
 
 class FlextAuthConstantsAuthValues(FlextAuthConstantsAuthSecurity):

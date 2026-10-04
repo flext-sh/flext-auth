@@ -1,4 +1,8 @@
-"""Shared FlextAuth API test helpers."""
+"""Shared FlextAuth API test helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -18,7 +22,11 @@ class TestsFlextAuthApiTestDataHelper:
 
     @staticmethod
     def registered_session() -> tuple[FlextAuth, m.Auth.AuthIdentity, t.JsonMapping]:
-        """Register and authenticate one identity through the public facade."""
+        """Register and authenticate one identity through the public facade.
+
+        Returns:
+            The resulting ``tuple[FlextAuth, m.Auth.AuthIdentity, t.JsonMapping]``.
+        """
         auth = FlextAuth()
         test_data = TestsFlextAuthApiTestDataHelper.create_test_auth_data()
         register_result = auth.register_user(
@@ -28,7 +36,8 @@ class TestsFlextAuthApiTestDataHelper:
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
@@ -37,7 +46,11 @@ class TestsFlextAuthApiTestDataHelper:
 
     @staticmethod
     def create_test_user_data() -> t.JsonMapping:
-        """Create test user data."""
+        """Create test user data.
+
+        Returns:
+            The resulting ``t.JsonMapping``.
+        """
         return {
             "username": "test_user",
             "email": "test@example.com",
@@ -47,7 +60,11 @@ class TestsFlextAuthApiTestDataHelper:
 
     @staticmethod
     def create_test_auth_data() -> t.JsonMapping:
-        """Create test authentication data."""
+        """Create test authentication data.
+
+        Returns:
+            The resulting ``t.JsonMapping``.
+        """
         return {
             "username": "test_user",
             "email": "test@example.com",
@@ -56,12 +73,13 @@ class TestsFlextAuthApiTestDataHelper:
 
     @staticmethod
     def create_test_session_data() -> t.JsonMapping:
-        """Create test session data."""
+        """Create test session data.
+
+        Returns:
+            The resulting ``t.JsonMapping``.
+        """
         return {
             "user_id": "user_123",
             "session_id": "session_123",
             "expires_at": "2025-12-31T23:59:59Z",
         }
-
-
-__all__: list[str] = ["TestsFlextAuthApiTestDataHelper"]

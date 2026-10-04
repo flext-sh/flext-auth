@@ -1,4 +1,8 @@
-"""Kerberos provider support helpers."""
+"""Kerberos provider support helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -16,14 +20,18 @@ class FlextAuthKerberosSupport:
     _external_ticket_validator: t.Auth.KerberosTicketValidator | None = None
 
     def _validate_kerberos_configuration(self) -> p.Result[bool]:
-        """Railway-oriented validation of the typed Kerberos settings namespace."""
+        """Railway-oriented validation of the typed Kerberos settings namespace.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         kerberos = settings.Auth.kerberos
         missing = [
             field for field in self._KERBEROS_REQUIRED if not getattr(kerberos, field)
         ]
         if missing:
             return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing)}"
+                f"Missing required Kerberos configuration fields: {', '.join(missing)}",
             )
         return r[bool].ok(value=True)
 
@@ -37,12 +45,17 @@ class FlextAuthKerberosSupport:
             """Initialize ticket validator."""
             self.provider = provider
 
+        @staticmethod
         def validate_ticket(
-            self, _ticket_data: m.Auth.KerberosTicketData
+            _ticket_data: m.Auth.KerberosTicketData,
         ) -> p.Result[m.Auth.KerberosTicketData]:
-            """Validate Kerberos ticket."""
+            """Validate Kerberos ticket.
+
+            Returns:
+                The resulting ``p.Result[m.Auth.KerberosTicketData]``.
+            """
             result = m.Auth.KerberosTicketData(
-                ticket="validated_ticket", principal="kerberos_user"
+                ticket="validated_ticket", principal="kerberos_user",
             )
             return r[m.Auth.KerberosTicketData].ok(result)
 
@@ -58,8 +71,13 @@ class FlextAuthKerberosSupport:
             """Initialize service handler."""
             self.provider = provider
 
-    def handle_service_ticket(self, ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
-        """Handle Kerberos service ticket."""
+    @staticmethod
+    def handle_service_ticket(ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
+        """Handle Kerberos service ticket.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.KerberosTicketData]``.
+        """
         result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
         return r[m.Auth.KerberosTicketData].ok(result)
 
@@ -74,9 +92,13 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def authenticate_ticket(
-            self, ticket_data: m.Auth.KerberosTicketData
+            self, ticket_data: m.Auth.KerberosTicketData,
         ) -> p.Result[m.Auth.KerberosTicketData]:
-            """Authenticate using Kerberos ticket."""
+            """Authenticate using Kerberos ticket.
+
+            Returns:
+                The resulting ``p.Result[m.Auth.KerberosTicketData]``.
+            """
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
     def _ticket_validator_callable(
@@ -94,7 +116,7 @@ class FlextAuthKerberosSupport:
         ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             raw_payload = validator_candidate(ticket)
             if isinstance(
-                raw_payload, (m.Auth.AuthIdentity, m.Auth.KerberosTicketData)
+                raw_payload, (m.Auth.AuthIdentity, m.Auth.KerberosTicketData),
             ):
                 return raw_payload
             # The declared candidate contract narrows every payload that is

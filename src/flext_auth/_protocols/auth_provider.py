@@ -1,4 +1,8 @@
-"""Authentication provider protocols."""
+"""Authentication provider protocols.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -9,7 +13,7 @@ from flext_auth import c, t
 if TYPE_CHECKING:
     from flext_api import p
 
-    from .auth_token import FlextAuthProtocolsAuthToken
+    from flext_auth._protocols.auth_token import FlextAuthProtocolsAuthToken
 
 
 class FlextAuthProtocolsAuthProvider:
@@ -32,7 +36,7 @@ class FlextAuthProtocolsAuthProvider:
             ...
 
         def authenticate(
-            self, credentials: t.JsonMapping
+            self, credentials: t.JsonMapping,
         ) -> p.Result[FlextAuthProtocolsAuthToken.Token]:
             """Authenticate user with provided credentials.
 

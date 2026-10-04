@@ -1,4 +1,8 @@
-"""OAuth2 Provider - OAuth2 authentication and authorization provider."""
+"""OAuth2 Provider - OAuth2 authentication and authorization provider.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -20,6 +24,9 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
 
         Railway-oriented initialization with proper error handling.
         Uses composition for better separation of concerns.
+
+        Raises:
+            ValidationError: If OAuth2 configuration validation failed.
         """
         raw_config = (
             settings
@@ -27,7 +34,7 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
             else settings.model_dump(mode="json", exclude_none=True)
         )
         normalized_config: t.ScalarMapping = t.scalar_mapping_adapter().validate_python(
-            raw_config
+            raw_config,
         )
         scalar_config = self.project_to_scalar_config(normalized_config) or {}
         super().__init__(scalar_config)

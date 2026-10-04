@@ -14,7 +14,7 @@ class FlextAuthSessionService(s):
     """Focused service for session management with complete flext-core integration."""
 
     def __init__(
-        self, dispatcher: p.Dispatcher, managers: u.Auth.ServiceManagers | None = None
+        self, dispatcher: p.Dispatcher, managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
@@ -28,7 +28,11 @@ class FlextAuthSessionService(s):
         return self._managers.session_manager
 
     def cleanup_expired_sessions(self) -> p.Result[int]:
-        """Railway-oriented cleanup of expired sessions from the system."""
+        """Railway-oriented cleanup of expired sessions from the system.
+
+        Returns:
+            The resulting ``p.Result[int]``.
+        """
         u.fetch_logger(__name__).info("Cleanup of expired sessions requested")
         return self.session_manager.cleanup_expired_sessions()
 

@@ -1,3 +1,9 @@
+"""Rate limiter module.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -37,7 +43,7 @@ class FlextAuthRateLimiterManagers:
 
             if len(recent_attempts) >= self._max_attempts:
                 fail_result: p.Result[bool] = r[bool].fail(
-                    "Too many failed attempts. Please try again later."
+                    "Too many failed attempts. Please try again later.",
                 )
                 return fail_result
             allowed_result: p.Result[bool] = r[bool].ok(value=True)
@@ -61,7 +67,7 @@ class FlextAuthRateLimiterManagers:
             self._attempts[username]["attempts"] = recent_attempts
 
         def _cleanup_window(
-            self, username: str, now: datetime
+            self, username: str, now: datetime,
         ) -> t.Auth.ManagersAttemptEvents:
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)

@@ -1,4 +1,8 @@
-"""Auth user manager create operation."""
+"""Auth user manager create operation.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -8,8 +12,7 @@ from uuid import uuid4
 from flext_api import r, u
 
 from flext_auth import m, p, t
-
-from .user_write import FlextAuthUserManagerWrite
+from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
@@ -29,7 +32,11 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         password_hash: str,
         **extra_fields: t.Scalar | t.StrSequence | datetime | None,
     ) -> p.Result[p.Auth.AuthIdentity]:
-        """Create a new user."""
+        """Create a new user.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.AuthIdentity]``.
+        """
         normalized_email = email.lower()
         duplicate_identity_exists = username in self._users or any(
             isinstance(existing_user_data.get("contact"), str)
@@ -42,7 +49,7 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         user_id = str(uuid4())
         now = u.now()
         normalized_identity_extras = self.IdentityExtras.model_validate(
-            extra_fields
+            extra_fields,
         ).model_dump(exclude_none=True)
         user = m.Auth.AuthIdentity.model_validate({
             "unique_id": user_id,

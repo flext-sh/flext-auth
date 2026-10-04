@@ -15,7 +15,7 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
 class FlextAuthCertificateProvider(
-    FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
+    FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider,
 ):
     """Certificate-based authentication provider."""
 
@@ -47,7 +47,8 @@ class FlextAuthCertificateProvider(
             token_value = token_protocol.token
         return self.validate_token(token_value)
 
-    def validate_token(self, token: str) -> p.Result[bool]:
+    @staticmethod
+    def validate_token(token: str) -> p.Result[bool]:
         """Validate authentication token.
 
         Args:

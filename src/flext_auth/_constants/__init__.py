@@ -1,20 +1,24 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Flext Auth. Constants package."""
+"""Flext Auth. Constants package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from .auth import FlextAuthConstantsAuth
-    from .auth_claims import FlextAuthConstantsAuthClaims
-    from .auth_enums import FlextAuthConstantsAuthEnums
-    from .auth_security import FlextAuthConstantsAuthSecurity
-    from .auth_values import FlextAuthConstantsAuthValues
-    from .base import FlextAuthConstantsBase
+    from flext_auth._constants.auth import FlextAuthConstantsAuth
+    from flext_auth._constants.auth_claims import FlextAuthConstantsAuthClaims
+    from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
+    from flext_auth._constants.auth_security import FlextAuthConstantsAuthSecurity
+    from flext_auth._constants.auth_values import FlextAuthConstantsAuthValues
+    from flext_auth._constants.base import FlextAuthConstantsBase
 
 
 __all__: tuple[str, ...] = (
@@ -38,7 +42,7 @@ _LAZY_IMPORTS = MappingProxyType(
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
-    )
+    ),
 )
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

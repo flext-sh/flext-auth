@@ -39,7 +39,7 @@ class FlextAuthJwtTokenValidator:
             if not settings:
                 return r[t.Auth.TokensClaimMap].fail("JWT configuration not provided")
             return r[t.Auth.TokensClaimMap].from_result(
-                u.Auth.decode_token(token, settings)
+                u.Auth.decode_token(token, settings),
             )
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[t.Auth.TokensClaimMap].fail_op("Token validation", exc)

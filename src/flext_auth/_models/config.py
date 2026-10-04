@@ -23,18 +23,18 @@ class FlextAuthConfigModels:
 
         default_algorithm: str = m.Field(description="Default JWT signing algorithm.")
         default_expiry_minutes: int = m.Field(
-            ge=1, description="Default JWT expiry in minutes."
+            ge=1, description="Default JWT expiry in minutes.",
         )
         max_expiry_minutes: int = m.Field(
-            ge=1, description="Maximum JWT expiry in minutes."
+            ge=1, description="Maximum JWT expiry in minutes.",
         )
         issuer_claim: str = m.Field(description="Default JWT issuer claim.")
         audience_claim: str = m.Field(description="Default JWT audience claim.")
         min_secret_key_length: int = m.Field(
-            ge=1, description="Minimum secret key length for JWT."
+            ge=1, description="Minimum secret key length for JWT.",
         )
         default_token_type: str = m.Field(
-            description="Default token type for Authorization header."
+            description="Default token type for Authorization header.",
         )
 
     class OAuth2(m.BaseModel):
@@ -47,10 +47,10 @@ class FlextAuthConfigModels:
         default_flow: str = m.Field(description="Default OAuth2 flow.")
         use_pkce_default: bool = m.Field(description="Whether to use PKCE by default.")
         token_endpoint_auth_methods: tuple[str, ...] = m.Field(
-            description="Supported token endpoint authentication methods."
+            description="Supported token endpoint authentication methods.",
         )
         default_token_endpoint_auth_method: str = m.Field(
-            description="Default token endpoint authentication method."
+            description="Default token endpoint authentication method.",
         )
 
     class Credentials(m.BaseModel):
@@ -63,13 +63,13 @@ class FlextAuthConfigModels:
         password_min_length: int = m.Field(ge=1, description="Minimum password length.")
         password_max_length: int = m.Field(ge=1, description="Maximum password length.")
         password_min_score: int = m.Field(
-            ge=0, description="Minimum password strength score."
+            ge=0, description="Minimum password strength score.",
         )
         password_min_bcrypt_hash_length: int = m.Field(
-            ge=1, description="Minimum bcrypt hash length."
+            ge=1, description="Minimum bcrypt hash length.",
         )
         password_bcrypt_rounds: int = m.Field(
-            ge=4, le=31, description="Default bcrypt rounds."
+            ge=4, le=31, description="Default bcrypt rounds.",
         )
 
     class Session(m.BaseModel):
@@ -78,15 +78,17 @@ class FlextAuthConfigModels:
         model_config = m.ConfigDict(frozen=True, extra="forbid")
 
         default_expiry_minutes: int = m.Field(
-            ge=1, description="Default session expiry in minutes."
+            ge=1, description="Default session expiry in minutes.",
         )
         max_expiry_minutes: int = m.Field(
-            ge=1, description="Maximum session expiry in minutes."
+            ge=1, description="Maximum session expiry in minutes.",
         )
         max_sessions_per_user: int = m.Field(
-            ge=1, description="Maximum sessions per user."
+            ge=1, description="Maximum sessions per user.",
         )
-        min_token_length: int = m.Field(ge=1, description="Minimum session token length.")
+        min_token_length: int = m.Field(
+            ge=1, description="Minimum session token length.",
+        )
 
     class Security(m.BaseModel):
         """Rate-limit and lockout defaults."""
@@ -94,16 +96,16 @@ class FlextAuthConfigModels:
         model_config = m.ConfigDict(frozen=True, extra="forbid")
 
         max_login_attempts: int = m.Field(
-            ge=1, description="Maximum login attempts before lockout."
+            ge=1, description="Maximum login attempts before lockout.",
         )
         lockout_duration_minutes: int = m.Field(
-            ge=1, description="Lockout duration in minutes."
+            ge=1, description="Lockout duration in minutes.",
         )
         max_requests_per_minute: int = m.Field(
-            ge=1, description="Maximum requests per minute."
+            ge=1, description="Maximum requests per minute.",
         )
         max_requests_per_hour: int = m.Field(
-            ge=1, description="Maximum requests per hour."
+            ge=1, description="Maximum requests per hour.",
         )
 
     class Validation(m.BaseModel):
@@ -111,24 +113,26 @@ class FlextAuthConfigModels:
 
         model_config = m.ConfigDict(frozen=True, extra="forbid")
 
-        short_name_max: int = m.Field(ge=1, description="Maximum length for short names.")
+        short_name_max: int = m.Field(
+            ge=1, description="Maximum length for short names.",
+        )
         bcrypt_rounds: int = m.Field(
-            ge=4, le=31, description="Bcrypt rounds for password hashing."
+            ge=4, le=31, description="Bcrypt rounds for password hashing.",
         )
         default_token_expiry_minutes: int = m.Field(
-            ge=1, description="Default token expiry in minutes."
+            ge=1, description="Default token expiry in minutes.",
         )
         max_role_name_length: int = m.Field(
-            ge=1, description="Maximum length for role names."
+            ge=1, description="Maximum length for role names.",
         )
         max_role_description_length: int = m.Field(
-            ge=1, description="Maximum length for role descriptions."
+            ge=1, description="Maximum length for role descriptions.",
         )
         max_permission_name_length: int = m.Field(
-            ge=1, description="Maximum length for permission names."
+            ge=1, description="Maximum length for permission names.",
         )
         max_permission_description_length: int = m.Field(
-            ge=1, description="Maximum length for permission descriptions."
+            ge=1, description="Maximum length for permission descriptions.",
         )
 
     class Auth(m.BaseModel):
@@ -138,19 +142,19 @@ class FlextAuthConfigModels:
 
         jwt: FlextAuthConfigModels.Jwt = m.Field(description="JWT policy defaults.")
         oauth2: FlextAuthConfigModels.OAuth2 = m.Field(
-            description="OAuth2 policy defaults."
+            description="OAuth2 policy defaults.",
         )
         credentials: FlextAuthConfigModels.Credentials = m.Field(
-            description="Credential validation defaults."
+            description="Credential validation defaults.",
         )
         session: FlextAuthConfigModels.Session = m.Field(
-            description="Session policy defaults."
+            description="Session policy defaults.",
         )
         security: FlextAuthConfigModels.Security = m.Field(
-            description="Rate-limit and lockout defaults."
+            description="Rate-limit and lockout defaults.",
         )
         validation: FlextAuthConfigModels.Validation = m.Field(
-            description="Generic validation length defaults."
+            description="Generic validation length defaults.",
         )
 
     class Root(m.BaseModel):
@@ -159,7 +163,7 @@ class FlextAuthConfigModels:
         model_config = m.ConfigDict(frozen=True, extra="ignore")
 
         Auth: FlextAuthConfigModels.Auth = m.Field(
-            description="Auth business-rule config namespace."
+            description="Auth business-rule config namespace.",
         )
 
 

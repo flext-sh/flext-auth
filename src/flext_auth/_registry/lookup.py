@@ -1,10 +1,13 @@
-"""Auth registry read operations."""
+"""Auth registry read operations.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from flext_auth import c, m, p, r, t
-
-from .base import FlextAuthRegistryBase
+from flext_auth._registry.base import FlextAuthRegistryBase
 
 
 class FlextAuthRegistryLookup(FlextAuthRegistryBase):
@@ -13,7 +16,11 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         return len(self.list_providers())
 
     def __contains__(self, name: str) -> bool:
-        """Check if provider name is registered."""
+        """Check if provider name is registered.
+
+        Returns:
+            The resulting ``bool``.
+        """
         return self.has_provider(name)
 
     def clear(self) -> None:
@@ -22,7 +29,11 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
 
     def find_by_capability(self, capability: str) -> p.Result[t.StrSequence]:
-        """Find providers with specific capability."""
+        """Find providers with specific capability.
+
+        Returns:
+            The resulting ``p.Result[t.StrSequence]``.
+        """
         matching = [
             name
             for name in self.list_providers()
@@ -31,7 +42,11 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         return r[t.StrSequence].ok(matching)
 
     def fetch_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
-        """Fetch provider configuration."""
+        """Fetch provider configuration.
+
+        Returns:
+            The resulting ``p.Result[t.ConfigurationMapping]``.
+        """
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
         config_result = self.fetch_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
@@ -44,10 +59,14 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         return r[t.ScalarMapping].ok(settings)
 
     def fetch_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
-        """Fetch provider metadata."""
+        """Fetch provider metadata.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.Providers.Metadata]``.
+        """
         if not self.has_provider(name):
             return r[m.Auth.Providers.Metadata].fail(
-                f"Provider '{name}' not registered"
+                f"Provider '{name}' not registered",
             )
         metadata_result = self.fetch_plugin(c.Auth.REGISTRY_METADATA_CATEGORY, name)
         if metadata_result.failure:
@@ -57,7 +76,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
                     version=c.Auth.PROVIDER_VERSION,
                     capabilities=(),
                     extras={},
-                )
+                ),
             )
         wrapper = metadata_result.value
         metadata = getattr(wrapper, "data", None)
@@ -68,12 +87,16 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
                     version=c.Auth.PROVIDER_VERSION,
                     capabilities=(),
                     extras={},
-                )
+                ),
             )
         return r[m.Auth.Providers.Metadata].ok(metadata)
 
     def has_capability(self, name: str, capability: str) -> p.Result[bool]:
-        """Check if provider has capability."""
+        """Check if provider has capability.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         caps_result = self.resolve_capabilities(name)
         if caps_result.failure:
             return r[bool].from_failure(caps_result)
@@ -81,13 +104,21 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         return r[bool].ok(capability in caps)
 
     def has_provider(self, name: str) -> bool:
-        """Check if provider is registered."""
+        """Check if provider is registered.
+
+        Returns:
+            The resulting ``bool``.
+        """
         result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
         success: bool = result.success
         return success
 
     def list_providers(self) -> t.StrSequence:
-        """List registered provider names."""
+        """List registered provider names.
+
+        Returns:
+            The resulting ``t.StrSequence``.
+        """
         result = self.list_plugins(c.Auth.REGISTRY_PROVIDERS_CATEGORY)
         if result.failure:
             return list[str]()

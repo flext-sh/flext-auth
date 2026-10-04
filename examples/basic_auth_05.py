@@ -1,4 +1,8 @@
-"""Basic Authentication Example using current flext-auth API."""
+"""Basic Authentication Example using current flext-auth API.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -19,7 +23,11 @@ class FlextAuthBasicAuthExample:
 
     @staticmethod
     def main() -> p.Result[bool]:
-        """Demonstrate core auth workflow with the supported API surface."""
+        """Demonstrate core auth workflow with the supported API surface.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth(settings=FlextAuthSettings())
         password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
         registration = auth.register_user(
@@ -30,25 +38,25 @@ class FlextAuthBasicAuthExample:
         )
         if registration.failure:
             FlextAuthBasicAuthExample._emit(
-                f"registration failed: {registration.error}"
+                f"registration failed: {registration.error}",
             )
             return r[bool].from_failure(registration)
         authentication = auth.authenticate_user("demouser", password)
         if authentication.failure:
             FlextAuthBasicAuthExample._emit(
-                f"authentication failed: {authentication.error}"
+                f"authentication failed: {authentication.error}",
             )
             return r[bool].from_failure(authentication)
         identity = authentication.value
         token_result = auth.create_token(identity_id=identity.unique_id)
         if token_result.failure:
             FlextAuthBasicAuthExample._emit(
-                f"token generation failed: {token_result.error}"
+                f"token generation failed: {token_result.error}",
             )
             return r[bool].from_failure(token_result)
         validation_result = auth.token_service.validate_token(token_result.value)
         FlextAuthBasicAuthExample._emit(
-            f"token valid: {validation_result.success and validation_result.value}"
+            f"token valid: {validation_result.success and validation_result.value}",
         )
         return validation_result
 

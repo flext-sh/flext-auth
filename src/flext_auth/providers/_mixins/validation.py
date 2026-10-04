@@ -1,4 +1,8 @@
-"""Provider validation operations."""
+"""Provider validation operations.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -7,16 +11,25 @@ from flext_auth import p, r, t, u
 
 class FlextAuthProviderValidationMixin:
     def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate credentials. Stub providers inherit this unimplemented owner."""
+        """Authenticate credentials. Stub providers inherit this unimplemented owner.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.Token]``.
+        """
         _ = credentials
         return r[p.Auth.Token].fail("Not implemented")
 
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate a token. Stub providers inherit this unimplemented owner."""
+        """Validate a token. Stub providers inherit this unimplemented owner.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         _ = token
         return r[bool].fail("Not implemented")
 
-    def revoke(self, token: str) -> p.Result[bool]:
+    @staticmethod
+    def revoke(token: str) -> p.Result[bool]:
         """Revoke authentication token.
 
         Default implementation returns an error indicating revocation is
@@ -40,8 +53,9 @@ class FlextAuthProviderValidationMixin:
         """
         return set()
 
+    @staticmethod
     def _validate_credentials_dict(
-        self, credentials: t.JsonMapping, required_fields: t.StrSequence
+        credentials: t.JsonMapping, required_fields: t.StrSequence,
     ) -> p.Result[bool]:
         """Validate that credentials contain required fields.
 
@@ -66,7 +80,8 @@ class FlextAuthProviderValidationMixin:
             return r[bool].fail(error_msg)
         return r[bool].ok(value=True)
 
-    def _validate_token_string(self, token: str) -> p.Result[bool]:
+    @staticmethod
+    def _validate_token_string(token: str) -> p.Result[bool]:
         """Validate token string format.
 
         Args:

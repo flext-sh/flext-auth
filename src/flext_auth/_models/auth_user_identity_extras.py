@@ -1,4 +1,8 @@
-"""Authentication user identity extras models."""
+"""Authentication user identity extras models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -32,9 +36,13 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @u.field_validator("roles", "permissions", mode="before")
         @classmethod
         def normalize_str_sequence(
-            cls, value: t.Scalar | t.StrSequence | datetime | None
+            cls, value: t.Scalar | t.StrSequence | datetime | None,
         ) -> t.StrSequence | None:
-            """Normalize sequence-like values to strict string sequences."""
+            """Normalize sequence-like values to strict string sequences.
+
+            Returns:
+                The resulting ``t.StrSequence | None``.
+            """
             if value is None:
                 return None
             if isinstance(value, (str, bytes, bytearray)):
@@ -46,9 +54,13 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @u.field_validator("failed_attempts", mode="before")
         @classmethod
         def normalize_failed_attempts(
-            cls, value: t.Scalar | t.StrSequence | datetime | None
+            cls, value: t.Scalar | t.StrSequence | datetime | None,
         ) -> int | None:
-            """Normalize failed attempts from int-like values."""
+            """Normalize failed attempts from int-like values.
+
+            Returns:
+                The resulting ``int | None``.
+            """
             if value is None:
                 return None
             if isinstance(value, int):
@@ -60,9 +72,13 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @u.field_validator("locked_until", "last_access", mode="before")
         @classmethod
         def normalize_datetime(
-            cls, value: t.Scalar | t.StrSequence | datetime | None
+            cls, value: t.Scalar | t.StrSequence | datetime | None,
         ) -> datetime | None:
-            """Normalize datetime-like values with deterministic fallback."""
+            """Normalize datetime-like values with deterministic fallback.
+
+            Returns:
+                The resulting ``datetime | None``.
+            """
             if value is None:
                 return None
             match value:

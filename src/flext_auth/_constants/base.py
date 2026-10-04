@@ -1,4 +1,8 @@
-"""FlextAuth constants base — foundational constants owner of the private family."""
+"""FlextAuth constants base — foundational constants owner of the private family.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

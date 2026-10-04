@@ -1,12 +1,15 @@
-"""Auth registry mutation operations."""
+"""Auth registry mutation operations.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import override
 
 from flext_auth import c, m, p, r, t
-
-from .lookup import FlextAuthRegistryLookup
+from flext_auth._registry.lookup import FlextAuthRegistryLookup
 
 
 class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
@@ -23,12 +26,16 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         metadata: p.Auth.Providers.Metadata | None = None,
         configuration: t.ConfigurationMapping | None = None,
     ) -> p.Result[bool]:
-        """Register auth provider with optional settings and metadata."""
+        """Register auth provider with optional settings and metadata.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         provider_wrapper = m.Auth.ProviderWrapper(
-            category=c.Auth.REGISTRY_PROVIDERS_CATEGORY, provider=provider
+            category=c.Auth.REGISTRY_PROVIDERS_CATEGORY, provider=provider,
         )
         provider_result = self._registry.register_plugin(
-            c.Auth.REGISTRY_PROVIDERS_CATEGORY, name, provider_wrapper
+            c.Auth.REGISTRY_PROVIDERS_CATEGORY, name, provider_wrapper,
         )
         if provider_result.failure:
             return provider_result
@@ -38,17 +45,17 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
                 data=t.scalar_mapping_adapter().validate_python(configuration),
             )
             config_result = self._registry.register_plugin(
-                c.Auth.REGISTRY_CONFIG_CATEGORY, name, config_wrapper
+                c.Auth.REGISTRY_CONFIG_CATEGORY, name, config_wrapper,
             )
             if config_result.failure:
                 self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
                 return config_result
         if metadata:
             metadata_wrapper = m.Auth.MetadataWrapper(
-                category=c.Auth.REGISTRY_METADATA_CATEGORY, data=metadata
+                category=c.Auth.REGISTRY_METADATA_CATEGORY, data=metadata,
             )
             metadata_result = self._registry.register_plugin(
-                c.Auth.REGISTRY_METADATA_CATEGORY, name, metadata_wrapper
+                c.Auth.REGISTRY_METADATA_CATEGORY, name, metadata_wrapper,
             )
             if metadata_result.failure:
                 self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
@@ -57,9 +64,13 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         return r[bool].ok(value=True)
 
     def unregister(self, name: str) -> p.Result[bool]:
-        """Unregister provider and cleanup auth-specific data."""
+        """Unregister provider and cleanup auth-specific data.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         provider_result = self.unregister_plugin(
-            c.Auth.REGISTRY_PROVIDERS_CATEGORY, name
+            c.Auth.REGISTRY_PROVIDERS_CATEGORY, name,
         )
         if provider_result.failure:
             return r[bool].fail(f"Provider '{name}' not registered")
@@ -68,9 +79,13 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         return r[bool].ok(value=True)
 
     def update_config(
-        self, name: str, settings: t.ConfigurationMapping
+        self, name: str, settings: t.ConfigurationMapping,
     ) -> p.Result[bool]:
-        """Update provider configuration."""
+        """Update provider configuration.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
         self.unregister_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
@@ -79,7 +94,7 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
             data=t.scalar_mapping_adapter().validate_python(settings),
         )
         return self._registry.register_plugin(
-            c.Auth.REGISTRY_CONFIG_CATEGORY, name, config_wrapper
+            c.Auth.REGISTRY_CONFIG_CATEGORY, name, config_wrapper,
         )
 
 

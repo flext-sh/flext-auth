@@ -1,21 +1,27 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Flext Auth.services package."""
+"""Flext Auth.services package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from ._auth_lifecycle import FlextAuthApplicationLifecycle
-    from ._provider_builtin import FlextAuthProviderBuiltinRegistration
-    from .auth_service import FlextAuthApplicationService
-    from .identity_service import FlextAuthIdentityService
-    from .provider_service import FlextAuthProviderService
-    from .session_service import FlextAuthSessionService
-    from .token_service import FlextAuthTokenService
+    from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
+    from flext_auth.services._provider_builtin import (
+        FlextAuthProviderBuiltinRegistration,
+    )
+    from flext_auth.services.auth_service import FlextAuthApplicationService
+    from flext_auth.services.identity_service import FlextAuthIdentityService
+    from flext_auth.services.provider_service import FlextAuthProviderService
+    from flext_auth.services.session_service import FlextAuthSessionService
+    from flext_auth.services.token_service import FlextAuthTokenService
 
 
 __all__: tuple[str, ...] = (
@@ -41,7 +47,7 @@ _LAZY_IMPORTS = MappingProxyType(
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
-    )
+    ),
 )
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

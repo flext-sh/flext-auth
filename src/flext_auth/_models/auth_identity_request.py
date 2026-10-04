@@ -1,4 +1,8 @@
-"""Authentication identity request models."""
+"""Authentication identity request models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -25,7 +29,7 @@ class FlextAuthModelsAuthIdentityRequest:
         contact: Annotated[
             t.NonEmptyStr,
             u.Field(
-                ..., pattern=c.Auth.PATTERN_EMAIL, description="Contact info (email)"
+                ..., pattern=c.Auth.PATTERN_EMAIL, description="Contact info (email)",
             ),
         ]
         credential: Annotated[
@@ -39,7 +43,7 @@ class FlextAuthModelsAuthIdentityRequest:
         ]
         full_name: Annotated[str, u.Field(description="Full name")] = ""
         roles: t.StrSequence = u.Field(
-            default_factory=lambda: [c.Auth.RoleTypes.USER.value], description="Roles"
+            default_factory=lambda: [c.Auth.RoleTypes.USER.value], description="Roles",
         )
 
 
