@@ -1,4 +1,8 @@
-"""Authentication response and wrapper models."""
+"""Authentication response and wrapper models.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -52,11 +56,13 @@ class FlextAuthModelsAuthResponse:
             c.Auth.JWT_DEFAULT_TOKEN_TYPE
         )
         expires_in: Annotated[
-            t.NonNegativeInt, u.Field(description="Expiry seconds")
+            t.NonNegativeInt,
+            u.Field(description="Expiry seconds"),
         ] = 3600
         scope: Annotated[str, u.Field(description="Granted scope")] = ""
         refresh_token: Annotated[
-            str, u.Field(description="Refresh token", exclude=True)
+            str,
+            u.Field(description="Refresh token", exclude=True),
         ] = ""
 
     # =========================================================================
@@ -82,12 +88,13 @@ class FlextAuthModelsAuthResponse:
         """Wrapper for auth provider instances."""
 
         model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
-            arbitrary_types_allowed=True
+            arbitrary_types_allowed=True,
         )
 
         category: Annotated[str, u.Field(description="Provider category")]
         provider: Annotated[
-            p.Auth.FlextAuthBaseProvider, u.Field(description="Provider instance")
+            p.Auth.FlextAuthBaseProvider,
+            u.Field(description="Provider instance"),
         ]
 
     class ConfigWrapper(m.Value):
@@ -113,7 +120,8 @@ class FlextAuthModelsAuthResponse:
                 c.Auth.PROVIDER_VERSION
             )
             capabilities: t.VariadicTuple[str] = u.Field(
-                default_factory=tuple, description="Provider capabilities"
+                default_factory=tuple,
+                description="Provider capabilities",
             )
             extras: t.JsonMapping = u.Field(
                 default_factory=MappingProxyType,

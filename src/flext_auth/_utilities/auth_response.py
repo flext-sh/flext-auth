@@ -1,4 +1,8 @@
-"""Authentication response utilities."""
+"""Authentication response utilities.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -15,9 +19,14 @@ if TYPE_CHECKING:
 class FlextAuthUtilitiesAuthResponse:
     @staticmethod
     def build_auth_error_response(
-        error: str, error_code: str = "AUTH_ERROR"
+        error: str,
+        error_code: str = "AUTH_ERROR",
     ) -> t.ConfigurationMapping:
-        """Build an authentication error response."""
+        """Build an authentication error response.
+
+        Returns:
+            The resulting ``t.ConfigurationMapping``.
+        """
         return {
             "success": False,
             "error": error,
@@ -31,7 +40,11 @@ class FlextAuthUtilitiesAuthResponse:
         user_id: str | None = None,
         expires_at: datetime | None = None,
     ) -> t.ConfigurationMapping:
-        """Build a successful authentication response."""
+        """Build a successful authentication response.
+
+        Returns:
+            The resulting ``t.ConfigurationMapping``.
+        """
         response: t.MutableConfigurationMapping = {
             "success": True,
             "message": str(c.Auth.SUCCESS_AUTH_RESPONSE["message"]),

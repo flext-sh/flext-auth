@@ -1,4 +1,8 @@
-"""FlextAuth API test case group 07."""
+"""FlextAuth API test case group 07.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -15,13 +19,14 @@ class TestsFlextAuthApiCase07:
 
     _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
-    def test_fetch_user_method(self) -> None:
+    @staticmethod
+    def test_fetch_user_method() -> None:
         """Test fetch_user method functionality."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="test_get_user",
             email="getuser@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -30,27 +35,29 @@ class TestsFlextAuthApiCase07:
         retrieved_user = get_result.value
         u.Tests.Matchers.that(retrieved_user.unique_id, eq=user.unique_id)
 
-    def test_fetch_user_by_username_method(self) -> None:
+    @staticmethod
+    def test_fetch_user_by_username_method() -> None:
         """Test fetch_user_by_username method functionality."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="test_username_lookup",
             email="lookup@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         get_result = auth.identity_service.identity_manager.fetch_user_by_username(
-            "test_username_lookup"
+            "test_username_lookup",
         )
         u.Tests.Matchers.that(get_result.success, is_=bool)
 
-    def test_get_user_by_token_direct_api_method(self) -> None:
+    @staticmethod
+    def test_get_user_by_token_direct_api_method() -> None:
         """Test that create_token fails — user retrieval by ID still works."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="test_token_user",
             email="tokenuser@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -59,76 +66,81 @@ class TestsFlextAuthApiCase07:
         get_result = auth.identity_service.identity_manager.fetch_user(user.unique_id)
         u.Tests.Matchers.that(get_result.success, eq=True)
 
-    def test_logout_user_method(self) -> None:
+    @staticmethod
+    def test_logout_user_method() -> None:
         """Test logout_user method functionality."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="test_logout_user",
             email="logout@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            user.unique_id
+            user.unique_id,
         )
         if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.session_service.session_manager.end_session_by_id(
-                    session_id
+                    session_id,
                 )
                 u.Tests.Matchers.that(logout_result.success, is_=bool)
 
-    def test_revoke_session_method(self) -> None:
+    @staticmethod
+    def test_revoke_session_method() -> None:
         """Test revoke_session method functionality."""
         auth = FlextAuth()
         revoke_result = auth.session_service.session_manager.end_session_by_id(
-            "test_session_id"
+            "test_session_id",
         )
         u.Tests.Matchers.that(revoke_result.success, is_=bool)
 
-    def test_get_user_sessions_method(self) -> None:
+    @staticmethod
+    def test_get_user_sessions_method() -> None:
         """Test get_user_sessions method functionality."""
         auth = FlextAuth()
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            "test_user_id"
+            "test_user_id",
         )
         u.Tests.Matchers.that(sessions_result.success, is_=bool)
 
-    def test_cleanup_expired_sessions_method(self) -> None:
+    @staticmethod
+    def test_cleanup_expired_sessions_method() -> None:
         """Test cleanup_expired_sessions method functionality."""
         auth = FlextAuth()
         cleanup_result = auth.session_service.cleanup_expired_sessions()
         u.Tests.Matchers.that(cleanup_result.success, is_=bool)
 
-    def test_quick_start_without_admin_creation(self) -> None:
+    @staticmethod
+    def test_quick_start_without_admin_creation() -> None:
         """Test quick_start class method without admin creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
         u.Tests.Matchers.that(auth.settings, none=False)
 
-    def test_get_config_method(self) -> None:
+    @staticmethod
+    def test_get_config_method() -> None:
         """Test settings property functionality."""
         auth = FlextAuth()
         settings = auth.settings
         u.Tests.Matchers.that(settings, none=False)
 
-    def test_authenticate_with_locked_account(self) -> None:
+    @staticmethod
+    def test_authenticate_with_locked_account() -> None:
         """Test authentication with locked user account."""
         auth = FlextAuth()
         user_result = auth.register_user(
             username="lockable_user",
             email="lockable@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         for _ in range(6):
             failed_result = auth.authenticate_user(
-                username="lockable_user", password=c.TEST_PASSWORD + "_wrong"
+                username="lockable_user",
+                password=c.TEST_CREDENTIAL + "_wrong",
             )
             u.Tests.Matchers.that(not failed_result.success, eq=True)
-
-
-__all__: list[str] = ["TestsFlextAuthApiCase07"]

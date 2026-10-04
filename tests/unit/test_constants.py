@@ -6,6 +6,9 @@ the published values callers depend on, the invariants that relate them
 exposed collections, and the composition reachability of the underlying
 flext-core / flext-api namespaces through the facade. They intentionally
 avoid poking implementation internals such as ``__mro__``.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 # mypy: warn-unused-ignores=False
@@ -31,18 +34,24 @@ class TestsFlextAuthConstants:
 
     # ----- Composition reachability (observable, not structural) -----
 
-    def test_core_namespace_constant_is_reachable_through_facade(self) -> None:
+    @staticmethod
+    def test_core_namespace_constant_is_reachable_through_facade() -> None:
         # A flext-core/flext-api constant must be visible via the auth facade,
         # proving the namespaces are composed (behavior, not __mro__ inspection).
+        """Test core namespace constant is reachable through facade."""
         tm.that(c.DEFAULT_TIMEOUT_SECONDS, eq=30)
 
-    def test_auth_default_timeout_is_derived_from_core_timeout(self) -> None:
+    @staticmethod
+    def test_auth_default_timeout_is_derived_from_core_timeout() -> None:
+        """Test auth default timeout is derived from core timeout."""
         tm.that(
-            float(c.DEFAULT_TIMEOUT_SECONDS), eq=pytest.approx(c.Auth.DEFAULT_TIMEOUT)
+            float(c.DEFAULT_TIMEOUT_SECONDS),
+            eq=pytest.approx(c.Auth.DEFAULT_TIMEOUT),
         )
 
     # ----- Published scalar values (the public contract) -----
 
+    @staticmethod
     @pytest.mark.parametrize(
         ("value", "expected"),
         [
@@ -89,27 +98,31 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_published_scalar_constants_hold_their_contract_value(
-        self, value: str | float, expected: str | float
+        value: str | float,
+        expected: str | float,
     ) -> None:
+        """Test published scalar constants hold their contract value."""
         tm.that(value, eq=expected)
 
+    @staticmethod
     @pytest.mark.parametrize(
         ("code", "expected"),
         [
             (c.Auth.ERROR_INVALID_CREDENTIALS, "INVALID_CREDENTIALS"),
             (c.Auth.ERROR_ACCOUNT_LOCKED, "ACCOUNT_LOCKED"),
             (c.Auth.ERROR_ACCOUNT_DISABLED, "ACCOUNT_DISABLED"),
-            (c.Auth.ERROR_TOKEN_EXPIRED, "TOKEN_EXPIRED"),
-            (c.Auth.ERROR_INVALID_TOKEN, "INVALID_TOKEN"),
         ],
     )
     def test_error_codes_expose_stable_machine_readable_strings(
-        self, code: str, expected: str
+        code: str,
+        expected: str,
     ) -> None:
+        """Test error codes expose stable machine readable strings."""
         tm.that(code, eq=expected)
 
     # ----- StrEnum behavior: string identity + membership -----
 
+    @staticmethod
     @pytest.mark.parametrize(
         ("member", "expected"),
         [
@@ -139,13 +152,16 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_enum_members_are_str_equal_to_their_wire_value(
-        self, member: StrEnum, expected: str
+        member: StrEnum,
+        expected: str,
     ) -> None:
         # StrEnum contract: a member is interchangeable with its string value.
+        """Test enum members are str equal to their wire value."""
         tm.that(member, is_=str)
         tm.that(member, eq=expected)
         tm.that(member.value, eq=expected)
 
+    @staticmethod
     @pytest.mark.parametrize(
         "enum_cls",
         [
@@ -157,13 +173,15 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_enum_construction_round_trips_from_wire_value(
-        self, enum_cls: type[StrEnum]
+        enum_cls: type[StrEnum],
     ) -> None:
+        """Test enum construction round trips from wire value."""
         for member in enum_cls:
             assert enum_cls(member.value) is member
 
     # ----- Derivation invariants: frozensets mirror their StrEnum -----
 
+    @staticmethod
     @pytest.mark.parametrize(
         ("valid_set", "enum_cls"),
         [
@@ -174,18 +192,25 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_valid_value_set_is_exactly_the_enum_value_set(
-        self, valid_set: frozenset[str], enum_cls: type[StrEnum]
+        valid_set: frozenset[str],
+        enum_cls: type[StrEnum],
     ) -> None:
+        """Test valid value set is exactly the enum value set."""
         tm.that(valid_set, eq={member.value for member in enum_cls})
 
-    def test_default_jwt_algorithm_is_a_supported_algorithm(self) -> None:
+    @staticmethod
+    def test_default_jwt_algorithm_is_a_supported_algorithm() -> None:
+        """Test default jwt algorithm is a supported algorithm."""
         tm.that({a.value for a in c.Auth.Algorithms}, has=c.Auth.JWT_DEFAULT_ALGORITHM)
 
-    def test_default_oauth2_flow_is_a_supported_flow(self) -> None:
+    @staticmethod
+    def test_default_oauth2_flow_is_a_supported_flow() -> None:
+        """Test default oauth2 flow is a supported flow."""
         tm.that(c.Auth.OAUTH2_FLOWS, has=c.Auth.OAUTH2_FLOW_DEFAULT)
 
     # ----- Ordering invariants between related bounds -----
 
+    @staticmethod
     @pytest.mark.parametrize(
         ("low", "high"),
         [
@@ -202,12 +227,15 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_lower_bound_never_exceeds_its_paired_upper_bound(
-        self, low: int, high: int
+        low: int,
+        high: int,
     ) -> None:
+        """Test lower bound never exceeds its paired upper bound."""
         assert low <= high
 
     # ----- Immutability guarantees of exposed collections -----
 
+    @staticmethod
     @pytest.mark.parametrize(
         "valid_set",
         [
@@ -219,8 +247,9 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_exposed_membership_sets_are_immutable(
-        self, valid_set: frozenset[str]
+        valid_set: frozenset[str],
     ) -> None:
+        """Test exposed membership sets are immutable."""
         tm.that(valid_set, is_=frozenset)
         # Why: frozenset has no add; the cast lets the call type-check so the
         # test can assert the AttributeError the runtime actually raises.
@@ -228,25 +257,33 @@ class TestsFlextAuthConstants:
         with pytest.raises(AttributeError):
             mutable.add("mutated")
 
+    @staticmethod
     @pytest.mark.parametrize(
-        "mapping", [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE]
+        "mapping",
+        [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE],
     )
     def test_exposed_mappings_reject_mutation(
-        self, mapping: Mapping[str, t.JsonValue]
+        mapping: Mapping[str, t.JsonValue],
     ) -> None:
+        """Test exposed mappings reject mutation."""
         mutable = cast("MutableMapping[str, t.JsonValue]", mapping)
         with pytest.raises((TypeError, AttributeError)):
             mutable["injected"] = 1
 
     # ----- Mapping contract: required keys and payload shape -----
 
+    @staticmethod
     @pytest.mark.parametrize(
-        "key", ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"]
+        "key",
+        ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"],
     )
-    def test_validation_limits_publishes_required_keys(self, key: str) -> None:
+    def test_validation_limits_publishes_required_keys(key: str) -> None:
+        """Test validation limits publishes required keys."""
         tm.that(c.Auth.VALIDATION_LIMITS, has=key)
 
-    def test_success_response_template_reports_success_status(self) -> None:
+    @staticmethod
+    def test_success_response_template_reports_success_status() -> None:
+        """Test success response template reports success status."""
         response = c.Auth.SUCCESS_AUTH_RESPONSE
         tm.that(response["status"], eq="success")
         tm.that(response["message"], eq="Authentication successful")

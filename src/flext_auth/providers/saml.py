@@ -19,8 +19,9 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """SAML 2.0 authentication provider.
 
-    Provides SAML 2.0 authentication support following the FlextAuthBaseProvider protocol.
-    This is a basic implementation that can be extended with full SAML 2.0 functionality.
+    Provides SAML 2.0 authentication support following the FlextAuthBaseProvider
+    protocol. This is a basic implementation that can be extended with full
+    SAML 2.0 functionality.
 
     Business Rules:
     ===============

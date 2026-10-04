@@ -1,4 +1,8 @@
-"""Authentication identity protocols."""
+"""Authentication identity protocols.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -84,7 +88,9 @@ class FlextAuthProtocolsAuthIdentity:
         """Protocol for identity manager mutation used by identity services."""
 
         def update_user(
-            self, user_id: str, **updates: t.Scalar | t.StrSequence | datetime | None
+            self,
+            user_id: str,
+            **updates: t.Scalar | t.StrSequence | datetime | None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]:
             """Update an identity and return the resulting identity."""
             ...

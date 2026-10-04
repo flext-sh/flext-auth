@@ -1,4 +1,4 @@
-"""FLEXT Auth RFC Provider - Base implementation for RFC-compliant authentication providers.
+"""FLEXT Auth RFC Provider - base for RFC-compliant authentication providers.
 
 This module provides a base class for providers that implement RFC standards
 (e.g., RFC 7617 for Basic Auth, RFC 6749 for OAuth2, RFC 7519 for JWT).
@@ -47,6 +47,9 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         Filters out non-primitive values (only keeps str/int/bool entries),
         passing ``None`` through. Centralized here so all RFC providers reuse
         the same projection rather than re-implementing the filter.
+
+        Returns:
+            The resulting ``t.MappingKV[str, t.Primitives] | None``.
         """
         if settings is None:
             return None
@@ -64,7 +67,8 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         """
         return "RFC Base"
 
-    def supports_rfc_feature(self, feature: str) -> bool:
+    @staticmethod
+    def supports_rfc_feature(feature: str) -> bool:
         """Check if a specific RFC feature is supported.
 
         Args:
@@ -80,7 +84,8 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         _ = feature
         return False
 
-    def validate_rfc_compliance(self, operation: str) -> p.Result[bool]:
+    @staticmethod
+    def validate_rfc_compliance(operation: str) -> p.Result[bool]:
         """Validate that an operation follows RFC standards.
 
         Args:
@@ -110,7 +115,7 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
 
         """
         return r[p.Auth.Token].fail(
-            "RFC provider authenticate() must be implemented by subclass"
+            "RFC provider authenticate() must be implemented by subclass",
         )
 
     @override

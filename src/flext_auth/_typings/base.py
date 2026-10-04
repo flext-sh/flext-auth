@@ -1,4 +1,8 @@
-"""FlextAuth typings base — foundational aliases owner of the private family."""
+"""FlextAuth typings base — foundational aliases owner of the private family.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

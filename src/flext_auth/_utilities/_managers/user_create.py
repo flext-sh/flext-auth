@@ -1,4 +1,8 @@
-"""Auth user manager create operation."""
+"""Auth user manager create operation.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -8,8 +12,7 @@ from uuid import uuid4
 from flext_api import r, u
 
 from flext_auth import m, p, t
-
-from .user_write import FlextAuthUserManagerWrite
+from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
@@ -28,8 +31,12 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         email: str,
         password_hash: str,
         **extra_fields: t.Scalar | t.StrSequence | datetime | None,
-    ) -> p.Result[p.Auth.AuthIdentity]:
-        """Create a new user."""
+    ) -> p.Result[p.Auth.Identity]:
+        """Create a new user.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.Identity]``.
+        """
         normalized_email = email.lower()
         duplicate_identity_exists = username in self._users or any(
             isinstance(existing_user_data.get("contact"), str)
@@ -37,12 +44,12 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
             for existing_user_data in self._users.values()
         )
         if duplicate_identity_exists:
-            return r[p.Auth.AuthIdentity].fail("Identity already exists")
+            return r[p.Auth.Identity].fail("Identity already exists")
 
         user_id = str(uuid4())
         now = u.now()
         normalized_identity_extras = self.IdentityExtras.model_validate(
-            extra_fields
+            extra_fields,
         ).model_dump(exclude_none=True)
         user = m.Auth.AuthIdentity.model_validate({
             "unique_id": user_id,
@@ -71,7 +78,7 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
             "updated_at": now,
         }
         self._users[username] = storage_data
-        return r[p.Auth.AuthIdentity].ok(user)
+        return r[p.Auth.Identity].ok(user)
 
 
 __all__: list[str] = ["FlextAuthUserManagerCreate"]

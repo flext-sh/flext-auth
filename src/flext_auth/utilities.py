@@ -1,13 +1,16 @@
-"""FlextAuth utilities facade."""
+"""FlextAuth utilities facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from flext_api import FlextApiUtilities
 
 from flext_auth import t
-
-from ._utilities.auth import FlextAuthUtilitiesAuth
-from ._utilities.managers import FlextAuthUtilitiesManagers
+from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
+from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
 class FlextAuthUtilities(FlextApiUtilities):

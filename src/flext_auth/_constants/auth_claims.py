@@ -1,4 +1,8 @@
-"""Authentication claim and shared scalar constants."""
+"""Authentication claim and shared scalar constants.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -7,7 +11,7 @@ from typing import TYPE_CHECKING, Final
 
 from flext_api import c
 
-from .auth_enums import FlextAuthConstantsAuthEnums
+from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Set as AbstractSet

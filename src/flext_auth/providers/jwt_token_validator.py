@@ -16,7 +16,8 @@ from flext_auth import c, p, r, t, u
 class FlextAuthJwtTokenValidator:
     """Dedicated JWT token validator service.
 
-    Single responsibility: Validate JWT tokens with proper railway-oriented error handling.
+    Single responsibility: validate JWT tokens with railway-oriented error
+    handling.
     Uses composition and delegates to flext-core for consistent patterns.
     """
 
@@ -39,7 +40,7 @@ class FlextAuthJwtTokenValidator:
             if not settings:
                 return r[t.Auth.TokensClaimMap].fail("JWT configuration not provided")
             return r[t.Auth.TokensClaimMap].from_result(
-                u.Auth.decode_token(token, settings)
+                u.Auth.decode_token(token, settings),
             )
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[t.Auth.TokensClaimMap].fail_op("Token validation", exc)

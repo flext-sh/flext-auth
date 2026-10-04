@@ -1,4 +1,8 @@
-"""OAuth2 token introspection helpers."""
+"""OAuth2 token introspection helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -32,7 +36,8 @@ class FlextAuthOAuth2Introspection:
             case "client_secret_post":
                 if not client_id or not client_secret:
                     return r[str].fail(
-                        "OAuth2 client_id and client_secret are required for client_secret_post"
+                        "OAuth2 client_id and client_secret are required for"
+                        " client_secret_post",
                     )
                 form_payload["client_id"] = client_id
                 form_payload["client_secret"] = client_secret
@@ -43,7 +48,7 @@ class FlextAuthOAuth2Introspection:
                 return r[str].ok(urlencode(form_payload))
             case _:
                 return r[str].fail(
-                    f"Unsupported token endpoint auth method: {auth_method}"
+                    f"Unsupported token endpoint auth method: {auth_method}",
                 )
         return r[str].ok(urlencode(form_payload))
 
@@ -59,7 +64,8 @@ class FlextAuthOAuth2Introspection:
         client_secret = self.provider_config.client_secret or ""
         if not client_id or not client_secret:
             return r[t.StrMapping].fail(
-                "OAuth2 client_id and client_secret are required for client_secret_basic"
+                "OAuth2 client_id and client_secret are required for"
+                " client_secret_basic",
             )
         auth_input = f"{client_id}:{client_secret}".encode()
         encoded_auth = b64encode(auth_input).decode("ascii")
@@ -109,15 +115,15 @@ class FlextAuthOAuth2Introspection:
             if status_code >= HTTPStatus.BAD_REQUEST:
                 error_body = response_payload.strip()
                 error_message = (
-                    f"OAuth2 introspection request failed with status {status_code}: {error_body}"
-                    if error_body
-                    else f"OAuth2 introspection request failed with status {status_code}"
+                    f"OAuth2 introspection request failed with status {status_code}"
                 )
+                if error_body:
+                    error_message = f"{error_message}: {error_body}"
                 result = r[t.JsonMapping].fail(error_message)
             else:
                 try:
                     parsed_mapping = t.json_mapping_adapter().validate_json(
-                        response_payload
+                        response_payload,
                     )
                 except c.EXC_VALIDATION_VALUE as exc:
                     result = r[t.JsonMapping].fail(

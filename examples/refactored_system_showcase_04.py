@@ -33,7 +33,7 @@ class FlextAuthRefactoredSystemShowcaseExample:
             auth_data = auth_result.value
             user_name = auth_data.name
             FlextAuthRefactoredSystemShowcaseExample._emit(
-                f"Authenticated user: {user_name}"
+                f"Authenticated user: {user_name}",
             )
 
     @staticmethod
@@ -41,12 +41,14 @@ class FlextAuthRefactoredSystemShowcaseExample:
         """Demonstrate quick start behavior via FlextAuth public API."""
         auth_service = FlextAuth.quick_start(create_admin_user=False)
         quickstart_result = auth_service.register_user(
-            "quickstart_user", "quickstart@example.com", "QuickstartPassword123!"
+            "quickstart_user",
+            "quickstart@example.com",
+            "QuickstartPassword123!",
         )
         if quickstart_result.success:
             created_identity = quickstart_result.value
             FlextAuthRefactoredSystemShowcaseExample._emit(
-                f"Quickstart identity created: {created_identity.name}"
+                f"Quickstart identity created: {created_identity.name}",
             )
 
     @staticmethod

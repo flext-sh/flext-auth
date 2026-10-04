@@ -1,4 +1,8 @@
-"""Provider token operations."""
+"""Provider token operations.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -6,8 +10,7 @@ from collections.abc import Mapping
 from datetime import datetime, timedelta
 
 from flext_auth import c, m, p, r, t, u
-
-from .codec import FlextAuthProviderCodecMixin
+from flext_auth.providers._mixins.codec import FlextAuthProviderCodecMixin
 
 
 class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
@@ -35,7 +38,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
         settings = self._provider_config
         if not settings:
             return r[str].fail(
-                "Provider configuration is required for token generation"
+                "Provider configuration is required for token generation",
             )
         secret_key_value = settings.get("secret_key")
         if not isinstance(secret_key_value, str) or not secret_key_value:

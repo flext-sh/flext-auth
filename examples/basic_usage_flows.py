@@ -1,4 +1,8 @@
-"""Basic FLEXT Auth usage flow examples."""
+"""Basic FLEXT Auth usage flow examples.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -14,7 +18,11 @@ class FlextAuthBasicUsageFlows:
 
     @classmethod
     def example_basic_authentication(cls) -> p.Result[bool]:
-        """Show the typed authentication settings the service runs with."""
+        """Show the typed authentication settings the service runs with.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         settings = FlextAuthSettings()
         cls.logger.info(
             "Authentication configuration loaded",
@@ -22,11 +30,15 @@ class FlextAuthBasicUsageFlows:
             hash_rounds=settings.Auth.hash_rounds,
             max_sessions_per_user=settings.Auth.max_sessions_per_user,
         )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @classmethod
     def example_user_lifecycle(cls) -> p.Result[bool]:
-        """Register, authenticate and validate the issued token."""
+        """Register, authenticate and validate the issued token.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!")
         register_result = auth.register_user(
@@ -46,7 +58,11 @@ class FlextAuthBasicUsageFlows:
 
     @classmethod
     def example_direct_auth(cls) -> p.Result[bool]:
-        """Register and authenticate directly, returning the token validity."""
+        """Register and authenticate directly, returning the token validity.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
         reg_result = auth.register_user("directuser", "direct@example.com", password)

@@ -1,4 +1,8 @@
-"""Authentication service protocols."""
+"""Authentication service protocols.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -8,9 +12,8 @@ from flext_api import p
 
 if TYPE_CHECKING:
     from flext_auth import t
-
-    from .auth_identity import FlextAuthProtocolsAuthIdentity
-    from .auth_provider import FlextAuthProtocolsAuthProvider
+    from flext_auth._protocols.auth_identity import FlextAuthProtocolsAuthIdentity
+    from flext_auth._protocols.auth_provider import FlextAuthProtocolsAuthProvider
 
 
 class FlextAuthProtocolsAuthService:
@@ -35,7 +38,8 @@ class FlextAuthProtocolsAuthService:
             """Logout user by session ID.
 
             Returns:
-                FlextApiProtocols.Result[bool]: True if logout successful, False if failed, error on failure
+                FlextApiProtocols.Result[bool]: True if logout succeeded, False if
+                it did not, or a failure result on error.
 
             """
             ...

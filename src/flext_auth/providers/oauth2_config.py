@@ -1,4 +1,8 @@
-"""OAuth2 provider configuration helpers."""
+"""OAuth2 provider configuration helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -17,9 +21,20 @@ class FlextAuthOAuth2Config:
 
     @staticmethod
     def _validated_choice(
-        value: str | None, *, key: str, default: str, allowed: Collection[str]
+        value: str | None,
+        *,
+        key: str,
+        default: str,
+        allowed: Collection[str],
     ) -> str:
-        """Validate one ProviderConfig str field against an allowed set."""
+        """Validate one ProviderConfig str field against an allowed set.
+
+        Returns:
+            The resulting ``str``.
+
+        Raises:
+            ValueError: If OAuth2.
+        """
         if not value:
             return default
         if value not in allowed:
@@ -28,7 +43,11 @@ class FlextAuthOAuth2Config:
         return value
 
     def _init_flow(self) -> str:
-        """Initialize flow configuration."""
+        """Initialize flow configuration.
+
+        Returns:
+            The resulting ``str``.
+        """
         return self._validated_choice(
             self.provider_config.flow,
             key="flow",
@@ -37,17 +56,29 @@ class FlextAuthOAuth2Config:
         )
 
     def _init_pkce(self) -> bool:
-        """Initialize PKCE configuration."""
+        """Initialize PKCE configuration.
+
+        Returns:
+            The resulting ``bool``.
+        """
         use_pkce: bool | None = self.provider_config.use_pkce
         return use_pkce if use_pkce is not None else c.Auth.OAUTH2_USE_PKCE_DEFAULT
 
     def _init_scope(self) -> str:
-        """Initialize scope configuration."""
+        """Initialize scope configuration.
+
+        Returns:
+            The resulting ``str``.
+        """
         scope: str | None = self.provider_config.scope
         return scope or c.Auth.OAUTH2_SCOPE_DEFAULT
 
     def _init_token_endpoint_auth_method(self) -> str:
-        """Initialize token endpoint auth method configuration."""
+        """Initialize token endpoint auth method configuration.
+
+        Returns:
+            The resulting ``str``.
+        """
         return self._validated_choice(
             self.provider_config.token_endpoint_auth_method,
             key="token_endpoint_auth_method",
@@ -56,7 +87,11 @@ class FlextAuthOAuth2Config:
         )
 
     def _validate_configuration(self) -> p.Result[bool]:
-        """Railway-oriented presence check (typing centralized in ProviderConfig)."""
+        """Railway-oriented presence check (typing centralized in ProviderConfig).
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         # Per-field type validation is owned by ``m.Auth.ProviderConfig`` —
         # ``model_validate`` already raised on type mismatch before this runs.
         # Only required-field presence remains here.
@@ -67,7 +102,7 @@ class FlextAuthOAuth2Config:
         ]
         if missing:
             return r[bool].fail(
-                f"Missing required OAuth2 configuration fields: {', '.join(missing)}"
+                f"Missing required OAuth2 configuration fields: {', '.join(missing)}",
             )
         return r[bool].ok(value=True)
 

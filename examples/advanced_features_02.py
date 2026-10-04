@@ -20,15 +20,23 @@ class FlextAuthAdvancedFeaturesExample:
 
     @staticmethod
     def _demo_credential(prefix: str) -> str:
-        """Per-run demo credential; the example never embeds a reusable secret."""
+        """Per-run demo credential; the example never embeds a reusable secret.
+
+        Returns:
+            The resulting ``str``.
+        """
         return f"{prefix}-{secrets.token_hex(6)}"
 
     @staticmethod
     def example_jwt_operations() -> p.Result[bool]:
-        """Register an admin, authenticate it and validate the issued JWT."""
+        """Register an admin, authenticate it and validate the issued JWT.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         demo_password = os.getenv(
-            "EXAMPLE_PASSWORD"
+            "EXAMPLE_PASSWORD",
         ) or FlextAuthAdvancedFeaturesExample._demo_credential("jwt")
         user_result = auth.register_user(
             username="advanced_user",
@@ -39,7 +47,8 @@ class FlextAuthAdvancedFeaturesExample:
         if user_result.failure:
             return r[bool].from_failure(user_result)
         auth_result = auth.authenticate_user(
-            username="advanced_user", password=demo_password
+            username="advanced_user",
+            password=demo_password,
         )
         if auth_result.failure:
             return r[bool].from_failure(auth_result)
@@ -47,7 +56,11 @@ class FlextAuthAdvancedFeaturesExample:
 
     @staticmethod
     def example_role_based_access() -> p.Result[bool]:
-        """Register users with distinct roles and confirm each grant."""
+        """Register users with distinct roles and confirm each grant.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         for username, roles in (
             ("admin", ["admin", "user"]),
@@ -64,11 +77,15 @@ class FlextAuthAdvancedFeaturesExample:
                 return r[bool].from_failure(result)
             if tuple(result.value.roles) != tuple(roles):
                 return r[bool].fail(f"{username} was registered with other roles")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @staticmethod
     def example_session_management() -> p.Result[bool]:
-        """Each authentication opens its own session."""
+        """Each authentication opens its own session.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         password = FlextAuthAdvancedFeaturesExample._demo_credential("session")
         user_result = auth.register_user("sessionuser", "session@example.com", password)
@@ -85,7 +102,11 @@ class FlextAuthAdvancedFeaturesExample:
 
     @staticmethod
     def example_token_validation() -> p.Result[bool]:
-        """A real token validates; malformed tokens are rejected."""
+        """A real token validates; malformed tokens are rejected.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         user_result = auth.register_user(
             "tokenuser",
@@ -113,7 +134,11 @@ class FlextAuthAdvancedFeaturesExample:
 
     @staticmethod
     def example_account_lockout() -> p.Result[bool]:
-        """After the configured failed attempts even the right password is refused."""
+        """After the configured failed attempts even the right password is refused.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         password = FlextAuthAdvancedFeaturesExample._demo_credential("lockout")
         user_result = auth.register_user("lockoutuser", "lockout@example.com", password)
@@ -140,7 +165,9 @@ class FlextAuthAdvancedFeaturesExample:
         ):
             outcome = example().unwrap()
             cls.logger.info(
-                "Advanced example finished", example=example.__name__, ok=outcome
+                "Advanced example finished",
+                example=example.__name__,
+                ok=outcome,
             )
 
 

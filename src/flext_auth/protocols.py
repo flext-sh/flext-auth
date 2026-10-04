@@ -1,11 +1,15 @@
-"""FLEXT Auth protocols facade."""
+"""FLEXT Auth protocols facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from flext_api import FlextApiProtocols
 
-from ._protocols.auth import FlextAuthProtocolsAuth
-from ._protocols.base import FlextAuthProtocolsBase
+from flext_auth._protocols.auth import FlextAuthProtocolsAuth
+from flext_auth._protocols.base import FlextAuthProtocolsBase
 
 
 class FlextAuthProtocols(FlextApiProtocols):

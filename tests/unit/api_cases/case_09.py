@@ -1,4 +1,8 @@
-"""FlextAuth API test case group 09."""
+"""FlextAuth API test case group 09.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -25,7 +29,7 @@ class TestsFlextAuthApiCase09:
         """Test FlextAuth get_user_sessions functionality."""
         auth, identity, _test_data = self._TestDataHelper.registered_session()
         result = auth.session_service.session_manager.get_active_sessions(
-            identity.unique_id
+            identity.unique_id,
         )
         u.Tests.Matchers.that(result, is_=r)
         u.Tests.Matchers.that(result.success, eq=True)
@@ -50,20 +54,21 @@ class TestsFlextAuthApiCase09:
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         u.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
         u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
-            identity.unique_id
+            identity.unique_id,
         )
         if sessions_result.success:
             sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 result = auth.session_service.session_manager.end_session_by_id(
-                    session_id
+                    session_id,
                 )
                 u.Tests.Matchers.that(result, is_=r)
                 u.Tests.Matchers.that(result.success, eq=True)
@@ -82,7 +87,8 @@ class TestsFlextAuthApiCase09:
         u.Tests.Matchers.that(register_result, is_=r)
         u.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]), str(test_auth_data["password"])
+            str(test_auth_data["username"]),
+            str(test_auth_data["password"]),
         )
         u.Tests.Matchers.that(auth_result, is_=r)
         u.Tests.Matchers.that(auth_result.success, eq=True)
@@ -90,6 +96,3 @@ class TestsFlextAuthApiCase09:
         token_result = auth.create_token(identity_id=identity.unique_id)
         u.Tests.Matchers.that(token_result.success, eq=True)
         u.Tests.Matchers.that(token_result.error, none=True)
-
-
-__all__: list[str] = ["TestsFlextAuthApiCase09"]

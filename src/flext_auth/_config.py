@@ -34,7 +34,7 @@ class FlextAuthConfig(FlextSettings, FlextConfig):
     Auth: Annotated[
         _AuthNamespace,
         m.Field(
-            description="Open namespace exposing ``config/*.yaml`` under ``Auth``."
+            description="Open namespace exposing ``config/*.yaml`` under ``Auth``.",
         ),
     ] = _AuthNamespace()
 

@@ -1,8 +1,9 @@
 """Settings for flext-auth — namespaced under ``settings.Auth``.
 
-Layer-0: imports only stdlib + ``pydantic_settings`` + ``FlextSettings`` / ``m`` / ``t`` facades. The universal
-runtime fields (``debug``/``trace``/``log_level``/``timezone``/``async_logging``)
-come from ``FlextSettings`` by MRO and are NOT redeclared here. Every project
+Layer-0: imports only stdlib + ``pydantic_settings`` + ``FlextSettings`` / ``m``
+/ ``t`` facades. The universal runtime fields (``debug``/``trace``/``log_level``/
+``timezone``/``async_logging``) come from ``FlextSettings`` by MRO and are NOT
+redeclared here. Every project
 field lives inside the ``Auth`` namespace group with simple scalar types so each
 is settable via ``.env`` / env vars / params (``FLEXT_AUTH_AUTH__SECRET_KEY`` …).
 JWT/session/hashing defaults are inlined from
@@ -28,7 +29,9 @@ class FlextAuthSettings(FlextSettings):
     """Auth settings; all project fields under ``settings.Auth.*``."""
 
     model_config = m.SettingsConfigDict(
-        env_prefix="FLEXT_AUTH_", env_nested_delimiter="__", extra="ignore"
+        env_prefix="FLEXT_AUTH_",
+        env_nested_delimiter="__",
+        extra="ignore",
     )
 
     # mro-wkii.17.25: publish the owned settings model used by service contracts.
@@ -40,13 +43,16 @@ class FlextAuthSettings(FlextSettings):
 
             realm: Annotated[str, m.Field(default="", description="Kerberos realm")]
             kdc: Annotated[
-                str, m.Field(default="", description="Key Distribution Center host")
+                str,
+                m.Field(default="", description="Key Distribution Center host"),
             ]
             service_principal: Annotated[
-                str, m.Field(default="", description="Service principal name (SPN)")
+                str,
+                m.Field(default="", description="Service principal name (SPN)"),
             ]
             keytab_path: Annotated[
-                str | None, m.Field(default=None, description="Path to the keytab file")
+                str | None,
+                m.Field(default=None, description="Path to the keytab file"),
             ]
             clockskew_tolerance: Annotated[
                 int | None,
@@ -59,7 +65,8 @@ class FlextAuthSettings(FlextSettings):
             renew_lifetime: Annotated[
                 int | None,
                 m.Field(
-                    default=None, description="Renewable ticket lifetime in seconds"
+                    default=None,
+                    description="Renewable ticket lifetime in seconds",
                 ),
             ]
             forwardable: Annotated[
@@ -79,35 +86,50 @@ class FlextAuthSettings(FlextSettings):
             ),
         ]
         algorithm: Annotated[
-            str, m.Field(default="HS256", description="JWT signing algorithm")
+            str,
+            m.Field(default="HS256", description="JWT signing algorithm"),
         ]
         issuer: Annotated[
-            str, m.Field(default="flext-auth", description="Token issuer claim")
+            str,
+            m.Field(default="flext-auth", description="Token issuer claim"),
         ]
         audience: Annotated[
-            str, m.Field(default="flext-auth-users", description="Token audience claim")
+            str,
+            m.Field(default="flext-auth-users", description="Token audience claim"),
         ]
         expiry_minutes: Annotated[
             int,
             m.Field(default=1440, gt=0, description="Access token expiry in minutes"),
         ]
         session_expiry_minutes: Annotated[
-            int, m.Field(default=1440, gt=0, description="Session expiry in minutes")
+            int,
+            m.Field(default=1440, gt=0, description="Session expiry in minutes"),
         ]
         max_sessions_per_user: Annotated[
-            int, m.Field(default=5, gt=0, description="Max parallel sessions per user")
+            int,
+            m.Field(default=5, gt=0, description="Max parallel sessions per user"),
         ]
         hash_rounds: Annotated[
             int,
             m.Field(
-                default=12, ge=4, le=31, description="Password hash rounds (bcrypt)"
+                default=12,
+                ge=4,
+                le=31,
+                description="Password hash rounds (bcrypt)",
             ),
         ]
 
         @m.field_validator("secret_key", mode="before")
         @classmethod
         def _normalize_secret_key(cls, value: str | t.SecretStr) -> str:
-            """Unwrap a t.SecretStr input and enforce the min length when set."""
+            """Unwrap a t.SecretStr input and enforce the min length when set.
+
+            Returns:
+                The resulting ``str``.
+
+            Raises:
+                ValueError: If secret_key must be at least 32 characters when provided.
+            """
             plain = (
                 value.get_secret_value() if isinstance(value, t.SecretStr) else value
             )
@@ -135,7 +157,8 @@ class FlextAuthSettings(FlextSettings):
         Auth: AuthSettings
     else:
         Auth: AuthSettings = m.Field(
-            default_factory=AuthSettings, description="Namespaced auth settings."
+            default_factory=AuthSettings,
+            description="Namespaced auth settings.",
         )
 
 

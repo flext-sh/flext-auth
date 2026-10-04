@@ -35,7 +35,11 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
 
     @override
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate JWT token."""
+        """Validate JWT token.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         token_value = token if isinstance(token, str) else token.token
         return self.validate_token(token_value)
 

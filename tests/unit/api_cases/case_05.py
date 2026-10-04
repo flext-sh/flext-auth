@@ -1,4 +1,8 @@
-"""FlextAuth API test case group 05."""
+"""FlextAuth API test case group 05.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -16,31 +20,36 @@ class TestsFlextAuthApiCase05:
 
     _TestDataHelper = TestsFlextAuthApiTestDataHelper
 
-    def test_empty_username_registration(self) -> None:
+    @staticmethod
+    def test_empty_username_registration() -> None:
         """Test registration with empty username."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("", "empty@example.com", "Password123!")
         u.Tests.Matchers.that(not result.success, eq=True)
 
-    def test_empty_email_registration(self) -> None:
+    @staticmethod
+    def test_empty_email_registration() -> None:
         """Test registration with empty email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "", "Password123!")
         u.Tests.Matchers.that(not result.success, eq=True)
 
-    def test_empty_password_registration(self) -> None:
+    @staticmethod
+    def test_empty_password_registration() -> None:
         """Test registration with empty password."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "test@example.com", "")
         u.Tests.Matchers.that(not result.success, eq=True)
 
-    def test_invalid_email_registration(self) -> None:
+    @staticmethod
+    def test_invalid_email_registration() -> None:
         """Test registration with invalid email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "invalid-email", "Password123!")
         u.Tests.Matchers.that(not result.success, eq=True)
 
-    def test_nonexistent_user_authentication(self) -> None:
+    @staticmethod
+    def test_nonexistent_user_authentication() -> None:
         """Test authentication of non-existent user."""
         auth: FlextAuth = FlextAuth()
         auth_result = auth.authenticate_user("nonexistent", "password")
@@ -48,61 +57,69 @@ class TestsFlextAuthApiCase05:
         u.Tests.Matchers.that(auth_result.error, none=False)
         u.Tests.Matchers.that(auth_result.error or "", empty=False)
 
-    def test_invalid_session_logout(self) -> None:
+    @staticmethod
+    def test_invalid_session_logout() -> None:
         """Test logout with invalid session ID."""
         auth: FlextAuth = FlextAuth()
         logout_result = auth.session_service.session_manager.end_session_by_id(
-            "invalid_session_id"
+            "invalid_session_id",
         )
         u.Tests.Matchers.that(not logout_result.success, eq=True)
         u.Tests.Matchers.that(not logout_result.success, eq=True)
         u.Tests.Matchers.that((logout_result.error or ""), has="not found")
 
-    def test_flext_auth_quick_start_default(self) -> None:
+    @staticmethod
+    def test_flext_auth_quick_start_default() -> None:
         """Test FlextAuth.quick_start() with default parameters."""
         auth = FlextAuth.quick_start()
         tm.that(auth, is_=FlextAuth)
         u.Tests.Matchers.that(auth.settings, none=False)
         u.Tests.Matchers.that(auth.registry, none=False)
 
-    def test_flext_auth_quick_start_no_admin_user(self) -> None:
+    @staticmethod
+    def test_flext_auth_quick_start_no_admin_user() -> None:
         """Test FlextAuth.quick_start() without creating admin user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
         nonexistent_result = (
             auth.identity_service.identity_manager.fetch_user_by_username(
-                "nonexistent_user"
+                "nonexistent_user",
             )
         )
         u.Tests.Matchers.that(not nonexistent_result.success, eq=True)
         u.Tests.Matchers.that(nonexistent_result.error, none=False)
         u.Tests.Matchers.that((nonexistent_result.error or "").lower(), has="not found")
 
-    def test_flext_auth_quick_start_custom_admin_creation(self) -> None:
+    @staticmethod
+    def test_flext_auth_quick_start_custom_admin_creation() -> None:
         """Test FlextAuth.quick_start() with admin creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
-    def test_flext_auth_config_creation_failure(self) -> None:
-        """Test FlextAuth initialization when settings creation fails - lines 228-229."""
+    @staticmethod
+    def test_flext_auth_config_creation_failure() -> None:
+        """Test FlextAuth initialization when settings creation fails."""
         try:
             auth = FlextAuth()
             u.Tests.Matchers.that(auth.config, none=False)
         except RuntimeError as e:
             pytest.fail(f"FlextAuth creation failed with RuntimeError: {e}")
 
-    def test_quick_start_admin_creation_failure(self) -> None:
+    @staticmethod
+    def test_quick_start_admin_creation_failure() -> None:
         """Test quick_start with admin creation (reserved for future)."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, is_=FlextAuth)
 
-    def test_quick_start_general_failure(self) -> None:
+    @staticmethod
+    def test_quick_start_general_failure() -> None:
         """Test quick_start general path."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         tm.that(auth, none=False)
         tm.that(auth, is_=FlextAuth)
 
-    def test_flext_auth_initialization_with_overrides(self) -> None:
+    @staticmethod
+    def test_flext_auth_initialization_with_overrides() -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
         settings = FlextAuthSettings.model_validate({
             "expiry_minutes": 120,
@@ -113,11 +130,14 @@ class TestsFlextAuthApiCase05:
         u.Tests.Matchers.that(auth.config.expiry_minutes, eq=120)
         u.Tests.Matchers.that(auth.config.hash_rounds, eq=10)
 
-    def test_register_user_edge_cases(self) -> None:
+    @staticmethod
+    def test_register_user_edge_cases() -> None:
         """Test register_user method error paths."""
         auth = FlextAuth()
         result = auth.register_user(
-            username="testuser", email="invalid-email-format", password=c.TEST_PASSWORD
+            username="testuser",
+            email="invalid-email-format",
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         error_msg = result.error or ""
@@ -129,6 +149,3 @@ class TestsFlextAuthApiCase05:
             ),
             eq=True,
         )
-
-
-__all__: list[str] = ["TestsFlextAuthApiCase05"]

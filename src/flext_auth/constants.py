@@ -1,4 +1,8 @@
-"""FlextAuth constants facade."""
+"""FlextAuth constants facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -6,8 +10,8 @@ from typing import TYPE_CHECKING
 
 from flext_api import FlextApiConstants
 
-from ._constants.auth import FlextAuthConstantsAuth
-from ._constants.base import FlextAuthConstantsBase
+from flext_auth._constants.auth import FlextAuthConstantsAuth
+from flext_auth._constants.base import FlextAuthConstantsBase
 
 if TYPE_CHECKING:
     from flext_auth import t

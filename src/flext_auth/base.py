@@ -17,7 +17,7 @@ class FlextAuthServiceBase(s[bool], ABC):
     """Base class for auth services with typed configuration access."""
 
     _auth_config: FlextAuthSettings = m.PrivateAttr(
-        default_factory=lambda: FlextAuthSettings.model_validate({})
+        default_factory=lambda: FlextAuthSettings.model_validate({}),
     )
 
     @property
@@ -28,7 +28,11 @@ class FlextAuthServiceBase(s[bool], ABC):
 
     @override
     def execute(self) -> p.Result[bool]:
-        """Reject generic execution in favor of focused auth operations."""
+        """Reject generic execution in favor of focused auth operations.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         return r[bool].fail("Use a service-specific authentication operation")
 
 

@@ -14,7 +14,7 @@ from flext_auth import FlextAuthConstants
 class TestsFlextAuthConstants(FlextAuthConstants):
     """Test constants for flext-auth — extends flext_auth.c."""
 
-    TEST_PASSWORD: Final[str] = "TestPassword123!"
+    TEST_CREDENTIAL: Final[str] = "TestPassword123!"
 
     class _AuthConstants:
         """Auth-specific test constants."""

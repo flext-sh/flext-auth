@@ -30,7 +30,7 @@
   `FlextAuthIdentityService`, `FlextAuthJwtProvider`, `FlextAuthJwtTokenValidator` (+24
   more)
 - Exported module shortcuts: `providers`, `services`
-- Generated module pages: `31`
+- Generated module pages: `9`
 
 ## Next Pages
 

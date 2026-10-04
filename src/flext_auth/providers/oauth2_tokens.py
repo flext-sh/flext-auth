@@ -1,4 +1,8 @@
-"""OAuth2 token operations."""
+"""OAuth2 token operations.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -13,7 +17,9 @@ from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthOAuth2Tokens(
-    FlextAuthOAuth2Config, FlextAuthOAuth2Introspection, FlextAuthRfcProvider
+    FlextAuthOAuth2Config,
+    FlextAuthOAuth2Introspection,
+    FlextAuthRfcProvider,
 ):
     """OAuth2 token operation owner."""
 
@@ -21,13 +27,17 @@ class FlextAuthOAuth2Tokens(
 
     @override
     def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate using OAuth2 flows with delegation."""
+        """Authenticate using OAuth2 flows with delegation.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.Token]``.
+        """
         credential_payload: t.ConfigurationMapping = {
             k: v for k, v in credentials.items() if isinstance(v, c.PRIMITIVES_TYPES)
         }
         token_model = m.Auth.AuthToken(
             identity_id=str(
-                credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user"
+                credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user",
             ),
             token=str(credential_payload.get("access_token") or ""),
             token_type=c.Auth.TokenTypes.BEARER.value,
@@ -43,7 +53,11 @@ class FlextAuthOAuth2Tokens(
         token_type: str | None = None,
         expiry_minutes: int | None = None,
     ) -> p.Result[str]:
-        """Generate OAuth2 token for user."""
+        """Generate OAuth2 token for user.
+
+        Returns:
+            The resulting ``p.Result[str]``.
+        """
         return super().generate_token_for_user(
             user=user,
             token_kind=token_kind,
@@ -59,11 +73,15 @@ class FlextAuthOAuth2Tokens(
 
     @override
     def refresh(self, token: str | p.Auth.Token) -> p.Result[p.Auth.Token]:
-        """Refresh OAuth2 token using composition."""
+        """Refresh OAuth2 token using composition.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.Token]``.
+        """
         token_text = self._extract_token_string(token)
         refresh_token_value = getattr(token, "refresh_token", "")
         has_refresh_token = isinstance(refresh_token_value, str) and bool(
-            refresh_token_value
+            refresh_token_value,
         )
         refresh_source = refresh_token_value if has_refresh_token else token_text
         identity_id_result = (
@@ -73,7 +91,7 @@ class FlextAuthOAuth2Tokens(
             })
             if has_refresh_token
             else self._decode_token_claims(token_text).flat_map(
-                self._extract_identity_id
+                self._extract_identity_id,
             )
         )
         identity_id = (
@@ -109,17 +127,25 @@ class FlextAuthOAuth2Tokens(
 
     @override
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate OAuth2 token using composition."""
+        """Validate OAuth2 token using composition.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(
             on_failure=lambda exc: r[bool].fail(
-                exc or "OAuth2 token validation failed"
+                exc or "OAuth2 token validation failed",
             ),
             on_success=lambda _: r[bool].ok(value=True),
         )
 
     def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
-        """Validate OAuth2 token and return user."""
+        """Validate OAuth2 token and return user.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+        """
         introspection_endpoint_result = self._introspection_endpoint()
         if introspection_endpoint_result.success:
             introspection_result = self._introspect_token(token)

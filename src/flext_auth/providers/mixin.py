@@ -1,18 +1,23 @@
-"""FLEXT Auth provider mixin facade."""
+"""FLEXT Auth provider mixin facade.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ._mixins.tokens import FlextAuthProviderTokenMixin
-from ._mixins.validation import FlextAuthProviderValidationMixin
+from flext_auth.providers._mixins.tokens import FlextAuthProviderTokenMixin
+from flext_auth.providers._mixins.validation import FlextAuthProviderValidationMixin
 
 if TYPE_CHECKING:
     from flext_auth import t
 
 
 class FlextAuthProviderMixin(
-    FlextAuthProviderTokenMixin, FlextAuthProviderValidationMixin
+    FlextAuthProviderTokenMixin,
+    FlextAuthProviderValidationMixin,
 ):
     """Common functionality for authentication providers."""
 

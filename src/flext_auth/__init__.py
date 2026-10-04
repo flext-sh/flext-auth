@@ -1,59 +1,62 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Flext Auth package."""
+"""Flext Auth package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
-
-from .__version__ import (
-    __author__ as __author__,
-    __author_email__ as __author_email__,
-    __description__ as __description__,
-    __license__ as __license__,
-    __title__ as __title__,
-    __url__ as __url__,
-    __version__ as __version__,
-    __version_info__ as __version_info__,
+from flext_auth.__version__ import (
+    __author__,
+    __author_email__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+    __version_info__,
 )
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, x
 
-    from . import providers, services
-    from ._config import FlextAuthConfig, config
-    from ._settings import FlextAuthSettings, settings
-    from .api import FlextAuth, auth
-    from .base import FlextAuthServiceBase, s
-    from .cli import main
-    from .constants import FlextAuthConstants, FlextAuthConstants as c
-    from .models import FlextAuthModels, FlextAuthModels as m
-    from .protocols import FlextAuthProtocols, FlextAuthProtocols as p
-    from .providers.apikey import FlextAuthApiKeyProvider
-    from .providers.basic import FlextAuthBasicProvider
-    from .providers.certificate import FlextAuthCertificateProvider
-    from .providers.jwt import FlextAuthJwtProvider
-    from .providers.jwt_token_validator import FlextAuthJwtTokenValidator
-    from .providers.kerberos import FlextAuthKerberosProvider
-    from .providers.kerberos_support import FlextAuthKerberosSupport
-    from .providers.ldap import FlextAuthLdapProvider
-    from .providers.mixin import FlextAuthProviderMixin
-    from .providers.oauth2 import FlextAuthOAuth2Provider
-    from .providers.oauth2_config import FlextAuthOAuth2Config
-    from .providers.oauth2_introspection import FlextAuthOAuth2Introspection
-    from .providers.oauth2_tokens import FlextAuthOAuth2Tokens
-    from .providers.oidc import FlextAuthOidcProvider
-    from .providers.rfc import FlextAuthRfcProvider
-    from .registry import FlextAuthRegistry
-    from .services.auth_service import FlextAuthApplicationService
-    from .services.identity_service import FlextAuthIdentityService
-    from .services.provider_service import FlextAuthProviderService
-    from .services.session_service import FlextAuthSessionService
-    from .services.token_service import FlextAuthTokenService
-    from .typings import FlextAuthTypes, FlextAuthTypes as t
-    from .utilities import FlextAuthUtilities, FlextAuthUtilities as u
+    from flext_auth import providers, services
+    from flext_auth._config import FlextAuthConfig, config
+    from flext_auth._settings import FlextAuthSettings, settings
+    from flext_auth.api import FlextAuth, auth
+    from flext_auth.base import FlextAuthServiceBase, s
+    from flext_auth.cli import main
+    from flext_auth.constants import FlextAuthConstants, c
+    from flext_auth.models import FlextAuthModels, m
+    from flext_auth.protocols import FlextAuthProtocols, p
+    from flext_auth.providers.apikey import FlextAuthApiKeyProvider
+    from flext_auth.providers.basic import FlextAuthBasicProvider
+    from flext_auth.providers.certificate import FlextAuthCertificateProvider
+    from flext_auth.providers.jwt import FlextAuthJwtProvider
+    from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
+    from flext_auth.providers.kerberos import FlextAuthKerberosProvider
+    from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
+    from flext_auth.providers.ldap import FlextAuthLdapProvider
+    from flext_auth.providers.mixin import FlextAuthProviderMixin
+    from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
+    from flext_auth.providers.oauth2_config import FlextAuthOAuth2Config
+    from flext_auth.providers.oauth2_introspection import FlextAuthOAuth2Introspection
+    from flext_auth.providers.oauth2_tokens import FlextAuthOAuth2Tokens
+    from flext_auth.providers.oidc import FlextAuthOidcProvider
+    from flext_auth.providers.rfc import FlextAuthRfcProvider
+    from flext_auth.registry import FlextAuthRegistry
+    from flext_auth.services.auth_service import FlextAuthApplicationService
+    from flext_auth.services.identity_service import FlextAuthIdentityService
+    from flext_auth.services.provider_service import FlextAuthProviderService
+    from flext_auth.services.session_service import FlextAuthSessionService
+    from flext_auth.services.token_service import FlextAuthTokenService
+    from flext_auth.typings import FlextAuthTypes, t
+    from flext_auth.utilities import FlextAuthUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -154,7 +157,7 @@ _LAZY_IMPORTS = MappingProxyType(
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
-    )
+    ),
 )
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

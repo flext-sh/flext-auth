@@ -1,4 +1,8 @@
-"""Built-in auth provider registration."""
+"""Built-in auth provider registration.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -36,7 +40,11 @@ class FlextAuthProviderBuiltinRegistration:
     def _build_provider_init_config(
         provider_config: t.ConfigurationMapping,
     ) -> t.MappingKV[str, t.Primitives]:
-        """Normalize provider settings to base-provider scalar contract."""
+        """Normalize provider settings to base-provider scalar contract.
+
+        Returns:
+            The resulting ``t.MappingKV[str, t.Primitives]``.
+        """
         return FlextAuthRfcProvider.project_to_scalar_config(provider_config) or {}
 
     def _register_builtin_providers(self) -> None:
@@ -62,7 +70,7 @@ class FlextAuthProviderBuiltinRegistration:
                 "ldap",
                 FlextAuthLdapProvider,
                 lambda: bool(
-                    provider_config.get("server") and provider_config.get("base_dn")
+                    provider_config.get("server") and provider_config.get("base_dn"),
                 ),
             ),
             (
@@ -70,7 +78,7 @@ class FlextAuthProviderBuiltinRegistration:
                 FlextAuthOAuth2Provider,
                 lambda: bool(
                     provider_config.get("client_id")
-                    and provider_config.get("token_endpoint")
+                    and provider_config.get("token_endpoint"),
                 ),
             ),
             (
@@ -82,7 +90,7 @@ class FlextAuthProviderBuiltinRegistration:
                 "saml",
                 FlextAuthSamlProvider,
                 lambda: bool(
-                    provider_config.get("entity_id") and provider_config.get("sso_url")
+                    provider_config.get("entity_id") and provider_config.get("sso_url"),
                 ),
             ),
             ("certificate", FlextAuthCertificateProvider, lambda: True),
@@ -92,16 +100,20 @@ class FlextAuthProviderBuiltinRegistration:
             if condition():
                 try:
                     provider_init_config = self._build_provider_init_config(
-                        provider_config
+                        provider_config,
                     )
                     provider = provider_class(provider_init_config)
                     self._providers.register_provider(
-                        name, provider, configuration=provider_init_config
+                        name,
+                        provider,
+                        configuration=provider_init_config,
                     )
                 except c.EXC_BROAD_IO_TYPE as exc:
                     error_msg: str = str(exc) if exc else "Unknown error"
                     self.logger.warning(
-                        "Failed to register %s provider: %s", name, error_msg
+                        "Failed to register %s provider: %s",
+                        name,
+                        error_msg,
                     )
 
 

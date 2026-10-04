@@ -1,4 +1,8 @@
-"""Basic FLEXT Auth workflow examples."""
+"""Basic FLEXT Auth workflow examples.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -15,15 +19,23 @@ class FlextAuthBasicUsageWorkflow:
 
     @staticmethod
     def _demo_credential(prefix: str) -> str:
-        """Per-run demo credential; the example never embeds a reusable secret."""
+        """Per-run demo credential; the example never embeds a reusable secret.
+
+        Returns:
+            The resulting ``str``.
+        """
         return f"{prefix}-{secrets.token_hex(6)}"
 
     @classmethod
     def example_advanced_registration(cls) -> p.Result[bool]:
-        """Register an admin and a regular user and confirm their roles."""
+        """Register an admin and a regular user and confirm their roles.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD") or cls._demo_credential(
-            "advanced"
+            "advanced",
         )
         admin_result = auth.register_user(
             username="admin",
@@ -48,18 +60,24 @@ class FlextAuthBasicUsageWorkflow:
         )
         return r[bool].ok(
             "admin" in admin_result.value.roles
-            and "admin" not in user_result.value.roles
+            and "admin" not in user_result.value.roles,
         )
 
     @classmethod
     def example_complete_workflow(cls) -> p.Result[bool]:
-        """Register, authenticate, validate the token and read the identity back."""
+        """Register, authenticate, validate the token and read the identity back.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD") or cls._demo_credential(
-            "workflow"
+            "workflow",
         )
         reg_result = auth.register_user(
-            username="workflowuser", email="workflow@example.com", password=password
+            username="workflowuser",
+            email="workflow@example.com",
+            password=password,
         )
         if reg_result.failure:
             return r[bool].from_failure(reg_result)
@@ -70,7 +88,7 @@ class FlextAuthBasicUsageWorkflow:
         if token_validation.failure:
             return token_validation
         user_info = auth.identity_service.identity_manager.fetch_user(
-            reg_result.value.unique_id
+            reg_result.value.unique_id,
         )
         if user_info.failure:
             return r[bool].from_failure(user_info)

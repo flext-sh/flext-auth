@@ -1,4 +1,8 @@
-"""Auth user manager mutation operations."""
+"""Auth user manager mutation operations.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -6,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from flext_api import r, u
 
-from .user_read import FlextAuthUserManagerRead
+from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
@@ -19,17 +23,32 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
     def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
-        """Add permission to user."""
+        """Add permission to user.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         return self._modify_user_list_field(
-            user_id, "permissions", permission, add=True
+            user_id,
+            "permissions",
+            permission,
+            add=True,
         )
 
     def add_user_role(self, user_id: str, role: str) -> p.Result[bool]:
-        """Add role to user."""
+        """Add role to user.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         return self._modify_user_list_field(user_id, "roles", role, add=True)
 
     def delete_user(self, user_id: str) -> p.Result[bool]:
-        """Delete user."""
+        """Delete user.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         result = self._find_user_by_id(user_id)
         if result.failure:
             return r[bool].from_failure(result)
@@ -38,19 +57,36 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         return r[bool].ok(value=True)
 
     def remove_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
-        """Remove permission from user."""
+        """Remove permission from user.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         return self._modify_user_list_field(
-            user_id, "permissions", permission, add=False
+            user_id,
+            "permissions",
+            permission,
+            add=False,
         )
 
     def remove_user_role(self, user_id: str, role: str) -> p.Result[bool]:
-        """Remove role from user."""
+        """Remove role from user.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
         return self._modify_user_list_field(user_id, "roles", role, add=False)
 
     def update_user(
-        self, user_id: str, **updates: t.Scalar | t.StrSequence | datetime | None
+        self,
+        user_id: str,
+        **updates: t.Scalar | t.StrSequence | datetime | None,
     ) -> p.Result[m.Auth.AuthIdentity]:
-        """Update user data."""
+        """Update user data.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+        """
         filtered_updates: t.Auth.ManagersUserData = {
             k: v for k, v in updates.items() if v is not None
         }
@@ -59,18 +95,22 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
                 ud[1].update(filtered_updates),
                 ud[1].update({"updated_at": u.now()}),
                 self._create_identity_from_storage(ud[1]),
-            )[2]
+            )[2],
         )
 
+    @staticmethod
     def _apply_list_modification(
-        self,
         user_data: t.Auth.ManagersUserData,
         field: str,
         value: str,
         *,
         add: bool = True,
     ) -> None:
-        """Apply list modification atomically."""
+        """Apply list modification atomically.
+
+        Raises:
+            TypeError: If u.Field.
+        """
         field_list_value = user_data.get(field)
         if not isinstance(field_list_value, list):
             msg = f"u.Field '{field}' must be a list for modification"
@@ -81,18 +121,26 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
             field_list_value.remove(value)
 
     def _modify_user_list_field(
-        self, user_id: str, field: str, value: str, *, add: bool = True
+        self,
+        user_id: str,
+        field: str,
+        value: str,
+        *,
+        add: bool = True,
     ) -> p.Result[bool]:
         """Add or remove value from user list field (roles/permissions).
 
         Generic list field modifier - eliminates duplication in 4 methods.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
         """
         user_result = self._find_user_by_id(user_id)
         if user_result.failure:
             return r[bool].from_failure(user_result)
         _, user_data = user_result.unwrap()
         self._apply_list_modification(user_data, field, value, add=add)
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 __all__: list[str] = ["FlextAuthUserManagerWrite"]

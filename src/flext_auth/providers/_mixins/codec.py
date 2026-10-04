@@ -1,4 +1,8 @@
-"""Provider token codec helpers."""
+"""Provider token codec helpers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -21,23 +25,32 @@ class FlextAuthProviderCodecMixin:
         settings = self._provider_config
         if not settings:
             return r[t.Auth.TokensClaimMap].fail(
-                "Provider configuration required for token decoding"
+                "Provider configuration required for token decoding",
             )
         decoded: p.Result[t.Auth.TokensClaimMap] = u.Auth.decode_token(token, settings)
         return decoded
 
     @staticmethod
     def _encode_token_payload(
-        payload: t.JsonMapping, secret: str, algorithm: str
+        payload: t.JsonMapping,
+        secret: str,
+        algorithm: str,
     ) -> p.Result[str]:
-        """Encode token payload using JWT with canonical result flow."""
+        """Encode token payload using JWT with canonical result flow.
+
+        Returns:
+            The resulting ``p.Result[str]``.
+        """
         normalized_payload = t.json_dict_adapter().validate_python(payload)
         encoded: p.Result[str] = u.Auth.encode_token(
-            normalized_payload, secret, algorithm
+            normalized_payload,
+            secret,
+            algorithm,
         )
         return encoded
 
-    def _extract_identity_id(self, claims: t.JsonMapping) -> p.Result[str]:
+    @staticmethod
+    def _extract_identity_id(claims: t.JsonMapping) -> p.Result[str]:
         """Extract identity ID from token claims.
 
         Checks common identity fields (sub, identity_id, user_id, username)
@@ -56,10 +69,11 @@ class FlextAuthProviderCodecMixin:
                 return r[str].ok(value)
         return r[str].fail(
             "No identity field found in token claims "
-            f"(checked: {', '.join(c.Auth.TOKEN_IDENTITY_KEYS)})"
+            f"(checked: {', '.join(c.Auth.TOKEN_IDENTITY_KEYS)})",
         )
 
-    def _extract_token_string(self, token: str | p.Auth.Token) -> str:
+    @staticmethod
+    def _extract_token_string(token: str | p.Auth.Token) -> str:
         """Extract token string from token or Token t.JsonValue.
 
         Args:

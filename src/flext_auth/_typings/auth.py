@@ -1,4 +1,8 @@
-"""Authentication-focused typed aliases of the FlextAuth typings family."""
+"""Authentication-focused typed aliases of the FlextAuth typings family.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -24,7 +28,8 @@ class FlextAuthTypesAuth:
     type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
 
     type KerberosTicketValidator = Callable[
-        [str], m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData
+        [str],
+        m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
     ]
 
 

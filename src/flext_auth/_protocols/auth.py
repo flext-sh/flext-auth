@@ -1,13 +1,17 @@
-"""Authentication protocol namespace."""
+"""Authentication protocol namespace.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from .auth_identity import FlextAuthProtocolsAuthIdentity
-from .auth_provider import FlextAuthProtocolsAuthProvider
-from .auth_service import FlextAuthProtocolsAuthService
-from .auth_session import FlextAuthProtocolsAuthSession
-from .auth_token import FlextAuthProtocolsAuthToken
-from .auth_transport import FlextAuthProtocolsAuthTransport
+from flext_auth._protocols.auth_identity import FlextAuthProtocolsAuthIdentity
+from flext_auth._protocols.auth_provider import FlextAuthProtocolsAuthProvider
+from flext_auth._protocols.auth_service import FlextAuthProtocolsAuthService
+from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
+from flext_auth._protocols.auth_token import FlextAuthProtocolsAuthToken
+from flext_auth._protocols.auth_transport import FlextAuthProtocolsAuthTransport
 
 
 class FlextAuthProtocolsAuth(
