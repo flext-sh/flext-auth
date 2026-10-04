@@ -38,7 +38,8 @@ class FlextAuthProtocolsAuthService:
             """Logout user by session ID.
 
             Returns:
-                FlextApiProtocols.Result[bool]: True if logout successful, False if failed, error on failure
+                FlextApiProtocols.Result[bool]: True if logout succeeded, False if
+                it did not, or a failure result on error.
 
             """
             ...

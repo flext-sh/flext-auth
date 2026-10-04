@@ -16,7 +16,8 @@ from flext_auth import c, p, r, t, u
 class FlextAuthJwtTokenValidator:
     """Dedicated JWT token validator service.
 
-    Single responsibility: Validate JWT tokens with proper railway-oriented error handling.
+    Single responsibility: validate JWT tokens with railway-oriented error
+    handling.
     Uses composition and delegates to flext-core for consistent patterns.
     """
 

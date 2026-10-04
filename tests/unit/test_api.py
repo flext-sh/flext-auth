@@ -81,7 +81,7 @@ class TestsFlextAuthApi:
         """Registering a valid user succeeds and returns the new identity."""
         auth = TestsFlextAuthApi._fresh_auth()
 
-        result = auth.register_user("validuser", "user@example.com", c.TEST_PASSWORD)
+        result = auth.register_user("validuser", "user@example.com", c.TEST_CREDENTIAL)
 
         tm.ok(result)
         identity = result.value
@@ -93,7 +93,7 @@ class TestsFlextAuthApi:
         """Email contact is normalized to lowercase on the returned identity."""
         auth = TestsFlextAuthApi._fresh_auth()
 
-        result = auth.register_user("mixeduser", "MixED@Example.COM", c.TEST_PASSWORD)
+        result = auth.register_user("mixeduser", "MixED@Example.COM", c.TEST_CREDENTIAL)
 
         tm.ok(result)
         tm.that(result.value.contact, eq="mixed@example.com")
@@ -113,7 +113,7 @@ class TestsFlextAuthApi:
         result = auth.register_user(
             "roleuser",
             "roleuser@example.com",
-            c.TEST_PASSWORD,
+            c.TEST_CREDENTIAL,
             roles=roles,
             role=role,
         )
@@ -125,7 +125,7 @@ class TestsFlextAuthApi:
         """A username below the minimum length fails with an error message."""
         auth = TestsFlextAuthApi._fresh_auth()
 
-        result = auth.register_user("ab", "short@example.com", c.TEST_PASSWORD)
+        result = auth.register_user("ab", "short@example.com", c.TEST_CREDENTIAL)
 
         tm.fail(result)
         assert result.error
@@ -146,8 +146,8 @@ class TestsFlextAuthApi:
         """Registering an already-taken username fails; the first one wins."""
         auth = TestsFlextAuthApi._fresh_auth()
 
-        first = auth.register_user("dupuser", "dup1@example.com", c.TEST_PASSWORD)
-        second = auth.register_user("dupuser", "dup2@example.com", c.TEST_PASSWORD)
+        first = auth.register_user("dupuser", "dup1@example.com", c.TEST_CREDENTIAL)
+        second = auth.register_user("dupuser", "dup2@example.com", c.TEST_CREDENTIAL)
 
         tm.ok(first)
         tm.fail(second)
@@ -157,11 +157,11 @@ class TestsFlextAuthApi:
     def test_authenticate_with_valid_credentials_returns_identity() -> None:
         """Authenticating a registered user with the right password succeeds."""
         auth = TestsFlextAuthApi._fresh_auth()
-        auth.register_user("authuser", "auth@example.com", c.TEST_PASSWORD)
+        auth.register_user("authuser", "auth@example.com", c.TEST_CREDENTIAL)
 
         result = auth.authenticate({
             "username": "authuser",
-            "password": c.TEST_PASSWORD,
+            "password": c.TEST_CREDENTIAL,
         })
 
         tm.ok(result)
@@ -171,7 +171,7 @@ class TestsFlextAuthApi:
     def test_authenticate_with_wrong_password_fails() -> None:
         """Authenticating with an incorrect password fails with an error."""
         auth = TestsFlextAuthApi._fresh_auth()
-        auth.register_user("authuser", "auth@example.com", c.TEST_PASSWORD)
+        auth.register_user("authuser", "auth@example.com", c.TEST_CREDENTIAL)
 
         result = auth.authenticate({"username": "authuser", "password": "w" + "0" * 12})
 
@@ -184,7 +184,7 @@ class TestsFlextAuthApi:
         [
             {"username": "", "password": ""},
             {"username": "someone", "password": ""},
-            {"username": "", "password": c.TEST_PASSWORD},
+            {"username": "", "password": c.TEST_CREDENTIAL},
         ],
     )
     def test_authenticate_rejects_missing_credentials(
@@ -205,7 +205,7 @@ class TestsFlextAuthApi:
         registered = auth.register_user(
             "tokenuser",
             "token@example.com",
-            c.TEST_PASSWORD,
+            c.TEST_CREDENTIAL,
         )
         tm.ok(registered)
 

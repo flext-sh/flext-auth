@@ -42,14 +42,15 @@ class TestsFlextAuthApiCase10:
     def test_flext_auth_with_flext_tests() -> None:
         """Test auth functionality with flext_tests infrastructure."""
         auth = FlextAuth()
+        credential = TestsFlextAuthApiTestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN
         test_user_data = {
             "username": "flext_test_user",
             "email": "flext_test@example.com",
-            "password": TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
+            "password": credential,
         }
         test_auth_data = {
             "username": "flext_test_user",
-            "password": TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
+            "password": credential,
         }
         result = auth.register_user(
             username=test_user_data["username"],
@@ -75,23 +76,24 @@ class TestsFlextAuthApiCase10:
     def test_flext_auth_with_real_data() -> None:
         """Test auth functionality with realistic data scenarios."""
         auth = FlextAuth()
+        credential = TestsFlextAuthApiTestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN
         realistic_users = [
             {
                 "username": "admin_user",
                 "email": "admin@company.com",
-                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-admin",
+                "password": f"{credential}-admin",
                 "role": "admin",
             },
             {
                 "username": "regular_user",
                 "email": "user@company.com",
-                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-regular",
+                "password": f"{credential}-regular",
                 "role": "user",
             },
             {
                 "username": "guest_user",
                 "email": "guest@company.com",
-                "password": f"{TestsFlextAuthApiCase10._TestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN}-guest",
+                "password": f"{credential}-guest",
                 "role": "guest",
             },
         ]

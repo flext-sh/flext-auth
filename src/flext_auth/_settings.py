@@ -1,8 +1,9 @@
 """Settings for flext-auth — namespaced under ``settings.Auth``.
 
-Layer-0: imports only stdlib + ``pydantic_settings`` + ``FlextSettings`` / ``m`` / ``t`` facades. The universal
-runtime fields (``debug``/``trace``/``log_level``/``timezone``/``async_logging``)
-come from ``FlextSettings`` by MRO and are NOT redeclared here. Every project
+Layer-0: imports only stdlib + ``pydantic_settings`` + ``FlextSettings`` / ``m``
+/ ``t`` facades. The universal runtime fields (``debug``/``trace``/``log_level``/
+``timezone``/``async_logging``) come from ``FlextSettings`` by MRO and are NOT
+redeclared here. Every project
 field lives inside the ``Auth`` namespace group with simple scalar types so each
 is settable via ``.env`` / env vars / params (``FLEXT_AUTH_AUTH__SECRET_KEY`` …).
 JWT/session/hashing defaults are inlined from

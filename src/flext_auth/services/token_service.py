@@ -16,7 +16,7 @@ from flext_auth import c, m, p, s, u
 
 
 class FlextAuthTokenService(s):
-    """Flexible token service using flext-core patterns and railway-oriented programming.
+    """Token service built on flext-core patterns and railway-oriented results.
 
     Python 3.13+ features, minimal line count through consolidated operations.
     Flexible composition with dependency injection and error handling.

@@ -24,7 +24,7 @@ class TestsFlextAuthApiCase04:
         """Test that token creation fails — JWT provider not implemented."""
         auth: FlextAuth = FlextAuth()
         username = "beareruser"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         register_result = auth.register_user(username, "bearer@example.com", password)
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
@@ -39,7 +39,7 @@ class TestsFlextAuthApiCase04:
         """Test session management functionality."""
         auth: FlextAuth = FlextAuth()
         username = "sessionuser"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         auth.register_user(username, "session@example.com", password)
         auth_result = auth.authenticate_user(
             username,
@@ -63,7 +63,7 @@ class TestsFlextAuthApiCase04:
         """Test user logout functionality."""
         auth: FlextAuth = FlextAuth()
         username = "logoutuser"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         auth.register_user(username, "logout@example.com", password)
         auth_result = auth.authenticate_user(username, password)
         u.Tests.Matchers.that(auth_result.success, eq=True)
@@ -96,7 +96,7 @@ class TestsFlextAuthApiCase04:
         """Test synchronous API methods work as expected."""
         auth: FlextAuth = FlextAuth()
         username = "syncuser"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         create_result = auth.register_user(username, "sync@example.com", password)
         u.Tests.Matchers.that(create_result.success, eq=True)
         auth_result = auth.authenticate_user(username, password)
@@ -131,10 +131,10 @@ class TestsFlextAuthApiCase04:
         """Test account lockout after multiple failed login attempts."""
         auth: FlextAuth = FlextAuth()
         username = "locktest"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         auth.register_user(username, "lock@example.com", password)
         for _ in range(c.Auth.MAX_ATTEMPTS_DEFAULT):
-            failed_auth = auth.authenticate_user(username, c.TEST_PASSWORD + "_wrong")
+            failed_auth = auth.authenticate_user(username, c.TEST_CREDENTIAL + "_wrong")
             u.Tests.Matchers.that(not failed_auth.success, eq=True)
         locked_auth = auth.authenticate_user(username, password)
         u.Tests.Matchers.that(not locked_auth.success, eq=True)

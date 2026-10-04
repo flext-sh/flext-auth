@@ -25,7 +25,7 @@ class TestsFlextAuthApiCase06:
         auth = FlextAuth()
         result = auth.authenticate_user(
             username="nonexistent_user",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, is_=str)
@@ -59,7 +59,7 @@ class TestsFlextAuthApiCase06:
             locked_until=datetime.min.replace(tzinfo=UTC),
             last_access=datetime.min.replace(tzinfo=UTC),
         )
-        result = identity.update_credential(c.TEST_PASSWORD)
+        result = identity.update_credential(c.TEST_CREDENTIAL)
         u.Tests.Matchers.that(result.success, eq=True)
         u.Tests.Matchers.that(result.value is True, eq=True)
         u.Tests.Matchers.that(identity.credential_hash, ne="StrongTestPass123!@#")
@@ -68,7 +68,7 @@ class TestsFlextAuthApiCase06:
     @staticmethod
     def test_verify_password_method() -> None:
         """Test verify_password method functionality."""
-        strong_password = c.TEST_PASSWORD
+        strong_password = c.TEST_CREDENTIAL
         identity = m.Auth.AuthIdentity(
             unique_id="test-id",
             name="testuser",
@@ -89,7 +89,7 @@ class TestsFlextAuthApiCase06:
         verify_result = identity.verify_credential(strong_password)
         u.Tests.Matchers.that(verify_result.success, eq=True)
         u.Tests.Matchers.that(verify_result.value is True, eq=True)
-        wrong_result = identity.verify_credential(c.TEST_PASSWORD + "_wrong")
+        wrong_result = identity.verify_credential(c.TEST_CREDENTIAL + "_wrong")
         u.Tests.Matchers.that(wrong_result.success, eq=True)
         u.Tests.Matchers.that(wrong_result.value is False, eq=True)
 
@@ -100,7 +100,7 @@ class TestsFlextAuthApiCase06:
         user_result = auth.register_user(
             username="jwt_test_user",
             email="jwt@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -110,16 +110,16 @@ class TestsFlextAuthApiCase06:
 
     @staticmethod
     def test_generate_token_alternative_method() -> None:
-        """Test that create_token fails via alternative path — JWT provider not implemented."""
+        """Test create_token fails on the alternative path without a JWT provider."""
         auth = FlextAuth()
         register_result = auth.register_user(
             "testuser",
             "test@example.com",
-            c.TEST_PASSWORD,
+            c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
-        auth_result = auth.authenticate_user("testuser", c.TEST_PASSWORD)
+        auth_result = auth.authenticate_user("testuser", c.TEST_CREDENTIAL)
         u.Tests.Matchers.that(auth_result.success, eq=True)
         token_result = auth.create_token(identity_id=identity.unique_id)
         u.Tests.Matchers.that(token_result.success, eq=True)
@@ -132,11 +132,11 @@ class TestsFlextAuthApiCase06:
         register_result = auth.register_user(
             "testuser",
             "test@example.com",
-            c.TEST_PASSWORD,
+            c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value
-        auth_result = auth.authenticate_user("testuser", c.TEST_PASSWORD)
+        auth_result = auth.authenticate_user("testuser", c.TEST_CREDENTIAL)
         u.Tests.Matchers.that(auth_result.success, eq=True)
         authenticated_identity = auth_result.value
         u.Tests.Matchers.that(authenticated_identity, is_=m.Auth.AuthIdentity)

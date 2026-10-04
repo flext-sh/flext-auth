@@ -77,7 +77,7 @@ class FlextAuthAdvancedFeaturesExample:
                 return r[bool].from_failure(result)
             if tuple(result.value.roles) != tuple(roles):
                 return r[bool].fail(f"{username} was registered with other roles")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @staticmethod
     def example_session_management() -> p.Result[bool]:

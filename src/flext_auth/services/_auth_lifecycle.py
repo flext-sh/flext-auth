@@ -32,7 +32,7 @@ class FlextAuthApplicationLifecycle(ABC):
         password: str,
         roles: t.StrSequence | None = None,
         role: str | None = None,
-    ) -> p.Result[p.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.Identity]:
         raise NotImplementedError
 
     @classmethod

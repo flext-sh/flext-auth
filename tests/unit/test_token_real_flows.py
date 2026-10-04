@@ -25,7 +25,7 @@ class TestsFlextAuthTokenRealFlows:
         registered = auth.register_user(
             username="token-flow-user",
             email="token-flow-user@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.ok(registered)
 
@@ -42,7 +42,7 @@ class TestsFlextAuthTokenRealFlows:
         registered = auth.register_user(
             username="token-validate-user",
             email="token-validate-user@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.ok(registered)
 
@@ -64,7 +64,7 @@ class TestsFlextAuthTokenRealFlows:
         """Test authenticate user and create token sequence."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         username = "sequence-user"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         register_result = auth.register_user(
             username=username,
             email="sequence-user@example.com",

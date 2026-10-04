@@ -17,7 +17,9 @@ class FlextAuthProviderValidationMixin:
             The resulting ``p.Result[p.Auth.Token]``.
         """
         _ = credentials
-        return r[p.Auth.Token].fail("Not implemented")
+        return r[p.Auth.Token].fail(
+            f"{type(self).__name__} does not implement authenticate",
+        )
 
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate a token. Stub providers inherit this unimplemented owner.
@@ -26,7 +28,7 @@ class FlextAuthProviderValidationMixin:
             The resulting ``p.Result[bool]``.
         """
         _ = token
-        return r[bool].fail("Not implemented")
+        return r[bool].fail(f"{type(self).__name__} does not implement validate")
 
     @staticmethod
     def revoke(token: str) -> p.Result[bool]:
@@ -44,14 +46,6 @@ class FlextAuthProviderValidationMixin:
         """
         _ = token
         return r[bool].fail("Token revocation not supported by this provider")
-
-    def supports(self) -> set[str]:
-        """Return set of capabilities supported by this provider.
-
-        This is a default implementation that returns an empty set.
-        Providers should override this method to declare their capabilities.
-        """
-        return set()
 
     @staticmethod
     def _validate_credentials_dict(

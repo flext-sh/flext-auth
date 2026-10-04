@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from enum import StrEnum, unique
+from enum import StrEnum, auto, unique
 from typing import ClassVar
 
 
@@ -95,6 +95,20 @@ class FlextAuthConstantsAuthEnums:
         HS256 = "HS256"
         RS256 = "RS256"
         ES256 = "ES256"
+
+    @unique
+    class AuthorizationSchemes(StrEnum):
+        """HTTP Authorization header schemes (RFC 6750)."""
+
+        BEARER = "Bearer"
+
+    @unique
+    class TokenEndpointAuthMethods(StrEnum):
+        """OAuth2 token endpoint client authentication methods (RFC 7591)."""
+
+        CLIENT_SECRET_BASIC = auto()
+        CLIENT_SECRET_POST = auto()
+        NONE = auto()
 
 
 __all__: list[str] = ["FlextAuthConstantsAuthEnums"]

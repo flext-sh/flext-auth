@@ -1,4 +1,4 @@
-"""FLEXT Auth RFC Provider - Base implementation for RFC-compliant authentication providers.
+"""FLEXT Auth RFC Provider - base for RFC-compliant authentication providers.
 
 This module provides a base class for providers that implement RFC standards
 (e.g., RFC 7617 for Basic Auth, RFC 6749 for OAuth2, RFC 7519 for JWT).

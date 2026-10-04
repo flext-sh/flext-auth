@@ -13,7 +13,7 @@ from flext_auth.services.auth_service import FlextAuthApplicationService
 
 
 class FlextAuth(FlextAuthApplicationService):
-    """Authentication facade composing identity, token, session, and provider services."""
+    """Authentication facade composing identity, token, session and providers."""
 
 
 auth: FlextAuth = FlextAuth.fetch_global()

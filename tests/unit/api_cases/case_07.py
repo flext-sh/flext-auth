@@ -26,7 +26,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_get_user",
             email="getuser@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -42,7 +42,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_username_lookup",
             email="lookup@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         get_result = auth.identity_service.identity_manager.fetch_user_by_username(
@@ -57,7 +57,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_token_user",
             email="tokenuser@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -73,7 +73,7 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="test_logout_user",
             email="logout@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         user = user_result.value
@@ -135,12 +135,12 @@ class TestsFlextAuthApiCase07:
         user_result = auth.register_user(
             username="lockable_user",
             email="lockable@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(user_result.success, eq=True)
         for _ in range(6):
             failed_result = auth.authenticate_user(
                 username="lockable_user",
-                password=c.TEST_PASSWORD + "_wrong",
+                password=c.TEST_CREDENTIAL + "_wrong",
             )
             u.Tests.Matchers.that(not failed_result.success, eq=True)

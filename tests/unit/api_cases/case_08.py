@@ -55,7 +55,7 @@ class TestsFlextAuthApiCase08:
 
     @staticmethod
     def test_cleanup_expired_sessions_with_user_sessions_index() -> None:
-        """Test cleanup_expired_sessions method with user sessions index - lines 662-667."""
+        """Test cleanup_expired_sessions with a user sessions index."""
         auth = FlextAuth()
         auth.register_user("testuser", "test@example.com", "Password123!")
         auth_result = auth.authenticate_user("testuser", "Password123!")

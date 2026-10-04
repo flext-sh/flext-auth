@@ -41,14 +41,12 @@ class FlextAuthUtilitiesAuthValidation:
         """
         if not password:
             return r[str].fail("Password cannot be empty")
-        if len(password) < c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH:
-            return r[str].fail(
-                f"Password too short (min {c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH} chars)",
-            )
-        if len(password) > c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH:
-            return r[str].fail(
-                f"Password too long (max {c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH} chars)",
-            )
+        min_length = c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH
+        max_length = c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH
+        if len(password) < min_length:
+            return r[str].fail(f"Password too short (min {min_length} chars)")
+        if len(password) > max_length:
+            return r[str].fail(f"Password too long (max {max_length} chars)")
         return r[str].ok(password)
 
     @staticmethod
@@ -61,14 +59,12 @@ class FlextAuthUtilitiesAuthValidation:
         if not username or not username.strip():
             return r[str].fail("Username cannot be empty")
         username = username.strip()
-        if len(username) < c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH:
-            return r[str].fail(
-                f"Username too short (min {c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH} chars)",
-            )
-        if len(username) > c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH:
-            return r[str].fail(
-                f"Username too long (max {c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH} chars)",
-            )
+        min_length = c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH
+        max_length = c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH
+        if len(username) < min_length:
+            return r[str].fail(f"Username too short (min {min_length} chars)")
+        if len(username) > max_length:
+            return r[str].fail(f"Username too long (max {max_length} chars)")
         return r[str].ok(username)
 
     @staticmethod

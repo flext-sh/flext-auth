@@ -30,7 +30,7 @@ class FlextAuthBasicUsageFlows:
             hash_rounds=settings.Auth.hash_rounds,
             max_sessions_per_user=settings.Auth.max_sessions_per_user,
         )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @classmethod
     def example_user_lifecycle(cls) -> p.Result[bool]:

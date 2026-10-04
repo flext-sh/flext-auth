@@ -98,7 +98,7 @@ class TestsFlextAuthApiCase05:
 
     @staticmethod
     def test_flext_auth_config_creation_failure() -> None:
-        """Test FlextAuth initialization when settings creation fails - lines 228-229."""
+        """Test FlextAuth initialization when settings creation fails."""
         try:
             auth = FlextAuth()
             u.Tests.Matchers.that(auth.config, none=False)
@@ -137,7 +137,7 @@ class TestsFlextAuthApiCase05:
         result = auth.register_user(
             username="testuser",
             email="invalid-email-format",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(not result.success, eq=True)
         error_msg = result.error or ""

@@ -29,7 +29,9 @@ class FlextAuthConstantsAuthSecurity(FlextAuthConstantsAuthClaims):
     "Default JWT audience claim."
     JWT_MIN_SECRET_KEY_LENGTH: Final[int] = 32
     "Minimum secret key length for JWT."
-    JWT_DEFAULT_TOKEN_TYPE: Final[str] = "Bearer"
+    JWT_DEFAULT_TOKEN_TYPE: Final[str] = (
+        FlextAuthConstantsAuthEnums.AuthorizationSchemes.BEARER
+    )
     "Default token type for Authorization header."
 
     # ===== OAuth2 Constants =====
@@ -45,13 +47,13 @@ class FlextAuthConstantsAuthSecurity(FlextAuthConstantsAuthClaims):
     "Default OAuth2 flow."
     OAUTH2_USE_PKCE_DEFAULT: Final[bool] = True
     "Whether to use PKCE by default."
-    OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS: Final[AbstractSet[str]] = frozenset([
-        "client_secret_basic",
-        "client_secret_post",
-        "none",
-    ])
+    OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS: Final[AbstractSet[str]] = frozenset(
+        FlextAuthConstantsAuthEnums.TokenEndpointAuthMethods,
+    )
     "Supported token endpoint authentication methods."
-    OAUTH2_TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT: Final[str] = "client_secret_basic"
+    OAUTH2_TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT: Final[str] = (
+        FlextAuthConstantsAuthEnums.TokenEndpointAuthMethods.CLIENT_SECRET_BASIC
+    )
     "Default token endpoint authentication method."
 
     # ===== Credentials Constants =====
@@ -97,10 +99,6 @@ class FlextAuthConstantsAuthSecurity(FlextAuthConstantsAuthClaims):
     "Account locked error code."
     ERROR_ACCOUNT_DISABLED: Final[str] = "ACCOUNT_DISABLED"
     "Account disabled error code."
-    ERROR_TOKEN_EXPIRED: Final[str] = "TOKEN_EXPIRED"
-    "Token expired error code."
-    ERROR_INVALID_TOKEN: Final[str] = "INVALID_TOKEN"
-    "Invalid token error code."
 
     # ===== Validation Constants =====
     VALIDATION_SHORT_NAME_MAX: Final[int] = 64

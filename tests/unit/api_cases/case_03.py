@@ -55,7 +55,7 @@ class TestsFlextAuthApiCase03:
         result = auth.register_user(
             username="testuser",
             email="test@example.com",
-            password=c.TEST_PASSWORD,
+            password=c.TEST_CREDENTIAL,
             roles=["user"],
         )
         u.Tests.Matchers.that(result.success, eq=True)
@@ -69,11 +69,11 @@ class TestsFlextAuthApiCase03:
     def test_user_registration_duplicate_username() -> None:
         """Test user registration with duplicate username."""
         auth: FlextAuth = FlextAuth()
-        auth.register_user("testuser", "test1@example.com", c.TEST_PASSWORD)
+        auth.register_user("testuser", "test1@example.com", c.TEST_CREDENTIAL)
         duplicate_result = auth.register_user(
             "testuser",
             "test2@example.com",
-            c.TEST_PASSWORD,
+            c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")
@@ -82,12 +82,16 @@ class TestsFlextAuthApiCase03:
     def test_user_registration_duplicate_email() -> None:
         """Test user registration with duplicate email."""
         auth: FlextAuth = FlextAuth()
-        first_result = auth.register_user("user1", "test@example.com", c.TEST_PASSWORD)
+        first_result = auth.register_user(
+            "user1",
+            "test@example.com",
+            c.TEST_CREDENTIAL,
+        )
         u.Tests.Matchers.that(first_result.success, eq=True)
         duplicate_result = auth.register_user(
             "user2",
             "test@example.com",
-            c.TEST_PASSWORD,
+            c.TEST_CREDENTIAL,
         )
         u.Tests.Matchers.that(duplicate_result.failure, eq=True)
         u.Tests.Matchers.that((duplicate_result.error or ""), has="already exists")
@@ -97,7 +101,7 @@ class TestsFlextAuthApiCase03:
         """Test successful user authentication."""
         auth: FlextAuth = FlextAuth()
         username = "authtest"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         reg_result = auth.register_user(username, "auth@example.com", password)
         u.Tests.Matchers.that(reg_result.success, eq=True)
         auth_result = auth.authenticate_user(username, password)
@@ -112,8 +116,8 @@ class TestsFlextAuthApiCase03:
         """Test authentication with invalid credentials."""
         auth: FlextAuth = FlextAuth()
         username = "testuser"
-        auth.register_user(username, "test@example.com", c.TEST_PASSWORD)
-        failed_auth = auth.authenticate_user(username, c.TEST_PASSWORD + "_wrong")
+        auth.register_user(username, "test@example.com", c.TEST_CREDENTIAL)
+        failed_auth = auth.authenticate_user(username, c.TEST_CREDENTIAL + "_wrong")
         u.Tests.Matchers.that(not failed_auth.success, eq=True)
         u.Tests.Matchers.that(not failed_auth.success, eq=True)
         u.Tests.Matchers.that((failed_auth.error or ""), has="Invalid credentials")
@@ -123,7 +127,7 @@ class TestsFlextAuthApiCase03:
         """Test that token creation/validation fails — JWT provider not implemented."""
         auth: FlextAuth = FlextAuth()
         username = "tokenuser"
-        password = c.TEST_PASSWORD
+        password = c.TEST_CREDENTIAL
         register_result = auth.register_user(username, "token@example.com", password)
         u.Tests.Matchers.that(register_result.success, eq=True)
         identity = register_result.value

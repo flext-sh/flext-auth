@@ -140,7 +140,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
             return r[bool].from_failure(user_result)
         _, user_data = user_result.unwrap()
         self._apply_list_modification(user_data, field, value, add=add)
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 __all__: list[str] = ["FlextAuthUserManagerWrite"]

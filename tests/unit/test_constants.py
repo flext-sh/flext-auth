@@ -111,8 +111,6 @@ class TestsFlextAuthConstants:
             (c.Auth.ERROR_INVALID_CREDENTIALS, "INVALID_CREDENTIALS"),
             (c.Auth.ERROR_ACCOUNT_LOCKED, "ACCOUNT_LOCKED"),
             (c.Auth.ERROR_ACCOUNT_DISABLED, "ACCOUNT_DISABLED"),
-            (c.Auth.ERROR_TOKEN_EXPIRED, "TOKEN_EXPIRED"),
-            (c.Auth.ERROR_INVALID_TOKEN, "INVALID_TOKEN"),
         ],
     )
     def test_error_codes_expose_stable_machine_readable_strings(
