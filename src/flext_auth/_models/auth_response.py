@@ -56,11 +56,13 @@ class FlextAuthModelsAuthResponse:
             c.Auth.JWT_DEFAULT_TOKEN_TYPE
         )
         expires_in: Annotated[
-            t.NonNegativeInt, u.Field(description="Expiry seconds"),
+            t.NonNegativeInt,
+            u.Field(description="Expiry seconds"),
         ] = 3600
         scope: Annotated[str, u.Field(description="Granted scope")] = ""
         refresh_token: Annotated[
-            str, u.Field(description="Refresh token", exclude=True),
+            str,
+            u.Field(description="Refresh token", exclude=True),
         ] = ""
 
     # =========================================================================
@@ -91,7 +93,8 @@ class FlextAuthModelsAuthResponse:
 
         category: Annotated[str, u.Field(description="Provider category")]
         provider: Annotated[
-            p.Auth.FlextAuthBaseProvider, u.Field(description="Provider instance"),
+            p.Auth.FlextAuthBaseProvider,
+            u.Field(description="Provider instance"),
         ]
 
     class ConfigWrapper(m.Value):
@@ -117,7 +120,8 @@ class FlextAuthModelsAuthResponse:
                 c.Auth.PROVIDER_VERSION
             )
             capabilities: t.VariadicTuple[str] = u.Field(
-                default_factory=tuple, description="Provider capabilities",
+                default_factory=tuple,
+                description="Provider capabilities",
             )
             extras: t.JsonMapping = u.Field(
                 default_factory=MappingProxyType,

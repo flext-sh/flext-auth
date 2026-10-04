@@ -104,12 +104,16 @@ class FlextAuthProviderBuiltinRegistration:
                     )
                     provider = provider_class(provider_init_config)
                     self._providers.register_provider(
-                        name, provider, configuration=provider_init_config,
+                        name,
+                        provider,
+                        configuration=provider_init_config,
                     )
                 except c.EXC_BROAD_IO_TYPE as exc:
                     error_msg: str = str(exc) if exc else "Unknown error"
                     self.logger.warning(
-                        "Failed to register %s provider: %s", name, error_msg,
+                        "Failed to register %s provider: %s",
+                        name,
+                        error_msg,
                     )
 
 

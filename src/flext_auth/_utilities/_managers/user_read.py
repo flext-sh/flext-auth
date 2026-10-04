@@ -43,7 +43,8 @@ class FlextAuthUserManagerRead:
         return r[m.Auth.AuthIdentity].ok(user)
 
     def _create_identity_from_storage(
-        self, storage_data: t.Auth.ManagersUserData,
+        self,
+        storage_data: t.Auth.ManagersUserData,
     ) -> m.Auth.AuthIdentity:
         """Create Identity model from storage data, filtering out non-model fields.
 
@@ -83,7 +84,8 @@ class FlextAuthUserManagerRead:
         raise ValueError(msg)
 
     def _find_user_by_id(
-        self, user_id: str,
+        self,
+        user_id: str,
     ) -> p.Result[t.Pair[str, t.Auth.ManagersUserData]]:
         """Find user by ID (either identity_id, unique_id, or id field).
 
@@ -100,7 +102,9 @@ class FlextAuthUserManagerRead:
             ):
                 return r[tuple[str, t.Auth.ManagersUserData]].ok((username, user_data))
         return e.fail_not_found(
-            "User", "", result_type=r[tuple[str, t.Auth.ManagersUserData]],
+            "User",
+            "",
+            result_type=r[tuple[str, t.Auth.ManagersUserData]],
         )
 
 

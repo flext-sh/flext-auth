@@ -17,7 +17,9 @@ from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthOAuth2Tokens(
-    FlextAuthOAuth2Config, FlextAuthOAuth2Introspection, FlextAuthRfcProvider,
+    FlextAuthOAuth2Config,
+    FlextAuthOAuth2Introspection,
+    FlextAuthRfcProvider,
 ):
     """OAuth2 token operation owner."""
 

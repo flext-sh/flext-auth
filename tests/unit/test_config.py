@@ -57,7 +57,8 @@ class TestsFlextAuthConfig:
         ],
     )
     def test_field_defaults_match_declared_constants(
-        field_name: str, expected: str | int,
+        field_name: str,
+        expected: str | int,
     ) -> None:
         """Freshly constructed settings default each field to its constant."""
         settings = FlextAuthSettings()
@@ -120,7 +121,8 @@ class TestsFlextAuthConfig:
 
         u.Tests.Matchers.that(settings.Auth.auth_secret, is_=t.SecretStr)
         u.Tests.Matchers.that(
-            settings.Auth.auth_secret.get_secret_value(), eq=settings.Auth.secret_key,
+            settings.Auth.auth_secret.get_secret_value(),
+            eq=settings.Auth.secret_key,
         )
 
     @staticmethod
@@ -166,7 +168,8 @@ class TestsFlextAuthConfig:
     @staticmethod
     @pytest.mark.parametrize("identity_id", ["", "   "])
     def test_create_token_rejects_blank_identity(
-        settings: FlextAuthSettings, identity_id: str,
+        settings: FlextAuthSettings,
+        identity_id: str,
     ) -> None:
         """Blank identity ids are rejected before any token is produced."""
         auth = FlextAuth(settings=settings)
@@ -184,7 +187,9 @@ class TestsFlextAuthConfig:
         auth = FlextAuth(settings=settings)
 
         register_result = auth.register_user(
-            "config-token-user", "config-token-user@example.com", "ConfigTokenPass123!",
+            "config-token-user",
+            "config-token-user@example.com",
+            "ConfigTokenPass123!",
         )
         u.Tests.Matchers.that(register_result.success, eq=True)
 

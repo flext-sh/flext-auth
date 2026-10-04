@@ -19,7 +19,8 @@ if TYPE_CHECKING:
 class FlextAuthUtilitiesAuthResponse:
     @staticmethod
     def build_auth_error_response(
-        error: str, error_code: str = "AUTH_ERROR",
+        error: str,
+        error_code: str = "AUTH_ERROR",
     ) -> t.ConfigurationMapping:
         """Build an authentication error response.
 

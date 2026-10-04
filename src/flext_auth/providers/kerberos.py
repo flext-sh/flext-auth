@@ -70,7 +70,8 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
             validator_payload = validator(token)
         except c.EXC_BROAD_IO_TYPE as exc:
             return r[m.Auth.AuthIdentity].fail_op(
-                "Kerberos ticket validator execution", exc,
+                "Kerberos ticket validator execution",
+                exc,
             )
         if isinstance(validator_payload, m.Auth.AuthIdentity):
             return r[m.Auth.AuthIdentity].ok(validator_payload)

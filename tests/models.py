@@ -30,7 +30,8 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
         key_pem: Annotated[str, u.Field(description="PEM-encoded private key")]
         fingerprint: Annotated[str, u.Field(description="Certificate fingerprint hash")]
         subject_cn: Annotated[
-            str, u.Field(description="Certificate subject common name"),
+            str,
+            u.Field(description="Certificate subject common name"),
         ]
 
         @classmethod

@@ -47,7 +47,8 @@ class FlextAuthAdvancedFeaturesExample:
         if user_result.failure:
             return r[bool].from_failure(user_result)
         auth_result = auth.authenticate_user(
-            username="advanced_user", password=demo_password,
+            username="advanced_user",
+            password=demo_password,
         )
         if auth_result.failure:
             return r[bool].from_failure(auth_result)
@@ -164,7 +165,9 @@ class FlextAuthAdvancedFeaturesExample:
         ):
             outcome = example().unwrap()
             cls.logger.info(
-                "Advanced example finished", example=example.__name__, ok=outcome,
+                "Advanced example finished",
+                example=example.__name__,
+                ok=outcome,
             )
 
 

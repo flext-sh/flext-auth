@@ -29,7 +29,8 @@ class FlextAuthModelsAuthToken:
         session_id: Annotated[str, u.Field(description="Session ID")] = ""
         is_revoked: Annotated[bool, u.Field(description="Revoked status")] = False
         refresh_token: Annotated[
-            str, u.Field(description="Refresh token", exclude=True),
+            str,
+            u.Field(description="Refresh token", exclude=True),
         ] = ""
 
         @property

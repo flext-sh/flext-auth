@@ -32,7 +32,9 @@ class FlextAuthProviderCodecMixin:
 
     @staticmethod
     def _encode_token_payload(
-        payload: t.JsonMapping, secret: str, algorithm: str,
+        payload: t.JsonMapping,
+        secret: str,
+        algorithm: str,
     ) -> p.Result[str]:
         """Encode token payload using JWT with canonical result flow.
 
@@ -41,7 +43,9 @@ class FlextAuthProviderCodecMixin:
         """
         normalized_payload = t.json_dict_adapter().validate_python(payload)
         encoded: p.Result[str] = u.Auth.encode_token(
-            normalized_payload, secret, algorithm,
+            normalized_payload,
+            secret,
+            algorithm,
         )
         return encoded
 

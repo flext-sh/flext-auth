@@ -61,7 +61,9 @@ class FlextAuthIdentityService(s):
         ).map(lambda _: True)
 
     def authenticate_identity(
-        self, name: str, credential: str,
+        self,
+        name: str,
+        credential: str,
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout.
 
@@ -90,7 +92,10 @@ class FlextAuthIdentityService(s):
         return r[m.Auth.AuthIdentity].fail(error_message)
 
     def authorize_identity(
-        self, identity_id: str, permission: str, resource: str | None = None,
+        self,
+        identity_id: str,
+        permission: str,
+        resource: str | None = None,
     ) -> p.Result[bool]:
         """Railway-oriented authorization with audit logging.
 
@@ -102,7 +107,10 @@ class FlextAuthIdentityService(s):
         )
 
     def _log_authorization(
-        self, identity: m.Auth.AuthIdentity, permission: str, resource: str | None,
+        self,
+        identity: m.Auth.AuthIdentity,
+        permission: str,
+        resource: str | None,
     ) -> bool:
         """Log the authorization decision and return it.
 
@@ -120,7 +128,10 @@ class FlextAuthIdentityService(s):
         return allowed
 
     def change_credential(
-        self, identity_id: str, current_credential: str, new_credential: str,
+        self,
+        identity_id: str,
+        current_credential: str,
+        new_credential: str,
     ) -> p.Result[bool]:
         """Railway-oriented credential change with validation.
 
@@ -148,7 +159,8 @@ class FlextAuthIdentityService(s):
                     result = r[bool].fail(set_result.error)
                 else:
                     self.logger.info(
-                        "Password change successful", identity=identity.name,
+                        "Password change successful",
+                        identity=identity.name,
                     )
                     result = r[bool].ok(True)
         return result

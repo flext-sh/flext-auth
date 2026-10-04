@@ -75,7 +75,9 @@ class FlextAuthBasicUsageWorkflow:
             "workflow",
         )
         reg_result = auth.register_user(
-            username="workflowuser", email="workflow@example.com", password=password,
+            username="workflowuser",
+            email="workflow@example.com",
+            password=password,
         )
         if reg_result.failure:
             return r[bool].from_failure(reg_result)

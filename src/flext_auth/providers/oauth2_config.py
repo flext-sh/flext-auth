@@ -21,7 +21,11 @@ class FlextAuthOAuth2Config:
 
     @staticmethod
     def _validated_choice(
-        value: str | None, *, key: str, default: str, allowed: Collection[str],
+        value: str | None,
+        *,
+        key: str,
+        default: str,
+        allowed: Collection[str],
     ) -> str:
         """Validate one ProviderConfig str field against an allowed set.
 

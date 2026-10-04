@@ -29,7 +29,10 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
             The resulting ``p.Result[bool]``.
         """
         return self._modify_user_list_field(
-            user_id, "permissions", permission, add=True,
+            user_id,
+            "permissions",
+            permission,
+            add=True,
         )
 
     def add_user_role(self, user_id: str, role: str) -> p.Result[bool]:
@@ -60,7 +63,10 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
             The resulting ``p.Result[bool]``.
         """
         return self._modify_user_list_field(
-            user_id, "permissions", permission, add=False,
+            user_id,
+            "permissions",
+            permission,
+            add=False,
         )
 
     def remove_user_role(self, user_id: str, role: str) -> p.Result[bool]:
@@ -72,7 +78,9 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         return self._modify_user_list_field(user_id, "roles", role, add=False)
 
     def update_user(
-        self, user_id: str, **updates: t.Scalar | t.StrSequence | datetime | None,
+        self,
+        user_id: str,
+        **updates: t.Scalar | t.StrSequence | datetime | None,
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Update user data.
 
@@ -113,7 +121,12 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
             field_list_value.remove(value)
 
     def _modify_user_list_field(
-        self, user_id: str, field: str, value: str, *, add: bool = True,
+        self,
+        user_id: str,
+        field: str,
+        value: str,
+        *,
+        add: bool = True,
     ) -> p.Result[bool]:
         """Add or remove value from user list field (roles/permissions).
 

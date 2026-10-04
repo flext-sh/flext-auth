@@ -36,19 +36,22 @@ class FlextAuthModelsAuthIdentity:
         ]
         contact: Annotated[str, u.Field(..., description="Contact info")]
         credential_hash: Annotated[
-            str, u.Field(description="Hashed credential", exclude=True),
+            str,
+            u.Field(description="Hashed credential", exclude=True),
         ] = ""
         full_name: Annotated[str, u.Field(description="Full name")] = ""
         is_active: Annotated[bool, u.Field(description="Active status")] = True
         roles: t.StrSequence = u.Field(
-            default_factory=lambda: [c.Auth.RoleTypes.USER.value], description="Roles",
+            default_factory=lambda: [c.Auth.RoleTypes.USER.value],
+            description="Roles",
         )
         permissions: t.StrSequence = u.Field(
             default_factory=tuple,
             description="List of permissions assigned to the identity",
         )
         failed_attempts: Annotated[
-            t.NonNegativeInt, u.Field(description="Failed attempts"),
+            t.NonNegativeInt,
+            u.Field(description="Failed attempts"),
         ] = 0
         locked_until: datetime = u.Field(
             default_factory=lambda: datetime.min.replace(tzinfo=UTC),
@@ -68,7 +71,8 @@ class FlextAuthModelsAuthIdentity:
         @u.model_validator(mode="before")
         @classmethod
         def normalize_token_claims(
-            cls, data: t.MappingKV[str, t.JsonPayload | datetime] | Self,
+            cls,
+            data: t.MappingKV[str, t.JsonPayload | datetime] | Self,
         ) -> t.MappingKV[str, t.JsonPayload | datetime] | Self:
             """Normalize OAuth/Kerberos claim payloads into identity fields.
 
@@ -173,7 +177,8 @@ class FlextAuthModelsAuthIdentity:
             """
             try:
                 valid = FlextAuthModelsAuthPassword.PasswordUtil.verify_password(
-                    credential, self.credential_hash,
+                    credential,
+                    self.credential_hash,
                 )
                 return r[bool].ok(valid)
             except c.EXC_BROAD_IO_TYPE as exc:

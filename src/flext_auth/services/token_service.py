@@ -52,7 +52,10 @@ class FlextAuthTokenService(s):
 
     @staticmethod
     def _fail_token_creation(
-        user_id: str, token_kind: str, error: str | None, fallback: str,
+        user_id: str,
+        token_kind: str,
+        error: str | None,
+        fallback: str,
     ) -> p.Result[str]:
         """Log a failed token creation and return the failure result.
 
@@ -82,22 +85,32 @@ class FlextAuthTokenService(s):
         user_result = self.user_manager.fetch_user(user_id)
         if user_result.failure:
             return self._fail_token_creation(
-                user_id, token_kind, user_result.error, "User lookup failed",
+                user_id,
+                token_kind,
+                user_result.error,
+                "User lookup failed",
             )
         user = user_result.value
         user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.generate_token_for_user(
-                user_dict, token_kind=token_kind, expiry_minutes=expires_in_minutes,
+                user_dict,
+                token_kind=token_kind,
+                expiry_minutes=expires_in_minutes,
             ),
         )
         if token_result.failure:
             return self._fail_token_creation(
-                user_id, token_kind, token_result.error, "Token generation failed",
+                user_id,
+                token_kind,
+                token_result.error,
+                "Token generation failed",
             )
         token_value = token_result.value
         u.fetch_logger(__name__).debug(
-            "Token creation successful", user_id=user_id, token_type=token_kind,
+            "Token creation successful",
+            user_id=user_id,
+            token_type=token_kind,
         )
         return r[str].ok(token_value)
 

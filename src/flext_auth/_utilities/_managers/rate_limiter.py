@@ -67,7 +67,9 @@ class FlextAuthRateLimiterManagers:
             self._attempts[username]["attempts"] = recent_attempts
 
         def _cleanup_window(
-            self, username: str, now: datetime,
+            self,
+            username: str,
+            now: datetime,
         ) -> t.Auth.ManagersAttemptEvents:
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)

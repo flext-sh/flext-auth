@@ -39,10 +39,12 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         self._dispatcher = self._container_type.shared().dispatcher().unwrap()
         shared_managers = u.Auth.ServiceManagers(self._dispatcher)
         self._provider_service = FlextAuthProviderService(
-            settings=resolved_settings, registry=self._registry,
+            settings=resolved_settings,
+            registry=self._registry,
         )
         self._identity_service = FlextAuthIdentityService(
-            dispatcher=self._dispatcher, managers=shared_managers,
+            dispatcher=self._dispatcher,
+            managers=shared_managers,
         )
         self._token_service = FlextAuthTokenService(
             provider_service=self._provider_service,
@@ -50,7 +52,8 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             managers=shared_managers,
         )
         self._session_service = FlextAuthSessionService(
-            dispatcher=self._dispatcher, managers=shared_managers,
+            dispatcher=self._dispatcher,
+            managers=shared_managers,
         )
 
     @property
@@ -114,7 +117,8 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             return auth_result
         identity = auth_result.value
         token_result = self._token_service.generate_jwt_token(
-            user_id=identity.unique_id, expires_in_minutes=settings.Auth.expiry_minutes,
+            user_id=identity.unique_id,
+            expires_in_minutes=settings.Auth.expiry_minutes,
         )
         if token_result.failure:
             return r[m.Auth.AuthIdentity].from_failure(token_result)
@@ -152,7 +156,10 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         else:
             user_roles = [c.Auth.RoleTypes.USER.value]
         return self._identity_service.create_identity(
-            name=username, contact=email, credential=password, roles=user_roles,
+            name=username,
+            contact=email,
+            credential=password,
+            roles=user_roles,
         )
 
     def create_token(self, identity_id: str) -> p.Result[str]:
@@ -167,7 +174,8 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             case _:
                 return r[str].fail("Identity ID must be a non-empty string")
         return self._token_service.generate_jwt_token(
-            user_id=identity_id, expires_in_minutes=settings.Auth.expiry_minutes,
+            user_id=identity_id,
+            expires_in_minutes=settings.Auth.expiry_minutes,
         )
 
 

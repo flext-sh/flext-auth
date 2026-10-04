@@ -28,7 +28,8 @@ class FlextAuthTypesAuth:
     type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
 
     type KerberosTicketValidator = Callable[
-        [str], m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
+        [str],
+        m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
     ]
 
 

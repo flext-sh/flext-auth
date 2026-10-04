@@ -14,17 +14,13 @@ from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from tests.unit import api_cases
-    from tests.unit.test_api import TestsFlextAuthApi
 
 
-__all__: tuple[str, ...] = ("TestsFlextAuthApi", "api_cases")
+__all__: tuple[str, ...] = ("api_cases",)
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
-        MappingProxyType({
-            ".api_cases": ("api_cases",),
-            ".test_api": ("TestsFlextAuthApi",),
-        }),
+        MappingProxyType({".api_cases": ("api_cases",)}),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
     ),

@@ -36,7 +36,8 @@ class FlextAuthProtocolsAuthProvider:
             ...
 
         def authenticate(
-            self, credentials: t.JsonMapping,
+            self,
+            credentials: t.JsonMapping,
         ) -> p.Result[FlextAuthProtocolsAuthToken.Token]:
             """Authenticate user with provided credentials.
 

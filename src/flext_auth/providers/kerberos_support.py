@@ -55,7 +55,8 @@ class FlextAuthKerberosSupport:
                 The resulting ``p.Result[m.Auth.KerberosTicketData]``.
             """
             result = m.Auth.KerberosTicketData(
-                ticket="validated_ticket", principal="kerberos_user",
+                ticket="validated_ticket",
+                principal="kerberos_user",
             )
             return r[m.Auth.KerberosTicketData].ok(result)
 
@@ -92,7 +93,8 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         def authenticate_ticket(
-            self, ticket_data: m.Auth.KerberosTicketData,
+            self,
+            ticket_data: m.Auth.KerberosTicketData,
         ) -> p.Result[m.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket.
 
@@ -116,7 +118,8 @@ class FlextAuthKerberosSupport:
         ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             raw_payload = validator_candidate(ticket)
             if isinstance(
-                raw_payload, (m.Auth.AuthIdentity, m.Auth.KerberosTicketData),
+                raw_payload,
+                (m.Auth.AuthIdentity, m.Auth.KerberosTicketData),
             ):
                 return raw_payload
             # The declared candidate contract narrows every payload that is

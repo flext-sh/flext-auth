@@ -45,7 +45,8 @@ class TestsFlextAuthConstants:
     def test_auth_default_timeout_is_derived_from_core_timeout() -> None:
         """Test auth default timeout is derived from core timeout."""
         tm.that(
-            float(c.DEFAULT_TIMEOUT_SECONDS), eq=pytest.approx(c.Auth.DEFAULT_TIMEOUT),
+            float(c.DEFAULT_TIMEOUT_SECONDS),
+            eq=pytest.approx(c.Auth.DEFAULT_TIMEOUT),
         )
 
     # ----- Published scalar values (the public contract) -----
@@ -97,7 +98,8 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_published_scalar_constants_hold_their_contract_value(
-        value: str | float, expected: str | float,
+        value: str | float,
+        expected: str | float,
     ) -> None:
         """Test published scalar constants hold their contract value."""
         tm.that(value, eq=expected)
@@ -114,7 +116,8 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_error_codes_expose_stable_machine_readable_strings(
-        code: str, expected: str,
+        code: str,
+        expected: str,
     ) -> None:
         """Test error codes expose stable machine readable strings."""
         tm.that(code, eq=expected)
@@ -151,7 +154,8 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_enum_members_are_str_equal_to_their_wire_value(
-        member: StrEnum, expected: str,
+        member: StrEnum,
+        expected: str,
     ) -> None:
         # StrEnum contract: a member is interchangeable with its string value.
         """Test enum members are str equal to their wire value."""
@@ -190,7 +194,8 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_valid_value_set_is_exactly_the_enum_value_set(
-        valid_set: frozenset[str], enum_cls: type[StrEnum],
+        valid_set: frozenset[str],
+        enum_cls: type[StrEnum],
     ) -> None:
         """Test valid value set is exactly the enum value set."""
         tm.that(valid_set, eq={member.value for member in enum_cls})
@@ -224,7 +229,8 @@ class TestsFlextAuthConstants:
         ],
     )
     def test_lower_bound_never_exceeds_its_paired_upper_bound(
-        low: int, high: int,
+        low: int,
+        high: int,
     ) -> None:
         """Test lower bound never exceeds its paired upper bound."""
         assert low <= high
@@ -255,7 +261,8 @@ class TestsFlextAuthConstants:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "mapping", [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE],
+        "mapping",
+        [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE],
     )
     def test_exposed_mappings_reject_mutation(
         mapping: Mapping[str, t.JsonValue],
@@ -269,7 +276,8 @@ class TestsFlextAuthConstants:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "key", ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"],
+        "key",
+        ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"],
     )
     def test_validation_limits_publishes_required_keys(key: str) -> None:
         """Test validation limits publishes required keys."""

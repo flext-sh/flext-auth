@@ -28,7 +28,10 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
         self._register_builtin_providers()
 
     def authenticate_user(
-        self, username: str, password: str, provider: str = "basic",
+        self,
+        username: str,
+        password: str,
+        provider: str = "basic",
     ) -> p.Result[p.Auth.Token]:
         """Railway-oriented user authentication with provider selection.
 
@@ -90,7 +93,9 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
         return self._providers.list_providers()
 
     def register_provider(
-        self, name: str, provider: p.Auth.FlextAuthBaseProvider,
+        self,
+        name: str,
+        provider: p.Auth.FlextAuthBaseProvider,
     ) -> p.Result[bool]:
         """Register custom provider.
 

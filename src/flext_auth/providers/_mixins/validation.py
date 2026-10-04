@@ -55,7 +55,8 @@ class FlextAuthProviderValidationMixin:
 
     @staticmethod
     def _validate_credentials_dict(
-        credentials: t.JsonMapping, required_fields: t.StrSequence,
+        credentials: t.JsonMapping,
+        required_fields: t.StrSequence,
     ) -> p.Result[bool]:
         """Validate that credentials contain required fields.
 

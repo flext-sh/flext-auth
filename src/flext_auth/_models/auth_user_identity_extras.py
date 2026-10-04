@@ -36,7 +36,8 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @u.field_validator("roles", "permissions", mode="before")
         @classmethod
         def normalize_str_sequence(
-            cls, value: t.Scalar | t.StrSequence | datetime | None,
+            cls,
+            value: t.Scalar | t.StrSequence | datetime | None,
         ) -> t.StrSequence | None:
             """Normalize sequence-like values to strict string sequences.
 
@@ -54,7 +55,8 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @u.field_validator("failed_attempts", mode="before")
         @classmethod
         def normalize_failed_attempts(
-            cls, value: t.Scalar | t.StrSequence | datetime | None,
+            cls,
+            value: t.Scalar | t.StrSequence | datetime | None,
         ) -> int | None:
             """Normalize failed attempts from int-like values.
 
@@ -72,7 +74,8 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @u.field_validator("locked_until", "last_access", mode="before")
         @classmethod
         def normalize_datetime(
-            cls, value: t.Scalar | t.StrSequence | datetime | None,
+            cls,
+            value: t.Scalar | t.StrSequence | datetime | None,
         ) -> datetime | None:
             """Normalize datetime-like values with deterministic fallback.
 

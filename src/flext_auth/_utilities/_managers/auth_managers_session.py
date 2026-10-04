@@ -107,12 +107,15 @@ class FlextAuthSessionManagers:
                 ok_result: p.Result[bool] = r[bool].ok(value=True)
                 return ok_result
             fail_result: p.Result[bool] = e.fail_not_found(
-                "Session", session_id, result_type=r[bool],
+                "Session",
+                session_id,
+                result_type=r[bool],
             )
             return fail_result
 
         def get_active_sessions(
-            self, user_id: str,
+            self,
+            user_id: str,
         ) -> p.Result[Sequence[m.Auth.Session]]:
             sessions: MutableSequence[m.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
