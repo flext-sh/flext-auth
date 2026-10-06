@@ -53,7 +53,7 @@ class MiseLockConverge:
         ("MISE_LOCKFILE", "true"),
         ("MISE_LOCKED", "true"),
         ("MISE_LOCKFILE_PLATFORMS", "linux-x64,linux-x64-musl,linux-arm64,macos-x64,macos-arm64,windows-x64"),
-        ("MISE_MINIMUM_RELEASE_AGE", "7d"),
+        ("MISE_MINIMUM_RELEASE_AGE", "10d"),
         ("MISE_NPM_PACKAGE_MANAGER", "bun"),
     )
     TRANSIENT_ENVIRONMENT = (
@@ -346,6 +346,13 @@ class MiseLockConverge:
                 return
             holds: dict[str, str] = {}
             for selector, failed_version in cls.failing_install_tools(probe_output):
+                if selector == "core:python":
+                    message = (
+                        f"core:python {failed_version} failed install; the fleet "
+                        "pins the 3.13 line by law, so holding it below 3.13 is "
+                        "not permitted — the lock needs an operator decision"
+                    )
+                    raise ValueError(message)
                 holds[selector] = cls._hold(runtime, stage, environment, selector, failed_version)
                 print(
                     f"hold: {selector} held at {holds[selector]}: release {failed_version}"

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Annotated, Self
+from typing import Annotated, Self, cast
 
 from flext_api import m, r, u
 
@@ -86,10 +86,12 @@ class FlextAuthModelsAuthIdentity:
                 return data
             if not isinstance(data, Mapping):
                 return data
-            # Boundary parse: the raw payload's keys and values are untyped.
-            payload: dict[str, object] = {
-                str(key): value for key, value in data.items()
-            }
+            # Boundary parse (rule 6): the raw payload keys and values are
+            # untrusted input; the JsonPayload contract is enforced by the
+            # typed model this validator feeds, so the parse re-keys once and
+            # hands the mapping downstream in the fleet's JSON vocabulary.
+            typed_payload = cast("Mapping[str, t.JsonPayload]", data)
+            payload: dict[str, t.JsonPayload] = dict(typed_payload)
             if c.Auth.KEY_NAME in payload and c.Auth.KEY_CONTACT in payload:
                 return data
             identity_candidates = tuple(

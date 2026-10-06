@@ -44,7 +44,9 @@ class FlextAuthProviderValidationMixin:
 
         """
         _ = token
-        return r[bool].fail("Token revocation not supported by this provider")
+        return r[bool].fail(
+            f"{type(self).__name__} does not implement token revocation",
+        )
 
     @staticmethod
     def _validate_credentials_dict(
