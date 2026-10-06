@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
@@ -34,20 +34,17 @@ __all__: tuple[str, ...] = (
     "FlextAuthTokenService",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            "._auth_lifecycle": ("FlextAuthApplicationLifecycle",),
-            "._provider_builtin": ("FlextAuthProviderBuiltinRegistration",),
-            ".auth_service": ("FlextAuthApplicationService",),
-            ".identity_service": ("FlextAuthIdentityService",),
-            ".provider_service": ("FlextAuthProviderService",),
-            ".session_service": ("FlextAuthSessionService",),
-            ".token_service": ("FlextAuthTokenService",),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextAuthApplicationLifecycle": "._auth_lifecycle",
+        "FlextAuthApplicationService": ".auth_service",
+        "FlextAuthIdentityService": ".identity_service",
+        "FlextAuthProviderBuiltinRegistration": "._provider_builtin",
+        "FlextAuthProviderService": ".provider_service",
+        "FlextAuthSessionService": ".session_service",
+        "FlextAuthTokenService": ".token_service",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

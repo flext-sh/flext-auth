@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth.providers import _mixins
@@ -56,32 +56,29 @@ __all__: tuple[str, ...] = (
     "_mixins",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            "._mixins": ("_mixins",),
-            "._mixins.codec": ("FlextAuthProviderCodecMixin",),
-            "._mixins.tokens": ("FlextAuthProviderTokenMixin",),
-            "._mixins.validation": ("FlextAuthProviderValidationMixin",),
-            ".apikey": ("FlextAuthApiKeyProvider",),
-            ".basic": ("FlextAuthBasicProvider",),
-            ".certificate": ("FlextAuthCertificateProvider",),
-            ".jwt": ("FlextAuthJwtProvider",),
-            ".jwt_token_validator": ("FlextAuthJwtTokenValidator",),
-            ".kerberos": ("FlextAuthKerberosProvider",),
-            ".kerberos_support": ("FlextAuthKerberosSupport",),
-            ".ldap": ("FlextAuthLdapProvider",),
-            ".mixin": ("FlextAuthProviderMixin",),
-            ".oauth2": ("FlextAuthOAuth2Provider",),
-            ".oauth2_config": ("FlextAuthOAuth2Config",),
-            ".oauth2_introspection": ("FlextAuthOAuth2Introspection",),
-            ".oauth2_tokens": ("FlextAuthOAuth2Tokens",),
-            ".oidc": ("FlextAuthOidcProvider",),
-            ".rfc": ("FlextAuthRfcProvider",),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextAuthApiKeyProvider": ".apikey",
+        "FlextAuthBasicProvider": ".basic",
+        "FlextAuthCertificateProvider": ".certificate",
+        "FlextAuthJwtProvider": ".jwt",
+        "FlextAuthJwtTokenValidator": ".jwt_token_validator",
+        "FlextAuthKerberosProvider": ".kerberos",
+        "FlextAuthKerberosSupport": ".kerberos_support",
+        "FlextAuthLdapProvider": ".ldap",
+        "FlextAuthOAuth2Config": ".oauth2_config",
+        "FlextAuthOAuth2Introspection": ".oauth2_introspection",
+        "FlextAuthOAuth2Provider": ".oauth2",
+        "FlextAuthOAuth2Tokens": ".oauth2_tokens",
+        "FlextAuthOidcProvider": ".oidc",
+        "FlextAuthProviderCodecMixin": "._mixins.codec",
+        "FlextAuthProviderMixin": ".mixin",
+        "FlextAuthProviderTokenMixin": "._mixins.tokens",
+        "FlextAuthProviderValidationMixin": "._mixins.validation",
+        "FlextAuthRfcProvider": ".rfc",
+        "_mixins": "._mixins",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

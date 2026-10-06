@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth._utilities._managers.auth_managers_session import (
@@ -34,19 +34,16 @@ __all__: tuple[str, ...] = (
     "FlextAuthUserManagers",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            ".auth_managers_session": ("FlextAuthSessionManagers",),
-            ".rate_limiter": ("FlextAuthRateLimiterManagers",),
-            ".user": ("FlextAuthUserManagers",),
-            ".user_create": ("FlextAuthUserManagerCreate",),
-            ".user_read": ("FlextAuthUserManagerRead",),
-            ".user_write": ("FlextAuthUserManagerWrite",),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextAuthRateLimiterManagers": ".rate_limiter",
+        "FlextAuthSessionManagers": ".auth_managers_session",
+        "FlextAuthUserManagerCreate": ".user_create",
+        "FlextAuthUserManagerRead": ".user_read",
+        "FlextAuthUserManagerWrite": ".user_write",
+        "FlextAuthUserManagers": ".user",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

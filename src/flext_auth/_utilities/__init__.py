@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth._utilities import _managers
@@ -48,26 +48,23 @@ __all__: tuple[str, ...] = (
     "_managers",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            "._managers": ("_managers",),
-            "._managers.auth_managers_session": ("FlextAuthSessionManagers",),
-            "._managers.rate_limiter": ("FlextAuthRateLimiterManagers",),
-            "._managers.user": ("FlextAuthUserManagers",),
-            "._managers.user_create": ("FlextAuthUserManagerCreate",),
-            "._managers.user_read": ("FlextAuthUserManagerRead",),
-            "._managers.user_write": ("FlextAuthUserManagerWrite",),
-            ".auth": ("FlextAuthUtilitiesAuth",),
-            ".auth_response": ("FlextAuthUtilitiesAuthResponse",),
-            ".auth_token": ("FlextAuthUtilitiesAuthToken",),
-            ".auth_validation": ("FlextAuthUtilitiesAuthValidation",),
-            ".base": ("FlextAuthUtilitiesBase",),
-            ".managers": ("FlextAuthUtilitiesManagers",),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextAuthRateLimiterManagers": "._managers.rate_limiter",
+        "FlextAuthSessionManagers": "._managers.auth_managers_session",
+        "FlextAuthUserManagerCreate": "._managers.user_create",
+        "FlextAuthUserManagerRead": "._managers.user_read",
+        "FlextAuthUserManagerWrite": "._managers.user_write",
+        "FlextAuthUserManagers": "._managers.user",
+        "FlextAuthUtilitiesAuth": ".auth",
+        "FlextAuthUtilitiesAuthResponse": ".auth_response",
+        "FlextAuthUtilitiesAuthToken": ".auth_token",
+        "FlextAuthUtilitiesAuthValidation": ".auth_validation",
+        "FlextAuthUtilitiesBase": ".base",
+        "FlextAuthUtilitiesManagers": ".managers",
+        "_managers": "._managers",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)
