@@ -90,10 +90,8 @@ class FlextAuthModelsAuthIdentity:
             # untrusted input; the JsonPayload contract is enforced by the
             # typed model this validator feeds, so the parse re-keys once and
             # hands the mapping downstream in the fleet's JSON vocabulary.
-            payload: dict[str, t.JsonPayload] = cast(
-                "dict[str, t.JsonPayload]",
-                {str(key): value for key, value in data.items()},
-            )
+            typed_payload = cast("Mapping[str, t.JsonPayload]", data)
+            payload: dict[str, t.JsonPayload] = dict(typed_payload)
             if c.Auth.KEY_NAME in payload and c.Auth.KEY_CONTACT in payload:
                 return data
             identity_candidates = tuple(
