@@ -1,6 +1,12 @@
+"""Auth namespace module.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+src/flext_auth/_models/_auth_namespace
+SPDX-License-Identifier: MIT
+"""
+
 from __future__ import annotations
 
-from flext_auth._config import FlextAuthConfig, __all__, config
 from flext_auth.models import m
 
 

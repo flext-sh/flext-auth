@@ -12,9 +12,9 @@ from __future__ import annotations
 
 from typing import Annotated
 
+import flext_auth._models._auth_namespace
 from flext_auth.models import m
 from flext_core import FlextConfig, FlextSettings
-import flext_auth._models._auth_namespace
 
 
 class FlextAuthConfig(FlextSettings, FlextConfig):
