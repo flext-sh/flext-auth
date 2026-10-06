@@ -30,7 +30,8 @@ class FlextAuthProviderValidationMixin:
         _ = token
         return r[bool].fail(f"{type(self).__name__} does not implement validate")
 
-    def revoke(self, token: str) -> p.Result[bool]:
+    @staticmethod
+    def revoke(token: str) -> p.Result[bool]:
         """Revoke authentication token.
 
         Default implementation returns an error indicating revocation is
