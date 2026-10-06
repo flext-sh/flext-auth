@@ -72,18 +72,24 @@ class FlextAuthModelsAuthIdentity:
         @classmethod
         def normalize_token_claims(
             cls,
-            data: t.MappingKV[str, t.JsonPayload | datetime] | Self,
-        ) -> t.MappingKV[str, t.JsonPayload | datetime] | Self:
+            data: object,
+        ) -> object:
             """Normalize OAuth/Kerberos claim payloads into identity fields.
 
+            Pydantic hands before-model validators the raw untrusted input; the
+            boundary parses it into a strictly keyed mapping before use.
+
             Returns:
-                The resulting ``t.MappingKV[str, t.JsonPayload | datetime] | Self``.
+                The resulting normalized mapping or the original input.
             """
             if isinstance(data, cls):
                 return data
             if not isinstance(data, Mapping):
                 return data
-            payload: t.MappingKV[str, t.JsonPayload | datetime] = data
+            # Boundary parse: the raw payload's keys and values are untyped.
+            payload: dict[str, object] = {
+                str(key): value for key, value in data.items()
+            }
             if c.Auth.KEY_NAME in payload and c.Auth.KEY_CONTACT in payload:
                 return data
             identity_candidates = tuple(

@@ -18,7 +18,6 @@ class FlextAuthApplicationLifecycle(ABC):
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
     if TYPE_CHECKING:
-        from flext_auth.models import m
 
         @property
         def logger(self) -> p.Logger:

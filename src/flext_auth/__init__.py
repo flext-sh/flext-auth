@@ -146,7 +146,6 @@ install_lazy_exports(
         "FlextAuthServiceBase": ".base",
         "FlextAuthSessionService": ".services.session_service",
         "FlextAuthSettings": "._settings",
-        "FlextAuthSessionService": ".services.session_service",
         "FlextAuthTypes": ".typings",
         "FlextAuthUtilities": ".utilities",
         "auth": ".api",

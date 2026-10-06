@@ -147,6 +147,7 @@ class FlextAuthSessionService(s):
             return r[m.Auth.AuthSession].fail(error or "Token refresh failed")
         refreshed = result.value
         auth_token = m.Auth.AuthSession(
+            domain_events=[],
             identity_id=refreshed.user_id,
             token=refreshed.token,
             expires_at=refreshed.expires_at,

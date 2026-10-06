@@ -24,6 +24,9 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     PATTERN_EMAIL: Final[str] = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     "Standard email address validation pattern."
 
+    PATTERN_IDENTIFIER_LOWERCASE: Final[str] = r"^[a-z][a-z0-9_-]*$"
+    "Lowercase identifier pattern for registry keys and provider names."
+
     VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
         member.value
         for member in FlextAuthConstantsAuthEnums.TokenTypes.__members__.values()

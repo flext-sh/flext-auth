@@ -42,7 +42,6 @@ install_lazy_exports(
         "FlextAuthProviderBuiltinRegistration": "._provider_builtin",
         "FlextAuthProviderService": ".provider_service",
         "FlextAuthSessionService": ".session_service",
-        "FlextAuthSessionService": ".session_service",
     }),
     public_exports=__all__,
 )

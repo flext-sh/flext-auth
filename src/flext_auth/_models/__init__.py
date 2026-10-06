@@ -50,12 +50,11 @@ install_lazy_exports(
     MappingProxyType({
         "FlextAuthConfigModels": ".config",
         "FlextAuthModelsAuth": ".auth",
+        "FlextAuthModelsAuthCredential": ".auth_credential",
         "FlextAuthModelsAuthIdentity": ".auth_identity",
         "FlextAuthModelsAuthIdentityRequest": ".auth_identity_request",
-        "FlextAuthModelsAuthCredential": ".auth_credential",
         "FlextAuthModelsAuthProviderConfig": ".auth_provider_config",
         "FlextAuthModelsAuthResponse": ".auth_response",
-        "FlextAuthModelsAuthSession": ".auth_session",
         "FlextAuthModelsAuthSession": ".auth_session",
         "FlextAuthModelsAuthUserIdentityExtras": ".auth_user_identity_extras",
         "FlextAuthModelsBase": ".base",

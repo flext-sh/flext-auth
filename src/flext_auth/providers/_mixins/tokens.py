@@ -131,6 +131,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
             expiry_config_value if isinstance(expiry_config_value, int) else 30
         )
         refreshed = m.Auth.AuthSession(
+            domain_events=[],
             identity_id=identity_id,
             token=new_token_result.value,
             token_type=c.Auth.JWT_DEFAULT_TOKEN_TYPE,

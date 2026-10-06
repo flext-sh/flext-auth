@@ -45,6 +45,7 @@ class TestsFlextAuthApiCase06:
     def test_hash_password_method() -> None:
         """Test hash_password method functionality."""
         identity = m.Auth.AuthIdentity(
+            domain_events=[],
             unique_id="test-id",
             name="testuser",
             contact="test@example.com",
@@ -70,6 +71,7 @@ class TestsFlextAuthApiCase06:
         """Test verify_password method functionality."""
         strong_password = c.TEST_CREDENTIAL
         identity = m.Auth.AuthIdentity(
+            domain_events=[],
             unique_id="test-id",
             name="testuser",
             contact="test@example.com",

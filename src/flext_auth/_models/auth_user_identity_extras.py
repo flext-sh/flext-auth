@@ -37,7 +37,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @classmethod
         def normalize_str_sequence(
             cls,
-            value: t.Scalar | t.StrSequence | datetime | None,
+            value: object,
         ) -> t.StrSequence | None:
             """Normalize sequence-like values to strict string sequences.
 
@@ -56,7 +56,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @classmethod
         def normalize_failed_attempts(
             cls,
-            value: t.Scalar | t.StrSequence | datetime | None,
+            value: object,
         ) -> int | None:
             """Normalize failed attempts from int-like values.
 
@@ -75,7 +75,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @classmethod
         def normalize_datetime(
             cls,
-            value: t.Scalar | t.StrSequence | datetime | None,
+            value: object,
         ) -> datetime | None:
             """Normalize datetime-like values with deterministic fallback.
 

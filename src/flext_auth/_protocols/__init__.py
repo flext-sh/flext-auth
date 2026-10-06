@@ -41,7 +41,6 @@ install_lazy_exports(
         "FlextAuthProtocolsAuthProvider": ".auth_provider",
         "FlextAuthProtocolsAuthService": ".auth_service",
         "FlextAuthProtocolsAuthSession": ".auth_session",
-        "FlextAuthProtocolsAuthSession": ".auth_session",
         "FlextAuthProtocolsAuthTransport": ".auth_transport",
         "FlextAuthProtocolsBase": ".base",
     }),

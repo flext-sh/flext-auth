@@ -52,7 +52,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_settings_property_returns_injected_settings() -> None:
         """The settings property returns the exact settings instance supplied."""
-        settings = FlextAuthSettings()
+        settings = FlextAuthSettings.model_validate({})
 
         auth = FlextAuth(settings=settings)
 
