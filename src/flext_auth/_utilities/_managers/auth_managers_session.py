@@ -66,19 +66,13 @@ class FlextAuthSessionManagers:
             }
             self._sessions[session_id] = session_data
             session = m.Auth.AuthSession(
-                unique_id=session_id,
+                domain_events=[],
                 identity_id=str(session_data["identity_id"]),
                 token=str(session_data["session_token"]),
                 expires_at=session_data["expires_at"]
                 if isinstance(session_data["expires_at"], datetime)
                 else datetime.fromisoformat(str(session_data["expires_at"])),
-                is_active=bool(session_data.get("is_active", True)),
-                ip_address=str(session_data.get("ip_address", "")),
-                user_agent=str(session_data.get("user_agent", "")),
-                last_accessed=session_data["last_accessed"]
-                if "last_accessed" in session_data
-                and isinstance(session_data["last_accessed"], datetime)
-                else u.now(),
+                session_id=session_id,
             )
             result: p.Result[m.Auth.AuthSession] = r[m.Auth.AuthSession].ok(session)
             return result
@@ -126,6 +120,7 @@ class FlextAuthSessionManagers:
                         and self._is_session_active(session_data)
                     ):
                         session = m.Auth.AuthSession(
+                            domain_events=[],
                             identity_id=str(session_data["identity_id"]),
                             token=str(session_data["session_token"]),
                             expires_at=session_data["expires_at"]
@@ -133,13 +128,7 @@ class FlextAuthSessionManagers:
                             else datetime.fromisoformat(
                                 str(session_data["expires_at"]),
                             ),
-                            is_active=bool(session_data.get("is_active", True)),
-                            ip_address=str(session_data.get("ip_address", "")),
-                            user_agent=str(session_data.get("user_agent", "")),
-                            last_accessed=session_data["last_accessed"]
-                            if "last_accessed" in session_data
-                            and isinstance(session_data["last_accessed"], datetime)
-                            else u.now(),
+                            session_id=str(session_data["id"]),
                         )
                         session.unique_id = session_id
                         sessions.append(session)

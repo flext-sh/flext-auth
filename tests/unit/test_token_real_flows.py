@@ -9,8 +9,8 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth
-from tests.constants import TestsFlextAuthConstants as c
-from tests.utilities import TestsFlextAuthUtilities as u
+from tests import c
+from tests import u
 
 
 class TestsFlextAuthSessionRealFlows:

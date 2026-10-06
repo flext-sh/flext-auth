@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from flext_auth._models.config import FlextAuthConfigModels
 from flext_core import FlextConfig, FlextSettings
 
@@ -22,6 +24,11 @@ class FlextAuthConfig(FlextSettings, FlextConfig):
     instance-inert holder contract does not apply and pydantic settings
     construction machinery stays intact.
     """
+
+    # ENFORCE-042: the Settings-first MRO pairs two singleton bases whose
+    # ``_instance`` slots disagree for static checkers; the concrete subclass
+    # narrows both, which pydantic enforces at runtime.
+    _instance: ClassVar[FlextAuthConfig | None] = None  # type: ignore[misc]  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Auth: FlextAuthConfigModels.Auth
 

@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
-from tests.utilities import TestsFlextAuthUtilities as u
+from tests import u
 
 
 class TestsFlextAuthConfig:
@@ -61,7 +61,7 @@ class TestsFlextAuthConfig:
         expected: str | int,
     ) -> None:
         """Freshly constructed settings default each field to its constant."""
-        settings = FlextAuthSettings()
+        settings = FlextAuthSettings.model_validate({})
         u.Tests.Matchers.that(getattr(settings.Auth, field_name), eq=expected)
 
     @staticmethod
@@ -148,7 +148,7 @@ class TestsFlextAuthConfig:
             f"{env_prefix}AUTH{nested_delimiter}EXPIRY_MINUTES": expiry_minutes,
             f"{env_prefix}AUTH{nested_delimiter}ALGORITHM": algorithm,
         }):
-            settings = FlextAuthSettings()
+            settings = FlextAuthSettings.model_validate({})
             u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=expiry_minutes)
             u.Tests.Matchers.that(settings.Auth.algorithm, eq=algorithm)
 
