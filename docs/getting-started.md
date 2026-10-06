@@ -67,15 +67,21 @@ python -c "from flext_auth import FlextAuth; print('flext-auth ready')"
 ### Quick Start Service
 
 ```python
-from flext_auth import FlextAuth
+import os
+
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 # Initialize authentication service
 auth = FlextAuth.quick_start(create_admin_user=False)
 
+# Secrets come from the environment, never inline literals
+password = os.environ["FLEXT_DEMO_PASSWORD"]
+
 # Register user using the r pattern
 result = auth.register_user(
-    username="alice", email="alice@example.com", password="secure123"
+    username="alice", email="alice@example.com", password=password,
 )
 
 if result.success:
@@ -88,8 +94,9 @@ else:
 ### User Authentication
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -108,8 +115,9 @@ else:
 ### Token Validation
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -130,8 +138,9 @@ else:
 ### Environment Configuration
 
 ```python
-from flext_auth import FlextAuthSettings
 from flext_cli import u
+
+from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
 
@@ -151,7 +160,7 @@ settings = FlextAuthSettings(
         "expiry_minutes": 30,  # 30-minute tokens
         "hash_rounds": 14,  # Higher security
         "session_expiry_minutes": 60,  # 1-hour sessions
-    }
+    },
 )
 
 # Use custom configuration
@@ -196,8 +205,9 @@ flext-auth manage-settings show
 ```python
 from __future__ import annotations
 
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 from flext_core import m, p, r
 
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -256,8 +266,11 @@ if auth_result.success:
 ### Working with User Entities
 
 ```python
-from flext_auth import FlextAuth
+import os
+
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -265,7 +278,7 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user(
     username="charlie",
     email="charlie@example.com",
-    password="secure123",
+    password=os.environ["FLEXT_DEMO_PASSWORD"],
     roles=["user"],
 )
 
@@ -277,17 +290,17 @@ if result.success:
 ### Session Management
 
 ```python
-from __future__ import annotations
-
+import os
 from datetime import UTC, datetime
 
-from flext_auth import m as auth_m
 from flext_cli import u
 
-# Create session
+from flext_auth import m as auth_m
+
+# Create session; the token is issued by the auth service, never inlined
 session = auth_m.Auth.Session(
     identity_id="user-id",
-    session_token="session-token-123",
+    session_token=os.environ["FLEXT_DEMO_SESSION_TOKEN"],
     expires_at=datetime.now(UTC),
 )
 
@@ -305,16 +318,20 @@ if session.is_active:
 ```python
 from __future__ import annotations
 
+import os
+
 from flext_auth import FlextAuth
 
 
-def test_authentication_workflow():
+def test_authentication_workflow() -> None:
     """Test complete authentication workflow."""
     auth = FlextAuth.quick_start(create_admin_user=False)
 
     # Register test user
     register_result = auth.register_user(
-        username="testuser", email="test@example.com", password="testpass123"
+        username="testuser",
+        email="test@example.com",
+        password=os.environ["FLEXT_TEST_PASSWORD"],
     )
 
     assert register_result.success
