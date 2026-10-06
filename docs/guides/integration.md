@@ -242,14 +242,20 @@ def login_handler(model: LoginInput) -> t.JsonValue:
 
 
 command = FlextCliCli.model_command(
-    model_cls=LoginInput, handler=login_handler, settings=settings,
+    model_cls=LoginInput,
+    handler=login_handler,
+    settings=settings,
 )
 cli = FlextCliCli()
 app = cli.create_app_with_common_params(
-    name="auth", help_text="Authentication commands",
+    name="auth",
+    help_text="Authentication commands",
 )
 cli.register_command(
-    app, name="login", help_text="Authenticate a user", command=command,
+    app,
+    name="login",
+    help_text="Authenticate a user",
+    command=command,
 )
 ```
 
@@ -317,7 +323,9 @@ class ServiceA:
 
         # Make authenticated request to Service B using flext-api
         return self._api.post(
-            url="http://service-b/api/endpoint", json=data, headers=headers,
+            url="http://service-b/api/endpoint",
+            json=data,
+            headers=headers,
         )
 ```
 
@@ -344,7 +352,8 @@ class UserRepository:
         # Oracle-specific implementation
 
     def create_user(
-        self, user: auth_m.Auth.AuthIdentity,
+        self,
+        user: auth_m.Auth.AuthIdentity,
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Create user in database."""
         # Oracle-specific implementation
@@ -515,7 +524,8 @@ class SAMLProvider:
         self._auth = FlextAuth.quick_start(create_admin_user=False)
 
     def process_saml_response(
-        self, saml_response: str,
+        self,
+        saml_response: str,
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Process SAML authentication response."""
         # Implementation using flext-auth
