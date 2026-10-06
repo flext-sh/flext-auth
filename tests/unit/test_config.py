@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
-from tests import u
+from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthConfig:
@@ -37,17 +37,17 @@ class TestsFlextAuthConfig:
         settings: FlextAuthSettings,
     ) -> None:
         """Default settings satisfy the documented value invariants."""
-        TestsFlextAuthUtilities.Tests.Matchers.that(settings, is_=FlextAuthSettings)
-        TestsFlextAuthUtilities.Tests.Matchers.that(settings.Auth.expiry_minutes, gt=0)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
+        u.Tests.Matchers.that(settings.Auth.expiry_minutes, gt=0)
+        u.Tests.Matchers.that(
             settings.Auth.session_expiry_minutes,
             gt=0,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(
             settings.Auth.max_sessions_per_user,
             gt=0,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(settings.Auth.algorithm, is_=str)
+        u.Tests.Matchers.that(settings.Auth.algorithm, is_=str)
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -68,7 +68,7 @@ class TestsFlextAuthConfig:
     ) -> None:
         """Freshly constructed settings default each field to its constant."""
         settings = FlextAuthSettings.model_validate({})
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(
             getattr(settings.Auth, field_name),
             eq=expected,
         )
@@ -82,12 +82,12 @@ class TestsFlextAuthConfig:
 
         clone = settings.clone(Auth={"expiry_minutes": original_expiry + 5})
 
-        TestsFlextAuthUtilities.Tests.Matchers.that(clone is settings, eq=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(clone is settings, eq=False)
+        u.Tests.Matchers.that(
             clone.Auth.expiry_minutes,
             eq=original_expiry + 5,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(
             settings.Auth.expiry_minutes,
             eq=original_expiry,
         )
@@ -104,8 +104,8 @@ class TestsFlextAuthConfig:
                 ),
             },
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(updated.Auth.expiry_minutes, eq=60)
-        TestsFlextAuthUtilities.Tests.Matchers.that(updated.Auth.hash_rounds, eq=12)
+        u.Tests.Matchers.that(updated.Auth.expiry_minutes, eq=60)
+        u.Tests.Matchers.that(updated.Auth.hash_rounds, eq=12)
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -134,11 +134,11 @@ class TestsFlextAuthConfig:
             "Auth": {"secret_key": secret_value},
         })
 
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(
             settings.Auth.auth_secret,
             is_=t.SecretStr,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(
             settings.Auth.auth_secret.get_secret_value(),
             eq=settings.Auth.secret_key,
         )
@@ -152,8 +152,8 @@ class TestsFlextAuthConfig:
             "Auth": {"secret_key": t.SecretStr(raw)},
         })
 
-        TestsFlextAuthUtilities.Tests.Matchers.that(settings.Auth.secret_key, is_=str)
-        TestsFlextAuthUtilities.Tests.Matchers.that(settings.Auth.secret_key, eq=raw)
+        u.Tests.Matchers.that(settings.Auth.secret_key, is_=str)
+        u.Tests.Matchers.that(settings.Auth.secret_key, eq=raw)
 
     @staticmethod
     def test_environment_prefix_overrides_defaults() -> None:
@@ -167,11 +167,11 @@ class TestsFlextAuthConfig:
             f"{env_prefix}AUTH{nested_delimiter}ALGORITHM": algorithm,
         }):
             settings = FlextAuthSettings.model_validate({})
-            TestsFlextAuthUtilities.Tests.Matchers.that(
+            u.Tests.Matchers.that(
                 settings.Auth.expiry_minutes,
                 eq=expiry_minutes,
             )
-            TestsFlextAuthUtilities.Tests.Matchers.that(
+            u.Tests.Matchers.that(
                 settings.Auth.algorithm,
                 eq=algorithm,
             )
@@ -185,9 +185,9 @@ class TestsFlextAuthConfig:
 
         result = auth.create_token(identity_id="missing-user")
 
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.error, none=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        u.Tests.Matchers.that(result.success, eq=False)
+        u.Tests.Matchers.that(result.error, none=False)
+        u.Tests.Matchers.that(
             "user" in (result.error or "").lower(),
             eq=True,
         )
@@ -203,8 +203,8 @@ class TestsFlextAuthConfig:
 
         result = auth.create_token(identity_id=identity_id)
 
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.error, none=False)
+        u.Tests.Matchers.that(result.success, eq=False)
+        u.Tests.Matchers.that(result.error, none=False)
 
     @staticmethod
     def test_create_token_succeeds_for_registered_identity(
@@ -218,12 +218,12 @@ class TestsFlextAuthConfig:
             "config-token-user@example.com",
             "ConfigTokenPass123!",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
+        u.Tests.Matchers.that(register_result.success, eq=True)
 
         token_result = auth.create_token(identity_id=register_result.value.unique_id)
 
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.value, is_=str)
+        u.Tests.Matchers.that(token_result.success, eq=True)
+        u.Tests.Matchers.that(token_result.value, is_=str)
         token_text: str = token_result.value
-        TestsFlextAuthUtilities.Tests.Matchers.that(len(token_text), gt=0)
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_text.count("."), eq=2)
+        u.Tests.Matchers.that(len(token_text), gt=0)
+        u.Tests.Matchers.that(token_text.count("."), eq=2)
