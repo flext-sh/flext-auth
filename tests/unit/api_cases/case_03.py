@@ -143,6 +143,6 @@ class TestsFlextAuthApiCase03:
     def test_token_validation_invalid_token() -> None:
         """Test validation of invalid token — fails with 'not implemented'."""
         auth: FlextAuth = FlextAuth()
-        invalid_result = auth.token_service.validate_token("invalid.token.here")
+        invalid_result = auth.session_service.validate_token("invalid.token.here")
         u.Tests.Matchers.that(not invalid_result.success, eq=True)
         u.Tests.Matchers.that(invalid_result.error, none=False)

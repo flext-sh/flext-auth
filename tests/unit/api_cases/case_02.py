@@ -62,7 +62,7 @@ class TestsFlextAuthApiCase02:
         identity = register_result.value
         token_result = auth.create_token(identity_id=identity.unique_id)
         u.Tests.Matchers.that(token_result.success, eq=True)
-        validate_result = auth.token_service.validate_token("any.fake.token")
+        validate_result = auth.session_service.validate_token("any.fake.token")
         u.Tests.Matchers.that(not validate_result.success, eq=True)
 
     @staticmethod

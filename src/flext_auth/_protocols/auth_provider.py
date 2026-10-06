@@ -13,7 +13,7 @@ from flext_auth import c, t
 if TYPE_CHECKING:
     from flext_api import p
 
-    from flext_auth._protocols.auth_token import FlextAuthProtocolsAuthToken
+    from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
 
 
 class FlextAuthProtocolsAuthProvider:
@@ -38,7 +38,7 @@ class FlextAuthProtocolsAuthProvider:
         def authenticate(
             self,
             credentials: t.JsonMapping,
-        ) -> p.Result[FlextAuthProtocolsAuthToken.Token]:
+        ) -> p.Result[FlextAuthProtocolsAuthSession.Token]:
             """Authenticate user with provided credentials.
 
             This is the primary authentication method. It should validate the
@@ -85,7 +85,7 @@ class FlextAuthProtocolsAuthProvider:
             """
             ...
 
-        def refresh(self, token: str) -> p.Result[FlextAuthProtocolsAuthToken.Token]:
+        def refresh(self, token: str) -> p.Result[FlextAuthProtocolsAuthSession.Token]:
             """Refresh authentication token.
 
             Generate a new token based on an existing valid token. This operation
@@ -96,7 +96,7 @@ class FlextAuthProtocolsAuthProvider:
                 token: Existing token to refresh
 
             Returns:
-                r[FlextAuthProtocolsAuthToken.Token]: New token on success,
+                r[FlextAuthProtocolsAuthSession.Token]: New token on success,
                                     error if refresh not supported or failed
 
             """

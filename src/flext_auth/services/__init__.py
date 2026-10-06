@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.provider_service import FlextAuthProviderService
     from flext_auth.services.session_service import FlextAuthSessionService
-    from flext_auth.services.token_service import FlextAuthTokenService
+    from flext_auth.services.session_service import FlextAuthSessionService
 
 
 __all__: tuple[str, ...] = (
@@ -31,7 +31,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthProviderBuiltinRegistration",
     "FlextAuthProviderService",
     "FlextAuthSessionService",
-    "FlextAuthTokenService",
+    "FlextAuthSessionService",
 )
 
 install_lazy_exports(
@@ -44,7 +44,7 @@ install_lazy_exports(
         "FlextAuthProviderBuiltinRegistration": "._provider_builtin",
         "FlextAuthProviderService": ".provider_service",
         "FlextAuthSessionService": ".session_service",
-        "FlextAuthTokenService": ".token_service",
+        "FlextAuthSessionService": ".session_service",
     }),
     public_exports=__all__,
 )

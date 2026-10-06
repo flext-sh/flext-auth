@@ -1,42 +1,186 @@
-"""FLEXT Auth Session Service - Focused session management operations.
+"""Token Service - JWT token management and validation service.
+
+Provides centralized JWT token operations including creation, validation,
+refresh, and revocation. Implements Railway-Oriented Programming for
+robust token lifecycle management.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-from flext_auth import p, s, t, u
+from flext_api import r
+
+from flext_auth import c, m, p, s, u
 
 
 class FlextAuthSessionService(s):
-    """Focused service for session management with complete flext-core integration."""
+    """Token service built on flext-core patterns and railway-oriented results.
+
+    Python 3.13+ features, minimal line count through consolidated operations.
+    Flexible composition with dependency injection and error handling.
+    """
 
     def __init__(
         self,
+        *,
+        provider_service: p.Auth.ProviderService,
         dispatcher: p.Dispatcher,
         managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
-        """Initialize session service with flext-core integration."""
+        """Flexible initialization with dependency injection."""
         super().__init__()
         self._managers = (
             managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
         )
+        self._provider_service = provider_service
+        self._jwt_provider_cache: p.Auth.FlextAuthBaseProvider | None = None
 
     @property
-    def session_manager(self) -> u.Auth.FlextAuthSessionManager:
-        """Direct access to session manager for client orchestration."""
-        return self._managers.session_manager
+    def user_manager(self) -> u.Auth.FlextAuthUserManager:
+        """Direct access to user manager for token operations."""
+        return self._managers.user_manager
 
-    def cleanup_expired_sessions(self) -> p.Result[int]:
-        """Railway-oriented cleanup of expired sessions from the system.
+    @staticmethod
+    def _short_token(token: str | None, length: int = 10) -> str:
+        if token is None:
+            return "None"
+        if len(token) <= length:
+            return token
+        return f"{token[:length]}..."
+
+    @staticmethod
+    def _fail_token_creation(
+        user_id: str,
+        token_kind: str,
+        error: str | None,
+        fallback: str,
+    ) -> p.Result[str]:
+        """Log a failed token creation and return the failure result.
 
         Returns:
-            The resulting ``p.Result[int]``.
+            The resulting ``p.Result[str]``.
         """
-        u.fetch_logger(__name__).info("Cleanup of expired sessions requested")
-        return self.session_manager.cleanup_expired_sessions()
+        u.fetch_logger(__name__).info(
+            "Token creation",
+            user_id=user_id,
+            token_type=token_kind,
+            success=False,
+            reason=error or "",
+        )
+        return r[str].fail(error or fallback)
+
+    def generate_jwt_token(
+        self,
+        user_id: str,
+        expires_in_minutes: int | None = None,
+        token_kind: str = c.Auth.TokenTypes.ACCESS.value,
+    ) -> p.Result[str]:
+        """Railway-oriented JWT token generation with audit logging.
+
+        Returns:
+            The resulting ``p.Result[str]``.
+        """
+        user_result = self.user_manager.fetch_user(user_id)
+        if user_result.failure:
+            return self._fail_token_creation(
+                user_id,
+                token_kind,
+                user_result.error,
+                "User lookup failed",
+            )
+        user = user_result.value
+        user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
+        token_result = self._get_jwt_provider_cached().flat_map(
+            lambda provider: provider.generate_token_for_user(
+                user_dict,
+                token_kind=token_kind,
+                expiry_minutes=expires_in_minutes,
+            ),
+        )
+        if token_result.failure:
+            return self._fail_token_creation(
+                user_id,
+                token_kind,
+                token_result.error,
+                "Token generation failed",
+            )
+        token_value = token_result.value
+        u.fetch_logger(__name__).debug(
+            "Token creation successful",
+            user_id=user_id,
+            token_type=token_kind,
+        )
+        return r[str].ok(token_value)
+
+    def refresh_token(self, token: str) -> p.Result[m.Auth.AuthSession]:
+        """Railway-oriented token refresh with audit logging.
+
+        Returns:
+            The resulting ``p.Result[m.Auth.AuthSession]``.
+        """
+        result = self._get_jwt_provider_cached().flat_map(
+            lambda provider: provider.refresh(token),
+        )
+        if result.failure:
+            error = result.error
+            u.fetch_logger(__name__).info(
+                "Token refresh",
+                success=False,
+                old_token_id=self._short_token(token),
+                reason=error or "",
+            )
+            return r[m.Auth.AuthSession].fail(error or "Token refresh failed")
+        refreshed = result.value
+        auth_token = m.Auth.AuthSession(
+            identity_id=refreshed.user_id,
+            token=refreshed.token,
+            expires_at=refreshed.expires_at,
+            is_revoked=refreshed.is_revoked,
+        )
+        u.fetch_logger(__name__).debug(
+            "Token refresh successful",
+            old_token_id=self._short_token(token),
+            new_token_id=self._short_token(auth_token.token),
+        )
+        return r[m.Auth.AuthSession].ok(auth_token)
+
+    def validate_token(self, token: str) -> p.Result[bool]:
+        """Railway-oriented token validation with audit logging.
+
+        Returns:
+            The resulting ``p.Result[bool]``.
+        """
+
+        def _log_token_validation_error(error: str) -> None:
+            u.fetch_logger(__name__).debug(
+                "Token validation",
+                success=False,
+                token_id=self._short_token(token),
+                reason=error or "Unknown error",
+            )
+
+        return (
+            self
+            ._get_jwt_provider_cached()
+            .flat_map(lambda provider: provider.validate(token))
+            .tap_error(_log_token_validation_error)
+        )
+
+    def _get_jwt_provider_cached(self) -> p.Result[p.Auth.FlextAuthBaseProvider]:
+        """Get JWT provider with lazy caching to eliminate repeated lookups.
+
+        Returns:
+            The resulting ``p.Result[p.Auth.FlextAuthBaseProvider]``.
+        """
+        if self._jwt_provider_cache is not None:
+            return r[p.Auth.FlextAuthBaseProvider].ok(self._jwt_provider_cache)
+        result = self._provider_service.fetch_jwt_provider()
+        if result.failure:
+            return result
+        self._jwt_provider_cache = result.value
+        return r[p.Auth.FlextAuthBaseProvider].ok(self._jwt_provider_cache)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthSessionService"]
+__all__: list[str] = ["FlextAuthSessionService"]

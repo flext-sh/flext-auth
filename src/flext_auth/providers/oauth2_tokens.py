@@ -35,7 +35,7 @@ class FlextAuthOAuth2Tokens(
         credential_payload: t.ConfigurationMapping = {
             k: v for k, v in credentials.items() if isinstance(v, c.PRIMITIVES_TYPES)
         }
-        token_model = m.Auth.AuthToken(
+        token_model = m.Auth.AuthSession(
             identity_id=str(
                 credential_payload.get(c.Auth.KEY_USER_ID) or "oauth2_user",
             ),
@@ -99,7 +99,7 @@ class FlextAuthOAuth2Tokens(
         )
         if not refresh_source:
             return r[p.Auth.Token].fail("No refresh token available")
-        refreshed_model = m.Auth.AuthToken(
+        refreshed_model = m.Auth.AuthSession(
             identity_id=identity_id,
             token=f"access_token_{secrets.token_hex(16)}",
             token_type=c.Auth.TokenTypes.BEARER.value,

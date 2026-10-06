@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.provider_service import FlextAuthProviderService
     from flext_auth.services.session_service import FlextAuthSessionService
-    from flext_auth.services.token_service import FlextAuthTokenService
+    from flext_auth.services.session_service import FlextAuthSessionService
     from flext_auth.typings import FlextAuthTypes, t
     from flext_auth.utilities import FlextAuthUtilities, u
 
@@ -87,7 +87,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthServiceBase",
     "FlextAuthSessionService",
     "FlextAuthSettings",
-    "FlextAuthTokenService",
+    "FlextAuthSessionService",
     "FlextAuthTypes",
     "FlextAuthUtilities",
     "__author__",
@@ -148,7 +148,7 @@ install_lazy_exports(
         "FlextAuthServiceBase": ".base",
         "FlextAuthSessionService": ".services.session_service",
         "FlextAuthSettings": "._settings",
-        "FlextAuthTokenService": ".services.token_service",
+        "FlextAuthSessionService": ".services.session_service",
         "FlextAuthTypes": ".typings",
         "FlextAuthUtilities": ".utilities",
         "auth": ".api",

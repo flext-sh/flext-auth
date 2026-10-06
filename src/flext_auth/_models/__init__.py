@@ -18,13 +18,13 @@ if TYPE_CHECKING:
     from flext_auth._models.auth_identity_request import (
         FlextAuthModelsAuthIdentityRequest,
     )
-    from flext_auth._models.auth_password import FlextAuthModelsAuthPassword
+    from flext_auth._models.auth_credential import FlextAuthModelsAuthCredential
     from flext_auth._models.auth_provider_config import (
         FlextAuthModelsAuthProviderConfig,
     )
     from flext_auth._models.auth_response import FlextAuthModelsAuthResponse
     from flext_auth._models.auth_session import FlextAuthModelsAuthSession
-    from flext_auth._models.auth_token import FlextAuthModelsAuthToken
+    from flext_auth._models.auth_session import FlextAuthModelsAuthSession
     from flext_auth._models.auth_user_identity_extras import (
         FlextAuthModelsAuthUserIdentityExtras,
     )
@@ -37,11 +37,11 @@ __all__: tuple[str, ...] = (
     "FlextAuthModelsAuth",
     "FlextAuthModelsAuthIdentity",
     "FlextAuthModelsAuthIdentityRequest",
-    "FlextAuthModelsAuthPassword",
+    "FlextAuthModelsAuthCredential",
     "FlextAuthModelsAuthProviderConfig",
     "FlextAuthModelsAuthResponse",
     "FlextAuthModelsAuthSession",
-    "FlextAuthModelsAuthToken",
+    "FlextAuthModelsAuthSession",
     "FlextAuthModelsAuthUserIdentityExtras",
     "FlextAuthModelsBase",
 )
@@ -54,11 +54,11 @@ install_lazy_exports(
         "FlextAuthModelsAuth": ".auth",
         "FlextAuthModelsAuthIdentity": ".auth_identity",
         "FlextAuthModelsAuthIdentityRequest": ".auth_identity_request",
-        "FlextAuthModelsAuthPassword": ".auth_password",
+        "FlextAuthModelsAuthCredential": ".auth_credential",
         "FlextAuthModelsAuthProviderConfig": ".auth_provider_config",
         "FlextAuthModelsAuthResponse": ".auth_response",
         "FlextAuthModelsAuthSession": ".auth_session",
-        "FlextAuthModelsAuthToken": ".auth_token",
+        "FlextAuthModelsAuthSession": ".auth_session",
         "FlextAuthModelsAuthUserIdentityExtras": ".auth_user_identity_extras",
         "FlextAuthModelsBase": ".base",
     }),

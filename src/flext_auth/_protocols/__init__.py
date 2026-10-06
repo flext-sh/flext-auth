@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from flext_auth._protocols.auth_provider import FlextAuthProtocolsAuthProvider
     from flext_auth._protocols.auth_service import FlextAuthProtocolsAuthService
     from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
-    from flext_auth._protocols.auth_token import FlextAuthProtocolsAuthToken
+    from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
     from flext_auth._protocols.auth_transport import FlextAuthProtocolsAuthTransport
     from flext_auth._protocols.base import FlextAuthProtocolsBase
 
@@ -29,7 +29,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthProtocolsAuthProvider",
     "FlextAuthProtocolsAuthService",
     "FlextAuthProtocolsAuthSession",
-    "FlextAuthProtocolsAuthToken",
+    "FlextAuthProtocolsAuthSession",
     "FlextAuthProtocolsAuthTransport",
     "FlextAuthProtocolsBase",
 )
@@ -43,7 +43,7 @@ install_lazy_exports(
         "FlextAuthProtocolsAuthProvider": ".auth_provider",
         "FlextAuthProtocolsAuthService": ".auth_service",
         "FlextAuthProtocolsAuthSession": ".auth_session",
-        "FlextAuthProtocolsAuthToken": ".auth_token",
+        "FlextAuthProtocolsAuthSession": ".auth_session",
         "FlextAuthProtocolsAuthTransport": ".auth_transport",
         "FlextAuthProtocolsBase": ".base",
     }),

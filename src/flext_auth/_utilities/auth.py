@@ -7,14 +7,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth._utilities.auth_response import FlextAuthUtilitiesAuthResponse
-from flext_auth._utilities.auth_token import FlextAuthUtilitiesAuthToken
+from flext_auth._utilities.auth_session import FlextAuthUtilitiesAuthSession
 from flext_auth._utilities.auth_validation import FlextAuthUtilitiesAuthValidation
 
 
 class FlextAuthUtilitiesAuth(
     FlextAuthUtilitiesAuthValidation,
     FlextAuthUtilitiesAuthResponse,
-    FlextAuthUtilitiesAuthToken,
+    FlextAuthUtilitiesAuthSession,
 ):
     """Authentication utility namespace assembled from focused owners."""
 
