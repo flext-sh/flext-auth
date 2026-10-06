@@ -20,7 +20,6 @@ from flext_auth import (
     FlextAuthRegistry,
     FlextAuthSessionService,
     FlextAuthSettings,
-    FlextAuthSessionService,
     t,
 )
 from tests import c

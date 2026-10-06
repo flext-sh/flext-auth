@@ -42,6 +42,19 @@ class FlextAuthSessionService(s):
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 
+    @property
+    def session_manager(self) -> u.Auth.FlextAuthSessionManager:
+        """Direct access to session manager for session lifecycle operations."""
+        return self._managers.session_manager
+
+    def cleanup_expired_sessions(self) -> p.Result[int]:
+        """Remove expired sessions and report the removed count.
+
+        Returns:
+            The resulting ``p.Result[int]``.
+        """
+        return self._managers.session_manager.cleanup_expired_sessions()
+
     @staticmethod
     def _short_token(token: str | None, length: int = 10) -> str:
         if token is None:

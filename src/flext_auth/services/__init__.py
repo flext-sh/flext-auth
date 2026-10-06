@@ -21,7 +21,6 @@ if TYPE_CHECKING:
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.provider_service import FlextAuthProviderService
     from flext_auth.services.session_service import FlextAuthSessionService
-    from flext_auth.services.session_service import FlextAuthSessionService
 
 
 __all__: tuple[str, ...] = (
@@ -30,7 +29,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthIdentityService",
     "FlextAuthProviderBuiltinRegistration",
     "FlextAuthProviderService",
-    "FlextAuthSessionService",
     "FlextAuthSessionService",
 )
 

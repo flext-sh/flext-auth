@@ -84,7 +84,7 @@ class FlextAuthBasicUsageWorkflow:
         auth_result = auth.authenticate_user("workflowuser", password)
         if auth_result.failure:
             return r[bool].from_failure(auth_result)
-        token_validation = auth.token_service.validate_token(auth_result.value.token)
+        token_validation = auth.session_service.validate_token(auth_result.value.token)
         if token_validation.failure:
             return token_validation
         user_info = auth.identity_service.identity_manager.fetch_user(

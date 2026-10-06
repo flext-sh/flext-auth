@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth import c, p, r
+from flext_auth import c, m, p, r
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class FlextAuthOAuth2Config:
     """OAuth2 provider configuration helper owner."""
 
-    provider_config: p.Auth.ProviderConfig
+    provider_config: m.Auth.ProviderConfig
 
     @staticmethod
     def _validated_choice(

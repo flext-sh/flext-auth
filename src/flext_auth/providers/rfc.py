@@ -67,6 +67,16 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         """
         return "RFC Base"
 
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported RFC operations.
+
+        """
+        return {"rfc", "validate"}
+
     @staticmethod
     def supports_rfc_feature(feature: str) -> bool:
         """Check if a specific RFC feature is supported.

@@ -13,7 +13,7 @@ Use only:
 - `create_token(...)`
 - `identity_service.identity_manager.fetch_user(...)`
 - `identity_service.identity_manager.fetch_user_by_username(...)`
-- `token_service.validate_token(...)`
+- `session_service.validate_token(...)`
 - `session_service.session_manager.get_active_sessions(...)`
 - `session_service.session_manager.end_session_by_id(...)`
 - `session_service.cleanup_expired_sessions(...)`
@@ -36,7 +36,7 @@ if registered.success:
     user = registered.value
     token = auth.create_token(identity_id=user.unique_id)
     if token.success:
-        _ = auth.token_service.validate_token(token.value)
+        _ = auth.session_service.validate_token(token.value)
 ```
 
 ## Run Examples

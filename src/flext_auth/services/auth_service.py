@@ -13,7 +13,6 @@ from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 from flext_auth.services.identity_service import FlextAuthIdentityService
 from flext_auth.services.provider_service import FlextAuthProviderService
 from flext_auth.services.session_service import FlextAuthSessionService
-from flext_auth.services.session_service import FlextAuthSessionService
 from flext_core import FlextContainer
 
 
@@ -25,7 +24,6 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     _dispatcher: p.Dispatcher
     _provider_service: FlextAuthProviderService
     _identity_service: FlextAuthIdentityService
-    _session_service: FlextAuthSessionService
     _session_service: FlextAuthSessionService
     _auth_settings: FlextAuthSettings
 
@@ -48,10 +46,6 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         )
         self._session_service = FlextAuthSessionService(
             provider_service=self._provider_service,
-            dispatcher=self._dispatcher,
-            managers=shared_managers,
-        )
-        self._session_service = FlextAuthSessionService(
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
@@ -79,11 +73,6 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     @property
     def session_service(self) -> FlextAuthSessionService:
         """Session service access."""
-        return self._session_service
-
-    @property
-    def session_service(self) -> FlextAuthSessionService:
-        """Token service access."""
         return self._session_service
 
     def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]:

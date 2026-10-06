@@ -14,16 +14,15 @@ from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth._models.auth import FlextAuthModelsAuth
+    from flext_auth._models.auth_credential import FlextAuthModelsAuthCredential
     from flext_auth._models.auth_identity import FlextAuthModelsAuthIdentity
     from flext_auth._models.auth_identity_request import (
         FlextAuthModelsAuthIdentityRequest,
     )
-    from flext_auth._models.auth_credential import FlextAuthModelsAuthCredential
     from flext_auth._models.auth_provider_config import (
         FlextAuthModelsAuthProviderConfig,
     )
     from flext_auth._models.auth_response import FlextAuthModelsAuthResponse
-    from flext_auth._models.auth_session import FlextAuthModelsAuthSession
     from flext_auth._models.auth_session import FlextAuthModelsAuthSession
     from flext_auth._models.auth_user_identity_extras import (
         FlextAuthModelsAuthUserIdentityExtras,
@@ -35,12 +34,11 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextAuthConfigModels",
     "FlextAuthModelsAuth",
+    "FlextAuthModelsAuthCredential",
     "FlextAuthModelsAuthIdentity",
     "FlextAuthModelsAuthIdentityRequest",
-    "FlextAuthModelsAuthCredential",
     "FlextAuthModelsAuthProviderConfig",
     "FlextAuthModelsAuthResponse",
-    "FlextAuthModelsAuthSession",
     "FlextAuthModelsAuthSession",
     "FlextAuthModelsAuthUserIdentityExtras",
     "FlextAuthModelsBase",

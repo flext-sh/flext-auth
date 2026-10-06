@@ -54,7 +54,6 @@ if TYPE_CHECKING:
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.provider_service import FlextAuthProviderService
     from flext_auth.services.session_service import FlextAuthSessionService
-    from flext_auth.services.session_service import FlextAuthSessionService
     from flext_auth.typings import FlextAuthTypes, t
     from flext_auth.utilities import FlextAuthUtilities, u
 
@@ -87,7 +86,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthServiceBase",
     "FlextAuthSessionService",
     "FlextAuthSettings",
-    "FlextAuthSessionService",
     "FlextAuthTypes",
     "FlextAuthUtilities",
     "__author__",

@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from flext_auth._protocols.auth_provider import FlextAuthProtocolsAuthProvider
     from flext_auth._protocols.auth_service import FlextAuthProtocolsAuthService
     from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
-    from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
     from flext_auth._protocols.auth_transport import FlextAuthProtocolsAuthTransport
     from flext_auth._protocols.base import FlextAuthProtocolsBase
 
@@ -28,7 +27,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthProtocolsAuthIdentity",
     "FlextAuthProtocolsAuthProvider",
     "FlextAuthProtocolsAuthService",
-    "FlextAuthProtocolsAuthSession",
     "FlextAuthProtocolsAuthSession",
     "FlextAuthProtocolsAuthTransport",
     "FlextAuthProtocolsBase",
