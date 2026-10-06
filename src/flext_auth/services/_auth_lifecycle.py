@@ -10,7 +10,7 @@ import threading
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, ClassVar, Self
 
-from flext_auth import c, p, t
+from flext_auth import c, m, p, t
 
 
 class FlextAuthApplicationLifecycle(ABC):
@@ -18,6 +18,7 @@ class FlextAuthApplicationLifecycle(ABC):
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
     if TYPE_CHECKING:
+        from flext_auth.models import m
 
         @property
         def logger(self) -> p.Logger:
@@ -32,7 +33,7 @@ class FlextAuthApplicationLifecycle(ABC):
         password: str,
         roles: t.StrSequence | None = None,
         role: str | None = None,
-    ) -> p.Result[p.Auth.Identity]:
+    ) -> p.Result[m.Auth.AuthIdentity]:
         raise NotImplementedError
 
     @classmethod

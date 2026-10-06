@@ -12,11 +12,11 @@ from flext_api import r
 from flext_auth import c, m, p, t
 
 
-class FlextAuthUtilitiesAuthToken:
+class FlextAuthUtilitiesAuthSession:
     @staticmethod
     def decode_token(
         token: str,
-        config: p.Auth.ProviderConfig | t.ScalarMapping,
+        config: m.Auth.ProviderConfig | t.ScalarMapping,
         *,
         verify: bool = True,
     ) -> p.Result[t.Auth.TokensClaimMap]:
@@ -91,4 +91,4 @@ class FlextAuthUtilitiesAuthToken:
             return r[str].fail_op("Encoding", exc)
 
 
-__all__: list[str] = ["FlextAuthUtilitiesAuthToken"]
+__all__: list[str] = ["FlextAuthUtilitiesAuthSession"]

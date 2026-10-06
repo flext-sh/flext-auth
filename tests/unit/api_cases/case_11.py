@@ -79,7 +79,7 @@ class TestsFlextAuthApiCase11:
         token_result = auth.create_token(identity_id=registered.value.unique_id)
         u.Tests.Matchers.ok(token_result)
 
-        validation_result = auth.token_service.validate_token(token_result.value)
+        validation_result = auth.session_service.validate_token(token_result.value)
         u.Tests.Matchers.ok(validation_result)
         u.Tests.Matchers.that(validation_result.value, eq=True)
 
@@ -87,5 +87,5 @@ class TestsFlextAuthApiCase11:
     def test_public_api_validate_token_failure() -> None:
         """Test public api validate token failure."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        validation_result = auth.token_service.validate_token("invalid.jwt.token")
+        validation_result = auth.session_service.validate_token("invalid.jwt.token")
         u.Tests.Matchers.fail(validation_result)

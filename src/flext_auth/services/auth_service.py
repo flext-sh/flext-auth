@@ -13,7 +13,6 @@ from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 from flext_auth.services.identity_service import FlextAuthIdentityService
 from flext_auth.services.provider_service import FlextAuthProviderService
 from flext_auth.services.session_service import FlextAuthSessionService
-from flext_auth.services.token_service import FlextAuthTokenService
 from flext_core import FlextContainer
 
 
@@ -25,7 +24,6 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     _dispatcher: p.Dispatcher
     _provider_service: FlextAuthProviderService
     _identity_service: FlextAuthIdentityService
-    _token_service: FlextAuthTokenService
     _session_service: FlextAuthSessionService
     _auth_settings: FlextAuthSettings
 
@@ -46,12 +44,8 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
-        self._token_service = FlextAuthTokenService(
-            provider_service=self._provider_service,
-            dispatcher=self._dispatcher,
-            managers=shared_managers,
-        )
         self._session_service = FlextAuthSessionService(
+            provider_service=self._provider_service,
             dispatcher=self._dispatcher,
             managers=shared_managers,
         )
@@ -80,11 +74,6 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     def session_service(self) -> FlextAuthSessionService:
         """Session service access."""
         return self._session_service
-
-    @property
-    def token_service(self) -> FlextAuthTokenService:
-        """Token service access."""
-        return self._token_service
 
     def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]:
         """Validate credentials mapping and dispatch to the identity service.
@@ -116,7 +105,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         if auth_result.failure:
             return auth_result
         identity = auth_result.value
-        token_result = self._token_service.generate_jwt_token(
+        token_result = self._session_service.generate_jwt_token(
             user_id=identity.unique_id,
             expires_in_minutes=settings.Auth.expiry_minutes,
         )
@@ -173,7 +162,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
                 identity_id = identity
             case _:
                 return r[str].fail("Identity ID must be a non-empty string")
-        return self._token_service.generate_jwt_token(
+        return self._session_service.generate_jwt_token(
             user_id=identity_id,
             expires_in_minutes=settings.Auth.expiry_minutes,
         )

@@ -48,7 +48,7 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
             credentials: SAML assertion data (assertion, signature, etc.)
 
         Returns:
-            r[FlextAuthModels.Auth.AuthToken]: Authentication token on success
+            r[FlextAuthModels.Auth.AuthSession]: Authentication token on success
 
         Business Rule: Validates SAML assertion and extracts identity information.
 

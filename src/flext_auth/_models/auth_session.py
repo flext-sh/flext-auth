@@ -1,4 +1,4 @@
-"""Authentication session models.
+"""Authentication token models.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,28 +11,34 @@ from typing import Annotated
 
 from flext_api import m, u
 
+from flext_auth import c
+
 
 class FlextAuthModelsAuthSession:
-    class Session(m.Entity):
-        """Generic session entity."""
+    class AuthSession(m.Entity):
+        """Generic authentication token entity."""
 
         identity_id: Annotated[str, u.Field(..., description="Identity ID")]
-        session_token: Annotated[
-            str,
-            u.Field(..., description="Session token", exclude=True),
-        ]
+        token: Annotated[str, u.Field(..., description="Token value", exclude=True)]
         expires_at: Annotated[datetime, u.Field(..., description="Expiration time")]
-        is_active: Annotated[bool, u.Field(description="Active status")] = True
-        ip_address: Annotated[str, u.Field(description="IP address")] = ""
-        user_agent: Annotated[str, u.Field(description="User agent")] = ""
-        last_accessed: datetime = u.Field(
-            default_factory=u.now,
-            description="Last access",
+        token_type: Annotated[str, u.Field(description="Token type")] = (
+            c.Auth.TokenTypes.BEARER.value
         )
+        session_id: Annotated[str, u.Field(description="Session ID")] = ""
+        is_revoked: Annotated[bool, u.Field(description="Revoked status")] = False
+        refresh_token: Annotated[
+            str,
+            u.Field(description="Refresh token", exclude=True),
+        ] = ""
+
+        @property
+        def user_id(self) -> str:
+            """User ID property for protocol compatibility."""
+            return self.identity_id
 
         @property
         def expired(self) -> bool:
-            """Whether session is expired."""
+            """Whether token is expired."""
             current_time: datetime = u.now()
             return current_time > self.expires_at
 

@@ -163,6 +163,8 @@ class FlextAuthConfigModels:
 
         model_config = m.ConfigDict(frozen=True, extra="forbid")
 
+        name: str = m.Field(description="Package identity name metadata.")
+        version: str = m.Field(description="Package identity version metadata.")
         jwt: FlextAuthConfigModels.Jwt = m.Field(description="JWT policy defaults.")
         oauth2: FlextAuthConfigModels.OAuth2 = m.Field(
             description="OAuth2 policy defaults.",

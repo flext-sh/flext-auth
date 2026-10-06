@@ -13,7 +13,7 @@ from tests.constants import TestsFlextAuthConstants as c
 from tests.utilities import TestsFlextAuthUtilities as u
 
 
-class TestsFlextAuthTokenRealFlows:
+class TestsFlextAuthSessionRealFlows:
     """Token flow tests using only FlextAuth public API."""
 
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
@@ -49,14 +49,14 @@ class TestsFlextAuthTokenRealFlows:
         token_result = auth.create_token(identity_id=registered.value.unique_id)
         u.Tests.Matchers.ok(token_result)
 
-        validation_result = auth.token_service.validate_token(token_result.value)
+        validation_result = auth.session_service.validate_token(token_result.value)
         u.Tests.Matchers.ok(validation_result)
 
     @staticmethod
     def test_validate_token_rejects_invalid_token() -> None:
         """Test validate token rejects invalid token."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        invalid_result = auth.token_service.validate_token("invalid.jwt.token")
+        invalid_result = auth.session_service.validate_token("invalid.jwt.token")
         u.Tests.Matchers.that(invalid_result.success, eq=False)
 
     @staticmethod

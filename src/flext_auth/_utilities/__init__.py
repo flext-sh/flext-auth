@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
     from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
     from flext_auth._utilities.auth_response import FlextAuthUtilitiesAuthResponse
-    from flext_auth._utilities.auth_token import FlextAuthUtilitiesAuthToken
+    from flext_auth._utilities.auth_session import FlextAuthUtilitiesAuthSession
     from flext_auth._utilities.auth_validation import FlextAuthUtilitiesAuthValidation
     from flext_auth._utilities.base import FlextAuthUtilitiesBase
     from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
@@ -41,7 +41,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthUserManagers",
     "FlextAuthUtilitiesAuth",
     "FlextAuthUtilitiesAuthResponse",
-    "FlextAuthUtilitiesAuthToken",
+    "FlextAuthUtilitiesAuthSession",
     "FlextAuthUtilitiesAuthValidation",
     "FlextAuthUtilitiesBase",
     "FlextAuthUtilitiesManagers",
@@ -60,7 +60,7 @@ install_lazy_exports(
         "FlextAuthUserManagers": "._managers.user",
         "FlextAuthUtilitiesAuth": ".auth",
         "FlextAuthUtilitiesAuthResponse": ".auth_response",
-        "FlextAuthUtilitiesAuthToken": ".auth_token",
+        "FlextAuthUtilitiesAuthSession": ".auth_session",
         "FlextAuthUtilitiesAuthValidation": ".auth_validation",
         "FlextAuthUtilitiesBase": ".base",
         "FlextAuthUtilitiesManagers": ".managers",

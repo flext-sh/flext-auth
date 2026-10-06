@@ -54,7 +54,7 @@ class FlextAuthBasicUsageFlows:
         if auth_result.failure:
             return r[bool].from_failure(auth_result)
         cls.logger.info("User authenticated", session_id=auth_result.value.session_id)
-        return auth.token_service.validate_token(auth_result.value.token)
+        return auth.session_service.validate_token(auth_result.value.token)
 
     @classmethod
     def example_direct_auth(cls) -> p.Result[bool]:
@@ -72,7 +72,7 @@ class FlextAuthBasicUsageFlows:
         if auth_result.failure:
             return r[bool].from_failure(auth_result)
         cls.logger.info("User authenticated", username="directuser")
-        return auth.token_service.validate_token(auth_result.value.token)
+        return auth.session_service.validate_token(auth_result.value.token)
 
 
 __all__: list[str] = ["FlextAuthBasicUsageFlows"]
