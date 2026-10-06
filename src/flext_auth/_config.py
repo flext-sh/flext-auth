@@ -12,14 +12,9 @@ from __future__ import annotations
 
 from typing import Annotated
 
+import flext_auth._models._auth_namespace
 from flext_auth.models import m
 from flext_core import FlextConfig, FlextSettings
-
-
-class _AuthNamespace(m.BaseModel):
-    """Open, frozen namespace exposing every ``config/*.yaml`` domain model-less."""
-
-    model_config = m.ConfigDict(extra="allow", frozen=True)
 
 
 class FlextAuthConfig(FlextSettings, FlextConfig):
@@ -32,11 +27,11 @@ class FlextAuthConfig(FlextSettings, FlextConfig):
     """
 
     Auth: Annotated[
-        _AuthNamespace,
+        flext_auth._models._auth_namespace._AuthNamespace,
         m.Field(
             description="Open namespace exposing ``config/*.yaml`` under ``Auth``.",
         ),
-    ] = _AuthNamespace()
+    ] = flext_auth._models._auth_namespace._AuthNamespace()
 
 
 config: FlextAuthConfig = FlextAuthConfig.fetch_global()
