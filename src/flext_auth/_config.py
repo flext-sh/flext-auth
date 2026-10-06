@@ -1,8 +1,8 @@
 """FlextAuthConfig — frozen config singleton for flext-auth (ADR-005 §7).
 
-Model-less: business rules live in ``config/*.yaml`` under the ``Auth:`` key and
-are exposed through the open ``config.Auth`` namespace (``extra="allow"``), with
-no per-domain model. Access is ``config.Auth.<domain>[<key>...]``.
+Business rules live in ``config/*.yaml`` under the ``Auth:`` key and are
+validated into the typed models of ``FlextAuthConfigModels`` (ADR-012).
+Access is ``config.Auth.<domain>[<key>...]``.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -10,15 +10,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import ClassVar
 
-import flext_auth._models._auth_namespace
-from flext_auth.models import m
+from flext_auth._models.config import FlextAuthConfigModels
 from flext_core import FlextConfig, FlextSettings
 
 
 class FlextAuthConfig(FlextSettings, FlextConfig):
-    """Auth config auto-loaded model-less from ``config/*.yaml``.
+    """Auth config auto-loaded from ``config/*.yaml`` and validated via models.
 
     MRO carries ``FlextSettings`` FIRST (ENFORCE-042); unlike never-instantiated
     namespace holders, this class IS instantiated by ``fetch_global``, so the
@@ -26,12 +25,12 @@ class FlextAuthConfig(FlextSettings, FlextConfig):
     construction machinery stays intact.
     """
 
-    Auth: Annotated[
-        flext_auth._models._auth_namespace._AuthNamespace,
-        m.Field(
-            description="Open namespace exposing ``config/*.yaml`` under ``Auth``.",
-        ),
-    ] = flext_auth._models._auth_namespace._AuthNamespace()
+    # ENFORCE-042: the Settings-first MRO pairs two singleton bases whose
+    # ``_instance`` slots disagree for static checkers; the concrete subclass
+    # narrows both, which pydantic enforces at runtime.
+    _instance: ClassVar[FlextAuthConfig | None] = None  # type: ignore[misc]  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    Auth: FlextAuthConfigModels.Auth
 
 
 config: FlextAuthConfig = FlextAuthConfig.fetch_global()

@@ -75,7 +75,7 @@ class TestsFlextAuthApiCase08:
     def test_get_user_by_token_invalid_token_error_direct_api() -> None:
         """Test validate_token with invalid token — fails with 'not implemented'."""
         auth = FlextAuth()
-        result = auth.token_service.validate_token("invalid_token")
+        result = auth.session_service.validate_token("invalid_token")
         u.Tests.Matchers.that(not result.success, eq=True)
         u.Tests.Matchers.that(result.error, none=False)
 

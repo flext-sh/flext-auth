@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from examples.basic_usage_flows import FlextAuthBasicUsageFlows
@@ -34,16 +34,23 @@ __all__: tuple[str, ...] = (
     "x",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            ".basic_usage_flows": ("FlextAuthBasicUsageFlows",),
-            ".basic_usage_workflow": ("FlextAuthBasicUsageWorkflow",),
-            "flext_auth": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x"),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextAuthBasicUsageFlows": ".basic_usage_flows",
+        "FlextAuthBasicUsageWorkflow": ".basic_usage_workflow",
+        "c": "flext_auth",
+        "d": "flext_auth",
+        "e": "flext_auth",
+        "h": "flext_auth",
+        "m": "flext_auth",
+        "p": "flext_auth",
+        "r": "flext_auth",
+        "s": "flext_auth",
+        "t": "flext_auth",
+        "u": "flext_auth",
+        "x": "flext_auth",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

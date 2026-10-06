@@ -13,7 +13,7 @@ from typing import Annotated, Self
 from flext_api import m, r, u
 
 from flext_auth import c, p, t
-from flext_auth._models.auth_password import FlextAuthModelsAuthPassword
+from flext_auth._models.auth_credential import FlextAuthModelsAuthCredential
 
 
 class FlextAuthModelsAuthIdentity:
@@ -72,18 +72,24 @@ class FlextAuthModelsAuthIdentity:
         @classmethod
         def normalize_token_claims(
             cls,
-            data: t.MappingKV[str, t.JsonPayload | datetime] | Self,
-        ) -> t.MappingKV[str, t.JsonPayload | datetime] | Self:
+            data: object,
+        ) -> object:
             """Normalize OAuth/Kerberos claim payloads into identity fields.
 
+            Pydantic hands before-model validators the raw untrusted input; the
+            boundary parses it into a strictly keyed mapping before use.
+
             Returns:
-                The resulting ``t.MappingKV[str, t.JsonPayload | datetime] | Self``.
+                The resulting normalized mapping or the original input.
             """
             if isinstance(data, cls):
                 return data
             if not isinstance(data, Mapping):
                 return data
-            payload: t.MappingKV[str, t.JsonPayload | datetime] = data
+            # Boundary parse: the raw payload's keys and values are untyped.
+            payload: dict[str, object] = {
+                str(key): value for key, value in data.items()
+            }
             if c.Auth.KEY_NAME in payload and c.Auth.KEY_CONTACT in payload:
                 return data
             identity_candidates = tuple(
@@ -163,7 +169,7 @@ class FlextAuthModelsAuthIdentity:
             """
             try:
                 self.credential_hash = (
-                    FlextAuthModelsAuthPassword.PasswordUtil.hash_password(credential)
+                    FlextAuthModelsAuthCredential.PasswordUtil.hash_password(credential)
                 )
                 return r[bool].ok(value=True)
             except c.EXC_BROAD_IO_TYPE as exc:
@@ -176,7 +182,7 @@ class FlextAuthModelsAuthIdentity:
                 The resulting ``p.Result[bool]``.
             """
             try:
-                valid = FlextAuthModelsAuthPassword.PasswordUtil.verify_password(
+                valid = FlextAuthModelsAuthCredential.PasswordUtil.verify_password(
                     credential,
                     self.credential_hash,
                 )

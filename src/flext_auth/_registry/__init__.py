@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth._registry.base import FlextAuthRegistryBase
@@ -26,17 +26,14 @@ __all__: tuple[str, ...] = (
     "FlextAuthRegistryPlugins",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            ".base": ("FlextAuthRegistryBase",),
-            ".lookup": ("FlextAuthRegistryLookup",),
-            ".mutation": ("FlextAuthRegistryMutation",),
-            ".plugins": ("FlextAuthRegistryPlugins",),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextAuthRegistryBase": ".base",
+        "FlextAuthRegistryLookup": ".lookup",
+        "FlextAuthRegistryMutation": ".mutation",
+        "FlextAuthRegistryPlugins": ".plugins",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

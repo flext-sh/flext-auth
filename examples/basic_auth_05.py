@@ -54,7 +54,7 @@ class FlextAuthBasicAuthExample:
                 f"token generation failed: {token_result.error}",
             )
             return r[bool].from_failure(token_result)
-        validation_result = auth.token_service.validate_token(token_result.value)
+        validation_result = auth.session_service.validate_token(token_result.value)
         FlextAuthBasicAuthExample._emit(
             f"token valid: {validation_result.success and validation_result.value}",
         )

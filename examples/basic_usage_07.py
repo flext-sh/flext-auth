@@ -31,7 +31,7 @@ class FlextAuthBasicUsagePortugueseExample:
         if auth_result.failure:
             return r[bool].from_failure(auth_result)
         auth_data = auth_result.value
-        validation = auth.token_service.validate_token(auth_data.token)
+        validation = auth.session_service.validate_token(auth_data.token)
         if validation.failure:
             return validation
         return auth.session_service.session_manager.end_session_by_id(

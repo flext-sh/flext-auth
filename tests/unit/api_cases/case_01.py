@@ -21,7 +21,7 @@ class TestsFlextAuthApiCase01:
         """FlextAuth quick_start initializes the public service properties."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         u.Tests.Matchers.that(auth.identity_service, none=False)
-        u.Tests.Matchers.that(auth.token_service, none=False)
+        u.Tests.Matchers.that(auth.session_service, none=False)
         u.Tests.Matchers.that(auth.session_service, none=False)
         u.Tests.Matchers.that(auth.registry, none=False)
 

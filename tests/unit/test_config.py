@@ -39,8 +39,14 @@ class TestsFlextAuthConfig:
         """Default settings satisfy the documented value invariants."""
         u.Tests.Matchers.that(settings, is_=FlextAuthSettings)
         u.Tests.Matchers.that(settings.Auth.expiry_minutes, gt=0)
-        u.Tests.Matchers.that(settings.Auth.session_expiry_minutes, gt=0)
-        u.Tests.Matchers.that(settings.Auth.max_sessions_per_user, gt=0)
+        u.Tests.Matchers.that(
+            settings.Auth.session_expiry_minutes,
+            gt=0,
+        )
+        u.Tests.Matchers.that(
+            settings.Auth.max_sessions_per_user,
+            gt=0,
+        )
         u.Tests.Matchers.that(settings.Auth.algorithm, is_=str)
 
     @staticmethod
@@ -61,8 +67,11 @@ class TestsFlextAuthConfig:
         expected: str | int,
     ) -> None:
         """Freshly constructed settings default each field to its constant."""
-        settings = FlextAuthSettings()
-        u.Tests.Matchers.that(getattr(settings.Auth, field_name), eq=expected)
+        settings = FlextAuthSettings.model_validate({})
+        u.Tests.Matchers.that(
+            getattr(settings.Auth, field_name),
+            eq=expected,
+        )
 
     @staticmethod
     def test_clone_returns_new_instance_and_leaves_original_unchanged(
@@ -74,8 +83,14 @@ class TestsFlextAuthConfig:
         clone = settings.clone(Auth={"expiry_minutes": original_expiry + 5})
 
         u.Tests.Matchers.that(clone is settings, eq=False)
-        u.Tests.Matchers.that(clone.Auth.expiry_minutes, eq=original_expiry + 5)
-        u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=original_expiry)
+        u.Tests.Matchers.that(
+            clone.Auth.expiry_minutes,
+            eq=original_expiry + 5,
+        )
+        u.Tests.Matchers.that(
+            settings.Auth.expiry_minutes,
+            eq=original_expiry,
+        )
 
     @staticmethod
     def test_model_copy_applies_multiple_overrides(
@@ -119,7 +134,10 @@ class TestsFlextAuthConfig:
             "Auth": {"secret_key": secret_value},
         })
 
-        u.Tests.Matchers.that(settings.Auth.auth_secret, is_=t.SecretStr)
+        u.Tests.Matchers.that(
+            settings.Auth.auth_secret,
+            is_=t.SecretStr,
+        )
         u.Tests.Matchers.that(
             settings.Auth.auth_secret.get_secret_value(),
             eq=settings.Auth.secret_key,
@@ -148,9 +166,15 @@ class TestsFlextAuthConfig:
             f"{env_prefix}AUTH{nested_delimiter}EXPIRY_MINUTES": expiry_minutes,
             f"{env_prefix}AUTH{nested_delimiter}ALGORITHM": algorithm,
         }):
-            settings = FlextAuthSettings()
-            u.Tests.Matchers.that(settings.Auth.expiry_minutes, eq=expiry_minutes)
-            u.Tests.Matchers.that(settings.Auth.algorithm, eq=algorithm)
+            settings = FlextAuthSettings.model_validate({})
+            u.Tests.Matchers.that(
+                settings.Auth.expiry_minutes,
+                eq=expiry_minutes,
+            )
+            u.Tests.Matchers.that(
+                settings.Auth.algorithm,
+                eq=algorithm,
+            )
 
     @staticmethod
     def test_create_token_fails_for_unknown_identity(
@@ -163,7 +187,10 @@ class TestsFlextAuthConfig:
 
         u.Tests.Matchers.that(result.success, eq=False)
         u.Tests.Matchers.that(result.error, none=False)
-        u.Tests.Matchers.that("user" in (result.error or "").lower(), eq=True)
+        u.Tests.Matchers.that(
+            "user" in (result.error or "").lower(),
+            eq=True,
+        )
 
     @staticmethod
     @pytest.mark.parametrize("identity_id", ["", "   "])

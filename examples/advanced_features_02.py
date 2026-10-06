@@ -52,7 +52,7 @@ class FlextAuthAdvancedFeaturesExample:
         )
         if auth_result.failure:
             return r[bool].from_failure(auth_result)
-        return auth.token_service.validate_token(auth_result.value.token)
+        return auth.session_service.validate_token(auth_result.value.token)
 
     @staticmethod
     def example_role_based_access() -> p.Result[bool]:
@@ -118,11 +118,11 @@ class FlextAuthAdvancedFeaturesExample:
         token_result = auth.create_token(identity_id=user_result.value.unique_id)
         if token_result.failure:
             return r[bool].from_failure(token_result)
-        valid = auth.token_service.validate_token(token_result.value)
+        valid = auth.session_service.validate_token(token_result.value)
         if valid.failure:
             return valid
         rejected = all(
-            not (outcome := auth.token_service.validate_token(token)).success
+            not (outcome := auth.session_service.validate_token(token)).success
             or not outcome.value
             for token in (
                 "invalid.token.format",

@@ -11,7 +11,7 @@ import bcrypt
 from flext_auth import c
 
 
-class FlextAuthModelsAuthPassword:
+class FlextAuthModelsAuthCredential:
     class PasswordUtil:
         """Password utilities for authentication."""
 
@@ -35,4 +35,4 @@ class FlextAuthModelsAuthPassword:
             return bcrypt.checkpw(password.encode(), hashed.encode())
 
 
-__all__: list[str] = ["FlextAuthModelsAuthPassword"]
+__all__: list[str] = ["FlextAuthModelsAuthCredential"]

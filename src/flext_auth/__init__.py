@@ -20,7 +20,7 @@ from flext_auth.__version__ import (
     __version__,
     __version_info__,
 )
-from flext_core import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, x
@@ -54,7 +54,6 @@ if TYPE_CHECKING:
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.provider_service import FlextAuthProviderService
     from flext_auth.services.session_service import FlextAuthSessionService
-    from flext_auth.services.token_service import FlextAuthTokenService
     from flext_auth.typings import FlextAuthTypes, t
     from flext_auth.utilities import FlextAuthUtilities, u
 
@@ -87,7 +86,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthServiceBase",
     "FlextAuthSessionService",
     "FlextAuthSettings",
-    "FlextAuthTokenService",
     "FlextAuthTypes",
     "FlextAuthUtilities",
     "__author__",
@@ -117,47 +115,56 @@ __all__: tuple[str, ...] = (
     "x",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            "._config": ("FlextAuthConfig", "config"),
-            "._settings": ("FlextAuthSettings", "settings"),
-            ".api": ("FlextAuth", "auth"),
-            ".base": ("FlextAuthServiceBase", "s"),
-            ".cli": ("main",),
-            ".constants": ("FlextAuthConstants", "c"),
-            ".models": ("FlextAuthModels", "m"),
-            ".protocols": ("FlextAuthProtocols", "p"),
-            ".providers": ("providers",),
-            ".providers.apikey": ("FlextAuthApiKeyProvider",),
-            ".providers.basic": ("FlextAuthBasicProvider",),
-            ".providers.certificate": ("FlextAuthCertificateProvider",),
-            ".providers.jwt": ("FlextAuthJwtProvider",),
-            ".providers.jwt_token_validator": ("FlextAuthJwtTokenValidator",),
-            ".providers.kerberos": ("FlextAuthKerberosProvider",),
-            ".providers.kerberos_support": ("FlextAuthKerberosSupport",),
-            ".providers.ldap": ("FlextAuthLdapProvider",),
-            ".providers.mixin": ("FlextAuthProviderMixin",),
-            ".providers.oauth2": ("FlextAuthOAuth2Provider",),
-            ".providers.oauth2_config": ("FlextAuthOAuth2Config",),
-            ".providers.oauth2_introspection": ("FlextAuthOAuth2Introspection",),
-            ".providers.oauth2_tokens": ("FlextAuthOAuth2Tokens",),
-            ".providers.oidc": ("FlextAuthOidcProvider",),
-            ".providers.rfc": ("FlextAuthRfcProvider",),
-            ".registry": ("FlextAuthRegistry",),
-            ".services": ("services",),
-            ".services.auth_service": ("FlextAuthApplicationService",),
-            ".services.identity_service": ("FlextAuthIdentityService",),
-            ".services.provider_service": ("FlextAuthProviderService",),
-            ".services.session_service": ("FlextAuthSessionService",),
-            ".services.token_service": ("FlextAuthTokenService",),
-            ".typings": ("FlextAuthTypes", "t"),
-            ".utilities": ("FlextAuthUtilities", "u"),
-            "flext_api": ("d", "e", "h", "r", "x"),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    ),
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "FlextAuth": ".api",
+        "FlextAuthApiKeyProvider": ".providers.apikey",
+        "FlextAuthApplicationService": ".services.auth_service",
+        "FlextAuthBasicProvider": ".providers.basic",
+        "FlextAuthCertificateProvider": ".providers.certificate",
+        "FlextAuthConfig": "._config",
+        "FlextAuthConstants": ".constants",
+        "FlextAuthIdentityService": ".services.identity_service",
+        "FlextAuthJwtProvider": ".providers.jwt",
+        "FlextAuthJwtTokenValidator": ".providers.jwt_token_validator",
+        "FlextAuthKerberosProvider": ".providers.kerberos",
+        "FlextAuthKerberosSupport": ".providers.kerberos_support",
+        "FlextAuthLdapProvider": ".providers.ldap",
+        "FlextAuthModels": ".models",
+        "FlextAuthOAuth2Config": ".providers.oauth2_config",
+        "FlextAuthOAuth2Introspection": ".providers.oauth2_introspection",
+        "FlextAuthOAuth2Provider": ".providers.oauth2",
+        "FlextAuthOAuth2Tokens": ".providers.oauth2_tokens",
+        "FlextAuthOidcProvider": ".providers.oidc",
+        "FlextAuthProtocols": ".protocols",
+        "FlextAuthProviderMixin": ".providers.mixin",
+        "FlextAuthProviderService": ".services.provider_service",
+        "FlextAuthRegistry": ".registry",
+        "FlextAuthRfcProvider": ".providers.rfc",
+        "FlextAuthServiceBase": ".base",
+        "FlextAuthSessionService": ".services.session_service",
+        "FlextAuthSettings": "._settings",
+        "FlextAuthTypes": ".typings",
+        "FlextAuthUtilities": ".utilities",
+        "auth": ".api",
+        "c": ".constants",
+        "config": "._config",
+        "d": "flext_api",
+        "e": "flext_api",
+        "h": "flext_api",
+        "m": ".models",
+        "main": ".cli",
+        "p": ".protocols",
+        "providers": ".providers",
+        "r": "flext_api",
+        "s": ".base",
+        "services": ".services",
+        "settings": "._settings",
+        "t": ".typings",
+        "u": ".utilities",
+        "x": "flext_api",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

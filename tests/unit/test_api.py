@@ -20,7 +20,6 @@ from flext_auth import (
     FlextAuthRegistry,
     FlextAuthSessionService,
     FlextAuthSettings,
-    FlextAuthTokenService,
     t,
 )
 from tests import c
@@ -46,14 +45,14 @@ class TestsFlextAuthApi:
         # types through the payload-free ``is_`` probe (arbitrary domain
         # objects are not payload leaves by design).
         tm.that(auth.identity_service, is_=FlextAuthIdentityService)
-        tm.that(auth.token_service, is_=FlextAuthTokenService)
+        tm.that(auth.session_service, is_=FlextAuthSessionService)
         tm.that(auth.session_service, is_=FlextAuthSessionService)
         tm.that(auth.registry, is_=FlextAuthRegistry)
 
     @staticmethod
     def test_settings_property_returns_injected_settings() -> None:
         """The settings property returns the exact settings instance supplied."""
-        settings = FlextAuthSettings()
+        settings = FlextAuthSettings.model_validate({})
 
         auth = FlextAuth(settings=settings)
 

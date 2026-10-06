@@ -50,7 +50,7 @@ class FlextAuthSessionManagers:
             expires_in_minutes: int = 60,
             ip_address: str | None = None,
             user_agent: str | None = None,
-        ) -> p.Result[m.Auth.Session]:
+        ) -> p.Result[m.Auth.AuthSession]:
             session_id = str(uuid4())
             expires_at = u.now() + timedelta(minutes=expires_in_minutes)
             session_data: t.Auth.ManagersSessionData = {
@@ -65,22 +65,16 @@ class FlextAuthSessionManagers:
                 "user_agent": user_agent or "",
             }
             self._sessions[session_id] = session_data
-            session = m.Auth.Session(
-                unique_id=session_id,
+            session = m.Auth.AuthSession(
+                domain_events=[],
                 identity_id=str(session_data["identity_id"]),
-                session_token=str(session_data["session_token"]),
+                token=str(session_data["session_token"]),
                 expires_at=session_data["expires_at"]
                 if isinstance(session_data["expires_at"], datetime)
                 else datetime.fromisoformat(str(session_data["expires_at"])),
-                is_active=bool(session_data.get("is_active", True)),
-                ip_address=str(session_data.get("ip_address", "")),
-                user_agent=str(session_data.get("user_agent", "")),
-                last_accessed=session_data["last_accessed"]
-                if "last_accessed" in session_data
-                and isinstance(session_data["last_accessed"], datetime)
-                else u.now(),
+                session_id=session_id,
             )
-            result: p.Result[m.Auth.Session] = r[m.Auth.Session].ok(session)
+            result: p.Result[m.Auth.AuthSession] = r[m.Auth.AuthSession].ok(session)
             return result
 
         def end_session(self, user_id: str) -> p.Result[bool]:
@@ -116,8 +110,8 @@ class FlextAuthSessionManagers:
         def get_active_sessions(
             self,
             user_id: str,
-        ) -> p.Result[Sequence[m.Auth.Session]]:
-            sessions: MutableSequence[m.Auth.Session] = []
+        ) -> p.Result[Sequence[m.Auth.AuthSession]]:
+            sessions: MutableSequence[m.Auth.AuthSession] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 match identity_id_value:
@@ -125,29 +119,24 @@ class FlextAuthSessionManagers:
                         identity_id_value_str == user_id
                         and self._is_session_active(session_data)
                     ):
-                        session = m.Auth.Session(
+                        session = m.Auth.AuthSession(
+                            domain_events=[],
                             identity_id=str(session_data["identity_id"]),
-                            session_token=str(session_data["session_token"]),
+                            token=str(session_data["session_token"]),
                             expires_at=session_data["expires_at"]
                             if isinstance(session_data["expires_at"], datetime)
                             else datetime.fromisoformat(
                                 str(session_data["expires_at"]),
                             ),
-                            is_active=bool(session_data.get("is_active", True)),
-                            ip_address=str(session_data.get("ip_address", "")),
-                            user_agent=str(session_data.get("user_agent", "")),
-                            last_accessed=session_data["last_accessed"]
-                            if "last_accessed" in session_data
-                            and isinstance(session_data["last_accessed"], datetime)
-                            else u.now(),
+                            session_id=str(session_data["id"]),
                         )
                         session.unique_id = session_id
                         sessions.append(session)
                     case _:
                         continue
-            result: p.Result[Sequence[m.Auth.Session]] = r[Sequence[m.Auth.Session]].ok(
-                sessions,
-            )
+            result: p.Result[Sequence[m.Auth.AuthSession]] = r[
+                Sequence[m.Auth.AuthSession]
+            ].ok(sessions)
             return result
 
         def get_total_active_sessions(self) -> int:

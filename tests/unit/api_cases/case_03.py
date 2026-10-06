@@ -30,16 +30,16 @@ class TestsFlextAuthApiCase03:
         custom_secret = secrets.token_urlsafe(32)
         custom_rounds = 10
         custom_expiry = 60
-        custom_config = FlextAuthSettings(
-            secret_key=custom_secret,
-            algorithm=c.Auth.Algorithms.HS256,
-            issuer="flext-auth",
-            audience="flext-users",
-            hash_rounds=custom_rounds,
-            expiry_minutes=custom_expiry,
-            session_expiry_minutes=1440,
-            max_sessions_per_user=5,
-        )
+        custom_config = FlextAuthSettings.model_validate({
+            "secret_key": custom_secret,
+            "algorithm": c.Auth.Algorithms.HS256,
+            "issuer": "flext-auth",
+            "audience": "flext-users",
+            "hash_rounds": custom_rounds,
+            "expiry_minutes": custom_expiry,
+            "session_expiry_minutes": 1440,
+            "max_sessions_per_user": 5,
+        })
         auth_custom: FlextAuth = FlextAuth(settings=custom_config)
         u.Tests.Matchers.that(
             auth_custom.config.auth_secret.get_secret_value(),
@@ -143,6 +143,6 @@ class TestsFlextAuthApiCase03:
     def test_token_validation_invalid_token() -> None:
         """Test validation of invalid token — fails with 'not implemented'."""
         auth: FlextAuth = FlextAuth()
-        invalid_result = auth.token_service.validate_token("invalid.token.here")
+        invalid_result = auth.session_service.validate_token("invalid.token.here")
         u.Tests.Matchers.that(not invalid_result.success, eq=True)
         u.Tests.Matchers.that(invalid_result.error, none=False)
