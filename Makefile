@@ -227,6 +227,7 @@ endif
 endif
 endif
 DOCS_ACTIONS := generate fix fmt build validate audit
+DOCS_ACTIONS := generate fix fmt build validate audit
  # End SECTION: verb dispatch
 
 # === SECTION: lint/type paths (managed) ===
@@ -393,6 +394,7 @@ _bootstrap_setup_tools: _builtin_require_workspace
 # Execute the interpreter provisioned by setup without discovering a project
 # workspace or creating a dependency-resolution file during a runtime command.
 override UV_RUN := env -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u PROJECT_ROOT PYTHONPATH="$(PROJECT_ROOT)/src" $(UV) run --directory "$(PROJECT_ROOT)" --no-project --python "$(RUNTIME_PYTHON)"
+override UV_RUN := env -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u PROJECT_ROOT PYTHONPATH="$(PROJECT_ROOT)/src" $(UV) run --directory "$(PROJECT_ROOT)" --no-project --python "$(RUNTIME_PYTHON)"
 # The checked-out flext-infra lane owns every lifecycle verb: a workspace
 # runs the generator it carries (the submodule src), so a broken published
 # dependency tip can never block the local recovery cycle. A checkout without
@@ -439,6 +441,12 @@ endef
 
 
 
+# uv owns the lock. `make upg` is the only verb that advances versions
+# (`uv lock --upgrade --refresh`); `make setup` restores the DECLARED state:
+# a uv.lock that is missing, stale, or corrupt is removed and re-locked from
+# the manifests (run with the lock disabled), exactly as uv prescribes. The
+# committed lock is the journal: an interrupted write is recovered by the
+# same path (uv lock --check fails, uv lock re-derives).
 # uv owns the lock. `make upg` is the only verb that advances versions
 # (`uv lock --upgrade --refresh`); `make setup` restores the DECLARED state:
 # a uv.lock that is missing, stale, or corrupt is removed and re-locked from
@@ -1376,6 +1384,10 @@ endif
 # removed and re-locked from the manifests (never a version advance — that
 # belongs to `make upg` alone); uv then owns the venv: `uv sync --python`
 # creates or replaces it against the declared interpreter.
+# Setup restores the declared state: a uv.lock missing, stale, or corrupt is
+# removed and re-locked from the manifests (never a version advance — that
+# belongs to `make upg` alone); uv then owns the venv: `uv sync --python`
+# creates or replaces it against the declared interpreter.
 # Governed gitlinks are provisioned in every context, GitHub Actions included:
 # the workspace projections (Makefile, pyproject, .gitignore, dependabot, docs)
 # derive from the member checkouts, so a member-less CI checkout would render a
@@ -1383,6 +1395,7 @@ endif
 # members are read as libraries; no verb gates them from here.
 _builtin_setup_environment: $(if $(filter Y,$(CI)),,_builtin_setup_submodules)
 	@$(SETUP_ENVIRONMENT_RECIPE)
+ifeq ($(MAKE_PROFILE),workspace)
 ifeq ($(MAKE_PROFILE),workspace)
 	@$(UV) pip check --python "$(RUNTIME_VENV)"
 endif
@@ -1756,6 +1769,7 @@ _builtin-bootstrap-candidate: _builtin_require_environment
 # The current directory defines scope; callers never address tools directly.
 _builtin_mod_apply: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) refactor mod --repository-root "$(PROJECT_ROOT)" --apply
+	@$(PROJECT_FLEXT_INFRA) refactor mod --repository-root "$(PROJECT_ROOT)" --apply
 
 _builtin_mod_text: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) refactor mod-text --apply
@@ -1775,8 +1789,14 @@ _builtin_mod_snapshots: _builtin_require_environment
 # aggregates per project and one project's findings never stop the sweep. A
 # member profile enforces only itself.
 
+# The workspace profile sweeps every namespace-enabled project of the topology
+# (the root repository and each declared member) in one process: the report
+# aggregates per project and one project's findings never stop the sweep. A
+# member profile enforces only itself.
+
 _builtin_fix_namespace: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) refactor namespace-enforce --repository-root "$(PROJECT_ROOT)" --projects . --apply
+
 
 
 _builtin_fix_accessors: _builtin_require_environment

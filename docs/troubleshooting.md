@@ -63,7 +63,7 @@ result = auth.register_user("user", "invalid-email", "weak")
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.register_user("user", "user@example.com", "password123")
+result = auth.register_user("user", "<user@example.com>", "password123")
 
 1. **Password Requirements**:
 
