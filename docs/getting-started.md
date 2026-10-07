@@ -81,7 +81,9 @@ password = os.environ["FLEXT_DEMO_PASSWORD"]
 
 # Register user using the r pattern
 result = auth.register_user(
-    username="alice", email="alice@example.com", password=password,
+    username="alice",
+    email="alice@example.com",
+    password=password,
 )
 
 if result.success:
