@@ -56,43 +56,44 @@ result = auth.register_user("user", "invalid-email", "weak")
 
 1. **Email Validation**:
 
-   ```python
-   from flext_auth import FlextAuth
+```python
 
-   auth = FlextAuth.quick_start(create_admin_user=False)
-   result = auth.register_user("user", "user@example.com", "password123")
-   ```
+```
 
-````
+from flext_auth import FlextAuth
+
+auth = FlextAuth.quick_start(create_admin_user=False)
+result = auth.register_user("user", "user@example.com", "password123")
 
 1. **Password Requirements**:
 
-   ```python
-   from flext_auth import FlextAuth
+```python
+from flext_auth import FlextAuth
 
-   auth = FlextAuth.quick_start(create_admin_user=False)
-   result = auth.register_user("user", "user@example.com", "SecurePassword123!")
-````
+auth = FlextAuth.quick_start(create_admin_user=False)
+result = auth.register_user("user", "user@example.com", "SecurePassword123!")
+```
 
 1. **Username Uniqueness**:
 
-   ```python
-   from flext_auth import FlextAuth
-   from flext_cli import u
+```python
+from flext_cli import u
 
-   auth = FlextAuth.quick_start(create_admin_user=False)
-   existing_user = auth.identity_service.identity_manager.fetch_user_by_username(
-       "username"
-   )
-   if existing_user.success:
-       u.Cli.info("User already exists")
-   ```
+from flext_auth import FlextAuth
+
+auth = FlextAuth.quick_start(create_admin_user=False)
+existing_user = auth.identity_service.identity_manager.fetch_user_by_username(
+    "username",
+)
+if existing_user.success:
+    u.Cli.info("User already exists")
+```
 
 ### Authentication Failures
 
 **Problem**: User authentication fails unexpectedly
 
-`````python notest
+```{.python .notest}
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -100,11 +101,13 @@ auth.register_user("user", "user@example.com", "password123")
 auth_result = auth.authenticate_user("user", "password123")
 # Returns failure even with correct credentials
 ```
+
 **Debugging**:
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user("user", "user@example.com", "password123")
@@ -119,6 +122,7 @@ else:
     verify_result = user.verify_credential("password123")
     u.Cli.info(f"Password verification: {verify_result.success}")
 ```
+
 **Common Causes**:
 
 1. **Case sensitivity**: Usernames are case-sensitive
@@ -141,41 +145,48 @@ if registered.success:
         validation_result = auth.token_service.validate_token(token)
         # Returns failure for valid tokens
 ```
+
 **Solutions**:
 
 1. **Token Format**:
 
-   ```python
-   # Ensure proper Bearer format or clean token
-   token = "Bearer <jwt-header>.<jwt-payload>.<jwt-signature>"
-   # or
-   token = "<jwt-header>.<jwt-payload>.<jwt-signature>"
+```python
+
 ```
+
+# Ensure proper Bearer format or clean token
+
+bearer_value = "Bearer <jwt-header>.<jwt-payload>.<jwt-signature>"
+
+# or
+
+bearer_value = "<jwt-header>.<jwt-payload>.<jwt-signature>"
 
 1. **Token Expiration**:
 
-   ```python notest
-   import jwt
+```{.python .notest}
+import jwt
 
-   # Check token expiration without validation
-   token = "<jwt-header>.<jwt-payload>.<jwt-signature>"
-   try:
-       payload = jwt.decode(token, options={"verify_signature": False})
-       u.Cli.info(f"Token expires at: {payload.get('exp')}")
-   except jwt.InvalidTokenError as e:
-       u.Cli.info(f"Token error: {e}")
-   ```
+# Check token expiration without validation
+token = "<jwt-header>.<jwt-payload>.<jwt-signature>"
+try:
+    payload = jwt.decode(token, options={"verify_signature": False})
+    u.Cli.info(f"Token expires at: {payload.get('exp')}")
+except jwt.InvalidTokenError as e:
+    u.Cli.info(f"Token error: {e}")
+```
 
 1. **Secret Key Mismatch**:
 
-   ```python
-   from flext_auth import FlextAuthSettings
-   from flext_cli import u
+```python
+from flext_cli import u
 
-   # Ensure same secret key is used for generation and validation
-   settings = FlextAuthSettings()
-   u.Cli.info(f"JWT Secret: {settings.Auth.secret_key}")
-   ```
+from flext_auth import FlextAuthSettings
+
+# Ensure same secret key is used for generation and validation
+settings = FlextAuthSettings()
+u.Cli.info(f"JWT Secret: {settings.Auth.secret_key}")
+```
 
 ---
 
@@ -185,37 +196,38 @@ if registered.success:
 
 **Problem**: Configuration not loading correctly
 
-````python notest
+```{.python .notest}
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
 # Access namespaced auth settings via settings.Auth
 u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")
 ```
+
 **Solutions**:
 
 1. **Check Environment Variables**:
 
-   ```bash
+```bash
    env | grep FLEXT_AUTH_
    # Should show FLEXT_AUTH_* variables if set
 ```
 
 1. **Valid Environment Names**:
 
-   ```python notest
+```{.python .notest}
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
    settings = FlextAuthSettings()
-   ```
+```
 
 1. **Manual Configuration**:
 
-   ```python
-   from flext_auth import FlextAuthSettings
+```python
+from flext_auth import FlextAuthSettings
 
-   settings = FlextAuthSettings(Auth={"secret_key": "a" * 32, "expiry_minutes": 60})
-   ```
+settings = FlextAuthSettings(Auth={"secret_key": "a" * 32, "expiry_minutes": 60})
+```
 
 ### JWT Configuration
 
@@ -223,22 +235,24 @@ u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")
 
 **Check Configuration**:
 
-````python
-from flext_auth import FlextAuthSettings
+```python
 from flext_cli import u
+
+from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
 u.Cli.info(f"JWT Algorithm: {settings.Auth.algorithm}")
 u.Cli.info(f"JWT Expiry: {settings.Auth.expiry_minutes}")
 u.Cli.info(f"Secret Key Length: {len(settings.Auth.secret_key)}")
 ```
+
 **Recommendations**:
 
 - Use HS256 algorithm (default)
 - Secret key should be at least 32 characters
 - Reasonable expiry time (15-60 minutes)
 
-______________________________________________________________________
+---
 
 ## Testing Issues
 
@@ -252,7 +266,7 @@ ______________________________________________________________________
 
 1. **CLI Tests**:
 
-   ```bash
+```bash
    # Run CLI tests specifically
    pytest tests/unit/test_cli_coverage.py -v
 
@@ -262,29 +276,27 @@ ______________________________________________________________________
 
 1. **Configuration Tests**:
 
-   ```bash
+```bash
    # Run configuration tests
    pytest tests/unit/test_config_coverage.py -v
 
    # Common issue: Singleton state between tests
    # Solution: Reset global settings in test fixtures
-   ```
+```
 
 1. **Mock Issues**:
 
-   ```python
-   import pytest
+```python
+import pytest
 
-   from flext_auth import FlextAuth
-   from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
+from flext_auth import FlextAuth
 
 
-   @pytest.fixture(autouse=True)
-   def reset_global_state():
-       """Reset global state between tests."""
-       FlextAuthApplicationLifecycle.reset_for_testing()
-       yield
-   ```
+@pytest.fixture
+def reset_global_state() -> None:
+    """Reset global state between tests."""
+    FlextAuth.reset_for_testing()
+```
 
 ### Test Environment Setup
 
@@ -292,7 +304,7 @@ ______________________________________________________________________
 
 **Solution**:
 
-````bash
+```bash
 # Ensure test environment is clean
 make setup
 
@@ -302,7 +314,8 @@ make test
 # Run with coverage
 make test
 ```
-______________________________________________________________________
+
+---
 
 ## Performance Issues
 
@@ -315,8 +328,9 @@ ______________________________________________________________________
 ```python
 import time
 
-from flext_auth import FlextAuth, FlextAuthSettings
 from flext_cli import u
+
+from flext_auth import FlextAuth, FlextAuthSettings
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 registered = auth.register_user("bench", "bench@example.com", "password123")
@@ -332,23 +346,24 @@ u.Cli.info(f"Bcrypt hashing took: {bcrypt_time:.3f}s")
 settings = FlextAuthSettings()
 u.Cli.info(f"Bcrypt rounds: {settings.Auth.hash_rounds}")
 ```
+
 **Solutions**:
 
 1. **Reduce bcrypt rounds for development**:
 
-   ```python
-   from flext_auth import FlextAuthSettings
+```python
+from flext_auth import FlextAuthSettings
 
-   dev_config = FlextAuthSettings(Auth={"hash_rounds": 10})  # Faster for development
+dev_config = FlextAuthSettings(Auth={"hash_rounds": 10})  # Faster for development
 ```
 
 1. **Use production rounds only in production**:
 
-   ```python
-   from flext_auth import FlextAuthSettings
+```python
+from flext_auth import FlextAuthSettings
 
-   prod_config = FlextAuthSettings(Auth={"hash_rounds": 14})  # High security
-   ```
+prod_config = FlextAuthSettings(Auth={"hash_rounds": 14})  # High security
+```
 
 ### Memory Usage
 
@@ -358,24 +373,24 @@ u.Cli.info(f"Bcrypt rounds: {settings.Auth.hash_rounds}")
 
 **Monitoring**:
 
-````python
+```python
 import psutil
+from flext_cli import u
 
 from flext_auth import FlextAuth
-from flext_cli import u
 
 # Monitor memory usage
 process = psutil.Process()
 memory_mb = process.memory_info().rss / 1024 / 1024
 u.Cli.info(f"Memory usage: {memory_mb:.1f} MB")
 
-# Check session count
+# Clean expired sessions and report how many were removed
 auth = FlextAuth.quick_start(create_admin_user=False)
-session_count = len(
-    auth.session_service.session_manager._sessions
-)  # Internal attribute
-u.Cli.info(f"Active sessions: {session_count}")
+cleanup_result = auth.session_service.cleanup_expired_sessions()
+session_count = cleanup_result.unwrap() if cleanup_result.success else 0
+u.Cli.info(f"Expired sessions removed: {session_count}")
 ```
+
 **Mitigation**:
 
 ```python
@@ -383,11 +398,12 @@ from __future__ import annotations
 
 
 # Implement session cleanup
-def cleanup_expired_sessions():
-    """Clean up expired sessions (placeholder)."""
+def cleanup_expired_sessions() -> None:
+    """Clean up expired sessions."""
     # Implementation needed in FlextAuth service
 ```
-______________________________________________________________________
+
+---
 
 ## Development Issues
 
@@ -406,11 +422,12 @@ make check
 # - r type issues
 # - Generic type problems
 ```
+
 **Solutions**:
 
 1. **Type Annotations**:
 
-   ```python notest
+```{.python .notest}
    from flext_auth import User, p
 
 
@@ -420,13 +437,13 @@ make check
 
 1. **r Types**:
 
-   ```python notest
+```{.python .notest}
    from flext_auth import FlextAuth, User, p
 
    auth = FlextAuth.quick_start(create_admin_user=False)
    # Specify generic type for r
    result: p.Result[User] = auth.register_user("user", "user@example.com", "password123")
-   ```
+```
 
 ### Import Issues
 
@@ -434,14 +451,15 @@ make check
 
 **Solution**:
 
-````python
+```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
 from flext_auth import m
 
 # Access models via namespace
 user = m.Auth.AuthIdentity(name="user", contact="user@example.com")
 ```
-______________________________________________________________________
+
+---
 
 ## Production Issues
 
@@ -466,6 +484,7 @@ u.Cli.info(f'JWT expiry: {settings.Auth.expiry_minutes}')  # Should be <= 60
 u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 "
 ```
+
 ### Session Management
 
 **Problem**: Session issues in production
@@ -476,7 +495,7 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 
 1. **Session timeout management**:
 
-   ```python notest
+```{.python .notest}
    # Implement session cleanup
    def cleanup_sessions():
        """Clean expired sessions."""
@@ -486,13 +505,13 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 
 1. **External session storage** (future):
 
-   ```python notest
+```{.python .notest}
    # Future Redis integration
    class RedisSessionStorage:
        def store_session(self, session):
            # Redis implementation
            pass
-   ```
+```
 
 ---
 
@@ -502,7 +521,7 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 
 Enable debug logging:
 
-````python
+```python
 import logging
 
 from flext_auth import FlextAuth
@@ -514,13 +533,15 @@ logging.basicConfig(level=logging.DEBUG)
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user("debug", "debug@example.com", "password123")
 ```
+
 ### Error Information
 
 Extract detailed error information:
 
 ```python
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.authenticate_user("user", "wrong_password")
@@ -529,14 +550,14 @@ if result.failure:
     u.Cli.info(f"Error type: {type(result.error)}")
     # Additional debugging information
 ```
+
 ### Community Support
 
 - **Documentation**: Check Getting Started and API Reference
 - **Issues**: Report bugs in GitHub Issues
 - **Security**: Report security issues privately to maintainers
 
-______________________________________________________________________
+---
 
 This troubleshooting guide reflects common issues as of April 14, 2026. For additional
 help, see the Development guide.
-`````

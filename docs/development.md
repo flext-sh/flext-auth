@@ -138,7 +138,11 @@ from flext_auth import m, p, r
 # ✅ Correct - Use r for error handling
 def authenticate_user(username: str, password: str) -> p.Result[m.Auth.AuthIdentity]:
     if not username:
-        return r[m.Auth.AuthIdentity].fail("Username required")
+        msg = "Username required"
+        return r[m.Auth.AuthIdentity].fail(msg)
+    if not password:
+        msg = "Password required"
+        return r[m.Auth.AuthIdentity].fail(msg)
 
     # Authentication logic would resolve an identity here
     identity = m.Auth.AuthIdentity(username=username, contact="user@example.com")
@@ -148,7 +152,11 @@ def authenticate_user(username: str, password: str) -> p.Result[m.Auth.AuthIdent
 # ❌ Incorrect - Don't use exceptions for business logic
 def authenticate_user_legacy(username: str, password: str) -> m.Auth.AuthIdentity:
     if not username:
-        raise ValueError("Username required")
+        msg = "Username required"
+        raise ValueError(msg)
+    if not password:
+        msg = "Password required"
+        raise ValueError(msg)
 
     return m.Auth.AuthIdentity(username=username, contact="user@example.com")
 ```
@@ -296,13 +304,12 @@ tests/
 from __future__ import annotations
 
 from flext_auth import FlextAuth
-from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
 
 
 class TestNewFeature:
-    def test_new_functionality(self):
+    def test_new_functionality(self) -> None:
         # Arrange
-        FlextAuthApplicationLifecycle.reset_for_testing()
+        FlextAuth.reset_for_testing()
         auth = FlextAuth.quick_start(create_admin_user=False)
 
         # Act
@@ -324,19 +331,20 @@ Follow FLEXT service patterns:
 ```python
 from __future__ import annotations
 
-from flext_auth import p, r, t
 from flext_cli import u
+
+from flext_auth import p, r, t
 from flext_core import FlextContainer
 
 
 class AuthenticationService:
-    def __init__(self):
+    def __init__(self) -> None:
         self._container = FlextContainer()
         self.logger = u.fetch_logger(__name__)
 
     def process(self, request: t.StrMapping) -> p.Result[t.StrMapping]:
         # Service implementation
-        return r[t.StrMapping].ok({"status": "processed"})
+        return r[t.StrMapping].ok({"status": "processed", "request": request})
 ```
 
 ### Error Handling
@@ -352,17 +360,19 @@ from flext_auth import FlextAuth, m, p, r
 # Chain operations with r
 class AuthFlow:
     def complete_auth_flow(
-        self, username: str, password: str
+        self, username: str, password: str,
     ) -> p.Result[m.Auth.AuthIdentity]:
+        if not password:
+            return r[m.Auth.AuthIdentity].fail("Password required")
         return (
             r[m.Auth.AuthIdentity]
             .ok(m.Auth.AuthIdentity(username=username, contact="user@example.com"))
-            .flat_map(lambda identity: self._create_session(identity))
-            .map(lambda session: self._format_response(session))
+            .flat_map(self._create_session)
+            .map(self._format_response)
         )
 
     def _create_session(
-        self, identity: m.Auth.AuthIdentity
+        self, identity: m.Auth.AuthIdentity,
     ) -> p.Result[m.Auth.AuthIdentity]:
         return r[m.Auth.AuthIdentity].ok(identity)
 
@@ -391,8 +401,9 @@ result = auth.authenticate_user("demo", "SecurePass123!")
 ```python
 import logging
 
-from flext_auth import FlextAuth
 from flext_cli import u
+
+from flext_auth import FlextAuth
 
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)
