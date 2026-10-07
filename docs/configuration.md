@@ -45,8 +45,9 @@ flext-auth uses `FlextAuthSettings` extending
 ### Default Configuration
 
 ```python
-from flext_auth import FlextAuthSettings
 from flext_cli import u
+
+from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
 u.Cli.info(f"JWT Expiry: {settings.Auth.expiry_minutes} minutes")
@@ -111,7 +112,7 @@ settings = FlextAuthSettings(
         "secret_key": "your-secure-secret-key-with-at-least-32-chars",
         "expiry_minutes": 30,  # 30-minute tokens
         "hash_rounds": 14,  # Higher security
-    }
+    },
 )
 
 auth = FlextAuth(settings=settings)
@@ -128,7 +129,7 @@ prod_config = FlextAuthSettings(
         "expiry_minutes": 15,  # Short-lived tokens
         "hash_rounds": 14,  # High security
         "session_expiry_minutes": 30,  # Short sessions
-    }
+    },
 )
 ```
 
@@ -179,8 +180,9 @@ auth = FlextAuth()  # Uses global settings automatically
 ### Global Instance Access
 
 ```python
-from flext_auth import FlextAuthSettings
 from flext_cli import u
+
+from flext_auth import FlextAuthSettings
 
 # Get current global configuration
 global_config = FlextAuthSettings.fetch_global()
@@ -204,7 +206,7 @@ FlextAuthSettings(
         "expiry_minutes": 15,  # Short token lifetime
         "hash_rounds": 14,  # High security hashing
         "session_expiry_minutes": 30,  # Session security
-    }
+    },
 )
 ```
 
@@ -221,7 +223,7 @@ FlextAuthSettings(
         "expiry_minutes": 60,  # Convenient for testing
         "hash_rounds": 12,  # Balanced performance
         "session_expiry_minutes": 120,  # Extended sessions
-    }
+    },
 )
 ```
 
