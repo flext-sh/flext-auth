@@ -21,7 +21,7 @@ class FlextAuthModelsAuthResponse:
         username: Annotated[str, u.Field(..., description="Username")]
         password: Annotated[str, u.Field(..., description="Password", exclude=True)]
         metadata: t.JsonMapping = u.Field(
-            default_factory=MappingProxyType,
+            default_factory=lambda: MappingProxyType[str, t.JsonValue]({}),
             description="Metadata for the credential validation",
         )
 
@@ -34,13 +34,13 @@ class FlextAuthModelsAuthResponse:
 
         success: Annotated[bool, u.Field(..., description="Authentication success")]
         identity: t.JsonMapping = u.Field(
-            default_factory=MappingProxyType,
+            default_factory=lambda: MappingProxyType[str, t.JsonValue]({}),
             description="Identity information for the API key",
         )
         token: Annotated[str, u.Field(description="Token", exclude=True)] = ""
         message: Annotated[str, u.Field(description="Response message")] = ""
         metadata: t.JsonMapping = u.Field(
-            default_factory=MappingProxyType,
+            default_factory=lambda: MappingProxyType[str, t.JsonValue]({}),
             description="Metadata for the authentication response",
         )
 
@@ -124,7 +124,7 @@ class FlextAuthModelsAuthResponse:
                 description="Provider capabilities",
             )
             extras: t.JsonMapping = u.Field(
-                default_factory=MappingProxyType,
+                default_factory=lambda: MappingProxyType[str, t.JsonValue]({}),
                 description="Extra attributes for the identity",
             )
 

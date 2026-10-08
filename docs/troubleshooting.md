@@ -151,16 +151,11 @@ if registered.success:
 1. **Token Format**:
 
 ```python
-
-```
-
 # Ensure proper Bearer format or clean token
-
 bearer_value = "Bearer <jwt-header>.<jwt-payload>.<jwt-signature>"
-
 # or
-
 bearer_value = "<jwt-header>.<jwt-payload>.<jwt-signature>"
+```
 
 1. **Token Expiration**:
 
