@@ -10,9 +10,8 @@ import threading
 from threading import Thread
 
 from flext_auth import FlextAuth
-from tests.constants import TestsFlextAuthConstants as c
+from tests import TestsFlextAuthUtilities, c
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
-from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase11:
@@ -59,11 +58,11 @@ class TestsFlextAuthApiCase11:
             email="public-api-token-user@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        u.Tests.Matchers.ok(registered)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(registered)
 
         token_result = auth.create_token(identity_id=registered.value.unique_id)
-        u.Tests.Matchers.ok(token_result)
-        u.Tests.Matchers.that(token_result.value.count("."), eq=2)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(token_result)
+        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.value.count("."), eq=2)
 
     @staticmethod
     def test_public_api_validate_token_success() -> None:
@@ -74,18 +73,18 @@ class TestsFlextAuthApiCase11:
             email="public-api-validate-user@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        u.Tests.Matchers.ok(registered)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(registered)
 
         token_result = auth.create_token(identity_id=registered.value.unique_id)
-        u.Tests.Matchers.ok(token_result)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(token_result)
 
         validation_result = auth.session_service.validate_token(token_result.value)
-        u.Tests.Matchers.ok(validation_result)
-        u.Tests.Matchers.that(validation_result.value, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(validation_result)
+        TestsFlextAuthUtilities.Tests.Matchers.that(validation_result.value, eq=True)
 
     @staticmethod
     def test_public_api_validate_token_failure() -> None:
         """Test public api validate token failure."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         validation_result = auth.session_service.validate_token("invalid.jwt.token")
-        u.Tests.Matchers.fail(validation_result)
+        TestsFlextAuthUtilities.Tests.Matchers.fail(validation_result)

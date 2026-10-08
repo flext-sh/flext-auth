@@ -8,17 +8,19 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsUtilities
 
-from flext_auth import u
+from flext_auth import FlextAuthUtilities
 
 
-class TestsFlextAuthUtilities(FlextTestsUtilities, u):
+class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
     """Test utilities for flext-auth — extends flext_auth.u and flext_tests.u."""
 
-    class _AuthUtilities:
-        """Auth-specific test utilities."""
-
-    class Tests(_AuthUtilities, FlextTestsUtilities.Tests):
+    class Tests(FlextTestsUtilities.Tests):
         """Test-specific utilities."""
 
 
-__all__: list[str] = ["TestsFlextAuthUtilities"]
+# Published short name (ldap family shape): the tests package exposes the
+# test-utilities facade as ``u`` so consumer modules import it as published
+# instead of aliasing the class at every call site.
+u = TestsFlextAuthUtilities
+
+__all__: list[str] = ["TestsFlextAuthUtilities", "u"]
