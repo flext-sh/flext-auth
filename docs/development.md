@@ -360,7 +360,9 @@ from flext_auth import FlextAuth, m, p, r
 # Chain operations with r
 class AuthFlow:
     def complete_auth_flow(
-        self, username: str, password: str,
+        self,
+        username: str,
+        password: str,
     ) -> p.Result[m.Auth.AuthIdentity]:
         if not password:
             return r[m.Auth.AuthIdentity].fail("Password required")
@@ -372,7 +374,8 @@ class AuthFlow:
         )
 
     def _create_session(
-        self, identity: m.Auth.AuthIdentity,
+        self,
+        identity: m.Auth.AuthIdentity,
     ) -> p.Result[m.Auth.AuthIdentity]:
         return r[m.Auth.AuthIdentity].ok(identity)
 

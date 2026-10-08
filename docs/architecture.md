@@ -223,7 +223,8 @@ class FlextAuth(s):
 
     # Core operations
     def authenticate(
-        self, credentials: t.StrMapping,
+        self,
+        credentials: t.StrMapping,
     ) -> p.Result[auth_m.Auth.AuthIdentity]: ...
 
     def register_user(
@@ -305,7 +306,8 @@ class FlextAuthBaseProvider(Protocol):
         ...
 
     def refresh(
-        self, token: str | auth_m.Auth.AuthToken,
+        self,
+        token: str | auth_m.Auth.AuthToken,
     ) -> p.Result[auth_m.Auth.AuthToken]:
         """Refresh authentication token."""
         ...
@@ -447,7 +449,8 @@ class FlextAuthExampleProvider(s):
         """Validate token using provider-specific logic."""
 
     def refresh(
-        self, token: str | auth_m.Auth.AuthToken,
+        self,
+        token: str | auth_m.Auth.AuthToken,
     ) -> p.Result[auth_m.Auth.AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self.supports():
@@ -495,13 +498,19 @@ class BaseTransportAdapter(Protocol):
     """Base protocol for transport adapters."""
 
     def send_auth_request(
-        self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None,
+        self,
+        endpoint: str,
+        credentials: dict,
+        metadata: t.JsonMapping | None = None,
     ) -> p.Result[m.Dict]:
         """Send authentication request over transport."""
         ...
 
     def send_validate_request(
-        self, endpoint: str, token: str, metadata: t.JsonMapping | None = None,
+        self,
+        endpoint: str,
+        token: str,
+        metadata: t.JsonMapping | None = None,
     ) -> p.Result[m.Dict]:
         """Send token validation request over transport."""
         ...
@@ -826,7 +835,10 @@ class TokenCache:
         return self._backend.get(cache_key)
 
     def set(
-        self, key: dict, token: auth_m.Auth.AuthToken, ttl: int | None = None,
+        self,
+        key: dict,
+        token: auth_m.Auth.AuthToken,
+        ttl: int | None = None,
     ) -> None:
         """Set token in cache."""
         cache_key = self._hash_credentials(key)
@@ -840,7 +852,9 @@ class TokenCache:
     def _hash_credentials(self, key: dict) -> str: ...
 
     def _create_backend(
-        self, backend: str, settings: t.JsonMapping | None,
+        self,
+        backend: str,
+        settings: t.JsonMapping | None,
     ) -> t.JsonValue: ...
 ```
 
@@ -987,7 +1001,8 @@ class FlextAuthLdapProvider:
 
     def authenticate(self, credentials: dict) -> p.Result[auth_m.Auth.AuthToken]:
         return self._ldap.bind(
-            username=credentials["username"], password=credentials["password"],
+            username=credentials["username"],
+            password=credentials["password"],
         )
 ```
 
