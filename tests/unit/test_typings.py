@@ -43,7 +43,7 @@ class TestsFlextAuthTypings:
     @staticmethod
     def test_exposes_auth_domain_namespace() -> None:
         """Test exposes auth domain namespace."""
-        assert hasattr(t, "Auth")
+        assert hasattr(TestsFlextAuthTypes, "Auth")
 
     @staticmethod
     def test_auth_datetime_alias_resolves_to_datetime() -> None:
