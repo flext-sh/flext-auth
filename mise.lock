@@ -177,6 +177,47 @@ checksum = "sha256:d96fc8b7cf020c2d4c1dbbc2ccec5fd1cab05b51c491f02c8527a7fa6c50a
 url = "https://github.com/direnv/direnv/releases/download/v2.37.1/direnv.windows-amd64"
 url_api = "https://api.github.com/repos/direnv/direnv/releases/assets/274610569"
 
+[[tools."github:jdx/mise"]]
+version = "2026.10.3"
+backend = "github:jdx/mise"
+specifiers = ["2026.10.3"]
+
+[tools."github:jdx/mise"."platforms.linux-arm64"]
+checksum = "sha256:538209b47a064aef24a968e88c4cee30f75fffc1c4e1d4c6313a99124b0e9433"
+url = "https://github.com/jdx/mise/releases/download/v2026.10.3/mise-v2026.10.3-linux-arm64.tar.zst"
+url_api = "https://api.github.com/repos/jdx/mise/releases/assets/612240146"
+provenance = "github-attestations"
+
+[tools."github:jdx/mise"."platforms.linux-x64"]
+checksum = "sha256:447fe12a8b50f53867aacdcc16bcb6e2cb38044839ef2b8041efcaec276aae6d"
+url = "https://github.com/jdx/mise/releases/download/v2026.10.3/mise-v2026.10.3-linux-x64.tar.zst"
+url_api = "https://api.github.com/repos/jdx/mise/releases/assets/612240683"
+provenance = "github-attestations"
+
+[tools."github:jdx/mise"."platforms.linux-x64-musl"]
+checksum = "sha256:3c88f2c81ad74535eb23e8df5d50ca830e86515b045333462b69525aa64285c8"
+url = "https://github.com/jdx/mise/releases/download/v2026.10.3/mise-v2026.10.3-linux-x64-musl.tar.zst"
+url_api = "https://api.github.com/repos/jdx/mise/releases/assets/612240571"
+provenance = "github-attestations"
+
+[tools."github:jdx/mise"."platforms.macos-arm64"]
+checksum = "sha256:87853e616ef2b6d601c20974a7f13fc9aa17458a6190e0c456fb85b745bb08e8"
+url = "https://github.com/jdx/mise/releases/download/v2026.10.3/mise-v2026.10.3-macos-arm64.tar.zst"
+url_api = "https://api.github.com/repos/jdx/mise/releases/assets/612240981"
+provenance = "github-attestations"
+
+[tools."github:jdx/mise"."platforms.macos-x64"]
+checksum = "sha256:b97c1ba194c8f1779a6f70efb01682aa30899e98c3f52c7a3c8e22a9457e1a0d"
+url = "https://github.com/jdx/mise/releases/download/v2026.10.3/mise-v2026.10.3-macos-x64.tar.zst"
+url_api = "https://api.github.com/repos/jdx/mise/releases/assets/612241094"
+provenance = "github-attestations"
+
+[tools."github:jdx/mise"."platforms.windows-x64"]
+checksum = "sha256:af5cad4d381c4e06e9c488af86ad3d3159474ffa7a18e061436a408f7262f23a"
+url = "https://github.com/jdx/mise/releases/download/v2026.10.3/mise-v2026.10.3-windows-x64.zip"
+url_api = "https://api.github.com/repos/jdx/mise/releases/assets/612241184"
+provenance = "github-attestations"
+
 [[tools."github:kucherenko/jscpd"]]
 version = "5.3.2"
 backend = "github:kucherenko/jscpd"
@@ -596,38 +637,38 @@ backend = "npm:prettier"
 specifiers = ["3.5.3"]
 
 [[tools.python]]
-version = "3.13.16"
+version = "3.13.14"
 backend = "core:python"
 specifiers = ["3.13"]
 
 [tools.python."platforms.linux-arm64"]
-checksum = "sha256:f94c8f69f3e68b026b916b3aa32b9b3bfff63fd7c95b2affa8272b1601d668fa"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261001/cpython-3.13.16+20261001-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:f1cda716f5595a97e79f760f81da7150e4f6b4ae9dc49968b4ce5d6d64bba058"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260805/cpython-3.13.14+20260805-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64"]
-checksum = "sha256:ffcb50e716789d1a6e1db5e745d4d194ac8ed9b015ccf5eabcaccb179a25e4a8"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261001/cpython-3.13.16+20261001-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:39e82d05926bdcd206732026bcd878d9f00e288cd227d91c1fabf379b6ea4fa5"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260805/cpython-3.13.14+20260805-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64-musl"]
-checksum = "sha256:31b1f560c68313c00bab4faa2452bc0a87e3e9f9ddf16b94d2265bd9d99afc2e"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261001/cpython-3.13.16+20261001-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
+checksum = "sha256:c6b77767b2c97ce77c21496909396b6e056b96220b2cda45f2c93b654376dd93"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260805/cpython-3.13.14+20260805-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.macos-arm64"]
-checksum = "sha256:d00669acb53c1b014f1fcf5eaea740d8e45c3aff4b1e0244dc0f8697fb211a82"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261001/cpython-3.13.16+20261001-aarch64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:f0e634654e1d6b55cf81419eb629caf78f50234d01ede318f78e5091bada6085"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260805/cpython-3.13.14+20260805-aarch64-apple-darwin-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.macos-x64"]
-checksum = "sha256:a88bef59d9dd61ba4210772cce57a4b4cb963aa745ab956f7cc79ba60f9e2523"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261001/cpython-3.13.16+20261001-x86_64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:ffcd382b54efff287c0b9ae34b3bb6e956b3cb05899f89caa36d83ca11c02f5f"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260805/cpython-3.13.14+20260805-x86_64-apple-darwin-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.windows-x64"]
-checksum = "sha256:c402eb9a35aba90de319bbc87d23e6d887eca1551a05cfa80775f92dcf3ebc08"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261001/cpython-3.13.16+20261001-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+checksum = "sha256:e0df6dea5aa2a7f6fab10ee187abcf1da554e1ebd0aafe4e404ff4a647f92081"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260805/cpython-3.13.14+20260805-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [[tools.taplo]]

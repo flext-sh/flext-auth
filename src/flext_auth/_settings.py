@@ -20,9 +20,7 @@ import secrets
 from typing import TYPE_CHECKING, Annotated
 
 from flext_auth import c
-from flext_auth.models import m
-from flext_auth.typings import t
-from flext_core import FlextSettings
+from flext_core import FlextSettings, m, t
 
 
 class FlextAuthSettings(FlextSettings):

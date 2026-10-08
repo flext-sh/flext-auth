@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from flext_auth._utilities._managers.auth_managers_session import (
     FlextAuthSessionManagers,
@@ -14,7 +14,6 @@ from flext_auth._utilities._managers.auth_managers_session import (
 from flext_auth._utilities._managers.rate_limiter import FlextAuthRateLimiterManagers
 from flext_auth._utilities._managers.user import FlextAuthUserManagers
 from flext_auth._utilities.base import FlextAuthUtilitiesBase
-from flext_core import FlextContext
 
 if TYPE_CHECKING:
     from flext_auth import p, t
@@ -27,8 +26,6 @@ class FlextAuthUtilitiesManagers(
     FlextAuthUserManagers,
 ):
     """Namespace class for all authentication managers following FLEXT patterns."""
-
-    _context_type: ClassVar[p.ContextType] = FlextContext
 
     class ServiceManagers:
         """Manager composition helper for auth services."""
