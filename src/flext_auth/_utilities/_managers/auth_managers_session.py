@@ -14,18 +14,16 @@ from uuid import uuid4
 from flext_api import e, r, u
 
 from flext_auth import m, p, t
-from flext_core import FlextContainer, FlextContext
+from flext_core import FlextContainer
 
 
 class FlextAuthSessionManagers:
     _container_type: ClassVar[p.ContainerType] = FlextContainer
-    _context_type: ClassVar[p.ContextType] = FlextContext
 
     class FlextAuthSessionManager:
         def __init__(self) -> None:
             super().__init__()
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextAuthSessionManagers._context_type.create()
             self._dispatcher: p.Dispatcher = (
                 FlextAuthSessionManagers._container_type.shared().dispatcher().unwrap()
             )

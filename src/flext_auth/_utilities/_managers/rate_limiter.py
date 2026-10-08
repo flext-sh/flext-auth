@@ -7,11 +7,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from flext_api import r, u
-
-from flext_core import FlextContext
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
@@ -20,14 +18,11 @@ if TYPE_CHECKING:
 
 
 class FlextAuthRateLimiterManagers:
-    _context_type: ClassVar[p.ContextType] = FlextContext
-
     class FlextAuthRateLimiter:
         def __init__(self, dispatcher: p.Dispatcher) -> None:
             super().__init__()
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
-            self.context = FlextAuthRateLimiterManagers._context_type.create()
             self._attempts: MutableMapping[str, t.Auth.ManagersAttemptData] = {}
             self._max_attempts = 5
             self._window_minutes = 15
