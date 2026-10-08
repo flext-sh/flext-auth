@@ -92,7 +92,7 @@ class TestsFlextAuthTypings:
     ) -> None:
         # Assert: MRO composition keeps the upstream contract reachable.
         """Test upstream api types reachable through facade."""
-        assert hasattr(t, inherited_type)
+        assert hasattr(TestsFlextAuthTypes, inherited_type)
 
     @staticmethod
     @pytest.mark.parametrize(
