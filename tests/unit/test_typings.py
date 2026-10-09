@@ -21,7 +21,7 @@ from flext_api import FlextApiTypes
 from flext_tests import tm
 
 from flext_auth import FlextAuthTypes
-from tests.typings import TestsFlextAuthTypes as t
+from tests import TestsFlextAuthTypes
 
 
 class TestsFlextAuthTypings:
@@ -43,12 +43,12 @@ class TestsFlextAuthTypings:
     @staticmethod
     def test_exposes_auth_domain_namespace() -> None:
         """Test exposes auth domain namespace."""
-        assert hasattr(t, "Auth")
+        assert hasattr(TestsFlextAuthTypes, "Auth")
 
     @staticmethod
     def test_auth_datetime_alias_resolves_to_datetime() -> None:
         """Test auth datetime alias resolves to datetime."""
-        assert t.Auth.DateTimeValue.__value__ is datetime
+        assert TestsFlextAuthTypes.Auth.DateTimeValue.__value__ is datetime
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -71,7 +71,7 @@ class TestsFlextAuthTypings:
     ) -> None:
         # Act: each declared alias must be a resolvable TypeAliasType member.
         """Test auth namespace alias is declared and resolvable."""
-        alias = getattr(t.Auth, alias_name)
+        alias = getattr(TestsFlextAuthTypes.Auth, alias_name)
 
         # Assert: resolving its value must not raise and must yield a type form.
         tm.that(alias.__value__, none=False)
@@ -92,7 +92,7 @@ class TestsFlextAuthTypings:
     ) -> None:
         # Assert: MRO composition keeps the upstream contract reachable.
         """Test upstream api types reachable through facade."""
-        assert hasattr(t, inherited_type)
+        assert hasattr(TestsFlextAuthTypes, inherited_type)
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -116,11 +116,11 @@ class TestsFlextAuthTypings:
     )
     def test_test_scoped_literal_resolves_to_promised_values(
         literal_name: str,
-        expected_values: t.VariadicTuple[str],
+        expected_values: TestsFlextAuthTypes.VariadicTuple[str],
     ) -> None:
         # Act: resolve the Literal alias declared in the Tests namespace.
         """Test test scoped literal resolves to promised values."""
-        literal_alias = getattr(t.Tests, literal_name)
+        literal_alias = getattr(TestsFlextAuthTypes.Tests, literal_name)
 
         # Assert: the allowed value set matches the published contract.
         tm.that(typing.get_args(literal_alias.__value__), eq=expected_values)

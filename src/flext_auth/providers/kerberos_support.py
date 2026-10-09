@@ -25,7 +25,7 @@ class FlextAuthKerberosSupport:
         Returns:
             The resulting ``p.Result[bool]``.
         """
-        kerberos = settings.Auth.kerberos
+        kerberos = settings.Auth.Kerberos
         missing = [
             field for field in self._KERBEROS_REQUIRED if not getattr(kerberos, field)
         ]

@@ -9,8 +9,7 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth
-from tests.constants import TestsFlextAuthConstants as c
-from tests.utilities import TestsFlextAuthUtilities as u
+from tests import TestsFlextAuthUtilities, c
 
 
 class TestsFlextAuthSessionRealFlows:
@@ -27,13 +26,13 @@ class TestsFlextAuthSessionRealFlows:
             email="token-flow-user@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        u.Tests.Matchers.ok(registered)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(registered)
 
         token_result = auth.create_token(identity_id=registered.value.unique_id)
-        u.Tests.Matchers.ok(token_result)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(token_result)
         token_value = token_result.value
-        u.Tests.Matchers.that(token_value, is_=str)
-        u.Tests.Matchers.that(token_value.count("."), eq=2)
+        TestsFlextAuthUtilities.Tests.Matchers.that(token_value, is_=str)
+        TestsFlextAuthUtilities.Tests.Matchers.that(token_value.count("."), eq=2)
 
     @staticmethod
     def test_validate_token_after_creation() -> None:
@@ -44,20 +43,20 @@ class TestsFlextAuthSessionRealFlows:
             email="token-validate-user@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        u.Tests.Matchers.ok(registered)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(registered)
 
         token_result = auth.create_token(identity_id=registered.value.unique_id)
-        u.Tests.Matchers.ok(token_result)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(token_result)
 
         validation_result = auth.session_service.validate_token(token_result.value)
-        u.Tests.Matchers.ok(validation_result)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(validation_result)
 
     @staticmethod
     def test_validate_token_rejects_invalid_token() -> None:
         """Test validate token rejects invalid token."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         invalid_result = auth.session_service.validate_token("invalid.jwt.token")
-        u.Tests.Matchers.that(invalid_result.success, eq=False)
+        TestsFlextAuthUtilities.Tests.Matchers.that(invalid_result.success, eq=False)
 
     @staticmethod
     def test_authenticate_user_and_create_token_sequence() -> None:
@@ -70,10 +69,10 @@ class TestsFlextAuthSessionRealFlows:
             email="sequence-user@example.com",
             password=password,
         )
-        u.Tests.Matchers.ok(register_result)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(register_result)
 
         authenticated = auth.authenticate_user(username, password)
-        u.Tests.Matchers.ok(authenticated)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(authenticated)
 
         token_result = auth.create_token(identity_id=authenticated.value.unique_id)
-        u.Tests.Matchers.ok(token_result)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(token_result)

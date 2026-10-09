@@ -28,7 +28,7 @@ class FlextAuthConfig(FlextSettings, FlextConfig):
     # ENFORCE-042: the Settings-first MRO pairs two singleton bases whose
     # ``_instance`` slots disagree for static checkers; the concrete subclass
     # narrows both, which pydantic enforces at runtime.
-    _instance: ClassVar[FlextAuthConfig | None] = None  # pyright: ignore[reportIncompatibleVariableOverride]
+    _instance: ClassVar[FlextAuthConfig | None] = None
 
     Auth: FlextAuthConfigModels.Auth
 

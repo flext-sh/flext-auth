@@ -93,7 +93,7 @@ class FlextAuthModelsAuthIdentity:
             typed_payload = cast("Mapping[str, t.JsonPayload]", data)
             payload: dict[str, t.JsonPayload] = dict(typed_payload)
             if c.Auth.KEY_NAME in payload and c.Auth.KEY_CONTACT in payload:
-                return data
+                return typed_payload
             identity_candidates = tuple(
                 value
                 for value in (payload.get(key) for key in c.Auth.TOKEN_IDENTITY_KEYS)
@@ -101,7 +101,7 @@ class FlextAuthModelsAuthIdentity:
             )
             identity_id = identity_candidates[0] if identity_candidates else ""
             if not identity_id:
-                return data
+                return typed_payload
             name_candidates = tuple(
                 value
                 for value in (payload.get(key) for key in c.Auth.TOKEN_NAME_KEYS)

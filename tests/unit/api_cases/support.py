@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from flext_auth import FlextAuth, m
-from tests.utilities import TestsFlextAuthUtilities as u
+from tests import TestsFlextAuthUtilities
 
 if TYPE_CHECKING:
     from flext_auth import t
@@ -34,14 +34,14 @@ class TestsFlextAuthApiTestDataHelper:
             email=str(test_data["email"]),
             password=str(test_data["password"]),
         )
-        u.Tests.Matchers.that(register_result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             str(test_data["username"]),
             str(test_data["password"]),
         )
-        u.Tests.Matchers.that(auth_result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
-        u.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
+        TestsFlextAuthUtilities.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         return auth, identity, test_data
 
     @staticmethod

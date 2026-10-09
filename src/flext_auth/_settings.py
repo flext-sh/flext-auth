@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from flext_auth import c
 from flext_core import FlextSettings, m, t
@@ -34,88 +34,83 @@ class FlextAuthSettings(FlextSettings):
 
     # mro-wkii.17.25: publish the owned settings model used by service contracts.
     class AuthSettings(m.BaseModel):
-        """Namespaced auth settings (JWT + session + hashing)."""
+        """Namespaced auth settings (JWT + session + hashing).
 
-        class _Kerberos(m.BaseModel):
+        Defaults live on the assignment side (checker-visible optional
+        constructor parameters); the nested provider namespace is public
+        (``KerberosSettings``) so ``default_factory`` type-checks without a
+        TYPE_CHECKING split.
+        """
+
+        class KerberosSettings(m.BaseModel):
             """Namespaced Kerberos provider settings (realm/KDC/ticket policy)."""
 
-            realm: Annotated[str, m.Field(default="", description="Kerberos realm")]
+            realm: Annotated[str, m.Field(description="Kerberos realm")] = ""
             kdc: Annotated[
                 str,
-                m.Field(default="", description="Key Distribution Center host"),
-            ]
+                m.Field(description="Key Distribution Center host"),
+            ] = ""
             service_principal: Annotated[
                 str,
-                m.Field(default="", description="Service principal name (SPN)"),
-            ]
+                m.Field(description="Service principal name (SPN)"),
+            ] = ""
             keytab_path: Annotated[
                 str | None,
-                m.Field(default=None, description="Path to the keytab file"),
-            ]
+                m.Field(description="Path to the keytab file"),
+            ] = None
             clockskew_tolerance: Annotated[
                 int | None,
-                m.Field(default=None, description="Allowed clock skew in seconds"),
-            ]
+                m.Field(description="Allowed clock skew in seconds"),
+            ] = None
             ticket_lifetime: Annotated[
                 int | None,
-                m.Field(default=None, description="Ticket lifetime in seconds"),
-            ]
+                m.Field(description="Ticket lifetime in seconds"),
+            ] = None
             renew_lifetime: Annotated[
                 int | None,
-                m.Field(
-                    default=None,
-                    description="Renewable ticket lifetime in seconds",
-                ),
-            ]
+                m.Field(description="Renewable ticket lifetime in seconds"),
+            ] = None
             forwardable: Annotated[
                 bool | None,
-                m.Field(default=None, description="Whether tickets are forwardable"),
-            ]
+                m.Field(description="Whether tickets are forwardable"),
+            ] = None
             proxiable: Annotated[
                 bool | None,
-                m.Field(default=None, description="Whether tickets are proxiable"),
-            ]
+                m.Field(description="Whether tickets are proxiable"),
+            ] = None
 
-        secret_key: Annotated[
-            str,
-            m.Field(
-                default_factory=lambda: secrets.token_urlsafe(c.Auth.SECRET_MIN_LENGTH),
-                description="JWT signing secret (env-provided; auto-generated).",
-            ),
-        ]
+        secret_key: str = m.Field(
+            default_factory=lambda: secrets.token_urlsafe(c.Auth.SECRET_MIN_LENGTH),
+            description="JWT signing secret (env-provided; auto-generated).",
+        )
         algorithm: Annotated[
             str,
-            m.Field(default="HS256", description="JWT signing algorithm"),
-        ]
+            m.Field(description="JWT signing algorithm"),
+        ] = "HS256"
         issuer: Annotated[
             str,
-            m.Field(default="flext-auth", description="Token issuer claim"),
-        ]
+            m.Field(description="Token issuer claim"),
+        ] = "flext-auth"
         audience: Annotated[
             str,
-            m.Field(default="flext-auth-users", description="Token audience claim"),
-        ]
+            m.Field(description="Token audience claim"),
+        ] = "flext-auth-users"
         expiry_minutes: Annotated[
             int,
-            m.Field(default=1440, gt=0, description="Access token expiry in minutes"),
-        ]
+            m.Field(gt=0, description="Access token expiry in minutes"),
+        ] = 1440
         session_expiry_minutes: Annotated[
             int,
-            m.Field(default=1440, gt=0, description="Session expiry in minutes"),
-        ]
+            m.Field(gt=0, description="Session expiry in minutes"),
+        ] = 1440
         max_sessions_per_user: Annotated[
             int,
-            m.Field(default=5, gt=0, description="Max parallel sessions per user"),
-        ]
+            m.Field(gt=0, description="Max parallel sessions per user"),
+        ] = 5
         hash_rounds: Annotated[
             int,
-            m.Field(
-                default=12,
-                ge=4,
-                le=31,
-                description="Password hash rounds (bcrypt)",
-            ),
-        ]
+            m.Field(ge=4, le=31, description="Password hash rounds (bcrypt)"),
+        ] = 12
 
         @m.field_validator("secret_key", mode="before")
         @classmethod
@@ -142,22 +137,16 @@ class FlextAuthSettings(FlextSettings):
             """The JWT signing secret wrapped as a t.SecretStr."""
             return t.SecretStr(self.secret_key)
 
-        kerberos: Annotated[
-            _Kerberos,
-            m.Field(
-                # mro-j47u: close the AuthSettings rename without a legacy alias.
-                default_factory=_Kerberos,
-                description="Kerberos realm/KDC settings.",
-            ),
-        ]
-
-    if TYPE_CHECKING:
-        Auth: AuthSettings
-    else:
-        Auth: AuthSettings = m.Field(
-            default_factory=AuthSettings,
-            description="Namespaced auth settings.",
+        # mro-j47u: close the AuthSettings rename without a legacy alias.
+        Kerberos: KerberosSettings = m.Field(
+            default_factory=KerberosSettings,
+            description="Kerberos realm/KDC settings.",
         )
+
+    Auth: AuthSettings = m.Field(
+        default_factory=AuthSettings,
+        description="Namespaced auth settings.",
+    )
 
 
 settings: FlextAuthSettings = FlextAuthSettings.fetch_global()

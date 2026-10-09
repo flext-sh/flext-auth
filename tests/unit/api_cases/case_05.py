@@ -10,9 +10,8 @@ import pytest
 from flext_tests import tm
 
 from flext_auth import FlextAuth, FlextAuthSettings
-from tests.constants import TestsFlextAuthConstants as c
+from tests import TestsFlextAuthUtilities, c
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
-from tests.utilities import TestsFlextAuthUtilities as u
 
 
 class TestsFlextAuthApiCase05:
@@ -25,37 +24,39 @@ class TestsFlextAuthApiCase05:
         """Test registration with empty username."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("", "empty@example.com", "Password123!")
-        u.Tests.Matchers.that(not result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
 
     @staticmethod
     def test_empty_email_registration() -> None:
         """Test registration with empty email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "", "Password123!")
-        u.Tests.Matchers.that(not result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
 
     @staticmethod
     def test_empty_password_registration() -> None:
         """Test registration with empty password."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "test@example.com", "")
-        u.Tests.Matchers.that(not result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
 
     @staticmethod
     def test_invalid_email_registration() -> None:
         """Test registration with invalid email."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("user", "invalid-email", "Password123!")
-        u.Tests.Matchers.that(not result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
 
     @staticmethod
     def test_nonexistent_user_authentication() -> None:
         """Test authentication of non-existent user."""
         auth: FlextAuth = FlextAuth()
         auth_result = auth.authenticate_user("nonexistent", "password")
-        u.Tests.Matchers.that(not auth_result.success, eq=True)
-        u.Tests.Matchers.that(auth_result.error, none=False)
-        u.Tests.Matchers.that(auth_result.error or "", empty=False)
+        TestsFlextAuthUtilities.Tests.Matchers.that(not auth_result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.error, none=False)
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            auth_result.error or "", empty=False
+        )
 
     @staticmethod
     def test_invalid_session_logout() -> None:
@@ -64,17 +65,19 @@ class TestsFlextAuthApiCase05:
         logout_result = auth.session_service.session_manager.end_session_by_id(
             "invalid_session_id",
         )
-        u.Tests.Matchers.that(not logout_result.success, eq=True)
-        u.Tests.Matchers.that(not logout_result.success, eq=True)
-        u.Tests.Matchers.that((logout_result.error or ""), has="not found")
+        TestsFlextAuthUtilities.Tests.Matchers.that(not logout_result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(not logout_result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            (logout_result.error or ""), has="not found"
+        )
 
     @staticmethod
     def test_flext_auth_quick_start_default() -> None:
         """Test FlextAuth.quick_start() with default parameters."""
         auth = FlextAuth.quick_start()
         tm.that(auth, is_=FlextAuth)
-        u.Tests.Matchers.that(auth.settings, none=False)
-        u.Tests.Matchers.that(auth.registry, none=False)
+        TestsFlextAuthUtilities.Tests.Matchers.that(auth.settings, none=False)
+        TestsFlextAuthUtilities.Tests.Matchers.that(auth.registry, none=False)
 
     @staticmethod
     def test_flext_auth_quick_start_no_admin_user() -> None:
@@ -86,9 +89,15 @@ class TestsFlextAuthApiCase05:
                 "nonexistent_user",
             )
         )
-        u.Tests.Matchers.that(not nonexistent_result.success, eq=True)
-        u.Tests.Matchers.that(nonexistent_result.error, none=False)
-        u.Tests.Matchers.that((nonexistent_result.error or "").lower(), has="not found")
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            not nonexistent_result.success, eq=True
+        )
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            nonexistent_result.error, none=False
+        )
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            (nonexistent_result.error or "").lower(), has="not found"
+        )
 
     @staticmethod
     def test_flext_auth_quick_start_custom_admin_creation() -> None:
@@ -101,7 +110,7 @@ class TestsFlextAuthApiCase05:
         """Test FlextAuth initialization when settings creation fails."""
         try:
             auth = FlextAuth()
-            u.Tests.Matchers.that(auth.config, none=False)
+            TestsFlextAuthUtilities.Tests.Matchers.that(auth.config, none=False)
         except RuntimeError as e:
             pytest.fail(f"FlextAuth creation failed with RuntimeError: {e}")
 
@@ -127,8 +136,8 @@ class TestsFlextAuthApiCase05:
             "secret_key": "s" + "0" * 40,
         })
         auth = FlextAuth(settings=settings)
-        u.Tests.Matchers.that(auth.config.expiry_minutes, eq=120)
-        u.Tests.Matchers.that(auth.config.hash_rounds, eq=10)
+        TestsFlextAuthUtilities.Tests.Matchers.that(auth.config.expiry_minutes, eq=120)
+        TestsFlextAuthUtilities.Tests.Matchers.that(auth.config.hash_rounds, eq=10)
 
     @staticmethod
     def test_register_user_edge_cases() -> None:
@@ -139,9 +148,9 @@ class TestsFlextAuthApiCase05:
             email="invalid-email-format",
             password=c.TEST_CREDENTIAL,
         )
-        u.Tests.Matchers.that(not result.success, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
         error_msg = result.error or ""
-        u.Tests.Matchers.that(
+        TestsFlextAuthUtilities.Tests.Matchers.that(
             (
                 "contact" in error_msg.lower()
                 or "email" in error_msg.lower()
