@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from flext_tests import tm
+
 from flext_auth import FlextAuth
-from tests import TestsFlextAuthUtilities, c, m
+from tests import c, m
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 
@@ -26,19 +28,19 @@ class TestsFlextAuthApiCase06:
             username="nonexistent_user",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.error, is_=str)
+        tm.that(not result.success, eq=True)
+        tm.that(result.error, is_=str)
 
     @staticmethod
     def test_validate_token_invalid_cases() -> None:
         """Test token validation with invalid tokens."""
         auth = FlextAuth()
         result = auth.session_service.validate_token("invalid.malformed.token")
-        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
+        tm.that(not result.success, eq=True)
         result = auth.session_service.validate_token("")
-        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
+        tm.that(not result.success, eq=True)
         result = auth.session_service.validate_token("invalid.token.format")
-        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
+        tm.that(not result.success, eq=True)
 
     @staticmethod
     def test_hash_password_method() -> None:
@@ -59,14 +61,10 @@ class TestsFlextAuthApiCase06:
             last_access=datetime.min.replace(tzinfo=UTC),
         )
         result = identity.update_credential(c.TEST_CREDENTIAL)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.value is True, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            identity.credential_hash, ne="StrongTestPass123!@#"
-        )
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            len(identity.credential_hash), gt=10
-        )
+        tm.that(result.success, eq=True)
+        tm.that(result.value is True, eq=True)
+        tm.that(identity.credential_hash, ne="StrongTestPass123!@#")
+        tm.that(len(identity.credential_hash), gt=10)
 
     @staticmethod
     def test_verify_password_method() -> None:
@@ -88,17 +86,13 @@ class TestsFlextAuthApiCase06:
             last_access=datetime.min.replace(tzinfo=UTC),
         )
         set_result = identity.update_credential(strong_password)
-        TestsFlextAuthUtilities.Tests.Matchers.that(set_result.success, eq=True)
+        tm.that(set_result.success, eq=True)
         verify_result = identity.verify_credential(strong_password)
-        TestsFlextAuthUtilities.Tests.Matchers.that(verify_result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            verify_result.value is True, eq=True
-        )
+        tm.that(verify_result.success, eq=True)
+        tm.that(verify_result.value is True, eq=True)
         wrong_result = identity.verify_credential(c.TEST_CREDENTIAL + "_wrong")
-        TestsFlextAuthUtilities.Tests.Matchers.that(wrong_result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            wrong_result.value is False, eq=True
-        )
+        tm.that(wrong_result.success, eq=True)
+        tm.that(wrong_result.value is False, eq=True)
 
     @staticmethod
     def test_generate_token_method() -> None:
@@ -109,11 +103,11 @@ class TestsFlextAuthApiCase06:
             email="jwt@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(user_result.success, eq=True)
+        tm.that(user_result.success, eq=True)
         user = user_result.value
         result = auth.create_token(identity_id=user.unique_id)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.error, none=True)
+        tm.that(result.success, eq=True)
+        tm.that(result.error, none=True)
 
     @staticmethod
     def test_generate_token_alternative_method() -> None:
@@ -124,13 +118,13 @@ class TestsFlextAuthApiCase06:
             "test@example.com",
             c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
+        tm.that(register_result.success, eq=True)
         identity = register_result.value
         auth_result = auth.authenticate_user("testuser", c.TEST_CREDENTIAL)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
+        tm.that(auth_result.success, eq=True)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.error, none=True)
+        tm.that(token_result.success, eq=True)
+        tm.that(token_result.error, none=True)
 
     @staticmethod
     def test_validate_token_success_path() -> None:
@@ -141,15 +135,13 @@ class TestsFlextAuthApiCase06:
             "test@example.com",
             c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
+        tm.that(register_result.success, eq=True)
         identity = register_result.value
         auth_result = auth.authenticate_user("testuser", c.TEST_CREDENTIAL)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
+        tm.that(auth_result.success, eq=True)
         authenticated_identity = auth_result.value
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            authenticated_identity, is_=m.Auth.AuthIdentity
-        )
+        tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.success, eq=True)
+        tm.that(token_result.success, eq=True)
         val_result = auth.session_service.validate_token("any.fake.token")
-        TestsFlextAuthUtilities.Tests.Matchers.that(not val_result.success, eq=True)
+        tm.that(not val_result.success, eq=True)
