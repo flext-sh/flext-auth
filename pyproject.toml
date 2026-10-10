@@ -508,12 +508,9 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "**/.agents/skills/webapp-testing/scripts/with_server.py" = [
-"**/.agents/skills/webapp-testing/scripts/with_server.py" = [
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
 ]
-"**/__init__.py" = ["line-too-long", "non-empty-init-module", "unused-import"]
-"**/_config.py" = ["invalid-function-name"]
 "**/__init__.py" = ["line-too-long", "non-empty-init-module", "unused-import"]
 "**/_config.py" = ["invalid-function-name"]
 "**/bin/**" = [
@@ -594,7 +591,7 @@ split-on-trailing-comma = false
   "undocumented-public-class",
   "undocumented-public-function",
   "undocumented-public-init",
-"**/xlsx.py" = ["import-outside-top-level"]
+]
 "scripts/**/*.py" = [
   "commented-out-code",
   "line-too-long",
