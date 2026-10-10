@@ -92,7 +92,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
 
         """
         if isinstance(user, Mapping):
-            payload = t.json_dict_adapter().validate_python(user)
+            payload = u.json_dict_adapter().validate_python(user)
         else:
             payload = user.model_dump()
         if "sub" not in payload and "unique_id" in payload:

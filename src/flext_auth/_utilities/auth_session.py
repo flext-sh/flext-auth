@@ -9,7 +9,7 @@ from __future__ import annotations
 import jwt
 from flext_api import r
 
-from flext_auth import c, m, p, t
+from flext_auth import c, m, p, t, u
 
 
 class FlextAuthUtilitiesAuthSession:
@@ -51,7 +51,7 @@ class FlextAuthUtilitiesAuthSession:
                 options={"verify_signature": verify},
                 audience=provider_config.audience,
             )
-            typed_payload = t.json_dict_adapter().validate_python(payload)
+            typed_payload = u.json_dict_adapter().validate_python(payload)
             return r[t.Auth.TokensClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as exc:
             return r[t.Auth.TokensClaimMap].fail(f"Invalid token: {exc}", exception=exc)
@@ -82,7 +82,7 @@ class FlextAuthUtilitiesAuthSession:
         """
         try:
             encoded = jwt.encode(
-                t.json_dict_adapter().validate_python(payload),
+                u.json_dict_adapter().validate_python(payload),
                 secret,
                 algorithm=algorithm,
             )
