@@ -87,6 +87,7 @@ dev = [
   "mkdocstrings>=1.0.6",
   "mkdocstrings-python>=2.0.8",
   "msgpack-types",
+  "msgpack-types",
   "mypy>=2.3.1",
   "platformdirs>=4.12.0",
   "pymdown-extensions",
@@ -110,6 +111,7 @@ dev = [
   "types-defusedxml>=0.7.0.20260504",
   "types-docker>=7.2.0.20260827",
   "types-flask>=1.1.6",
+  "types-grpcio",
   "types-grpcio",
   "types-jsonschema>=4.26.0.20260518",
   "types-ldap3>=2.9.13.20260827",
@@ -506,9 +508,12 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "**/.agents/skills/webapp-testing/scripts/with_server.py" = [
+"**/.agents/skills/webapp-testing/scripts/with_server.py" = [
   "subprocess-without-shell-equals-true",
   "suspicious-subprocess-import",
 ]
+"**/__init__.py" = ["line-too-long", "non-empty-init-module", "unused-import"]
+"**/_config.py" = ["invalid-function-name"]
 "**/__init__.py" = ["line-too-long", "non-empty-init-module", "unused-import"]
 "**/_config.py" = ["invalid-function-name"]
 "**/bin/**" = [
@@ -546,6 +551,49 @@ split-on-trailing-comma = false
   "pytest-fixture-autouse",
   "too-many-public-methods",
 ]
+"**/tests/python/**" = ["raise-vanilla-args"]
+"**/xlsx.py" = ["import-outside-top-level"]
+"scripts/**" = [
+  "any-type",
+  "avoidable-escaped-quote",
+  "banned-api",
+  "blank-line-after-function",
+  "boolean-default-value-positional-argument",
+  "boolean-type-hint-positional-argument",
+  "builtin-open",
+  "commented-out-code",
+  "error-instead-of-exception",
+  "f-string-in-exception",
+  "if-exp-instead-of-or-operator",
+  "import-private-name",
+  "invalid-module-name",
+  "literal-membership",
+  "logging-string-concat",
+  "magic-value-comparison",
+  "manual-list-comprehension",
+  "manual-list-copy",
+  "missing-blank-line-after-summary",
+  "missing-maxsplit-arg",
+  "multi-line-summary-first-line",
+  "multiple-starts-ends-with",
+  "non-lowercase-variable-in-function",
+  "noqa-comments",
+  "os-path-abspath",
+  "os-path-dirname",
+  "os-path-exists",
+  "os-path-join",
+  "path-constructor-current-directory",
+  "print",
+  "raise-vanilla-args",
+  "raw-string-in-exception",
+  "read-whole-file",
+  "relative-imports",
+  "repeated-append",
+  "runtime-cast-value",
+  "shebang-not-executable",
+  "undocumented-public-class",
+  "undocumented-public-function",
+  "undocumented-public-init",
 "**/xlsx.py" = ["import-outside-top-level"]
 "scripts/**/*.py" = [
   "commented-out-code",

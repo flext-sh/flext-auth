@@ -201,8 +201,13 @@ endif
 # === SECTION: verb dispatch (managed) ===
 # Source: config:make.verbs and the canonical gate vocabulary. A verb exists
 # only in the profiles it declares (make.verbs[].profiles).
+<<<<<<< HEAD
 PUBLIC_VERBS := help setup pre-commit upg build check census census-constants smells test test-full test-file file-gate profile-test profile-test-report fmt fix fix-namespace fix-accessors audit status verify-clean docs clean bootstrap-candidate release-plan release-version release-tag release-build publication gen gen-footprint initialize mod mod-text mod-text-candidate mod-snapshots waza duplication sonarcloud-sync sonarcloud-issues
 BUILTIN_VERBS := help setup pre-commit upg build check census census-constants smells test test-full test-file file-gate profile-test profile-test-report fmt fix fix-namespace fix-accessors audit status verify-clean docs clean bootstrap-candidate release-plan release-version release-tag release-build publication gen gen-footprint initialize mod mod-text mod-text-candidate mod-snapshots waza duplication sonarcloud-sync sonarcloud-issues
+=======
+PUBLIC_VERBS := help setup pre-commit upg build check smells test test-full test-file file-gate profile-test profile-test-report fmt fix fix-namespace fix-accessors audit status verify-clean docs clean bootstrap-candidate release-plan release-version release-tag release-build publication gen gen-footprint initialize mod mod-text mod-text-candidate mod-snapshots waza duplication sonarcloud-sync sonarcloud-issues
+BUILTIN_VERBS := help setup pre-commit upg build check smells test test-full test-file file-gate profile-test profile-test-report fmt fix fix-namespace fix-accessors audit status verify-clean docs clean bootstrap-candidate release-plan release-version release-tag release-build publication gen gen-footprint initialize mod mod-text mod-text-candidate mod-snapshots waza duplication sonarcloud-sync sonarcloud-issues
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 SCRIPT_VERBS :=
 
 CUSTOM_MAKEFILE := $(MAKEFILE_ROOT)/custom.mk
@@ -297,10 +302,44 @@ unexport MISE_SYSTEM_CONFIG_FILE
 # the pinned mise release is the [tools] entry the committed mise.lock pins.
 # End SECTION: profile routing
 
+<<<<<<< HEAD
 # D-VENV: the environment is <RUNTIME_ROOT>/.venv only. A member inside a
 # workspace uses the workspace environment; a standalone checkout or a linked
 # worktree owns its own physical environment inside the checkout. The path is
 # law, never configuration, and is never shared with another checkout.
+=======
+# Git identity distinguishes a linked worktree from a primary submodule:
+# both can have a .git file, but only a linked worktree has distinct Git
+# directory and common directory. The environment path cannot be overridden.
+RUNTIME_LINKED_WORKTREE :=
+ifneq ($(wildcard $(RUNTIME_ROOT)/.git),)
+RUNTIME_GIT_DIR := $(shell git -C "$(RUNTIME_ROOT)" rev-parse --path-format=absolute --git-dir)
+ifneq ($(.SHELLSTATUS),0)
+$(error Cannot resolve Git directory for $(RUNTIME_ROOT))
+endif
+RUNTIME_GIT_COMMON_DIR := $(shell git -C "$(RUNTIME_ROOT)" rev-parse --path-format=absolute --git-common-dir)
+ifneq ($(.SHELLSTATUS),0)
+$(error Cannot resolve Git common directory for $(RUNTIME_ROOT))
+endif
+ifneq ($(RUNTIME_GIT_DIR),$(RUNTIME_GIT_COMMON_DIR))
+RUNTIME_LINKED_WORKTREE := Y
+endif
+endif
+# A linked worktree uses the environment its primary worktree uses: Git lists
+# the primary first wherever the lane lives, and the primary's runtime is its
+# superproject when attached, else the primary itself.
+ifeq ($(RUNTIME_LINKED_WORKTREE),Y)
+RUNTIME_PRIMARY_WORKTREE := $(word 2,$(shell git -C "$(RUNTIME_ROOT)" worktree list --porcelain))
+ifneq ($(.SHELLSTATUS),0)
+$(error Cannot resolve the primary worktree of $(RUNTIME_ROOT))
+endif
+RUNTIME_PRIMARY_RUNTIME := $(shell cd "$(RUNTIME_PRIMARY_WORKTREE)" && root=$$(git rev-parse --show-superproject-working-tree) && cd "$${root:-.}" && pwd -P)
+ifneq ($(.SHELLSTATUS),0)
+$(error Cannot resolve the runtime of the primary worktree $(RUNTIME_PRIMARY_WORKTREE))
+endif
+override RUNTIME_VENV := $(RUNTIME_PRIMARY_RUNTIME)/.venv
+else
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 override RUNTIME_VENV := $(RUNTIME_ROOT)/.venv
 ifeq ($(OS),Windows_NT)
 override RUNTIME_BIN := $(RUNTIME_VENV)/Scripts
@@ -412,6 +451,7 @@ _bootstrap_setup_tools:
 	fi; \
 	export MISE_SHIMS_DIR="$$mise_bootstrap_root/$$mise_receipt/shims"; \
 	if [ "$(TOOL_BOOTSTRAP_RESOLVE)" = "1" ]; then \
+<<<<<<< HEAD
 		if [ "$$mise_lock_usable" = 0 ]; then \
 			rm -f "$$mise_lock"; \
 		fi; \
@@ -439,14 +479,51 @@ _bootstrap_setup_tools:
 	if [ "$$mise_lock_usable" = 0 ]; then \
 		export MISE_LOCKFILE=false; \
 	fi; \
+=======
+		"$$mise_bootstrap_bin" -C "$(PROJECT_ROOT)" lock --upgrade --bump; \
+	fi; \
+	"$$mise_bootstrap_bin" -C "$(PROJECT_ROOT)" install --yes "python" "github:jdx/mise" "uv" "kubectl" "helm" "kind" "direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "kubeconform" "node" "go" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza"; \
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 	"$$mise_bootstrap_bin" reshim; \
 	printf 'setup: mise %s provisioned\n' "$$mise_receipt"; \
 	printf 'setup: entering lifecycle (submodules, environment, hooks) make=%s\n' "$(SELF_MAKE_EXECUTABLE)"; \
+<<<<<<< HEAD
 	"$$mise_bootstrap_bin" -C "$(PROJECT_ROOT)" exec -- env "PATH=$$(dirname "$$mise_bootstrap_bin"):$${MISE_SHIMS_DIR}:$${PATH}" "CI=$(CI)" $(SELF_MAKE) $(TOOL_BOOTSTRAP_LIFECYCLE)
 # The local structural guard runs before any credential or lock owner.
 _bootstrap_setup_tools: _builtin_require_workspace
 _bootstrap_setup_tools: _builtin_require_upg_lock_owner
 _bootstrap_setup_tools: _builtin_require_network_auth
+=======
+	"$$mise_bootstrap_bin" -C "$(PROJECT_ROOT)" exec -- env "PATH=$$(dirname "$$mise_bootstrap_bin"):$${PATH}" "CI=$(CI)" $(SELF_MAKE) $(TOOL_BOOTSTRAP_LIFECYCLE)
+_bootstrap_setup_tools: _builtin_require_upg_lock_owner
+_bootstrap_setup_tools: _builtin_require_network_auth
+
+# `upg` writes the lock of the runtime it resolves in. An attached member
+# resolves inside its workspace runtime, where `uv lock` rewrites the
+# workspace lock and never the member's own, so it stops before any effect.
+# The target-specific TOOL_BOOTSTRAP_RESOLVE reaches this prerequisite only
+# through `upg`; `setup` passes.
+.PHONY: _builtin_require_upg_lock_owner
+_builtin_require_upg_lock_owner:
+	@if [ "$(TOOL_BOOTSTRAP_RESOLVE)" = "1" ] && [ "$(PROJECT_ROOT)" != "$(RUNTIME_ROOT)" ]; then \
+		printf 'ERROR[upg] %s is attached to the workspace %s: `uv lock` here rewrites %s/uv.lock, never %s/uv.lock.\n  Right way: an attached member never resolves its own locks.\n  How: run `make upg` in a linked worktree of this member outside %s (a standalone checkout owns its locks), or `make upg` in %s for the workspace lock.\n' "$(PROJECT_ROOT)" "$(RUNTIME_ROOT)" "$(RUNTIME_ROOT)" "$(PROJECT_ROOT)" "$(RUNTIME_ROOT)" "$(RUNTIME_ROOT)" >&2; \
+		exit 2; \
+	fi
+
+.PHONY: _builtin_require_network_auth
+_builtin_require_network_auth:
+	@$(GITHUB_AUTH_DIAGNOSTICS)
+	@if [ "$(GITHUB_AUTH_SOURCE)" = gh ]; then \
+		if [ "$(GITHUB_AUTH_STATUS)" != 0 ]; then \
+			printf 'ERROR: selected gh auth token failed (exit %s); refusing anonymous provisioning\n' '$(GITHUB_AUTH_STATUS)' >&2; \
+			exit "$(GITHUB_AUTH_STATUS)"; \
+		fi; \
+		if [ "$(GITHUB_AUTH_PRESENT)" != yes ]; then \
+			printf 'ERROR: selected gh auth token returned no credential; refusing anonymous provisioning\n' >&2; \
+			exit 2; \
+		fi; \
+	fi
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 
 # `upg` writes the lock of the runtime it resolves in. An attached member
 # resolves inside its workspace runtime, where `uv lock` rewrites the
@@ -491,6 +568,7 @@ SETUP_ENVIRONMENT_RECIPE = set -eu; \
 	if [ -n "$${FLEXT_SETUP_CREDENTIAL_STORE:-}" ]; then \
 		credential_env="env GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=credential.helper GIT_CONFIG_VALUE_0=store --file=$$FLEXT_SETUP_CREDENTIAL_STORE"; \
 	fi; \
+<<<<<<< HEAD
 	uv_lock_mode=; \
 	if [ -f "$(UV_PROJECT)/uv.lock" ] && ! grep -qE '^(<<<<<<< |=======$$|>>>>>>> )' "$(UV_PROJECT)/uv.lock"; then \
 		uv_lock_mode=--frozen; \
@@ -503,6 +581,23 @@ SETUP_ENVIRONMENT_RECIPE = set -eu; \
 		uv_groups="$$(awk '/^\[dependency-groups\]/ { inside = 1; next } /^\[/ { inside = 0 } inside && $$2 == "=" { printf " --group $(UV_PROJECT)/pyproject.toml:%s", $$1 }' "$(UV_PROJECT)/pyproject.toml")"; \
 		$$credential_env $(UV) pip install --python "$(RUNTIME_VENV)/bin/python" --link-mode "$(UV_LINK_MODE)" --requirements "$(UV_PROJECT)/pyproject.toml" --all-extras $$uv_groups --editable "$(UV_PROJECT)"$(foreach member,$(WORKSPACE_SUBPROJECTS), --editable "$(PROJECT_ROOT)/$(member)"); \
 	fi; \
+=======
+	if [ ! -f "$(UV_PROJECT)/uv.lock" ]; then \
+		printf 'ERROR[setup] uv.lock is missing: %s/uv.lock\n  Right way: only `make upg` writes uv.lock; setup installs the committed lock and never creates one.\n  How: run `make upg` in %s, then commit uv.lock.\n' "$(UV_PROJECT)" "$(PROJECT_ROOT)" >&2; \
+		exit 2; \
+	fi; \
+	uv_lock_mode=--locked; \
+	if ! uv_lock_report=$$($(UV) lock --check --project "$(UV_PROJECT)" 2>&1); then \
+		if [ "$(strip $(CI))" = "Y" ]; then \
+			printf 'ERROR[setup] uv.lock does not match the manifests of %s:\n%s\n  Right way: CI installs only a lock that satisfies its manifests; a drifted lock is RED, never installed --frozen.\n  How: run `make upg` in %s, then commit uv.lock.\n' "$(UV_PROJECT)" "$$uv_lock_report" "$(PROJECT_ROOT)" >&2; \
+			exit 2; \
+		fi; \
+		printf 'WARNING[setup] uv.lock does not match the manifests of %s:\n%s\n  Right way: only `make upg` writes uv.lock; setup installs the committed lock as-is (--frozen) and never relocks.\n  How: run `make upg` in %s, then commit uv.lock.\n' "$(UV_PROJECT)" "$$uv_lock_report" "$(PROJECT_ROOT)" >&2; \
+		uv_lock_mode=--frozen; \
+	fi; \
+	locked_python="$$(mise -C "$(RUNTIME_ROOT)" which python)"; \
+	$$credential_env $(UV) sync --project "$(UV_PROJECT)" --python "$$locked_python" $(UV_SYNC_FLAGS) $$uv_lock_mode --link-mode "$(UV_LINK_MODE)"; \
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 	$(PROJECT_FLEXT_INFRA) workspace sync-environment --repository-root "$(PROJECT_ROOT)"; \
 	if [ "$(strip $(CI))" != "Y" ]; then \
 		for member in $(WORKSPACE_SUBPROJECTS); do \
@@ -548,6 +643,7 @@ endif
 override PROJECT_INFRA_RUN = if [ ! -x "$(FLEXT_INFRA_PYTHON)" ]; then printf 'ERROR: FLEXT_INFRA_PYTHON must name an executable managed Python\n' >&2; exit 2; fi; env -u PYTHONPATH -u MYPYPATH -u VIRTUAL_ENV -u UV_PROJECT -u UV_PROJECT_ENVIRONMENT PYTHONPATH="$(PROJECT_INFRA_PYTHONPATH)" $(FLEXT_INFRA_PYTHON)
 override PROJECT_FLEXT_INFRA := $(PROJECT_INFRA_RUN) -m flext_infra
 # Scaffold dev tools live in the validated optional dev
+<<<<<<< HEAD
 # Setup uses the committed uv.lock and never stops on it
 # (operator-ruling-2026-10-09-setup-resilient): a present, readable lock always
 # installs `--frozen` (exactly its pins, current or stale, never rewritten).
@@ -555,6 +651,13 @@ override PROJECT_FLEXT_INFRA := $(PROJECT_INFRA_RUN) -m flext_infra
 # installs the project and its declared groups from the manifests into the
 # environment, never reading or writing uv.lock. `make audit` holds the
 # verdict (law 14) and `make upg` cures it.
+=======
+# Lock law (operator 2026-10-03): only `make upg` writes uv.lock. Setup installs
+# the committed lock and never deletes, creates, or relocks it: a matching lock
+# syncs `--locked`; a drifted lock is reported (cause, right way, how) and
+# synced `--frozen` locally, and fails under CI (law 14: red means red); a
+# missing lock fails naming `make upg`.
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 UV_SYNC_FLAGS := --all-extras --all-groups --all-packages
 ifeq ($(strip $(CI)),Y)
 override UV_SYNC_FLAGS := --all-extras --all-groups --all-packages --no-editable
@@ -1283,6 +1386,10 @@ _setup_lifecycle:
 # right after setup; `make upg` cures them and never depends on setup.
 .PHONY: _setup_activated
 _setup_activated:
+<<<<<<< HEAD
+=======
+	@$(PROJECT_FLEXT_INFRA) codegen mise-proof --repository-root "$(PROJECT_ROOT)" --uv-executable "$$(command -v $(UV))"
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 	@set -eu; \
 	case "$(strip $(CI)): $(CUSTOM_DECLARED_TARGETS) " in \
 		Y:*) ;; \
@@ -1689,6 +1796,12 @@ _upg_converge:
 	@$(UV) lock --project "$(PROJECT_ROOT)"
 	@$(UV) lock --check --project "$(PROJECT_ROOT)"
 	@$(SELF_MAKE) _builtin_setup_environment
+<<<<<<< HEAD
+=======
+	@mise -C "$(PROJECT_ROOT)" lock --bump
+	@mise -C "$(PROJECT_ROOT)" install --yes "python" "github:jdx/mise" "uv" "kubectl" "helm" "kind" "direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "kubeconform" "node" "go" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza"
+	@$(SELF_MAKE) _builtin_require_mise
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 	$(call RUN_PUBLIC_ACTIVATE,gen)
 	@$(SELF_MAKE) gen
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --mode check
@@ -1796,6 +1909,13 @@ TESTMON_DATAFILE="$$database" $(PYTEST_BOUNDED) $(UV_RUN) python -m flext_infra.
 export FLEXT_FILE_GATE_FILE := $(value FILE)
 _builtin_file_gate_all: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) check run --repository-root "$(PROJECT_ROOT)" --gates "lint,format,pyrefly,mypy,pyright,codemod" --file "$$FLEXT_FILE_GATE_FILE"
+<<<<<<< HEAD
+=======
+
+_builtin_tests_all: _builtin_require_environment
+	+@$(SELF_MAKE) test
+	@$(PYTEST_BOUNDED) $(UV_RUN) python -m flext_infra._pytest_entry full
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 
 # fmt is format-only (single-pass verb law): ruff formats Python, the
 # fmt_gates formatters run once through the checker's apply mode, and every
@@ -2048,6 +2168,7 @@ _builtin-audit:
 ifneq ($(CI),Y)
 	@$(PROJECT_FLEXT_INFRA) workspace verify-lanes --repo-root "$(PROJECT_ROOT)"
 endif
+<<<<<<< HEAD
 	@set -eu; \
 	if ! uv_lock_report=$$($(UV) lock --check --project "$(UV_PROJECT)" 2>&1); then \
 		printf 'ERROR[audit] uv.lock does not match the manifests of %s:\n%s\n  Right way: only `make upg` writes uv.lock and cures the drift.\n  How: run `make upg` in %s, then commit uv.lock.\n' "$(UV_PROJECT)" "$$uv_lock_report" "$(PROJECT_ROOT)" >&2; \
@@ -2055,6 +2176,8 @@ endif
 	fi
 	@$(PROJECT_FLEXT_INFRA) deps verify-locks --repository-root "$(PROJECT_ROOT)"
 	@$(PROJECT_FLEXT_INFRA) codegen mise-proof --repository-root "$(PROJECT_ROOT)" --uv-executable "$$(mise which uv)"
+=======
+>>>>>>> 818766708491e7c7a6c1683b40c60ea7fa8c27c7
 	@$(UV) pip check --python "$(RUNTIME_VENV)"
 	@$(if $(filter Y,$(CI)),$(PROJECT_FLEXT_INFRA) workspace verify-environment --repository-root "$(PROJECT_ROOT)",:)
 	@$(PROJECT_FLEXT_INFRA) codegen conform --root "$(PROJECT_ROOT)" --scope self --mode check
