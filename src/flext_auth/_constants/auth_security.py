@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from flext_auth._constants.auth_claims import FlextAuthConstantsAuthClaims
-from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
+from flext_auth._constants import (
+    FlextAuthConstantsAuthClaims,
+    FlextAuthConstantsAuthEnums,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet

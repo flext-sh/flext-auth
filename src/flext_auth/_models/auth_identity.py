@@ -13,7 +13,7 @@ from typing import Annotated, Self, cast
 from flext_api import m, r, u
 
 from flext_auth import c, p, t
-from flext_auth._models.auth_credential import FlextAuthModelsAuthCredential
+from flext_auth._models import FlextAuthModelsAuthCredential
 
 
 class FlextAuthModelsAuthIdentity:
@@ -70,10 +70,10 @@ class FlextAuthModelsAuthIdentity:
 
         @u.model_validator(mode="before")
         @classmethod
-        def normalize_token_claims(
+        def normalize_token_claims[TPayload](
             cls,
-            data: object,
-        ) -> object:
+            data: TPayload,
+        ) -> TPayload | t.MutableMappingKV[str, t.JsonPayload]:
             """Normalize OAuth/Kerberos claim payloads into identity fields.
 
             Pydantic hands before-model validators the raw untrusted input; the
@@ -82,18 +82,19 @@ class FlextAuthModelsAuthIdentity:
             Returns:
                 The resulting normalized mapping or the original input.
             """
+            original: TPayload = data
             if isinstance(data, cls):
-                return data
+                return original
             if not isinstance(data, Mapping):
-                return data
+                return original
             # Boundary parse (rule 6): the raw payload keys and values are
             # untrusted input; the JsonPayload contract is enforced by the
             # typed model this validator feeds, so the parse re-keys once and
             # hands the mapping downstream in the fleet's JSON vocabulary.
             typed_payload = cast("Mapping[str, t.JsonPayload]", data)
-            payload: dict[str, t.JsonPayload] = dict(typed_payload)
+            payload: t.MutableMappingKV[str, t.JsonPayload] = dict(typed_payload)
             if c.Auth.KEY_NAME in payload and c.Auth.KEY_CONTACT in payload:
-                return typed_payload
+                return original
             identity_candidates = tuple(
                 value
                 for value in (payload.get(key) for key in c.Auth.TOKEN_IDENTITY_KEYS)
@@ -101,7 +102,7 @@ class FlextAuthModelsAuthIdentity:
             )
             identity_id = identity_candidates[0] if identity_candidates else ""
             if not identity_id:
-                return typed_payload
+                return original
             name_candidates = tuple(
                 value
                 for value in (payload.get(key) for key in c.Auth.TOKEN_NAME_KEYS)

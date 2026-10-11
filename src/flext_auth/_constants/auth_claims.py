@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Final
 
 from flext_api import c
 
-from flext_auth._constants.auth_enums import FlextAuthConstantsAuthEnums
+from flext_auth._constants import FlextAuthConstantsAuthEnums
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Set as AbstractSet

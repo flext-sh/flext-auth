@@ -10,8 +10,7 @@ from typing import TYPE_CHECKING
 
 from flext_api import FlextApiConstants
 
-from flext_auth._constants.auth import FlextAuthConstantsAuth
-from flext_auth._constants.base import FlextAuthConstantsBase
+from flext_auth._constants import FlextAuthConstantsAuth, FlextAuthConstantsBase
 
 if TYPE_CHECKING:
     from flext_auth import t

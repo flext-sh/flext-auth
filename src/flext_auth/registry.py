@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth import t
-from flext_auth._registry.mutation import FlextAuthRegistryMutation
+from flext_auth._registry import FlextAuthRegistryMutation
 
 
 class FlextAuthRegistry(FlextAuthRegistryMutation):

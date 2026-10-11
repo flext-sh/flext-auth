@@ -10,9 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import r
-
-from flext_auth import c, m, p, s, u
+from flext_auth import c, m, p, r, s, u
 
 
 class FlextAuthSessionService(s):

@@ -9,8 +9,7 @@ from __future__ import annotations
 from flext_api import FlextApiModels
 
 from flext_auth import t
-from flext_auth._models.auth import FlextAuthModelsAuth
-from flext_auth._models.base import FlextAuthModelsBase
+from flext_auth._models import FlextAuthModelsAuth, FlextAuthModelsBase
 
 
 class FlextAuthModels(FlextApiModels):

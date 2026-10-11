@@ -10,8 +10,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import p, r, t
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth import FlextAuthProviderMixin, p, r, t
 
 
 class FlextAuthCertificateProvider(

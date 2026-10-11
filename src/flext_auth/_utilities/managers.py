@@ -8,12 +8,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth._utilities._managers.auth_managers_session import (
+from flext_auth._utilities import FlextAuthUtilitiesBase
+from flext_auth._utilities._managers import (
+    FlextAuthRateLimiterManagers,
     FlextAuthSessionManagers,
+    FlextAuthUserManagers,
 )
-from flext_auth._utilities._managers.rate_limiter import FlextAuthRateLimiterManagers
-from flext_auth._utilities._managers.user import FlextAuthUserManagers
-from flext_auth._utilities.base import FlextAuthUtilitiesBase
 
 if TYPE_CHECKING:
     from flext_auth import p, t

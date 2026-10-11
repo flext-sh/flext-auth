@@ -9,8 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, override
 
-from flext_auth import e, m, t
-from flext_auth.providers.oauth2_tokens import FlextAuthOAuth2Tokens
+from flext_auth import FlextAuthOAuth2Tokens, e, m, t, u
 
 if TYPE_CHECKING:
     import http.client
@@ -33,7 +32,7 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
             if isinstance(settings, Mapping)
             else settings.model_dump(mode="json", exclude_none=True)
         )
-        normalized_config: t.ScalarMapping = t.scalar_mapping_adapter().validate_python(
+        normalized_config: t.ScalarMapping = u.scalar_mapping_adapter().validate_python(
             raw_config,
         )
         scalar_config = self.project_to_scalar_config(normalized_config) or {}

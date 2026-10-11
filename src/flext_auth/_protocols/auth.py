@@ -6,11 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth._protocols.auth_identity import FlextAuthProtocolsAuthIdentity
-from flext_auth._protocols.auth_provider import FlextAuthProtocolsAuthProvider
-from flext_auth._protocols.auth_service import FlextAuthProtocolsAuthService
-from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
-from flext_auth._protocols.auth_transport import FlextAuthProtocolsAuthTransport
+from flext_auth._protocols import (
+    FlextAuthProtocolsAuthIdentity,
+    FlextAuthProtocolsAuthProvider,
+    FlextAuthProtocolsAuthService,
+    FlextAuthProtocolsAuthSession,
+    FlextAuthProtocolsAuthTransport,
+)
 
 
 class FlextAuthProtocolsAuth(

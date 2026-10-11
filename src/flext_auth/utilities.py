@@ -9,8 +9,7 @@ from __future__ import annotations
 from flext_api import FlextApiUtilities
 
 from flext_auth import t
-from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
-from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
+from flext_auth._utilities import FlextAuthUtilitiesAuth, FlextAuthUtilitiesManagers
 
 
 class FlextAuthUtilities(FlextApiUtilities):

@@ -13,7 +13,7 @@ from flext_auth import c, t
 if TYPE_CHECKING:
     from flext_api import p
 
-    from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
+    from flext_auth._protocols import FlextAuthProtocolsAuthSession
 
 
 class FlextAuthProtocolsAuthProvider:
