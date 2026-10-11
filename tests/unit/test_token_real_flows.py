@@ -7,10 +7,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_tests import tm
 
 from flext_auth import FlextAuth
-from tests import c
+from tests import c, tm
 
 
 class TestsFlextAuthSessionRealFlows:

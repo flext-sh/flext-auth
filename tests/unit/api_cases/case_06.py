@@ -8,10 +8,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from flext_tests import tm
-
 from flext_auth import FlextAuth
-from tests import c, m
+from tests import c, m, tm
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 

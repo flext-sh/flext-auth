@@ -18,10 +18,9 @@ from datetime import datetime
 
 import pytest
 from flext_api import FlextApiTypes
-from flext_tests import tm
 
 from flext_auth import FlextAuthTypes
-from tests import TestsFlextAuthTypes
+from tests import TestsFlextAuthTypes, tm
 
 
 class TestsFlextAuthTypings:

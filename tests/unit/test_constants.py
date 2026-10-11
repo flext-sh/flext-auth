@@ -22,9 +22,9 @@ from enum import StrEnum
 from typing import cast
 
 import pytest
-from flext_tests import tm
 
 from flext_auth import c, t
+from tests import tm
 
 
 class TestsFlextAuthConstants:
