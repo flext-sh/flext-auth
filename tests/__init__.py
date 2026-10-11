@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_tests import td, tf, tk, tm
+
     from flext_auth import d, e, h, r, x
     from tests import fixtures, unit
     from tests.base import TestsFlextAuthServiceBase, s
@@ -42,6 +44,10 @@ __all__: tuple[str, ...] = (
     "r",
     "s",
     "t",
+    "td",
+    "tf",
+    "tk",
+    "tm",
     "u",
     "unit",
     "x",
@@ -68,6 +74,10 @@ install_lazy_exports(
         "r": "flext_auth",
         "s": ".base",
         "t": ".typings",
+        "td": "flext_tests",
+        "tf": "flext_tests",
+        "tk": "flext_tests",
+        "tm": "flext_tests",
         "u": ".utilities",
         "unit": ".unit",
         "x": "flext_auth",
