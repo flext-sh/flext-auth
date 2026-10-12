@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from flext_auth import t
 
 
-class FlextAuthExampleUtilities:
+class AuthExampleUtilities:
     """Shared owner for example utility helpers."""
 
     @staticmethod
