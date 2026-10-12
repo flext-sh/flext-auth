@@ -9,7 +9,7 @@ from __future__ import annotations
 from flext_api import FlextApiModels
 
 from flext_auth import t
-from flext_auth._models.base import FlextAuthModelsBase
+from flext_auth._models.auth import FlextAuthModelsAuth
 from flext_auth._models.auth_credential import FlextAuthModelsAuthCredential
 from flext_auth._models.auth_identity import FlextAuthModelsAuthIdentity
 from flext_auth._models.auth_identity_request import FlextAuthModelsAuthIdentityRequest
@@ -19,8 +19,8 @@ from flext_auth._models.auth_session import FlextAuthModelsAuthSession
 from flext_auth._models.auth_user_identity_extras import (
     FlextAuthModelsAuthUserIdentityExtras,
 )
+from flext_auth._models.base import FlextAuthModelsBase
 from flext_auth._models.config import FlextAuthConfigModels
-from flext_auth._models.auth import FlextAuthModelsAuth
 
 
 class FlextAuthModels(FlextApiModels):
