@@ -27,7 +27,6 @@ class FlextAuthModels(FlextApiModels):
     """Authentication models extending the API model namespace."""
 
     class Auth(
-        FlextAuthModelsBase,
         FlextAuthModelsAuth,
         FlextAuthModelsAuthCredential,
         FlextAuthModelsAuthSession,
@@ -36,6 +35,7 @@ class FlextAuthModels(FlextApiModels):
         FlextAuthModelsAuthProviderConfig,
         FlextAuthModelsAuthResponse,
         FlextAuthModelsAuthUserIdentityExtras,
+        FlextAuthModelsBase,
         FlextAuthConfigModels,
     ):
         """Authentication model namespace."""
