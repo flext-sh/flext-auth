@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthProviderMixin, p, r, t
+from flext_auth import p, r, t
+from flext_auth.providers import FlextAuthProviderMixin
 
 
 class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
@@ -82,3 +83,6 @@ class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         """
         _ = token
         return r[bool].fail("SAML provider not yet fully implemented")
+
+
+__all__: list[str] = ["FlextAuthSamlProvider"]

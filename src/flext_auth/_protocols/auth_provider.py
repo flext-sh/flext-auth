@@ -18,6 +18,31 @@ if TYPE_CHECKING:
 
 class FlextAuthProtocolsAuthProvider:
     @runtime_checkable
+    class ProviderRegistry(Protocol):
+        """Registry operations consumed by provider orchestration."""
+
+        def get(
+            self,
+            data: str,
+        ) -> p.Result[FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider]:
+            """Resolve the registered provider by name."""
+            ...
+
+        def list_providers(self) -> t.StrSequence:
+            """Return registered provider names."""
+            ...
+
+        def register_provider(
+            self,
+            name: str,
+            provider: FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider,
+            *,
+            configuration: t.ConfigurationMapping | None = None,
+        ) -> p.Result[bool]:
+            """Register the provided implementation under its name."""
+            ...
+
+    @runtime_checkable
     class FlextAuthBaseProvider(Protocol):
         """Base protocol for all authentication providers.
 

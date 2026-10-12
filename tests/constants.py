@@ -16,12 +16,6 @@ class TestsFlextAuthConstants(FlextAuthConstants):
 
     TEST_CREDENTIAL: Final[str] = "TestPassword123!"
 
-    class _AuthConstants:
-        """Auth-specific test constants."""
-
-    class Tests(_AuthConstants):
-        """Test-specific constants."""
-
 
 c = TestsFlextAuthConstants
 

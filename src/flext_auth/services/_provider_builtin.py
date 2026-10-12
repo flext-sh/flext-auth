@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth import (
+from flext_auth import FlextAuthSettings, p, t
+from flext_auth.providers import (
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
     FlextAuthCertificateProvider,
@@ -17,21 +18,16 @@ from flext_auth import (
     FlextAuthOAuth2Provider,
     FlextAuthOidcProvider,
     FlextAuthRfcProvider,
-    FlextAuthSettings,
-    p,
-    t,
+    FlextAuthSamlProvider,
 )
-from flext_auth.providers.saml import FlextAuthSamlProvider
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from flext_auth import FlextAuthRegistry
-
 
 class FlextAuthProviderBuiltinRegistration:
     _auth_config: FlextAuthSettings
-    _providers: FlextAuthRegistry
+    _providers: p.Auth.ProviderRegistry
 
     if TYPE_CHECKING:
 

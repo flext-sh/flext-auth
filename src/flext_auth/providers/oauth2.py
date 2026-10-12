@@ -9,7 +9,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, override
 
-from flext_auth import FlextAuthOAuth2Tokens, e, m, t, u
+from flext_auth import e, m, t, u
+from flext_auth.providers import FlextAuthOAuth2Tokens
 
 if TYPE_CHECKING:
     import http.client

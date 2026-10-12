@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthKerberosSupport, FlextAuthRfcProvider, c, m, p, r, t, u
+from flext_auth import c, m, p, r, t, u
+from flext_auth.providers import FlextAuthKerberosSupport, FlextAuthRfcProvider
 
 
 class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):

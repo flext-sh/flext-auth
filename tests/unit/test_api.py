@@ -13,14 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import (
-    FlextAuth,
-    FlextAuthIdentityService,
-    FlextAuthRegistry,
-    FlextAuthSessionService,
-    FlextAuthSettings,
-    t,
-)
+from flext_auth import FlextAuth, FlextAuthRegistry, FlextAuthSettings, t
+from flext_auth.services import FlextAuthIdentityService, FlextAuthSessionService
 from tests import c, tm
 
 

@@ -8,7 +8,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthApplicationService, t
+from flext_auth import t
+from flext_auth.services import FlextAuthApplicationService
 
 
 class FlextAuth(FlextAuthApplicationService):

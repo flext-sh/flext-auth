@@ -27,9 +27,8 @@ This section is generated from public exports and real docstrings.
 
 ## Surface Summary
 
-- Primary facades: `FlextAuth`, `FlextAuthApiKeyProvider`,
-  `FlextAuthApplicationService`, `FlextAuthBasicProvider`,
-  `FlextAuthCertificateProvider`, `FlextAuthConfig` (+23 more)
+- Primary facades: `FlextAuth`, `FlextAuthConfig`, `FlextAuthConstants`,
+  `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthRegistry` (+5 more)
 - Generated module pages: `9`
 
 Back to [project docs](../index.md).

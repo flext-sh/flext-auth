@@ -10,16 +10,11 @@ import secrets
 from datetime import timedelta
 from typing import override
 
-from flext_auth import (
+from flext_auth import c, m, p, r, t, u
+from flext_auth.providers import (
     FlextAuthOAuth2Config,
     FlextAuthOAuth2Introspection,
     FlextAuthRfcProvider,
-    c,
-    m,
-    p,
-    r,
-    t,
-    u,
 )
 
 

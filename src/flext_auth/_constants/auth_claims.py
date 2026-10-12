@@ -149,8 +149,6 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     OAUTH2_INTROSPECTION_TYPE_HINT_ACCESS: Final[str] = "access_token"
     "RFC 7662 introspection token_type_hint wire value for access tokens."
     "Lockout duration in minutes."
-    SECRET_MIN_LENGTH: Final[int] = 32
-    "Minimum secret key length."
     VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
         "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
         "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
