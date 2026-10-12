@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsSettings
 
-from flext_auth._settings import FlextAuthSettings
+from flext_auth import FlextAuthSettings
 
 
 class TestsFlextAuthSettings(FlextAuthSettings, FlextTestsSettings):
