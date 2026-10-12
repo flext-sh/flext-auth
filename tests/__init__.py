@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from flext_tests import td, tf, tk, tm
 
     from flext_auth import d, e, h, r, x
-    from tests import fixtures, unit
     from tests.base import TestsFlextAuthServiceBase, s
     from tests.constants import TestsFlextAuthConstants, c
     from tests.models import TestsFlextAuthModels, m
@@ -37,7 +36,6 @@ __all__: tuple[str, ...] = (
     "c",
     "d",
     "e",
-    "fixtures",
     "h",
     "m",
     "p",
@@ -66,7 +64,6 @@ install_lazy_exports(
         "c": ".constants",
         "d": "flext_auth",
         "e": "flext_auth",
-        "fixtures": ".fixtures",
         "h": "flext_auth",
         "m": ".models",
         "p": ".protocols",
@@ -78,7 +75,6 @@ install_lazy_exports(
         "tk": "flext_tests",
         "tm": "flext_tests",
         "u": ".utilities",
-        "unit": ".unit",
         "x": "flext_auth",
     }),
     public_exports=__all__,
