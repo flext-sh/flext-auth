@@ -10,7 +10,8 @@ import os
 
 from flext_cli import cli
 
-from flext_auth import FlextAuth, FlextAuthSettings, p, r
+from examples import p, r
+from flext_auth import FlextAuth, FlextAuthSettings
 
 
 class FlextAuthBasicAuthExample:

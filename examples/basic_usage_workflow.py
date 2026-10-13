@@ -9,7 +9,8 @@ from __future__ import annotations
 import os
 import secrets
 
-from flext_auth import FlextAuth, p, r, u
+from examples import p, r, u
+from flext_auth import FlextAuth
 
 
 class FlextAuthBasicUsageWorkflow:

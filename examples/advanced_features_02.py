@@ -10,7 +10,8 @@ from __future__ import annotations
 import os
 import secrets
 
-from flext_auth import FlextAuth, c, p, r, u
+from examples import c, p, r, u
+from flext_auth import FlextAuth
 
 
 class FlextAuthAdvancedFeaturesExample:
