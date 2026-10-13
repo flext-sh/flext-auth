@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from examples import (
-    FlextAuthBasicUsageWorkflow,
+    FlextAuthBasicUsageFlows,
     FlextAuthBasicUsageWorkflow,
     u,
 )
