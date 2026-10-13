@@ -153,7 +153,7 @@ def authenticate_request(
 @app.get("/protected")
 def protected_endpoint(
     token: Annotated[str, Depends(authenticate_request)],
-) -> dict[str, str]:
+) -> t.StrDict:
     return {"message": "Hello authenticated user", "token": token}
 ```
 
