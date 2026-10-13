@@ -610,3 +610,6 @@ constraint-dependencies = ["mypy<2.4.0"]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 link-mode = "copy"
 override-dependencies = ["flext-auth"]
+
+[tool.uv.sources.flext-auth]
+workspace = true
