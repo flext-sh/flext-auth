@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from flext_api import FlextApiProtocols
 
-from flext_auth._protocols.auth import FlextAuthProtocolsAuth
-from flext_auth._protocols.base import FlextAuthProtocolsBase
+from flext_auth._protocols import FlextAuthProtocolsAuth, FlextAuthProtocolsBase
 
 
 class FlextAuthProtocols(FlextApiProtocols):

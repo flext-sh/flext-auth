@@ -12,8 +12,10 @@ from flext_api import p
 
 if TYPE_CHECKING:
     from flext_auth import t
-    from flext_auth._protocols.auth_identity import FlextAuthProtocolsAuthIdentity
-    from flext_auth._protocols.auth_provider import FlextAuthProtocolsAuthProvider
+    from flext_auth._protocols import (
+        FlextAuthProtocolsAuthIdentity,
+        FlextAuthProtocolsAuthProvider,
+    )
 
 
 class FlextAuthProtocolsAuthService:

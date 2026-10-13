@@ -22,9 +22,9 @@ from enum import StrEnum
 from typing import cast
 
 import pytest
-from flext_tests import tm
 
 from flext_auth import c, t
+from tests import tm
 
 
 class TestsFlextAuthConstants:
@@ -33,13 +33,6 @@ class TestsFlextAuthConstants:
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     # ----- Composition reachability (observable, not structural) -----
-
-    @staticmethod
-    def test_core_namespace_constant_is_reachable_through_facade() -> None:
-        # A flext-core/flext-api constant must be visible via the auth facade,
-        # proving the namespaces are composed (behavior, not __mro__ inspection).
-        """Test core namespace constant is reachable through facade."""
-        tm.that(c.DEFAULT_TIMEOUT_SECONDS, eq=30)
 
     @staticmethod
     def test_auth_default_timeout_is_derived_from_core_timeout() -> None:

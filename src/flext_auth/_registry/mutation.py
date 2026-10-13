@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import c, m, p, r, t
-from flext_auth._registry.lookup import FlextAuthRegistryLookup
+from flext_auth import c, m, p, r, t, u
+from flext_auth._registry import FlextAuthRegistryLookup
 
 
 class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
@@ -45,7 +45,7 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         if configuration:
             config_wrapper = m.Auth.ConfigWrapper(
                 category=c.Auth.REGISTRY_CONFIG_CATEGORY,
-                data=t.scalar_mapping_adapter().validate_python(configuration),
+                data=u.scalar_mapping_adapter().validate_python(configuration),
             )
             config_result = self._registry.register_plugin(
                 c.Auth.REGISTRY_CONFIG_CATEGORY,
@@ -102,7 +102,7 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         self.unregister_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
         config_wrapper = m.Auth.ConfigWrapper(
             category=c.Auth.REGISTRY_CONFIG_CATEGORY,
-            data=t.scalar_mapping_adapter().validate_python(settings),
+            data=u.scalar_mapping_adapter().validate_python(settings),
         )
         return self._registry.register_plugin(
             c.Auth.REGISTRY_CONFIG_CATEGORY,

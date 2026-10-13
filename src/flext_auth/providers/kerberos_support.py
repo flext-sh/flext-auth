@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import ClassVar
 
-from flext_auth import m, p, r, settings, t
+from flext_auth import m, p, r, settings, t, u
 
 
 class FlextAuthKerberosSupport:
@@ -126,7 +126,7 @@ class FlextAuthKerberosSupport:
             # not an owned model to a JSON mapping; the adapter rejects any
             # unsupported shape, and this boundary re-raises it as TypeError.
             try:
-                return t.json_mapping_adapter().validate_python(raw_payload)
+                return u.json_mapping_adapter().validate_python(raw_payload)
             except m.ValidationError as exc:
                 msg = "Kerberos ticket_validator returned unsupported payload"
                 raise TypeError(msg) from exc

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from flext_api import r, u
 
-from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
+from flext_auth._utilities._managers import FlextAuthUserManagerRead
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping

@@ -41,7 +41,7 @@ class FlextAuthProviderCodecMixin:
         Returns:
             The resulting ``p.Result[str]``.
         """
-        normalized_payload = t.json_dict_adapter().validate_python(payload)
+        normalized_payload = u.json_dict_adapter().validate_python(payload)
         encoded: p.Result[str] = u.Auth.encode_token(
             normalized_payload,
             secret,

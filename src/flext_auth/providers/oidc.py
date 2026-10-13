@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import t
-from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth.providers import FlextAuthRfcProvider
 
 
 class FlextAuthOidcProvider(FlextAuthRfcProvider):

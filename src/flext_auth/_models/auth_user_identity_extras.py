@@ -37,7 +37,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @classmethod
         def normalize_str_sequence(
             cls,
-            value: object,
+            value: t.JsonPayload,
         ) -> t.StrSequence | None:
             """Normalize sequence-like values to strict string sequences.
 
@@ -49,14 +49,14 @@ class FlextAuthModelsAuthUserIdentityExtras:
             if isinstance(value, (str, bytes, bytearray)):
                 return []
             if isinstance(value, Sequence):
-                return t.strict_str_sequence_adapter().validate_python(value)
+                return u.strict_str_sequence_adapter().validate_python(value)
             return []
 
         @u.field_validator("failed_attempts", mode="before")
         @classmethod
         def normalize_failed_attempts(
             cls,
-            value: object,
+            value: t.JsonPayload,
         ) -> int | None:
             """Normalize failed attempts from int-like values.
 
@@ -75,7 +75,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
         @classmethod
         def normalize_datetime(
             cls,
-            value: object,
+            value: t.JsonPayload,
         ) -> datetime | None:
             """Normalize datetime-like values with deterministic fallback.
 

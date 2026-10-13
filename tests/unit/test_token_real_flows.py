@@ -6,17 +6,36 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-from flext_tests import tm
+from datetime import UTC, datetime
 
-from flext_auth import FlextAuth
-from tests import c
+import pytest
+
+from flext_auth import FlextAuth, m
+from tests import c, tm
 
 
 class TestsFlextAuthSessionRealFlows:
     """Token flow tests using only FlextAuth public API."""
 
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+
+    @staticmethod
+    def test_identity_extras_preserve_supported_payload_values() -> None:
+        """Validate actual identity inputs without replacing normalization code."""
+        instant = datetime.now(UTC)
+        role = c.Auth.RoleTypes.USER.value
+        extras = m.Auth.UserIdentityExtras.model_validate({
+            "roles": [role],
+            "permissions": ["profile.read"],
+            "failed_attempts": "1",
+            "locked_until": instant,
+            "last_access": instant.isoformat(),
+        })
+        tm.that(extras.roles, has=role)
+        tm.that(extras.permissions, has="profile.read")
+        tm.that(extras.failed_attempts, eq=1)
+        tm.that(extras.locked_until, eq=instant)
+        tm.that(extras.last_access, eq=instant)
 
     @staticmethod
     def test_create_token_for_registered_user() -> None:

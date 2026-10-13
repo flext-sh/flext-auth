@@ -8,9 +8,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import c, m, p, r, t
-from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
-from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth import c, m, p, r, t, u
+from flext_auth.providers import FlextAuthKerberosSupport, FlextAuthRfcProvider
 
 
 class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
@@ -108,7 +107,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
                 m.Auth.AuthIdentity,
             )
         try:
-            claims = t.json_mapping_adapter().validate_python(payload)
+            claims = u.json_mapping_adapter().validate_python(payload)
         except c.ValidationError as exc:
             return r[m.Auth.AuthIdentity].fail(
                 f"Kerberos ticket validator mapping payload is invalid: {exc}",

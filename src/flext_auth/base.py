@@ -10,10 +10,10 @@ from abc import ABC
 from typing import override
 
 from flext_auth import FlextAuthSettings, m, p, r, t
-from flext_core import s
+from flext_core import FlextService
 
 
-class FlextAuthServiceBase(s[bool], ABC):
+class FlextAuthServiceBase(FlextService[bool], ABC):
     """Base class for auth services with typed configuration access."""
 
     _auth_config: FlextAuthSettings = m.PrivateAttr(

@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import install_lazy_exports
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth.providers import _mixins
@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from flext_auth.providers.oauth2_tokens import FlextAuthOAuth2Tokens
     from flext_auth.providers.oidc import FlextAuthOidcProvider
     from flext_auth.providers.rfc import FlextAuthRfcProvider
+    from flext_auth.providers.saml import FlextAuthSamlProvider
 
 
 __all__: tuple[str, ...] = (
@@ -53,6 +54,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthProviderTokenMixin",
     "FlextAuthProviderValidationMixin",
     "FlextAuthRfcProvider",
+    "FlextAuthSamlProvider",
     "_mixins",
 )
 
@@ -78,6 +80,7 @@ install_lazy_exports(
         "FlextAuthProviderTokenMixin": "._mixins.tokens",
         "FlextAuthProviderValidationMixin": "._mixins.validation",
         "FlextAuthRfcProvider": ".rfc",
+        "FlextAuthSamlProvider": ".saml",
         "_mixins": "._mixins",
     }),
     public_exports=__all__,

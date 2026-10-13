@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import os
 
-from flext_auth import FlextAuth, FlextAuthSettings, p, r, u
+from examples import p, r, u
+from flext_auth import FlextAuth, FlextAuthSettings
 
 
 class FlextAuthBasicUsageFlows:

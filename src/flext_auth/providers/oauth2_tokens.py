@@ -11,9 +11,11 @@ from datetime import timedelta
 from typing import override
 
 from flext_auth import c, m, p, r, t, u
-from flext_auth.providers.oauth2_config import FlextAuthOAuth2Config
-from flext_auth.providers.oauth2_introspection import FlextAuthOAuth2Introspection
-from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth.providers import (
+    FlextAuthOAuth2Config,
+    FlextAuthOAuth2Introspection,
+    FlextAuthRfcProvider,
+)
 
 
 class FlextAuthOAuth2Tokens(

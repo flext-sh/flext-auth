@@ -10,7 +10,7 @@ from collections.abc import Mapping
 from datetime import datetime, timedelta
 
 from flext_auth import c, m, p, r, t, u
-from flext_auth.providers._mixins.codec import FlextAuthProviderCodecMixin
+from flext_auth.providers._mixins import FlextAuthProviderCodecMixin
 
 
 class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
@@ -92,7 +92,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
 
         """
         if isinstance(user, Mapping):
-            payload = t.json_dict_adapter().validate_python(user)
+            payload = u.json_dict_adapter().validate_python(user)
         else:
             payload = user.model_dump()
         if "sub" not in payload and "unique_id" in payload:

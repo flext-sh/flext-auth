@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from flext_auth._constants.auth_security import FlextAuthConstantsAuthSecurity
+from flext_auth._constants import FlextAuthConstantsAuthSecurity
 
 
 class FlextAuthConstantsAuthValues(FlextAuthConstantsAuthSecurity):

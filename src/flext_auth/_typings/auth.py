@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from collections.abc import Callable, MutableMapping, MutableSequence
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
-from flext_api import t
+from flext_api import t, u
+
+from flext_auth import c
 
 if TYPE_CHECKING:
     from flext_auth import m
@@ -18,6 +20,17 @@ if TYPE_CHECKING:
 
 class FlextAuthTypesAuth:
     """Internal and manager-facing aliases for authentication workflows."""
+
+    type TokenRequestType = c.Auth.TokenTypes | str
+    type ProvidersKey = Annotated[
+        str,
+        u.Field(
+            min_length=1,
+            max_length=c.Auth.VALIDATION_SHORT_NAME_MAX,
+            pattern=c.PATTERN_IDENTIFIER_LOWERCASE,
+            description="Provider registry key",
+        ),
+    ]
 
     type ManagersDateTimeValue = datetime
     type ManagersManagerValue = t.JsonValue | t.Scalar | t.StrSequence

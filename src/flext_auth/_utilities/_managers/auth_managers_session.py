@@ -158,3 +158,6 @@ class FlextAuthSessionManagers:
                     return False
             current_time: datetime = u.now()
             return is_active and expires_at > current_time
+
+
+__all__: list[str] = ["FlextAuthSessionManagers"]

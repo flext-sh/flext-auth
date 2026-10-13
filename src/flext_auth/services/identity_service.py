@@ -8,9 +8,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from flext_api import r
-
-from flext_auth import c, m, p, s, t, u
+from flext_auth import c, m, p, r, s, t, u
 
 
 class FlextAuthIdentityService(s):

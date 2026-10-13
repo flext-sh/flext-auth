@@ -9,10 +9,12 @@ from __future__ import annotations
 from typing import ClassVar, override
 
 from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, r, settings, t, u
-from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
-from flext_auth.services.identity_service import FlextAuthIdentityService
-from flext_auth.services.provider_service import FlextAuthProviderService
-from flext_auth.services.session_service import FlextAuthSessionService
+from flext_auth.services import (
+    FlextAuthApplicationLifecycle,
+    FlextAuthIdentityService,
+    FlextAuthProviderService,
+    FlextAuthSessionService,
+)
 from flext_core import FlextContainer
 
 
@@ -27,10 +29,12 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     _session_service: FlextAuthSessionService
     _auth_settings: FlextAuthSettings
 
-    def __init__(self, settings: FlextAuthSettings | None = None) -> None:
+    def __init__(self, settings: p.Settings | None = None) -> None:
         """Initialize with dependency injection and event bus."""
         resolved_settings = (
-            settings if settings is not None else FlextAuthSettings.fetch_global()
+            FlextAuthSettings.model_validate(settings.model_dump())
+            if settings is not None
+            else FlextAuthSettings.fetch_global()
         )
         self._auth_settings = resolved_settings
         self._registry = FlextAuthRegistry()

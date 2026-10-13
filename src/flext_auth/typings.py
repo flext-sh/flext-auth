@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from flext_api import FlextApiTypes
 
-from flext_auth._typings.auth import FlextAuthTypesAuth
-from flext_auth._typings.base import FlextAuthTypesBase
+from flext_auth._typings import FlextAuthTypesAuth, FlextAuthTypesBase
 
 
 class FlextAuthTypes(FlextApiTypes):

@@ -11,7 +11,7 @@ from base64 import b64encode
 from http import HTTPStatus
 from urllib.parse import urlencode, urlparse
 
-from flext_auth import c, m, p, r, t
+from flext_auth import c, m, p, r, t, u
 
 
 class FlextAuthOAuth2Introspection:
@@ -122,7 +122,7 @@ class FlextAuthOAuth2Introspection:
                 result = r[t.JsonMapping].fail(error_message)
             else:
                 try:
-                    parsed_mapping = t.json_mapping_adapter().validate_json(
+                    parsed_mapping = u.json_mapping_adapter().validate_json(
                         response_payload,
                     )
                 except c.EXC_VALIDATION_VALUE as exc:
