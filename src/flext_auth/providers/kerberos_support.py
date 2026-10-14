@@ -42,7 +42,12 @@ class FlextAuthKerberosSupport:
         """
 
         def __init__(self, provider: FlextAuthKerberosSupport) -> None:
-            """Initialize ticket validator."""
+            """Initialize ticket validator.
+
+            Args:
+                provider: Owning Kerberos support instance.
+
+            """
             self.provider = provider
 
         @staticmethod
@@ -51,8 +56,12 @@ class FlextAuthKerberosSupport:
         ) -> p.Result[m.Auth.KerberosTicketData]:
             """Validate Kerberos ticket.
 
+            Args:
+                _ticket_data: Ticket data to validate.
+
             Returns:
-                The resulting ``p.Result[m.Auth.KerberosTicketData]``.
+                A validated ticket record placeholder.
+
             """
             result = m.Auth.KerberosTicketData(
                 ticket="validated_ticket",
@@ -69,15 +78,24 @@ class FlextAuthKerberosSupport:
         """
 
         def __init__(self, provider: FlextAuthKerberosSupport) -> None:
-            """Initialize service handler."""
+            """Initialize service handler.
+
+            Args:
+                provider: Owning Kerberos support instance.
+
+            """
             self.provider = provider
 
     @staticmethod
     def handle_service_ticket(ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
         """Handle Kerberos service ticket.
 
+        Args:
+            ticket: Raw service ticket string.
+
         Returns:
-            The resulting ``p.Result[m.Auth.KerberosTicketData]``.
+            Ticket data bound to a service principal.
+
         """
         result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
         return r[m.Auth.KerberosTicketData].ok(result)
@@ -89,7 +107,12 @@ class FlextAuthKerberosSupport:
         """
 
         def __init__(self, provider: FlextAuthKerberosSupport) -> None:
-            """Initialize auth manager."""
+            """Initialize auth manager.
+
+            Args:
+                provider: Owning Kerberos support instance.
+
+            """
             self.provider = provider
 
         def authenticate_ticket(
@@ -98,8 +121,12 @@ class FlextAuthKerberosSupport:
         ) -> p.Result[m.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket.
 
+            Args:
+                ticket_data: Ticket data to authenticate.
+
             Returns:
-                The resulting ``p.Result[m.Auth.KerberosTicketData]``.
+                The validated ticket record.
+
             """
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
@@ -116,6 +143,19 @@ class FlextAuthKerberosSupport:
         def validated(
             ticket: str,
         ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+            """Validate a raw ticket through the external validator.
+
+            Args:
+                ticket: Raw ticket string to validate.
+
+            Returns:
+                The validator payload as an owned model or JSON mapping.
+
+            Raises:
+                TypeError: If the validator returns an unsupported payload
+                    shape.
+
+            """
             raw_payload = validator_candidate(ticket)
             if isinstance(
                 raw_payload,

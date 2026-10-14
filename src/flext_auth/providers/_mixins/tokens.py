@@ -14,6 +14,8 @@ from flext_auth.providers._mixins import FlextAuthProviderCodecMixin
 
 
 class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
+    """Token generation and refresh operations for JWT providers."""
+
     _provider_config: t.ScalarMapping | None
 
     def generate_token(
@@ -32,7 +34,8 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
             expiry_minutes: Token expiration time in minutes (optional).
 
         Returns:
-            r[str]: Encoded token string on success, error on failure.
+            The encoded token string; failure when provider configuration
+            or secret is missing.
 
         """
         settings = self._provider_config
@@ -88,7 +91,7 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
             expiry_minutes: Token expiration time in minutes (optional).
 
         Returns:
-            r[str]: Encoded token string on success, error on failure.
+            The encoded token string; failure on encoding errors.
 
         """
         if isinstance(user, Mapping):
@@ -110,7 +113,8 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
             token: Existing token to refresh.
 
         Returns:
-            r[Token]: New token on success, error if refresh not supported or failed.
+            The refreshed token entity; failure when decoding, identity
+            extraction, or re-issuing fails.
 
         """
         token_text = token

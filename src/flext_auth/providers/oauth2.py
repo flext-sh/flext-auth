@@ -25,8 +25,12 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
         Railway-oriented initialization with proper error handling.
         Uses composition for better separation of concerns.
 
+        Args:
+            settings: Provider configuration mapping or model.
+
         Raises:
             ValidationError: If OAuth2 configuration validation failed.
+
         """
         raw_config = (
             settings

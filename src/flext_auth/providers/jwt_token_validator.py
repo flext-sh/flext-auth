@@ -22,17 +22,23 @@ class FlextAuthJwtTokenValidator:
     """
 
     def __init__(self, provider: p.Auth.FlextAuthBaseProvider) -> None:
-        """Initialize with provider reference for configuration access."""
+        """Initialize with provider reference for configuration access.
+
+        Args:
+            provider: Provider supplying the JWT configuration.
+
+        """
         self._provider = provider
 
     def validate_token(self, token: str) -> p.Result[t.Auth.TokensClaimMap]:
         """Validate JWT token with railway-oriented programming.
 
         Args:
-        token: JWT token string to validate
+            token: JWT token string to validate.
 
         Returns:
-        r containing token payload or error
+            The decoded token claims; failure on invalid tokens or missing
+            configuration.
 
         """
         try:

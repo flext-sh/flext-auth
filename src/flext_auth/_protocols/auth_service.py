@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthProtocolsAuthService:
+    """Protocol namespace for auth and provider services."""
+
     @runtime_checkable
     class Service(p.Service[bool], Protocol):
         """Protocol for authentication service-like objects."""
@@ -33,15 +35,28 @@ class FlextAuthProtocolsAuthService:
             """Authenticate user and return identity.
 
             Returns Identity-compatible identity through structural typing.
+
+            Args:
+                username: Account name to authenticate.
+                password: Plain credential for the account.
+                client_ip: Optional client address for audit.
+                user_agent: Optional client agent for audit.
+
+            Returns:
+                The authenticated identity; failure when authentication is
+                rejected.
+
             """
             ...
 
         def logout_user(self, session_id: str) -> p.Result[bool]:
             """Logout user by session ID.
 
+            Args:
+                session_id: Identifier of the session to terminate.
+
             Returns:
-                FlextApiProtocols.Result[bool]: True if logout succeeded, False if
-                it did not, or a failure result on error.
+                Whether the logout succeeded.
 
             """
             ...
@@ -57,6 +72,17 @@ class FlextAuthProtocolsAuthService:
             """Register new user.
 
             Returns Identity-compatible identity through structural typing.
+
+            Args:
+                username: Unique account name for the new identity.
+                email: Contact address bound to the identity.
+                password: Plain credential to hash before storage.
+                full_name: Optional display name.
+                roles: Optional role names to grant.
+
+            Returns:
+                The created identity; failure on validation errors.
+
             """
             ...
 
@@ -67,7 +93,12 @@ class FlextAuthProtocolsAuthService:
         def fetch_jwt_provider(
             self,
         ) -> p.Result[FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider]:
-            """Resolve the JWT authentication provider through the registry."""
+            """Resolve the JWT authentication provider through the registry.
+
+            Returns:
+                The registered JWT provider; failure when absent.
+
+            """
             ...
 
     @runtime_checkable

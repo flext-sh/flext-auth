@@ -27,7 +27,7 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         """Get supported authentication methods.
 
         Returns:
-            set[str]: Set of supported methods (e.g., {"jwt", "validate", "refresh"})
+            Set of supported methods (e.g., {"jwt", "validate", "refresh"}).
 
         """
         return {"jwt", "validate", "refresh"}
@@ -36,8 +36,12 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate JWT token.
 
+        Args:
+            token: Token string or token entity to validate.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Whether the token is accepted.
+
         """
         token_value = token if isinstance(token, str) else token.token
         return self.validate_token(token_value)
@@ -46,10 +50,10 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         """Validate JWT token.
 
         Args:
-            token: Token to validate
+            token: Token to validate.
 
         Returns:
-            r[bool]: True if valid, False if invalid, error on failure
+            Whether the token passes signature and claim validation.
 
         """
         validator = FlextAuthJwtTokenValidator(self)

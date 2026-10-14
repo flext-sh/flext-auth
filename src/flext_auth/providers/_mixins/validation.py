@@ -10,11 +10,20 @@ from flext_auth import p, r, t, u
 
 
 class FlextAuthProviderValidationMixin:
+    """Validation stubs and credential checks shared by providers."""
+
     def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
-        """Authenticate credentials. Stub providers inherit this unimplemented owner.
+        """Authenticate credentials against this provider.
+
+        Stub providers inherit this unimplemented owner.
+
+        Args:
+            credentials: Credential payload for the provider.
 
         Returns:
-            The resulting ``p.Result[p.Auth.Token]``.
+            The issued token; failure for providers without an
+            implementation.
+
         """
         _ = credentials
         return r[p.Auth.Token].fail(
@@ -22,10 +31,17 @@ class FlextAuthProviderValidationMixin:
         )
 
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate a token. Stub providers inherit this unimplemented owner.
+        """Validate a token against this provider.
+
+        Stub providers inherit this unimplemented owner.
+
+        Args:
+            token: Token string or token entity to validate.
 
         Returns:
-            The resulting ``p.Result[bool]``.
+            Whether the token is accepted; failure for providers without
+            an implementation.
+
         """
         _ = token
         return r[bool].fail(f"{type(self).__name__} does not implement validate")
@@ -40,7 +56,7 @@ class FlextAuthProviderValidationMixin:
             token: Token to revoke.
 
         Returns:
-            r[bool]: True on success, error if revocation not supported.
+            Success on revocation; failure when revocation is unsupported.
 
         """
         _ = token
@@ -56,11 +72,12 @@ class FlextAuthProviderValidationMixin:
         """Validate that credentials contain required fields.
 
         Args:
-        credentials: Credentials dictionary to validate
-        required_fields: List of required field names
+            credentials: Credential payload to validate.
+            required_fields: Field names that must be present.
 
         Returns:
-        r[bool]: True if valid, False if invalid, error message on failure
+            Success when every required field is present; failure naming
+            the missing fields.
 
         """
 
@@ -81,10 +98,10 @@ class FlextAuthProviderValidationMixin:
         """Validate token string format.
 
         Args:
-        token: Token string to validate
+            token: Token string to validate.
 
         Returns:
-        r[bool]: True if valid, False if invalid, error message on failure
+            Success when the token is a non-empty, non-blank string.
 
         """
         if not token:

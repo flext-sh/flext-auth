@@ -16,12 +16,18 @@ from flext_auth import c, p
 
 
 class FlextAuthUtilitiesAuthValidation:
+    """Validation and credential helpers for the auth domain."""
+
     @staticmethod
     def validate_email(email: str) -> p.Result[str]:
         """Validate email format.
 
+        Args:
+            email: Candidate email address.
+
         Returns:
-            The resulting ``p.Result[str]``.
+            The trimmed email; failure when empty, too long, or malformed.
+
         """
         if not email or not email.strip():
             return r[str].fail("Email cannot be empty")
@@ -36,8 +42,13 @@ class FlextAuthUtilitiesAuthValidation:
     def validate_password(password: str) -> p.Result[str]:
         """Validate password strength.
 
+        Args:
+            password: Candidate credential.
+
         Returns:
-            The resulting ``p.Result[str]``.
+            The credential; failure when empty or outside the configured
+            length bounds.
+
         """
         if not password:
             return r[str].fail("Password cannot be empty")
@@ -53,8 +64,13 @@ class FlextAuthUtilitiesAuthValidation:
     def validate_username(username: str) -> p.Result[str]:
         """Validate username with auth-specific rules.
 
+        Args:
+            username: Candidate account name.
+
         Returns:
-            The resulting ``p.Result[str]``.
+            The trimmed username; failure when empty or outside the
+            configured length bounds.
+
         """
         if not username or not username.strip():
             return r[str].fail("Username cannot be empty")
@@ -71,8 +87,12 @@ class FlextAuthUtilitiesAuthValidation:
     def calculate_expiry_time(minutes: int) -> datetime:
         """Calculate token/session expiry time.
 
+        Args:
+            minutes: Lifetime from now, in minutes.
+
         Returns:
-            The resulting ``datetime``.
+            The UTC timestamp marking the expiry.
+
         """
         current_time: datetime = u.generate_datetime_utc()
         return current_time + timedelta(minutes=minutes)
@@ -82,7 +102,8 @@ class FlextAuthUtilitiesAuthValidation:
         """Generate a secure session ID.
 
         Returns:
-            The resulting ``str``.
+            A cryptographically random hexadecimal session identifier.
+
         """
         return secrets.token_hex(16)
 
@@ -90,8 +111,12 @@ class FlextAuthUtilitiesAuthValidation:
     def expired(expiry_time: datetime) -> bool:
         """Check if a timestamp is expired.
 
+        Args:
+            expiry_time: Timestamp to test against the current time.
+
         Returns:
-            The resulting ``bool``.
+            Whether the timestamp is already in the past.
+
         """
         current_time: datetime = u.now()
         return current_time > expiry_time
@@ -100,8 +125,12 @@ class FlextAuthUtilitiesAuthValidation:
     def hash_password(password: str) -> str:
         """Hash a password using bcrypt.
 
+        Args:
+            password: Plain credential to hash.
+
         Returns:
-            The resulting ``str``.
+            Salted bcrypt hash of the credential.
+
         """
         salt = bcrypt.gensalt(rounds=c.Auth.DEFAULT_HASH_ROUNDS)
         return bcrypt.hashpw(password.encode(), salt).decode()
@@ -110,8 +139,13 @@ class FlextAuthUtilitiesAuthValidation:
     def verify_password(password: str, hashed: str) -> bool:
         """Verify a password against its hash.
 
+        Args:
+            password: Plain credential to check.
+            hashed: Stored bcrypt hash to compare against.
+
         Returns:
-            The resulting ``bool``.
+            Whether the credential matches the stored hash.
+
         """
         return bcrypt.checkpw(password.encode(), hashed.encode())
 

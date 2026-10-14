@@ -35,7 +35,12 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
     """
 
     def __init__(self, settings: t.MappingKV[str, t.Primitives] | None = None) -> None:
-        """Initialize RFC provider base class with optional configuration."""
+        """Initialize RFC provider base class with optional configuration.
+
+        Args:
+            settings: Optional scalar provider settings mapping.
+
+        """
         super().__init__(settings)
 
     @staticmethod
@@ -48,8 +53,13 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         passing ``None`` through. Centralized here so all RFC providers reuse
         the same projection rather than re-implementing the filter.
 
+        Args:
+            settings: Provider settings mapping to project.
+
         Returns:
-            The resulting ``t.MappingKV[str, t.Primitives] | None``.
+            The projected scalar mapping, or ``None`` when no settings are
+            given.
+
         """
         if settings is None:
             return None
@@ -72,7 +82,7 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         """Get supported authentication methods.
 
         Returns:
-            set[str]: Set of supported RFC operations.
+            Set of supported RFC operations.
 
         """
         return {"rfc", "validate"}
