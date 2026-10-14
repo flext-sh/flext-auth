@@ -14,6 +14,13 @@ from flext_auth import c, m, p, t
 
 
 class FlextAuthApplicationLifecycle(ABC):
+    """Abstract singleton lifecycle shared by auth application services.
+
+    Concrete services provide identity registration and construction;
+    this base owns thread-safe global access and quick-start provisioning.
+
+    """
+
     _instance: ClassVar[Self | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
@@ -33,14 +40,28 @@ class FlextAuthApplicationLifecycle(ABC):
         roles: t.StrSequence | None = None,
         role: str | None = None,
     ) -> p.Result[m.Auth.AuthIdentity]:
+        """Register a new user identity with a hashed credential.
+
+        Args:
+            username: Unique account name for the new identity.
+            email: Contact address bound to the identity.
+            password: Plain credential to hash before storage.
+            roles: Optional role names to grant.
+            role: Optional single legacy role name to grant.
+
+        Returns:
+            The created identity entity.
+
+        """
         raise NotImplementedError
 
     @classmethod
     def fetch_global(cls) -> Self:
-        """Thread-safe singleton accessor.
+        """Return the process-wide singleton, creating it on first use.
 
         Returns:
-            The resulting ``Self``.
+            The cached singleton instance of this lifecycle.
+
         """
         instance = cls._instance
         if isinstance(instance, cls):
@@ -61,10 +82,15 @@ class FlextAuthApplicationLifecycle(ABC):
 
     @classmethod
     def quick_start(cls, *, create_admin_user: bool = True) -> Self:
-        """Quick start factory with default configuration.
+        """Construct the service and optionally provision an admin user.
+
+        Args:
+            create_admin_user: Provision the default admin identity when
+                true.
 
         Returns:
-            The resulting ``Self``.
+            The freshly constructed service instance.
+
         """
         auth: Self = cls()
         if create_admin_user:

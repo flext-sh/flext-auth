@@ -12,6 +12,8 @@ from flext_auth import c
 
 
 class FlextAuthModelsAuthCredential:
+    """Credential model namespace for password hashing helpers."""
+
     class PasswordUtil:
         """Password utilities for authentication."""
 
@@ -19,8 +21,12 @@ class FlextAuthModelsAuthCredential:
         def hash_password(password: str) -> str:
             """Hash a password using bcrypt.
 
+            Args:
+                password: Plain credential to hash.
+
             Returns:
-                The resulting ``str``.
+                Salted bcrypt hash of the credential.
+
             """
             salt = bcrypt.gensalt(rounds=c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS)
             return bcrypt.hashpw(password.encode(), salt).decode()
@@ -29,8 +35,13 @@ class FlextAuthModelsAuthCredential:
         def verify_password(password: str, hashed: str) -> bool:
             """Verify a password against its hash.
 
+            Args:
+                password: Plain credential to check.
+                hashed: Stored bcrypt hash to compare against.
+
             Returns:
-                The resulting ``bool``.
+                Whether the credential matches the stored hash.
+
             """
             return bcrypt.checkpw(password.encode(), hashed.encode())
 

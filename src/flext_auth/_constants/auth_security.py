@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthConstantsAuthSecurity(FlextAuthConstantsAuthClaims):
+    """Security constants for JWT, OAuth2, credentials, and rate limits."""
+
     # ===== JWT Constants =====
     JWT_DEFAULT_ALGORITHM: Final[str] = FlextAuthConstantsAuthEnums.Algorithms.HS256
     "Default JWT algorithm."

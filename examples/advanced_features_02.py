@@ -103,7 +103,7 @@ class FlextAuthAdvancedFeaturesExample:
 
     @staticmethod
     def example_token_validation() -> p.Result[bool]:
-        """A real token validates; malformed tokens are rejected.
+        """Verify a real token validates while malformed tokens are rejected.
 
         Returns:
             The resulting ``p.Result[bool]``.

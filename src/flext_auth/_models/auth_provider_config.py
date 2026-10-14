@@ -14,6 +14,8 @@ from flext_auth import t
 
 
 class FlextAuthModelsAuthProviderConfig:
+    """Provider configuration model namespace."""
+
     class ProviderConfig(m.FlexibleModel):
         """Generic provider configuration (immutable value object)."""
 
@@ -123,16 +125,20 @@ class FlextAuthModelsAuthProviderConfig:
         ] = None
 
         def __contains__(self, key: str) -> bool:
-            """Dict-like containment check.
+            """Report whether a configuration field is declared.
+
+            Args:
+                key: Field name to look up.
 
             Returns:
-                The resulting ``bool``.
+                Whether the field exists on this model.
+
             """
             return key in self.__class__.model_fields
 
         @property
         def configured(self) -> bool:
-            """Whether configured."""
+            """Whether the provider declares its required name and type."""
             return bool(self.name and self.type)
 
 

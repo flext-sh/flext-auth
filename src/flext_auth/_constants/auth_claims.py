@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
+    """Claim keys, validation patterns, and shared scalar constants."""
+
     # ===== Regex Patterns for Validation =====
     PATTERN_EMAIL: Final[str] = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     "Standard email address validation pattern."
