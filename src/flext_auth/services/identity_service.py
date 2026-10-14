@@ -34,8 +34,12 @@ class FlextAuthIdentityService(s):
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
         """Count the failed attempt, lock after the configured limit, and persist it.
 
+        Args:
+            identity: Identity whose failed attempt to record.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the attempt state is persisted.
+
         """
         identity.failed_attempts += 1
         attempts = identity.failed_attempts
@@ -66,8 +70,14 @@ class FlextAuthIdentityService(s):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout.
 
+        Args:
+            name: Account name to authenticate.
+            credential: Plain credential for the account.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The authenticated identity; failure when the account is
+            unknown, locked, or the credential does not match.
+
         """
         identity_result = self.identity_manager.fetch_user_by_username(name)
         if identity_result.failure:
@@ -98,8 +108,15 @@ class FlextAuthIdentityService(s):
     ) -> p.Result[bool]:
         """Railway-oriented authorization with audit logging.
 
+        Args:
+            identity_id: Identity whose permissions to check.
+            permission: Permission name required for the action.
+            resource: Optional resource the action targets.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Whether the identity holds the permission; failure when the
+            identity cannot be fetched.
+
         """
         return self.identity_manager.fetch_user(identity_id).map(
             lambda identity: self._log_authorization(identity, permission, resource),
@@ -113,8 +130,14 @@ class FlextAuthIdentityService(s):
     ) -> bool:
         """Log the authorization decision and return it.
 
+        Args:
+            identity: Identity being authorized.
+            permission: Permission name required for the action.
+            resource: Optional resource the action targets.
+
         Returns:
-            The resulting ``bool``.
+            Whether the identity holds the permission.
+
         """
         allowed = permission in identity.permissions
         self.logger.debug(
@@ -134,8 +157,17 @@ class FlextAuthIdentityService(s):
     ) -> p.Result[bool]:
         """Railway-oriented credential change with validation.
 
+        Args:
+            identity_id: Identity whose credential changes.
+            current_credential: Current plain credential to verify first.
+            new_credential: Replacement credential, at least the configured
+                minimum length.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the new credential hash is stored; failure when
+            the identity is unknown, the current credential is wrong, or
+            the replacement is too short.
+
         """
         result: p.Result[bool]
         min_length = c.Auth.CREDENTIAL_MIN_LENGTH
@@ -174,8 +206,16 @@ class FlextAuthIdentityService(s):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing.
 
+        Args:
+            name: Unique account name for the new identity.
+            contact: Contact address, normalized to lowercase.
+            credential: Plain credential to validate and hash.
+            roles: Optional role names; defaults to no extra roles.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The created identity entity; failure on validation errors or
+            when the credential is below the minimum length.
+
         """
         if roles is None:
             user_roles: t.StrSequence = []
@@ -220,8 +260,15 @@ class FlextAuthIdentityService(s):
     def reset_credential(self, identity_id: str, new_credential: str) -> p.Result[bool]:
         """Railway-oriented credential reset for admin operations.
 
+        Args:
+            identity_id: Identity whose credential is reset.
+            new_credential: Replacement credential, at least the configured
+                minimum length.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the new credential hash is stored; failure when
+            the identity is unknown or the credential is too short.
+
         """
         identity_result = self.identity_manager.fetch_user(identity_id)
         if identity_result.failure:
