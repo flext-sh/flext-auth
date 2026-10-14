@@ -72,17 +72,17 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
 
     @property
     def identity_service(self) -> FlextAuthIdentityService:
-        """Identity service access."""
+        """The identity service handling credential resolution."""
         return self._identity_service
 
     @property
     def registry(self) -> FlextAuthRegistry:
-        """Registry access."""
+        """The provider registry holding registered auth providers."""
         return self._registry
 
     @property
     def session_service(self) -> FlextAuthSessionService:
-        """Session service access."""
+        """The session service managing authentication sessions."""
         return self._session_service
 
     def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]:

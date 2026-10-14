@@ -17,7 +17,7 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
 
     @override
     def clear(self) -> None:
-        """Clear all providers."""
+        """Unregister every provider held in the registry."""
         for name in self.list_providers():
             self.unregister(name)
 

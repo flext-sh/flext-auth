@@ -30,7 +30,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         return self.has_provider(name)
 
     def clear(self) -> None:
-        """Clear all providers."""
+        """Unregister every provider held in the registry."""
         for name in self.list_providers():
             self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
 
