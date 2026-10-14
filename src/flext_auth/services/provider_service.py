@@ -139,7 +139,7 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
             Success when the provider is registered.
 
         """
-        return self._providers.register_provider(name, provider).map(lambda _: True)
+        return self._providers.register_provider(name, provider)
 
     def validate_token(self, token: str, provider: str = "jwt") -> p.Result[bool]:
         """Railway-oriented token validation with direct provider access.
@@ -152,6 +152,9 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
             Whether the provider accepts the token.
 
         """
+        return self._providers.get(provider).flat_map(
+            lambda auth_provider: auth_provider.validate(token),
+        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthProviderService"]
