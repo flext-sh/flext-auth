@@ -28,6 +28,7 @@ class FlextAuthBasicAuthExample:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth(settings=FlextAuthSettings())
         password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")

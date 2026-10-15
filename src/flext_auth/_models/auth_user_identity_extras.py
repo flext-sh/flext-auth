@@ -41,8 +41,12 @@ class FlextAuthModelsAuthUserIdentityExtras:
         ) -> t.StrSequence | None:
             """Normalize sequence-like values to strict string sequences.
 
+            Args:
+                value: Raw input for the ``roles`` or ``permissions`` field.
+
             Returns:
-                The resulting ``t.StrSequence | None``.
+                The validated string sequence, or ``None`` when absent.
+
             """
             if value is None:
                 return None
@@ -60,8 +64,12 @@ class FlextAuthModelsAuthUserIdentityExtras:
         ) -> int | None:
             """Normalize failed attempts from int-like values.
 
+            Args:
+                value: Raw input for the ``failed_attempts`` field.
+
             Returns:
-                The resulting ``int | None``.
+                The non-negative attempt count, or ``None`` when absent.
+
             """
             if value is None:
                 return None
@@ -79,8 +87,14 @@ class FlextAuthModelsAuthUserIdentityExtras:
         ) -> datetime | None:
             """Normalize datetime-like values with deterministic fallback.
 
+            Args:
+                value: Raw input for the ``locked_until`` or ``last_access``
+                    field.
+
             Returns:
-                The resulting ``datetime | None``.
+                The parsed timestamp, or the epoch-sentinel minimum when the
+                value cannot be parsed.
+
             """
             if value is None:
                 return None

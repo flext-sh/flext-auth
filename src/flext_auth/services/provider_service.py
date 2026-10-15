@@ -19,7 +19,15 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
         settings: p.Settings | None = None,
         registry: p.Auth.ProviderRegistry | None = None,
     ) -> None:
-        """Flexible initialization with automatic provider registration."""
+        """Flexible initialization with automatic provider registration.
+
+        Args:
+            settings: Optional settings payload overriding the global auth
+                settings.
+            registry: Optional provider registry; defaults to a fresh auth
+                registry with builtin providers registered.
+
+        """
         super().__init__()
         self._auth_config = (
             FlextAuthSettings.model_validate(settings.model_dump())
@@ -37,8 +45,15 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
     ) -> p.Result[p.Auth.Token]:
         """Railway-oriented user authentication with provider selection.
 
+        Args:
+            username: Account name to authenticate.
+            password: Plain credential for the account.
+            provider: Registered provider name handling the credentials.
+
         Returns:
-            The resulting ``p.Result[p.Auth.Token]``.
+            The token issued for the authenticated user; failure when the
+            provider rejects the credentials.
+
         """
         credentials = m.Auth.CredentialValidation(username=username, password=password)
         return self._providers.get(provider).flat_map(
@@ -57,8 +72,17 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
     ) -> p.Result[str]:
         """Railway-oriented token generation with direct provider access.
 
+        Args:
+            user: Identity to mint the token for.
+            provider: Registered provider generating the token.
+            token_kind: Token kind, such as access or refresh.
+            token_type: Optional explicit token type overriding the kind.
+            expiry_minutes: Optional custom lifetime in minutes.
+
         Returns:
-            The resulting ``p.Result[str]``.
+            The signed token string; failure when the provider rejects the
+            request.
+
         """
         effective_token_type = token_type if token_type is not None else token_kind
         return self._providers.get(provider).flat_map(
@@ -74,15 +98,20 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
         """Fetch the registered JWT provider through the public provider protocol.
 
         Returns:
-            The resulting ``p.Result[p.Auth.FlextAuthBaseProvider]``.
+            The registered JWT provider instance; failure when absent.
+
         """
         return self._providers.get("jwt")
 
     def fetch_provider(self, name: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Fetch registered provider.
 
+        Args:
+            name: Registered provider name.
+
         Returns:
-            The resulting ``p.Result[p.Auth.FlextAuthBaseProvider]``.
+            The provider instance; failure when unregistered.
+
         """
         return self._providers.get(name)
 
@@ -90,7 +119,8 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
         """List registered provider names.
 
         Returns:
-            The resulting ``t.StrSequence``.
+            Names of all registered providers.
+
         """
         return self._providers.list_providers()
 
@@ -101,19 +131,30 @@ class FlextAuthProviderService(s, FlextAuthProviderBuiltinRegistration):
     ) -> p.Result[bool]:
         """Register custom provider.
 
+        Args:
+            name: Unique registration name for the provider.
+            provider: Provider instance to register.
+
         Returns:
-            r[bool]: True if registered successfully, False if failed, error on failure
+            Success when the provider is registered.
 
         """
-        return self._providers.register_provider(name, provider).map(lambda _: True)
+        return self._providers.register_provider(name, provider)
 
     def validate_token(self, token: str, provider: str = "jwt") -> p.Result[bool]:
         """Railway-oriented token validation with direct provider access.
 
+        Args:
+            token: Token string to validate.
+            provider: Registered provider validating the token.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Whether the provider accepts the token.
+
         """
-        return self._providers.get(provider).flat_map(lambda p: p.validate(token))
+        return self._providers.get(provider).flat_map(
+            lambda auth_provider: auth_provider.validate(token),
+        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthProviderService"]

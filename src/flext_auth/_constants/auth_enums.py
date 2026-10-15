@@ -11,6 +11,8 @@ from typing import ClassVar
 
 
 class FlextAuthConstantsAuthEnums:
+    """Enumeration constants for tokens, providers, roles, and schemes."""
+
     DEFAULT_ADMIN_USERNAME: ClassVar[str] = "admin"
     DEFAULT_ADMIN_EMAIL: ClassVar[str] = "admin@example.com"
 

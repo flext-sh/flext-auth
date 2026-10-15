@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthProviderBuiltinRegistration:
+    """Registration mixin provisioning the builtin auth providers."""
+
     _auth_config: FlextAuthSettings
     _providers: p.Auth.ProviderRegistry
 
@@ -47,6 +49,7 @@ class FlextAuthProviderBuiltinRegistration:
 
         Raises:
             ValueError: Required provider settings did not produce a configuration.
+
         """
         projected = FlextAuthRfcProvider.project_to_scalar_config(provider_config)
         if projected is None:

@@ -34,6 +34,7 @@ class FlextAuthOAuth2Config:
 
         Raises:
             ValueError: If OAuth2.
+
         """
         if not value:
             return default
@@ -47,6 +48,7 @@ class FlextAuthOAuth2Config:
 
         Returns:
             The resulting ``str``.
+
         """
         return self._validated_choice(
             self.provider_config.flow,
@@ -60,6 +62,7 @@ class FlextAuthOAuth2Config:
 
         Returns:
             The resulting ``bool``.
+
         """
         use_pkce: bool | None = self.provider_config.use_pkce
         return use_pkce if use_pkce is not None else c.Auth.OAUTH2_USE_PKCE_DEFAULT
@@ -69,6 +72,7 @@ class FlextAuthOAuth2Config:
 
         Returns:
             The resulting ``str``.
+
         """
         scope: str | None = self.provider_config.scope
         return scope or c.Auth.OAUTH2_SCOPE_DEFAULT
@@ -78,6 +82,7 @@ class FlextAuthOAuth2Config:
 
         Returns:
             The resulting ``str``.
+
         """
         return self._validated_choice(
             self.provider_config.token_endpoint_auth_method,
@@ -91,6 +96,7 @@ class FlextAuthOAuth2Config:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         # Per-field type validation is owned by ``m.Auth.ProviderConfig`` —
         # ``model_validate`` already raised on type mismatch before this runs.

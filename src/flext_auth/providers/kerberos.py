@@ -23,6 +23,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
 
         Raises:
             ValueError: If Kerberos configuration validation failed.
+
         """
         super().__init__()
         validation_result = self._validate_kerberos_configuration()
@@ -42,8 +43,13 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Validate Kerberos token and return user.
 
+        Args:
+            token: Kerberos ticket string to validate.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The identity resolved from the ticket; failure when the token
+            is empty, no validator is configured, or validation fails.
+
         """
         if not token.strip():
             return r[m.Auth.AuthIdentity].fail(
@@ -73,8 +79,12 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Build an identity from decoded claims on the Kerberos contact domain.
 
+        Args:
+            claims: Decoded token claims mapping.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The identity built from the claims.
+
         """
         domain = c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN
         return r[m.Auth.AuthIdentity].from_validation(
@@ -89,8 +99,14 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Map a ticket validator payload to an identity.
 
+        Args:
+            payload: Identity, ticket data, or claims mapping produced by
+                the validator.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The resolved identity; failure when the mapping payload is
+            invalid.
+
         """
         if isinstance(payload, m.Auth.AuthIdentity):
             return r[m.Auth.AuthIdentity].ok(payload)

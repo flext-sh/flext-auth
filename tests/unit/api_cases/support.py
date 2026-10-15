@@ -26,6 +26,7 @@ class TestsFlextAuthApiTestDataHelper:
 
         Returns:
             The resulting ``tuple[FlextAuth, m.Auth.AuthIdentity, t.JsonMapping]``.
+
         """
         auth = FlextAuth()
         test_data = TestsFlextAuthApiTestDataHelper.create_test_auth_data()
@@ -50,6 +51,7 @@ class TestsFlextAuthApiTestDataHelper:
 
         Returns:
             The resulting ``t.JsonMapping``.
+
         """
         return {
             "username": "test_user",
@@ -64,6 +66,7 @@ class TestsFlextAuthApiTestDataHelper:
 
         Returns:
             The resulting ``t.JsonMapping``.
+
         """
         return {
             "username": "test_user",
@@ -77,6 +80,7 @@ class TestsFlextAuthApiTestDataHelper:
 
         Returns:
             The resulting ``t.JsonMapping``.
+
         """
         return {
             "user_id": "user_123",

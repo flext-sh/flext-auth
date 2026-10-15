@@ -15,6 +15,8 @@ from flext_auth import c
 
 
 class FlextAuthModelsAuthSession:
+    """Session and token entity model namespace."""
+
     class AuthSession(m.Entity):
         """Generic authentication token entity."""
 

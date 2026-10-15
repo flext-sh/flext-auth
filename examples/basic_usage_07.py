@@ -19,6 +19,7 @@ class FlextAuthBasicUsagePortugueseExample:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         register_result = auth.register_user(

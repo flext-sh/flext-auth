@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthProtocolsAuthTransport:
+    """Protocol namespace for transport adapters."""
+
     @runtime_checkable
     class BaseTransportAdapter(Protocol):
         """Protocol for transport adapters.
@@ -43,7 +45,7 @@ class FlextAuthProtocolsAuthTransport:
             """Get the transport type identifier.
 
             Returns:
-                str: Transport type (e.g., "http", "grpc", "websocket")
+                Transport type (e.g., "http", "grpc", "websocket").
 
             """
             ...
@@ -59,14 +61,14 @@ class FlextAuthProtocolsAuthTransport:
             """Send a request using this transport.
 
             Args:
-            url: Target URL or endpoint
-            method: HTTP method or operation type
-            data: Request payload data
-            headers: Request headers or metadata
-            **kwargs: Transport-specific additional parameters
+                url: Target URL or endpoint.
+                method: HTTP method or operation type.
+                data: Request payload data.
+                headers: Request headers or metadata.
+                **kwargs: Transport-specific additional parameters.
 
             Returns:
-            r containing response data or error
+                The response payload; failure on transport errors.
 
             """
             ...

@@ -13,6 +13,8 @@ from flext_auth import c, m, p, t
 
 
 class FlextAuthUtilitiesAuthSession:
+    """JWT encode/decode utilities for token and session handling."""
+
     @staticmethod
     def decode_token(
         token: str,
@@ -23,12 +25,14 @@ class FlextAuthUtilitiesAuthSession:
         """Decode a JWT token.
 
         Args:
-            token: JWT token to decode
-            config: Provider configuration with JWT secret and claims settings
-            verify: Whether to verify signature
+            token: JWT token to decode.
+            config: Provider configuration with JWT secret and claims
+                settings.
+            verify: Whether to verify signature.
 
         Returns:
-            r with decoded payload or error
+            The decoded claims mapping; failure on invalid tokens,
+            missing secret, or rejected payloads.
 
         """
         try:
@@ -72,12 +76,12 @@ class FlextAuthUtilitiesAuthSession:
         """Encode a JWT token.
 
         Args:
-        payload: Token payload
-        secret: Secret key for signing
-        algorithm: JWT algorithm
+            payload: Token payload claims.
+            secret: Secret key for signing.
+            algorithm: JWT algorithm.
 
         Returns:
-        r with encoded token or error
+            The encoded token string; failure on encoding errors.
 
         """
         try:

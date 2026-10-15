@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthProtocolsAuthSession:
+    """Protocol namespace for tokens and authentication responses."""
+
     @runtime_checkable
     class Token(Protocol):
         """Protocol for token-like objects in authentication.

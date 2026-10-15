@@ -25,6 +25,7 @@ class FlextAuthAdvancedFeaturesExample:
 
         Returns:
             The resulting ``str``.
+
         """
         return f"{prefix}-{secrets.token_hex(6)}"
 
@@ -34,6 +35,7 @@ class FlextAuthAdvancedFeaturesExample:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         demo_password = os.getenv(
@@ -61,6 +63,7 @@ class FlextAuthAdvancedFeaturesExample:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         for username, roles in (
@@ -86,6 +89,7 @@ class FlextAuthAdvancedFeaturesExample:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         password = FlextAuthAdvancedFeaturesExample._demo_credential("session")
@@ -103,10 +107,11 @@ class FlextAuthAdvancedFeaturesExample:
 
     @staticmethod
     def example_token_validation() -> p.Result[bool]:
-        """A real token validates; malformed tokens are rejected.
+        """Verify a real token validates while malformed tokens are rejected.
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         user_result = auth.register_user(
@@ -139,6 +144,7 @@ class FlextAuthAdvancedFeaturesExample:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         password = FlextAuthAdvancedFeaturesExample._demo_credential("lockout")

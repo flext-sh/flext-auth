@@ -29,6 +29,7 @@ class TestsFlextAuthConfig:
 
         Returns:
             The resulting ``FlextAuthSettings``.
+
         """
         return FlextAuthSettings.fetch_global()
 

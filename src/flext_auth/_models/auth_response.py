@@ -15,6 +15,8 @@ from flext_auth import c, p, t
 
 
 class FlextAuthModelsAuthResponse:
+    """Authentication response and wrapper model namespace."""
+
     class CredentialValidation(m.Value):
         """Credential validation request (immutable value object)."""
 

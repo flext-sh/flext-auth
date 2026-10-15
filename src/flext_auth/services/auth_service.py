@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
+from flext_core import FlextContainer
+
 from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, r, settings, t, u
 from flext_auth.services import (
     FlextAuthApplicationLifecycle,
@@ -15,7 +17,6 @@ from flext_auth.services import (
     FlextAuthProviderService,
     FlextAuthSessionService,
 )
-from flext_core import FlextContainer
 
 
 class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
@@ -30,7 +31,13 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     _auth_settings: FlextAuthSettings
 
     def __init__(self, settings: p.Settings | None = None) -> None:
-        """Initialize with dependency injection and event bus."""
+        """Initialize with dependency injection and event bus.
+
+        Args:
+            settings: Optional settings payload overriding the global auth
+                settings.
+
+        """
         resolved_settings = (
             FlextAuthSettings.model_validate(settings.model_dump())
             if settings is not None
@@ -66,24 +73,29 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
 
     @property
     def identity_service(self) -> FlextAuthIdentityService:
-        """Identity service access."""
+        """The identity service handling credential resolution."""
         return self._identity_service
 
     @property
     def registry(self) -> FlextAuthRegistry:
-        """Registry access."""
+        """The provider registry holding registered auth providers."""
         return self._registry
 
     @property
     def session_service(self) -> FlextAuthSessionService:
-        """Session service access."""
+        """The session service managing authentication sessions."""
         return self._session_service
 
     def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]:
         """Validate credentials mapping and dispatch to the identity service.
 
+        Args:
+            credentials: Mapping holding ``username`` and ``password`` keys.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The authenticated identity; failure when keys are missing or
+            authentication is rejected.
+
         """
         username = credentials.get("username") or ""
         password = credentials.get("password") or ""
@@ -102,8 +114,16 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Authenticate and provision token + session for the user.
 
+        Args:
+            username: Account name to authenticate.
+            password: Plain credential for the account.
+            ip_address: Optional client address recorded on the session.
+            user_agent: Optional client agent recorded on the session.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The identity carrying its fresh token and session ID; failure
+            when authentication, token creation, or session creation fails.
+
         """
         auth_result = self._identity_service.authenticate_identity(username, password)
         if auth_result.failure:
@@ -139,8 +159,16 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Register user with default USER role if none provided.
 
+        Args:
+            username: Unique account name for the new identity.
+            email: Contact address bound to the identity.
+            password: Plain credential to hash before storage.
+            roles: Optional role names to grant.
+            role: Optional single legacy role name to grant.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The created identity entity.
+
         """
         if roles is not None:
             user_roles = roles
@@ -156,10 +184,14 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         )
 
     def create_token(self, identity_id: str) -> p.Result[str]:
-        """Create a token applying the settingsured default expiry.
+        """Create a token applying the configured default expiry.
+
+        Args:
+            identity_id: Identifier of the identity to mint a token for.
 
         Returns:
-            The resulting ``p.Result[str]``.
+            The signed token string; failure when the identifier is empty.
+
         """
         match identity_id:
             case str() as identity if identity:

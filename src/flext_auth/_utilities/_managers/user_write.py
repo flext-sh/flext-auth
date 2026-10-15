@@ -20,13 +20,20 @@ if TYPE_CHECKING:
 
 
 class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
+    """User manager mutation operations over the in-memory user store."""
+
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
     def add_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
         """Add permission to user.
 
+        Args:
+            user_id: Identity, unique, or storage ID to modify.
+            permission: Permission name to append when absent.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the permission list is updated.
+
         """
         return self._modify_user_list_field(
             user_id,
@@ -38,16 +45,26 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     def add_user_role(self, user_id: str, role: str) -> p.Result[bool]:
         """Add role to user.
 
+        Args:
+            user_id: Identity, unique, or storage ID to modify.
+            role: Role name to append when absent.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the role list is updated.
+
         """
         return self._modify_user_list_field(user_id, "roles", role, add=True)
 
     def delete_user(self, user_id: str) -> p.Result[bool]:
         """Delete user.
 
+        Args:
+            user_id: Identity, unique, or storage ID to remove.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the user record is deleted; failure when the ID
+            is unknown.
+
         """
         result = self._find_user_by_id(user_id)
         if result.failure:
@@ -59,8 +76,13 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     def remove_user_permission(self, user_id: str, permission: str) -> p.Result[bool]:
         """Remove permission from user.
 
+        Args:
+            user_id: Identity, unique, or storage ID to modify.
+            permission: Permission name to remove when present.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the permission list is updated.
+
         """
         return self._modify_user_list_field(
             user_id,
@@ -72,8 +94,13 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     def remove_user_role(self, user_id: str, role: str) -> p.Result[bool]:
         """Remove role from user.
 
+        Args:
+            user_id: Identity, unique, or storage ID to modify.
+            role: Role name to remove when present.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the role list is updated.
+
         """
         return self._modify_user_list_field(user_id, "roles", role, add=False)
 
@@ -84,8 +111,13 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Update user data.
 
+        Args:
+            user_id: Identity, unique, or storage ID to update.
+            **updates: Field values to merge; ``None`` values are skipped.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The refreshed identity entity; failure when the ID is unknown.
+
         """
         filtered_updates: t.Auth.ManagersUserData = {
             k: v for k, v in updates.items() if v is not None
@@ -108,8 +140,15 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     ) -> None:
         """Apply list modification atomically.
 
+        Args:
+            user_data: Raw storage record holding the list field.
+            field: Name of the list field to modify.
+            value: Value to append or remove.
+            add: Append the value when true, remove it when false.
+
         Raises:
-            TypeError: If u.Field.
+            TypeError: If the target field does not hold a list.
+
         """
         field_list_value = user_data.get(field)
         if not isinstance(field_list_value, list):
@@ -132,8 +171,16 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
 
         Generic list field modifier - eliminates duplication in 4 methods.
 
+        Args:
+            user_id: Identity, unique, or storage ID to modify.
+            field: Name of the list field to modify.
+            value: Value to append or remove.
+            add: Append the value when true, remove it when false.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the list field is updated; failure when the user
+            ID is unknown.
+
         """
         user_result = self._find_user_by_id(user_id)
         if user_result.failure:

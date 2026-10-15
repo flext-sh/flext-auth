@@ -31,8 +31,12 @@ class FlextAuthOAuth2Tokens(
     def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate using OAuth2 flows with delegation.
 
+        Args:
+            credentials: Credential payload holding the OAuth2 grant data.
+
         Returns:
-            The resulting ``p.Result[p.Auth.Token]``.
+            The bearer token entity built from the access grant.
+
         """
         credential_payload: t.ConfigurationMapping = {
             k: v for k, v in credentials.items() if isinstance(v, c.PRIMITIVES_TYPES)
@@ -57,8 +61,15 @@ class FlextAuthOAuth2Tokens(
     ) -> p.Result[str]:
         """Generate OAuth2 token for user.
 
+        Args:
+            user: User identity model or claims mapping.
+            token_kind: Token type (access, refresh, id, bearer).
+            token_type: Optional explicit token type.
+            expiry_minutes: Token expiration time in minutes (optional).
+
         Returns:
-            The resulting ``p.Result[str]``.
+            The encoded token string; failure on encoding errors.
+
         """
         return super().generate_token_for_user(
             user=user,
@@ -77,8 +88,13 @@ class FlextAuthOAuth2Tokens(
     def refresh(self, token: str | p.Auth.Token) -> p.Result[p.Auth.Token]:
         """Refresh OAuth2 token using composition.
 
+        Args:
+            token: Token string or token entity to refresh.
+
         Returns:
-            The resulting ``p.Result[p.Auth.Token]``.
+            The refreshed bearer token entity; failure when no refresh
+            source is available.
+
         """
         token_text = self._extract_token_string(token)
         refresh_token_value = getattr(token, "refresh_token", "")
@@ -131,8 +147,12 @@ class FlextAuthOAuth2Tokens(
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate OAuth2 token using composition.
 
+        Args:
+            token: Token string or token entity to validate.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Whether the token passes validation.
+
         """
         token_text = self._extract_token_string(token)
         return self.validate_token(token_text).fold(
@@ -145,8 +165,13 @@ class FlextAuthOAuth2Tokens(
     def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user.
 
+        Args:
+            token: Token string to validate.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The identity resolved from the token; failure when validation
+            or identity mapping fails.
+
         """
         introspection_endpoint_result = self._introspection_endpoint()
         if introspection_endpoint_result.success:
