@@ -9,8 +9,9 @@ from __future__ import annotations
 from abc import ABC
 from typing import override
 
-from flext_auth import FlextAuthSettings, m, p, r, t
 from flext_core import FlextService
+
+from flext_auth import FlextAuthSettings, m, p, r, t
 
 
 class FlextAuthServiceBase(FlextService[bool], ABC):
@@ -32,6 +33,7 @@ class FlextAuthServiceBase(FlextService[bool], ABC):
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         return r[bool].fail("Use a service-specific authentication operation")
 

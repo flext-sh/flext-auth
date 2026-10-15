@@ -23,6 +23,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
 
         Raises:
             ValueError: If Kerberos configuration validation failed.
+
         """
         super().__init__()
         validation_result = self._validate_kerberos_configuration()

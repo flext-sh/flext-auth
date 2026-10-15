@@ -23,6 +23,7 @@ class FlextAuthBasicUsageFlows:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         settings = FlextAuthSettings()
         cls.logger.info(
@@ -39,6 +40,7 @@ class FlextAuthBasicUsageFlows:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!")
@@ -63,6 +65,7 @@ class FlextAuthBasicUsageFlows:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")

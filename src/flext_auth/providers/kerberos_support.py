@@ -24,6 +24,7 @@ class FlextAuthKerberosSupport:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         kerberos = settings.Auth.Kerberos
         missing = [

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import ClassVar, override
 
+from flext_core import FlextContainer
+
 from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, r, settings, t, u
 from flext_auth.services import (
     FlextAuthApplicationLifecycle,
@@ -15,7 +17,6 @@ from flext_auth.services import (
     FlextAuthProviderService,
     FlextAuthSessionService,
 )
-from flext_core import FlextContainer
 
 
 class FlextAuthApplicationService(FlextAuthApplicationLifecycle):

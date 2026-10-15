@@ -12,9 +12,9 @@ from typing import ClassVar
 from uuid import uuid4
 
 from flext_api import e, r, u
+from flext_core import FlextContainer
 
 from flext_auth import m, p, t
-from flext_core import FlextContainer
 
 
 class FlextAuthSessionManagers:

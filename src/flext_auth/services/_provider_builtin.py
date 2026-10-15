@@ -49,6 +49,7 @@ class FlextAuthProviderBuiltinRegistration:
 
         Raises:
             ValueError: Required provider settings did not produce a configuration.
+
         """
         projected = FlextAuthRfcProvider.project_to_scalar_config(provider_config)
         if projected is None:
