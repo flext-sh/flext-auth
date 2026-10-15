@@ -13,15 +13,15 @@ from typing import TYPE_CHECKING
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth import d, e, h, r, t, u, x
+    from flext_auth import d, e, h, r, x
     from tests import fixtures, unit
     from tests.base import TestsFlextAuthServiceBase, s
     from tests.constants import TestsFlextAuthConstants, c
     from tests.models import TestsFlextAuthModels, m
     from tests.protocols import TestsFlextAuthProtocols, p
     from tests.settings import TestsFlextAuthSettings
-    from tests.typings import TestsFlextAuthTypes
-    from tests.utilities import TestsFlextAuthUtilities
+    from tests.typings import TestsFlextAuthTypes, t
+    from tests.utilities import TestsFlextAuthUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -67,8 +67,8 @@ install_lazy_exports(
         "p": ".protocols",
         "r": "flext_auth",
         "s": ".base",
-        "t": "flext_auth",
-        "u": "flext_auth",
+        "t": ".typings",
+        "u": ".utilities",
         "unit": ".unit",
         "x": "flext_auth",
     }),
