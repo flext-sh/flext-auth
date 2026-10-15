@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TypeIs
 
 from flext_auth import c, p, r, t, u
-from flext_auth._registry.plugins import FlextAuthRegistryPlugins
+from flext_auth._registry import FlextAuthRegistryPlugins
 
 
 class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
