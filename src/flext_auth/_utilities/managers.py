@@ -33,7 +33,12 @@ class FlextAuthUtilitiesManagers(
         __slots__ = ("dispatcher", "rate_limiter", "session_manager", "user_manager")
 
         def __init__(self, dispatcher: p.Dispatcher) -> None:
-            """Initialize all standard managers used by services."""
+            """Initialize all standard managers used by services.
+
+            Args:
+                dispatcher: Shared dispatcher handed to the managers.
+
+            """
             self.dispatcher = dispatcher
             self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager()
             self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager()

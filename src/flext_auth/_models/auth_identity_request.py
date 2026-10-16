@@ -14,6 +14,8 @@ from flext_auth import c, t
 
 
 class FlextAuthModelsAuthIdentityRequest:
+    """Identity creation request model namespace."""
+
     class AuthIdentityRequest(m.Value):
         """Generic identity creation request (immutable value object)."""
 

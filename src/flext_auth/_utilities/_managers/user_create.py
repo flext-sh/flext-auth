@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
+    """User manager extension adding identity creation."""
+
     IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
         m.Auth.UserIdentityExtras
     )
@@ -34,8 +36,17 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Create a new user.
 
+        Args:
+            username: Unique account name for the identity.
+            email: Contact address, normalized to lowercase.
+            password_hash: Pre-hashed credential to store.
+            **extra_fields: Optional identity extras such as roles,
+                permissions, or profile fields.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The created identity entity; failure when the username or
+            contact is already registered.
+
         """
         normalized_email = email.lower()
         duplicate_identity_exists = username in self._users or any(

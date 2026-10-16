@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthProtocolsAuthIdentity:
+    """Protocol namespace for identities and identity managers."""
+
     @runtime_checkable
     class Identity(p.Service[bool], Protocol):
         """Protocol for identity/user-like objects in authentication.
@@ -51,15 +53,36 @@ class FlextAuthProtocolsAuthIdentity:
             ...
 
         def locked(self) -> bool:
-            """Check if identity is locked."""
+            """Check if identity is locked.
+
+            Returns:
+                Whether the lockout window is still in effect.
+
+            """
             ...
 
         def update_credential(self, credential: str) -> p.Result[bool]:
-            """Set credential with secure hashing."""
+            """Set credential with secure hashing.
+
+            Args:
+                credential: Plain credential to hash and store.
+
+            Returns:
+                Success once the hash is stored.
+
+            """
             ...
 
         def verify_credential(self, credential: str) -> p.Result[bool]:
-            """Verify credential against stored hash."""
+            """Verify credential against stored hash.
+
+            Args:
+                credential: Plain credential to check.
+
+            Returns:
+                Whether the credential matches the stored hash.
+
+            """
             ...
 
     @runtime_checkable
@@ -92,7 +115,17 @@ class FlextAuthProtocolsAuthIdentity:
             user_id: str,
             **updates: t.Scalar | t.StrSequence | datetime | None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]:
-            """Update an identity and return the resulting identity."""
+            """Update an identity and return the resulting identity.
+
+            Args:
+                user_id: Identifier of the identity to update.
+                **updates: Field values to merge; ``None`` values are
+                    skipped.
+
+            Returns:
+                The refreshed identity entity.
+
+            """
             ...
 
 

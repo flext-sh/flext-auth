@@ -10,6 +10,8 @@ from flext_auth import c, e, p, r, t, u
 
 
 class FlextAuthProviderCodecMixin:
+    """JWT encode/decode helpers shared by token-based providers."""
+
     _provider_config: t.ScalarMapping | None
 
     def _decode_token_claims(self, token: str) -> p.Result[t.Auth.TokensClaimMap]:
@@ -19,7 +21,8 @@ class FlextAuthProviderCodecMixin:
             token: JWT token string to decode.
 
         Returns:
-            r[t.JsonMapping]: Decoded claims on success, error on failure.
+            The decoded claims mapping; failure when provider
+            configuration is missing or decoding fails.
 
         """
         settings = self._provider_config
@@ -38,8 +41,14 @@ class FlextAuthProviderCodecMixin:
     ) -> p.Result[str]:
         """Encode token payload using JWT with canonical result flow.
 
+        Args:
+            payload: Token payload claims to encode.
+            secret: Secret key used for signing.
+            algorithm: JWT signing algorithm.
+
         Returns:
-            The resulting ``p.Result[str]``.
+            The encoded token string; failure on encoding errors.
+
         """
         normalized_payload = u.json_dict_adapter().validate_python(payload)
         encoded: p.Result[str] = u.Auth.encode_token(
@@ -60,7 +69,8 @@ class FlextAuthProviderCodecMixin:
             claims: Token claims mapping.
 
         Returns:
-            r[str]: Identity ID on success, error if no identity field found.
+            The identity ID from the first matching claim; failure when no
+            identity field is found.
 
         """
         for field in c.Auth.TOKEN_IDENTITY_KEYS:
@@ -77,13 +87,13 @@ class FlextAuthProviderCodecMixin:
         """Extract token string from token or Token t.JsonValue.
 
         Args:
-        token: Token as string or Token t.JsonValue
+            token: Token as plain string or token entity.
 
         Returns:
-        str: Token string
+            The token string.
 
         Raises:
-        e.ValidationError: If token cannot be extracted
+            e.ValidationError: If token cannot be extracted.
 
         """
         token_value = token.token if isinstance(token, p.Auth.Token) else token

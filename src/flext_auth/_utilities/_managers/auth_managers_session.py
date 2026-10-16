@@ -12,16 +12,26 @@ from typing import ClassVar
 from uuid import uuid4
 
 from flext_api import e, r, u
+from flext_core import FlextContainer
 
 from flext_auth import m, p, t
-from flext_core import FlextContainer
 
 
 class FlextAuthSessionManagers:
+    """Session manager namespace for the auth domain.
+
+    Hosts the in-memory session manager that auth services use to create,
+    inspect, and expire identity sessions.
+
+    """
+
     _container_type: ClassVar[p.ContainerType] = FlextContainer
 
     class FlextAuthSessionManager:
+        """In-memory session store keyed by generated session IDs."""
+
         def __init__(self) -> None:
+            """Initialize the manager with an empty session store."""
             super().__init__()
             self.logger = u.fetch_logger(__name__)
             self._dispatcher: p.Dispatcher = (
@@ -30,6 +40,12 @@ class FlextAuthSessionManagers:
             self._sessions: MutableMapping[str, t.Auth.ManagersSessionData] = {}
 
         def cleanup_expired_sessions(self) -> p.Result[int]:
+            """End every tracked session whose expiry has passed.
+
+            Returns:
+                Count of sessions ended by this sweep.
+
+            """
             cleaned_count = 0
             sessions_to_check = list(self._sessions.keys())
             for session_id in sessions_to_check:
@@ -49,6 +65,19 @@ class FlextAuthSessionManagers:
             ip_address: str | None = None,
             user_agent: str | None = None,
         ) -> p.Result[m.Auth.AuthSession]:
+            """Create and track a new session for a user.
+
+            Args:
+                user_id: Identity the session belongs to.
+                token: Credential token bound to the session.
+                expires_in_minutes: Lifetime of the session in minutes.
+                ip_address: Optional client address recorded for audit.
+                user_agent: Optional client agent recorded for audit.
+
+            Returns:
+                The persisted session entity.
+
+            """
             session_id = str(uuid4())
             expires_at = u.now() + timedelta(minutes=expires_in_minutes)
             session_data: t.Auth.ManagersSessionData = {
@@ -76,6 +105,16 @@ class FlextAuthSessionManagers:
             return result
 
         def end_session(self, user_id: str) -> p.Result[bool]:
+            """Mark every active session of a user as ended.
+
+            Args:
+                user_id: Identity whose sessions should end.
+
+            Returns:
+                Success when at least one session ended; failure when the
+                user has no tracked sessions.
+
+            """
             found = False
             for session_data in self._sessions.values():
                 identity_id_value = session_data.get("identity_id")
@@ -94,6 +133,15 @@ class FlextAuthSessionManagers:
             return fail_result
 
         def end_session_by_id(self, session_id: str) -> p.Result[bool]:
+            """Mark the session with the given ID as ended.
+
+            Args:
+                session_id: Identifier of the session to end.
+
+            Returns:
+                Success when the session exists; not-found failure otherwise.
+
+            """
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
                 ok_result: p.Result[bool] = r[bool].ok(value=True)
@@ -109,6 +157,15 @@ class FlextAuthSessionManagers:
             self,
             user_id: str,
         ) -> p.Result[Sequence[m.Auth.AuthSession]]:
+            """List the currently active sessions of a user.
+
+            Args:
+                user_id: Identity whose sessions to list.
+
+            Returns:
+                Active, unexpired session entities for the identity.
+
+            """
             sessions: MutableSequence[m.Auth.AuthSession] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
@@ -138,6 +195,12 @@ class FlextAuthSessionManagers:
             return result
 
         def get_total_active_sessions(self) -> int:
+            """Count the sessions that are active and unexpired.
+
+            Returns:
+                Number of currently active sessions across all identities.
+
+            """
             return sum(
                 1
                 for session in self._sessions.values()

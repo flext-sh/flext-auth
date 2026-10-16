@@ -19,8 +19,9 @@ from __future__ import annotations
 import secrets
 from typing import Annotated
 
-from flext_auth._constants.base import FlextAuthConstantsBase
 from flext_core import FlextSettings, m, t
+
+from flext_auth._constants.base import FlextAuthConstantsBase
 
 
 class FlextAuthSettings(FlextSettings):
@@ -124,6 +125,7 @@ class FlextAuthSettings(FlextSettings):
 
             Raises:
                 ValueError: If secret_key must be at least 32 characters when provided.
+
             """
             plain = (
                 value.get_secret_value() if isinstance(value, t.SecretStr) else value

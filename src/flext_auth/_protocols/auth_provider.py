@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthProtocolsAuthProvider:
+    """Protocol namespace for provider registries and providers."""
+
     @runtime_checkable
     class ProviderRegistry(Protocol):
         """Registry operations consumed by provider orchestration."""
@@ -25,11 +27,24 @@ class FlextAuthProtocolsAuthProvider:
             self,
             data: str,
         ) -> p.Result[FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider]:
-            """Resolve the registered provider by name."""
+            """Resolve the registered provider by name.
+
+            Args:
+                data: Registered provider name.
+
+            Returns:
+                The provider instance; failure when unregistered.
+
+            """
             ...
 
         def list_providers(self) -> t.StrSequence:
-            """Return registered provider names."""
+            """Return registered provider names.
+
+            Returns:
+                Names of all registered providers.
+
+            """
             ...
 
         def register_provider(
@@ -39,7 +54,17 @@ class FlextAuthProtocolsAuthProvider:
             *,
             configuration: t.ConfigurationMapping | None = None,
         ) -> p.Result[bool]:
-            """Register the provided implementation under its name."""
+            """Register the provided implementation under its name.
+
+            Args:
+                name: Unique registration name for the provider.
+                provider: Provider instance to register.
+                configuration: Optional provider configuration mapping.
+
+            Returns:
+                Success when the provider is registered.
+
+            """
             ...
 
     @runtime_checkable
@@ -52,7 +77,12 @@ class FlextAuthProtocolsAuthProvider:
         """
 
         def __init__(self, settings: t.ScalarMapping | None = None) -> None:
-            """Initialize provider with optional configuration."""
+            """Initialize provider with optional configuration.
+
+            Args:
+                settings: Optional scalar provider settings mapping.
+
+            """
             ...
 
         @property
@@ -74,8 +104,8 @@ class FlextAuthProtocolsAuthProvider:
                             The exact structure depends on the provider type.
 
             Returns:
-                r[p.Auth.Token]: Authentication token on success,
-                                    error message on failure
+                The authentication token on success; failure with an error
+                message otherwise.
 
             """
             ...
@@ -86,7 +116,17 @@ class FlextAuthProtocolsAuthProvider:
             token_kind: str = c.Auth.TokenTypes.ACCESS.value,
             expiry_minutes: int | None = None,
         ) -> p.Result[str]:
-            """Generate a signed token from the provided payload."""
+            """Generate a signed token from the provided payload.
+
+            Args:
+                payload: Token payload claims to sign.
+                token_kind: Token type (access, refresh, id, bearer).
+                expiry_minutes: Token expiration time in minutes (optional).
+
+            Returns:
+                The encoded token string; failure on signing errors.
+
+            """
             ...
 
         def generate_token_for_user(
@@ -99,13 +139,13 @@ class FlextAuthProtocolsAuthProvider:
             """Generate token for a user identity or claims mapping.
 
             Args:
-                user: User claims dict
-                token_kind: Token type (access, refresh, id, bearer)
-                token_type: Explicit token type override if requested
-                expiry_minutes: Token expiration time in minutes (optional)
+                user: User claims dict.
+                token_kind: Token type (access, refresh, id, bearer).
+                token_type: Explicit token type override if requested.
+                expiry_minutes: Token expiration time in minutes (optional).
 
             Returns:
-                r[str]: Encoded token string on success, error on failure
+                The encoded token string; failure on encoding errors.
 
             """
             ...
@@ -118,11 +158,11 @@ class FlextAuthProtocolsAuthProvider:
             token refresh.
 
             Args:
-                token: Existing token to refresh
+                token: Existing token to refresh.
 
             Returns:
-                r[FlextAuthProtocolsAuthSession.Token]: New token on success,
-                                    error if refresh not supported or failed
+                The new token on success; failure when refresh is
+                unsupported or fails.
 
             """
             ...
@@ -135,12 +175,10 @@ class FlextAuthProtocolsAuthProvider:
             token revocation.
 
             Args:
-                token: Token to revoke
+                token: Token to revoke.
 
             Returns:
-                r[bool]: True if revoked successfully,
-                    False if revocation not supported or failed,
-                    error message on failure
+                Whether the token was revoked successfully.
 
             """
             ...
@@ -153,7 +191,7 @@ class FlextAuthProtocolsAuthProvider:
             with different feature sets.
 
             Returns:
-                set[str]: Set of supported operations
+                Set of supported operations.
 
             """
             ...
@@ -164,10 +202,10 @@ class FlextAuthProtocolsAuthProvider:
             Check if the provided token is valid and has not expired.
 
             Args:
-                token: Token to validate
+                token: Token to validate.
 
             Returns:
-                r[bool]: True if valid, False if invalid, error on failure
+                Whether the token is valid.
 
             """
             ...

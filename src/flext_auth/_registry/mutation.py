@@ -13,9 +13,11 @@ from flext_auth._registry import FlextAuthRegistryLookup
 
 
 class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
+    """Write-side registration and configuration mutations for providers."""
+
     @override
     def clear(self) -> None:
-        """Clear all providers."""
+        """Unregister every provider held in the registry."""
         for name in self.list_providers():
             self.unregister(name)
 
@@ -28,8 +30,17 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
     ) -> p.Result[bool]:
         """Register auth provider with optional settings and metadata.
 
+        Args:
+            name: Unique registration name for the provider.
+            provider: Provider instance to register.
+            metadata: Optional registry metadata for the provider.
+            configuration: Optional provider configuration mapping.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success when registration (and any optional metadata and
+            configuration registration) succeeded; a failed registration
+            rolls back the partially stored entries.
+
         """
         provider_wrapper = m.Auth.ProviderWrapper(
             category=c.Auth.REGISTRY_PROVIDERS_CATEGORY,
@@ -74,8 +85,13 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
     def unregister(self, name: str) -> p.Result[bool]:
         """Unregister provider and cleanup auth-specific data.
 
+        Args:
+            name: Registered provider name.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success once the provider and its config and metadata entries
+            are removed; failure when the provider was never registered.
+
         """
         provider_result = self.unregister_plugin(
             c.Auth.REGISTRY_PROVIDERS_CATEGORY,
@@ -94,8 +110,14 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
     ) -> p.Result[bool]:
         """Update provider configuration.
 
+        Args:
+            name: Registered provider name.
+            settings: Replacement configuration mapping.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Success when the new configuration is stored; failure when the
+            provider is not registered.
+
         """
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")

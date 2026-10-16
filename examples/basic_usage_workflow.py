@@ -24,6 +24,7 @@ class FlextAuthBasicUsageWorkflow:
 
         Returns:
             The resulting ``str``.
+
         """
         return f"{prefix}-{secrets.token_hex(6)}"
 
@@ -33,6 +34,7 @@ class FlextAuthBasicUsageWorkflow:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD") or cls._demo_credential(
@@ -70,6 +72,7 @@ class FlextAuthBasicUsageWorkflow:
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         auth = FlextAuth()
         password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD") or cls._demo_credential(

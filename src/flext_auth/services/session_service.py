@@ -27,7 +27,15 @@ class FlextAuthSessionService(s):
         dispatcher: p.Dispatcher,
         managers: u.Auth.ServiceManagers | None = None,
     ) -> None:
-        """Flexible initialization with dependency injection."""
+        """Flexible initialization with dependency injection.
+
+        Args:
+            provider_service: Provider service resolving token providers.
+            dispatcher: Shared dispatcher for event publication.
+            managers: Optional shared service managers; defaults to a fresh
+                set bound to the dispatcher.
+
+        """
         super().__init__()
         self._managers = (
             managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
@@ -49,7 +57,8 @@ class FlextAuthSessionService(s):
         """Remove expired sessions and report the removed count.
 
         Returns:
-            The resulting ``p.Result[int]``.
+            Count of sessions removed by the sweep.
+
         """
         return self._managers.session_manager.cleanup_expired_sessions()
 
@@ -70,8 +79,15 @@ class FlextAuthSessionService(s):
     ) -> p.Result[str]:
         """Log a failed token creation and return the failure result.
 
+        Args:
+            user_id: Identity the token was requested for.
+            token_kind: Requested token kind.
+            error: Provider error message, when available.
+            fallback: Message used when no provider error is present.
+
         Returns:
-            The resulting ``p.Result[str]``.
+            Failure result carrying the resolved error message.
+
         """
         u.fetch_logger(__name__).info(
             "Token creation",
@@ -90,8 +106,15 @@ class FlextAuthSessionService(s):
     ) -> p.Result[str]:
         """Railway-oriented JWT token generation with audit logging.
 
+        Args:
+            user_id: Identity to mint the token for.
+            expires_in_minutes: Optional custom lifetime in minutes.
+            token_kind: Token kind, such as access or refresh.
+
         Returns:
-            The resulting ``p.Result[str]``.
+            The signed token string; failure when the user lookup or token
+            generation fails.
+
         """
         user_result = self.user_manager.fetch_user(user_id)
         if user_result.failure:
@@ -128,8 +151,13 @@ class FlextAuthSessionService(s):
     def refresh_token(self, token: str) -> p.Result[m.Auth.AuthSession]:
         """Railway-oriented token refresh with audit logging.
 
+        Args:
+            token: Token string presented for refresh.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthSession]``.
+            The refreshed session token entity; failure when the provider
+            rejects the refresh.
+
         """
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token),
@@ -161,8 +189,12 @@ class FlextAuthSessionService(s):
     def validate_token(self, token: str) -> p.Result[bool]:
         """Railway-oriented token validation with audit logging.
 
+        Args:
+            token: Token string to validate.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Whether the provider accepts the token.
+
         """
 
         def _log_token_validation_error(error: str) -> None:
@@ -184,7 +216,8 @@ class FlextAuthSessionService(s):
         """Get JWT provider with lazy caching to eliminate repeated lookups.
 
         Returns:
-            The resulting ``p.Result[p.Auth.FlextAuthBaseProvider]``.
+            The cached JWT provider instance; failure when unregistered.
+
         """
         if self._jwt_provider_cache is not None:
             return r[p.Auth.FlextAuthBaseProvider].ok(self._jwt_provider_cache)

@@ -17,6 +17,8 @@ from flext_auth._models import FlextAuthModelsAuthCredential
 
 
 class FlextAuthModelsAuthIdentity:
+    """Identity entity model namespace."""
+
     class AuthIdentity(m.Entity):
         """Generic identity/user entity with minimal fields."""
 
@@ -79,8 +81,13 @@ class FlextAuthModelsAuthIdentity:
             Pydantic hands before-model validators the raw untrusted input; the
             boundary parses it into a strictly keyed mapping before use.
 
+            Args:
+                data: Raw model input, typically a token claim mapping.
+
             Returns:
-                The resulting normalized mapping or the original input.
+                The normalized mapping, or the original input untouched when
+                no claim normalization applies.
+
             """
             original: TPayload = data
             if isinstance(data, cls):
@@ -157,7 +164,8 @@ class FlextAuthModelsAuthIdentity:
             """Check if identity is locked.
 
             Returns:
-                The resulting ``bool``.
+                Whether the lockout window is still in effect.
+
             """
             if self.locked_until == datetime.min.replace(tzinfo=UTC):
                 return False
@@ -167,8 +175,12 @@ class FlextAuthModelsAuthIdentity:
         def update_credential(self, credential: str) -> p.Result[bool]:
             """Update credential with bcrypt hashing via domain verb.
 
+            Args:
+                credential: Plain credential to hash and store.
+
             Returns:
-                The resulting ``p.Result[bool]``.
+                Success once the hash is stored; failure when hashing fails.
+
             """
             try:
                 self.credential_hash = (
@@ -181,8 +193,13 @@ class FlextAuthModelsAuthIdentity:
         def verify_credential(self, credential: str) -> p.Result[bool]:
             """Verify a credential against stored hash using bcrypt.
 
+            Args:
+                credential: Plain credential to check.
+
             Returns:
-                The resulting ``p.Result[bool]``.
+                Success wrapping the match outcome; failure on verification
+                errors.
+
             """
             try:
                 valid = FlextAuthModelsAuthCredential.PasswordUtil.verify_password(
@@ -194,10 +211,11 @@ class FlextAuthModelsAuthIdentity:
                 return r[bool].fail_op("Credential verification", exc)
 
         def with_successful_access(self) -> Self:
-            """Record successful access (fluent interface).
+            """Record a successful access and reset the failure counters.
 
             Returns:
-                The resulting ``Self``.
+                This entity, for fluent chaining.
+
             """
             self.last_access = u.now()
             self.failed_attempts = 0

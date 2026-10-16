@@ -11,6 +11,8 @@ from flext_auth._registry import FlextAuthRegistryBase
 
 
 class FlextAuthRegistryLookup(FlextAuthRegistryBase):
+    """Read-side lookups over registered auth providers."""
+
     def __len__(self) -> int:
         """Return number of registered providers."""
         return len(self.list_providers())
@@ -18,21 +20,29 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
     def __contains__(self, name: str) -> bool:
         """Check if provider name is registered.
 
+        Args:
+            name: Provider name to look up.
+
         Returns:
-            The resulting ``bool``.
+            Whether the provider is registered.
+
         """
         return self.has_provider(name)
 
     def clear(self) -> None:
-        """Clear all providers."""
+        """Unregister every provider held in the registry."""
         for name in self.list_providers():
             self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
 
     def find_by_capability(self, capability: str) -> p.Result[t.StrSequence]:
         """Find providers with specific capability.
 
+        Args:
+            capability: Capability name to match against.
+
         Returns:
-            The resulting ``p.Result[t.StrSequence]``.
+            Names of registered providers declaring the capability.
+
         """
         matching = [
             name
@@ -44,8 +54,13 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
     def fetch_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
         """Fetch provider configuration.
 
+        Args:
+            name: Registered provider name.
+
         Returns:
-            The resulting ``p.Result[t.ConfigurationMapping]``.
+            The provider's configuration mapping; failure when the provider
+            is unregistered or holds no valid settings.
+
         """
         if not self.has_provider(name):
             return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
@@ -61,8 +76,13 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
     def fetch_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
         """Fetch provider metadata.
 
+        Args:
+            name: Registered provider name.
+
         Returns:
-            The resulting ``p.Result[m.Auth.Providers.Metadata]``.
+            The stored metadata, or a default metadata record when the
+            provider is unregistered or stores none.
+
         """
         if not self.has_provider(name):
             return r[m.Auth.Providers.Metadata].fail(
@@ -94,8 +114,13 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
     def has_capability(self, name: str, capability: str) -> p.Result[bool]:
         """Check if provider has capability.
 
+        Args:
+            name: Registered provider name.
+            capability: Capability name to test.
+
         Returns:
-            The resulting ``p.Result[bool]``.
+            Whether the provider resolves the capability.
+
         """
         caps_result = self.resolve_capabilities(name)
         if caps_result.failure:
@@ -106,8 +131,12 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered.
 
+        Args:
+            name: Provider name to look up.
+
         Returns:
-            The resulting ``bool``.
+            Whether a provider is registered under the name.
+
         """
         result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
         success: bool = result.success
@@ -117,7 +146,8 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         """List registered provider names.
 
         Returns:
-            The resulting ``t.StrSequence``.
+            Names of all registered providers.
+
         """
         result = self.list_plugins(c.Auth.REGISTRY_PROVIDERS_CATEGORY)
         if result.failure:

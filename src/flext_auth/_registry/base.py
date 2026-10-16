@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TypeIs
 
 from flext_auth import c, p, r, t, u
-from flext_auth._registry.plugins import FlextAuthRegistryPlugins
+from flext_auth._registry import FlextAuthRegistryPlugins
 
 
 class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
@@ -23,14 +23,23 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
     ) -> TypeIs[p.Auth.FlextAuthBaseProvider]:
         """Check if value implements FlextAuthBaseProvider protocol.
 
+        Args:
+            value: Candidate payload or provider instance.
+
         Returns:
-            The resulting ``TypeIs[p.Auth.FlextAuthBaseProvider]``.
+            Whether the value exposes the full provider verb surface.
+
         """
         required = ("authenticate", "generate_token", "refresh", "revoke", "validate")
         return all(callable(getattr(value, attr, None)) for attr in required)
 
     def __init__(self, dispatcher: p.Dispatcher | None = None) -> None:
-        """Initialize with the canonical registry DSL."""
+        """Initialize with the canonical registry DSL.
+
+        Args:
+            dispatcher: Optional shared dispatcher for registry events.
+
+        """
         self._registry = u.build_registry(dispatcher=dispatcher)
 
     @property
@@ -41,8 +50,13 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
     def get(self, data: str) -> p.Result[p.Auth.FlextAuthBaseProvider]:
         """Get provider by name.
 
+        Args:
+            data: Registered provider name.
+
         Returns:
-            The resulting ``p.Result[p.Auth.FlextAuthBaseProvider]``.
+            The unwrapped provider instance; failure when unregistered or
+            not provider-conformant.
+
         """
         result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, data)
         if result.failure:
@@ -64,8 +78,13 @@ class FlextAuthRegistryBase(FlextAuthRegistryPlugins):
     def resolve_capabilities(self, name: str) -> p.Result[set[str]]:
         """Resolve provider capabilities.
 
+        Args:
+            name: Registered provider name.
+
         Returns:
-            The resulting ``p.Result[set[str]]``.
+            The provider's declared capability set; failure when the
+            provider cannot be resolved or capability probing raises.
+
         """
         provider_result = self.get(name)
         if provider_result.failure:

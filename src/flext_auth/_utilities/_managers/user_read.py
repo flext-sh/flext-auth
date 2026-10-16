@@ -18,13 +18,19 @@ if TYPE_CHECKING:
 
 
 class FlextAuthUserManagerRead:
+    """User manager read operations over the in-memory user store."""
+
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
     def fetch_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
         """Fetch user by ID.
 
+        Args:
+            user_id: Identity, unique, or storage ID to look up.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The identity entity; failure when no user matches the ID.
+
         """
         return self._find_user_by_id(user_id).map(
             lambda ud: self._create_identity_from_storage(ud[1]),
@@ -33,8 +39,12 @@ class FlextAuthUserManagerRead:
     def fetch_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
         """Fetch user by username.
 
+        Args:
+            username: Account name to look up.
+
         Returns:
-            The resulting ``p.Result[m.Auth.AuthIdentity]``.
+            The identity entity; failure when the username is unknown.
+
         """
         if username not in self._users:
             return e.fail_not_found("User", "", result_type=r[m.Auth.AuthIdentity])
@@ -48,8 +58,12 @@ class FlextAuthUserManagerRead:
     ) -> m.Auth.AuthIdentity:
         """Create Identity model from storage data, filtering out non-model fields.
 
+        Args:
+            storage_data: Raw storage record for the user.
+
         Returns:
-            The resulting ``m.Auth.AuthIdentity``.
+            The identity entity rebuilt from the storage fields.
+
         """
         identity_data: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
             field: storage_data[field]
@@ -66,12 +80,16 @@ class FlextAuthUserManagerRead:
     def _extract_identity_id(storage_data: t.Auth.ManagersUserData) -> str:
         """Extract identity ID from storage data with fast fail.
 
+        Args:
+            storage_data: Raw storage record for the user.
+
         Returns:
-            The resulting ``str``.
+            The first non-empty identity identifier found.
 
         Raises:
             ValueError: If Storage data missing required 'unique_id', 'id', or
                 'identity_id' field.
+
         """
         for field in ("unique_id", "id", "identity_id"):
             value = storage_data.get(field)
@@ -91,8 +109,13 @@ class FlextAuthUserManagerRead:
 
         Eliminates duplication across 7 methods.
 
+        Args:
+            user_id: Identity, unique, or storage ID to look up.
+
         Returns:
-            The resulting ``p.Result[t.Pair[str, t.Auth.ManagersUserData]]``.
+            Pair of the account name and its storage record; failure when
+            no user matches the ID.
+
         """
         for username, user_data in self._users.items():
             if (

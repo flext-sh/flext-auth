@@ -18,8 +18,18 @@ if TYPE_CHECKING:
 
 
 class FlextAuthRateLimiterManagers:
+    """Rate limiter namespace for the auth domain."""
+
     class FlextAuthRateLimiter:
+        """Sliding-window lockout guard for failed login attempts."""
+
         def __init__(self, dispatcher: p.Dispatcher) -> None:
+            """Initialize the limiter with default attempt thresholds.
+
+            Args:
+                dispatcher: Shared dispatcher used for event publication.
+
+            """
             super().__init__()
             self._dispatcher = dispatcher
             self.logger = u.fetch_logger(__name__)
@@ -28,6 +38,16 @@ class FlextAuthRateLimiterManagers:
             self._window_minutes = 15
 
         def check_rate_limit(self, username: str) -> p.Result[bool]:
+            """Decide whether a login attempt for the user is still allowed.
+
+            Args:
+                username: Account whose attempt window to inspect.
+
+            Returns:
+                Success when the account may retry; failure once the
+                configured attempt threshold inside the window is reached.
+
+            """
             now = u.now()
             if username not in self._attempts:
                 ok_result: p.Result[bool] = r[bool].ok(value=True)
@@ -45,9 +65,21 @@ class FlextAuthRateLimiterManagers:
             return allowed_result
 
         def get_total_failed_attempts(self) -> int:
+            """Count every recorded failed attempt across all accounts.
+
+            Returns:
+                Total number of attempts currently tracked.
+
+            """
             return sum(len(attempts) for attempts in self._attempts.values())
 
         def record_failed_attempt(self, username: str) -> None:
+            """Record a failed login attempt for the account.
+
+            Args:
+                username: Account whose failure should be recorded.
+
+            """
             now = u.now()
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}

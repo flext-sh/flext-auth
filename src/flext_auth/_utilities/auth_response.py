@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class FlextAuthUtilitiesAuthResponse:
+    """Builders for uniform authentication response payloads."""
+
     @staticmethod
     def build_auth_error_response(
         error: str,
@@ -24,8 +26,13 @@ class FlextAuthUtilitiesAuthResponse:
     ) -> t.ConfigurationMapping:
         """Build an authentication error response.
 
+        Args:
+            error: Human-readable error description.
+            error_code: Machine-readable error code.
+
         Returns:
-            The resulting ``t.ConfigurationMapping``.
+            The error response payload with a fresh timestamp.
+
         """
         return {
             "success": False,
@@ -42,8 +49,14 @@ class FlextAuthUtilitiesAuthResponse:
     ) -> t.ConfigurationMapping:
         """Build a successful authentication response.
 
+        Args:
+            token: Optional token to embed in the response.
+            user_id: Optional identity identifier to embed.
+            expires_at: Optional expiry timestamp to embed.
+
         Returns:
-            The resulting ``t.ConfigurationMapping``.
+            The success response payload with a fresh timestamp.
+
         """
         response: t.MutableConfigurationMapping = {
             "success": True,
