@@ -11,8 +11,6 @@
   "shellcheck.useWorkspaceRootAsCwd": true,
   "python-envs.workspaceSearchPaths": [
     "./.venv",
-    "./*/.venv",
-    "./.venv",
     "./*/.venv"
   ],
   "files.exclude": {
@@ -174,11 +172,9 @@
   "githubPullRequests.autoRepositoryDetection": true,
   "githubPullRequests.ignoreSubmodules": false,
   "ruff.interpreter": [
-    "${workspaceFolder}/../.venv/bin/python",
     "${workspaceFolder}/../.venv/bin/python"
   ],
   "ruff.path": [
-    "${workspaceFolder}/../.venv/bin/ruff",
     "${workspaceFolder}/../.venv/bin/ruff"
   ],
   "markdownlint.lintWorkspaceGlobs": [
