@@ -12,6 +12,8 @@ Infra:
         - ${workspaceFolder}/.venv/bin/python
         ruff.path:
         - ${workspaceFolder}/.venv/bin/ruff
+      scalar_settings:
+        python.analysis.usePerProjectEnvironments: false
     repository:
       namespace_scan_dirs:
       - src
