@@ -81,24 +81,27 @@ class FlextAuthIdentityService(s):
         """
         identity_result = self.identity_manager.fetch_user_by_username(name)
         if identity_result.failure:
-            return r[m.Auth.AuthIdentity].fail(identity_result.error)
+            return r[m.Auth.AuthIdentity].from_failure(identity_result)
         identity = identity_result.value
         if identity.locked():
             return r[m.Auth.AuthIdentity].fail(
                 "Account is locked due to too many failed attempts",
             )
         verification_result = identity.verify_credential(credential)
-        if verification_result.success and verification_result.value:
-            return r[m.Auth.AuthIdentity].ok(identity.with_successful_access())
         if verification_result.failure:
-            return r[m.Auth.AuthIdentity].fail(verification_result.error)
+            return r[m.Auth.AuthIdentity].from_failure(verification_result)
+        if verification_result.value:
+            identity.with_successful_access()
+            return self.identity_manager.update_user(
+                identity.unique_id,
+                last_access=identity.last_access,
+                failed_attempts=identity.failed_attempts,
+                locked_until=identity.locked_until,
+            )
         failed_attempt_result = self._handle_failed_attempt(identity)
-        error_message = (
-            failed_attempt_result.error
-            if failed_attempt_result.failure
-            else "Invalid credentials"
-        )
-        return r[m.Auth.AuthIdentity].fail(error_message)
+        if failed_attempt_result.failure:
+            return r[m.Auth.AuthIdentity].from_failure(failed_attempt_result)
+        return r[m.Auth.AuthIdentity].fail("Invalid credentials")
 
     def authorize_identity(
         self,
@@ -169,32 +172,18 @@ class FlextAuthIdentityService(s):
             the replacement is too short.
 
         """
-        result: p.Result[bool]
-        min_length = c.Auth.CREDENTIAL_MIN_LENGTH
         identity_result = self.identity_manager.fetch_user(identity_id)
         if identity_result.failure:
-            result = r[bool].fail(identity_result.error)
-        else:
-            identity = identity_result.value
-            verify_result = identity.verify_credential(current_credential)
-            if verify_result.failure:
-                result = r[bool].fail(verify_result.error)
-            elif not verify_result.value:
-                result = r[bool].fail("Current credential is incorrect")
-            elif len(new_credential) < min_length:
-                result = r[bool].fail(
-                    f"New credential must be at least {min_length} characters long",
-                )
-            else:
-                set_result = identity.update_credential(new_credential)
-                if set_result.failure:
-                    result = r[bool].fail(set_result.error)
-                else:
-                    self.logger.info(
-                        "Password change successful",
-                        identity=identity.name,
-                    )
-                    result = r[bool].ok(value=True)
+            return r[bool].from_failure(identity_result)
+        identity = identity_result.value
+        verify_result = identity.verify_credential(current_credential)
+        if verify_result.failure:
+            return verify_result
+        if not verify_result.value:
+            return r[bool].fail("Current credential is incorrect")
+        result = self._persist_credential(identity, new_credential)
+        if result.success:
+            self.logger.info("Password change successful", identity=identity.name)
         return result
 
     def create_identity(
@@ -272,18 +261,35 @@ class FlextAuthIdentityService(s):
         """
         identity_result = self.identity_manager.fetch_user(identity_id)
         if identity_result.failure:
-            return r[bool].fail(identity_result.error)
+            return r[bool].from_failure(identity_result)
         identity = identity_result.value
+        result = self._persist_credential(identity, new_credential)
+        if result.success:
+            self.logger.info("Password reset successful", identity=identity.name)
+        return result
+
+    def _persist_credential(
+        self,
+        identity: m.Auth.AuthIdentity,
+        credential: str,
+    ) -> p.Result[bool]:
+        """Validate, hash and persist a replacement through the existing manager.
+
+        Returns:
+            Success after storage; the original hashing or storage failure otherwise.
+
+        """
         min_length = c.Auth.CREDENTIAL_MIN_LENGTH
-        if len(new_credential) < min_length:
+        if len(credential) < min_length:
             return r[bool].fail(
                 f"New credential must be at least {min_length} characters long",
             )
-        set_result = identity.update_credential(new_credential)
-        if set_result.failure:
-            return r[bool].fail(set_result.error)
-        self.logger.info("Password reset successful", identity=identity.name)
-        return r[bool].ok(value=True)
+        return identity.update_credential(credential).flat_map(
+            lambda _: self.identity_manager.update_user(
+                identity.unique_id,
+                credential_hash=identity.credential_hash,
+            ).map(lambda _: True),
+        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityService"]

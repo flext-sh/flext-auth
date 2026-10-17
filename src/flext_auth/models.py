@@ -11,7 +11,6 @@ from flext_api import FlextApiModels
 
 from flext_auth import t
 from flext_auth._models import (
-    FlextAuthConfigModels,
     FlextAuthModelsAuth,
     FlextAuthModelsAuthCredential,
     FlextAuthModelsAuthIdentity,
@@ -37,7 +36,6 @@ class FlextAuthModels(FlextApiModels):
         FlextAuthModelsAuthResponse,
         FlextAuthModelsAuthUserIdentityExtras,
         FlextAuthModelsBase,
-        FlextAuthConfigModels,
     ):
         """Authentication model namespace."""
 

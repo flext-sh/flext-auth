@@ -130,7 +130,7 @@ class TestsFlextAuthApiCase01:
     def test_custom_config_initialization() -> None:
         """Test initialization with custom configuration."""
         custom_config = FlextAuthSettings.fetch_global()
-        auth = FlextAuth(settings=custom_config)
+        auth = FlextAuth(runtime_settings=custom_config)
         TestsFlextAuthUtilities.Tests.Matchers.that(auth.settings, eq=custom_config)
 
     @staticmethod

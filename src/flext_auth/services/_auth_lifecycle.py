@@ -6,30 +6,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import threading
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, ClassVar, Self
+from typing import Self
 
-from flext_auth import c, m, p, t
+from flext_auth import c, m, p, s, t
 
 
-class FlextAuthApplicationLifecycle(ABC):
-    """Abstract singleton lifecycle shared by auth application services.
+class FlextAuthApplicationLifecycle(s, ABC):
+    """Auth provisioning composed with the shared service lifecycle.
 
     Concrete services provide identity registration and construction;
-    this base owns thread-safe global access and quick-start provisioning.
+    flext-core owns singleton access, runtime settings and logging.
 
     """
-
-    _instance: ClassVar[Self | None] = None
-    _lock: ClassVar[threading.Lock] = threading.Lock()
-
-    if TYPE_CHECKING:
-
-        @property
-        def logger(self) -> p.Logger:
-            """Logger supplied by the service facade."""
-            raise NotImplementedError
 
     @abstractmethod
     def register_user(
@@ -54,31 +43,6 @@ class FlextAuthApplicationLifecycle(ABC):
 
         """
         raise NotImplementedError
-
-    @classmethod
-    def fetch_global(cls) -> Self:
-        """Return the process-wide singleton, creating it on first use.
-
-        Returns:
-            The cached singleton instance of this lifecycle.
-
-        """
-        instance = cls._instance
-        if isinstance(instance, cls):
-            return instance
-        with cls._lock:
-            locked_instance = cls._instance
-            if isinstance(locked_instance, cls):
-                return locked_instance
-            instance = cls()
-            cls._instance = instance
-            return instance
-
-    @classmethod
-    def reset_for_testing(cls) -> None:
-        """Clear the cached singleton instance for test isolation."""
-        with cls._lock:
-            cls._instance = None
 
     @classmethod
     def quick_start(cls, *, create_admin_user: bool = True) -> Self:

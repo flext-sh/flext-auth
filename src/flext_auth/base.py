@@ -17,15 +17,33 @@ from flext_auth import FlextAuthSettings, m, p, r, t
 class FlextAuthServiceBase(FlextService[bool], ABC):
     """Base class for auth services with typed configuration access."""
 
-    _auth_config: FlextAuthSettings = m.PrivateAttr(
-        default_factory=lambda: FlextAuthSettings.model_validate({}),
-    )
-
     @property
     @override
     def settings(self) -> FlextAuthSettings:
-        """Typed auth settings namespace."""
-        return self._auth_config
+        """Typed auth settings namespace.
+
+        Raises:
+            TypeError: If the runtime holds another settings type.
+
+        """
+        current = super().settings
+        if not isinstance(current, FlextAuthSettings):
+            msg = (
+                f"{type(self).__name__} runtime settings must be FlextAuthSettings, "
+                f"got {type(current).__name__}"
+            )
+            raise TypeError(msg)
+        return current
+
+    @classmethod
+    def runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
+        """Declare the settings owner consumed by the shared service runtime.
+
+        Returns:
+            Bootstrap options selecting the Auth settings class.
+
+        """
+        return m.RuntimeBootstrapOptions(settings_type=FlextAuthSettings)
 
     @override
     def execute(self) -> p.Result[bool]:

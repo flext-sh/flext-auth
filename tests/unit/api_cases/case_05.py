@@ -124,7 +124,7 @@ class TestsFlextAuthApiCase05:
             "hash_rounds": 10,
             "secret_key": "s" + "0" * 40,
         })
-        auth = FlextAuth(settings=settings)
+        auth = FlextAuth(runtime_settings=settings)
         tm.that(auth.config.expiry_minutes, eq=120)
         tm.that(auth.config.hash_rounds, eq=10)
 

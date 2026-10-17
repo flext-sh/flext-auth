@@ -74,19 +74,17 @@ class FlextAuthSessionService(s):
     def _fail_token_creation(
         user_id: str,
         token_kind: str,
-        error: str | None,
-        fallback: str,
+        failure: p.FailureLike,
     ) -> p.Result[str]:
         """Log a failed token creation and return the failure result.
 
         Args:
             user_id: Identity the token was requested for.
             token_kind: Requested token kind.
-            error: Provider error message, when available.
-            fallback: Message used when no provider error is present.
+            failure: Original lookup or provider failure.
 
         Returns:
-            Failure result carrying the resolved error message.
+            Failure result preserving the original cause and metadata.
 
         """
         u.fetch_logger(__name__).info(
@@ -94,9 +92,9 @@ class FlextAuthSessionService(s):
             user_id=user_id,
             token_type=token_kind,
             success=False,
-            reason=error or "",
+            reason=failure.error,
         )
-        return r[str].fail(error or fallback)
+        return r[str].from_failure(failure)
 
     def generate_jwt_token(
         self,
@@ -121,8 +119,7 @@ class FlextAuthSessionService(s):
             return self._fail_token_creation(
                 user_id,
                 token_kind,
-                user_result.error,
-                "User lookup failed",
+                user_result,
             )
         user = user_result.value
         user_dict = user.model_dump(mode="json", exclude={"credential_hash"})
@@ -137,8 +134,7 @@ class FlextAuthSessionService(s):
             return self._fail_token_creation(
                 user_id,
                 token_kind,
-                token_result.error,
-                "Token generation failed",
+                token_result,
             )
         token_value = token_result.value
         u.fetch_logger(__name__).debug(

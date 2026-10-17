@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, FlextAuthSettings
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,5 +22,7 @@ def reset_auth_singleton(reset_settings: None) -> Iterator[None]:
     """Reset FlextAuth singleton and shared settings between tests."""
     _ = reset_settings
     FlextAuth.reset_for_testing()
+    FlextAuthSettings.reset_for_testing()
     yield
     FlextAuth.reset_for_testing()
+    FlextAuthSettings.reset_for_testing()

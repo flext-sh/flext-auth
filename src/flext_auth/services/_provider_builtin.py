@@ -28,10 +28,14 @@ if TYPE_CHECKING:
 class FlextAuthProviderBuiltinRegistration:
     """Registration mixin provisioning the builtin auth providers."""
 
-    _auth_config: FlextAuthSettings
     _providers: p.Auth.ProviderRegistry
 
     if TYPE_CHECKING:
+
+        @property
+        def settings(self) -> FlextAuthSettings:
+            """Settings supplied by the shared service runtime."""
+            raise NotImplementedError
 
         @property
         def logger(self) -> p.Logger:
@@ -59,7 +63,7 @@ class FlextAuthProviderBuiltinRegistration:
 
     def _register_builtin_providers(self) -> None:
         """Flexible provider registration with conditional loading."""
-        provider_config = self._auth_config.Auth.model_dump()
+        provider_config = self.settings.Auth.model_dump()
         providers: t.SequenceOf[
             t.Triple[
                 t.Auth.ProvidersKey,

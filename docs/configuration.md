@@ -115,7 +115,7 @@ settings = FlextAuthSettings(
     },
 )
 
-auth = FlextAuth(settings=settings)
+auth = FlextAuth(runtime_settings=settings)
 ```
 
 ### Production Security Settings

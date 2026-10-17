@@ -41,7 +41,7 @@ class TestsFlextAuthApiCase03:
             "session_expiry_minutes": 1440,
             "max_sessions_per_user": 5,
         })
-        auth_custom: FlextAuth = FlextAuth(settings=custom_config)
+        auth_custom: FlextAuth = FlextAuth(runtime_settings=custom_config)
         TestsFlextAuthUtilities.Tests.Matchers.that(
             auth_custom.config.auth_secret.get_secret_value(),
             eq=custom_secret,

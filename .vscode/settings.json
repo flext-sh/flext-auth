@@ -11,6 +11,8 @@
   "shellcheck.useWorkspaceRootAsCwd": true,
   "python-envs.workspaceSearchPaths": [
     "./.venv",
+    "./*/.venv",
+    "./.venv",
     "./*/.venv"
   ],
   "files.exclude": {
@@ -152,7 +154,7 @@
   "python.analysis.includeExtraPathSymbolsInSymbolSearch": false,
   "python.analysis.includeVenvInWorkspaceSymbols": false,
   "python.analysis.useNearestConfiguration": true,
-  "python.analysis.usePerProjectEnvironments": true,
+  "python.analysis.usePerProjectEnvironments": false,
   "python.analysis.userFileIndexingLimit": 2000,
   "python.languageServer": "Pylance",
   "python.pyrefly.diagnosticMode": "workspace",
@@ -172,9 +174,11 @@
   "githubPullRequests.autoRepositoryDetection": true,
   "githubPullRequests.ignoreSubmodules": false,
   "ruff.interpreter": [
+    "${workspaceFolder}/../.venv/bin/python",
     "${workspaceFolder}/../.venv/bin/python"
   ],
   "ruff.path": [
+    "${workspaceFolder}/../.venv/bin/ruff",
     "${workspaceFolder}/../.venv/bin/ruff"
   ],
   "markdownlint.lintWorkspaceGlobs": [

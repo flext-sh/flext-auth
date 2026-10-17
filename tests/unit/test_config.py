@@ -1,4 +1,4 @@
-"""Behavioral tests for FlextAuthSettings public contract.
+"""Behavioral tests for public Auth settings and business policy.
 
 Exercises observable settings behavior (defaults, validation, immutability,
 env overrides, secret handling) and the token flow that consumes the
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import FlextAuth, FlextAuthSettings, c, m, t
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings, c, m, t
 from tests import TestsFlextAuthUtilities, tm
 
 
@@ -182,7 +182,7 @@ class TestsFlextAuthConfig:
         settings: FlextAuthSettings,
     ) -> None:
         """Token creation fails for an unregistered identity."""
-        auth = FlextAuth(settings=settings)
+        auth = FlextAuth(runtime_settings=settings)
 
         result = auth.create_token(identity_id="missing-user")
 
@@ -200,7 +200,7 @@ class TestsFlextAuthConfig:
         identity_id: str,
     ) -> None:
         """Blank identity ids are rejected before any token is produced."""
-        auth = FlextAuth(settings=settings)
+        auth = FlextAuth(runtime_settings=settings)
 
         result = auth.create_token(identity_id=identity_id)
 
@@ -212,7 +212,7 @@ class TestsFlextAuthConfig:
         settings: FlextAuthSettings,
     ) -> None:
         """A registered identity yields a well-formed JWT via the public API."""
-        auth = FlextAuth(settings=settings)
+        auth = FlextAuth(runtime_settings=settings)
 
         register_result = auth.register_user(
             "config-token-user",
@@ -228,3 +228,92 @@ class TestsFlextAuthConfig:
         token_text: str = token_result.value
         tm.that(len(token_text), gt=0)
         tm.that(token_text.count("."), eq=2)
+
+    @staticmethod
+    def test_yaml_policy_is_typed_frozen_and_retains_validated_identity() -> None:
+        """Packaged policy admits YAML sequences and rejects later assignment."""
+        policy = FlextAuthConfig.fetch_global().Auth
+        tm.that(policy.oauth2.flows, is_=tuple)
+        tm.rejects_assignment(
+            policy.jwt,
+            "min_secret_key_length",
+            policy.jwt.min_secret_key_length + 1,
+            expected=m.ValidationError,
+        )
+        with FlextAuthConfig.singleton_disabled():
+            config = FlextAuthConfig.model_validate({"Auth": policy})
+        tm.that(config.Auth is policy, eq=True)
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "invalid_policy",
+        [
+            {"unexpected_policy": True},
+            {"jwt": {"min_secret_key_length": "1"}},
+            {"oauth2": {"flows": [False]}},
+        ],
+    )
+    def test_yaml_policy_rejects_unknown_fields_and_wrong_scalar_types(
+        invalid_policy: t.JsonMapping,
+    ) -> None:
+        """Malformed policy fails at the public config boundary without coercion."""
+        with FlextAuthConfig.singleton_disabled(), pytest.raises(m.ValidationError):
+            FlextAuthConfig.model_validate({"Auth": invalid_policy})
+
+    @staticmethod
+    def test_yaml_policy_preserves_text_and_accepts_json_sequences() -> None:
+        """Strict validation keeps policy text and native JSON sequence semantics."""
+        original = FlextAuthConfig.fetch_global().Auth
+        name = f"  {original.name}  "
+        issuer = f"  {original.jwt.issuer_claim}  "
+        scope = f"  {original.oauth2.default_scope}  "
+        with FlextAuthConfig.singleton_disabled():
+            config = FlextAuthConfig.model_validate({
+                "Auth": {
+                    "name": name,
+                    "jwt": {"issuer_claim": issuer},
+                    "oauth2": {
+                        "default_scope": scope,
+                        "flows": list(original.oauth2.flows),
+                    },
+                },
+            })
+        tm.that(config.Auth.name, eq=name)
+        tm.that(config.Auth.jwt.issuer_claim, eq=issuer)
+        tm.that(config.Auth.oauth2.default_scope, eq=scope)
+        tm.that(config.Auth.oauth2.flows, eq=original.oauth2.flows)
+
+    @staticmethod
+    @pytest.mark.parametrize("nested_environment", [False, True])
+    def test_yaml_policy_keeps_environment_and_parameter_precedence(
+        nested_environment: bool,
+    ) -> None:
+        """Native environment capabilities preserve YAML and parameter precedence."""
+        minimum = FlextAuthConfig.fetch_global().Auth.jwt.min_secret_key_length
+        env_minimum = minimum + 1
+        parameter_minimum = minimum + 2
+        source = m.EnvSettingsSource(FlextAuthConfig)
+        prefix = source.env_prefix
+        delimiter = source.env_nested_delimiter
+        environment: t.MutableMappingKV[str, str] = {}
+        expected_minimum = minimum
+        if not nested_environment:
+            environment[f"{prefix}Auth"] = TestsFlextAuthUtilities.Cli.json_dumps({
+                "jwt": {"min_secret_key_length": env_minimum},
+            }).unwrap()
+            expected_minimum = env_minimum
+        elif delimiter:
+            environment[
+                f"{prefix}Auth{delimiter}jwt{delimiter}min_secret_key_length"
+            ] = str(env_minimum)
+            expected_minimum = env_minimum
+        with (
+            TestsFlextAuthUtilities.Tests.env_vars_context(environment),
+            FlextAuthConfig.singleton_disabled(),
+        ):
+            from_environment = FlextAuthConfig.model_validate({})
+            from_parameters = FlextAuthConfig.model_validate({
+                "Auth": {"jwt": {"min_secret_key_length": parameter_minimum}},
+            })
+        tm.that(from_environment.Auth.jwt.min_secret_key_length, eq=expected_minimum)
+        tm.that(from_parameters.Auth.jwt.min_secret_key_length, eq=parameter_minimum)

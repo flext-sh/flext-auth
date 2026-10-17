@@ -166,7 +166,7 @@ settings = FlextAuthSettings(
 )
 
 # Use custom configuration
-auth = FlextAuth(settings=settings)
+auth = FlextAuth(runtime_settings=settings)
 ```
 
 ---
@@ -251,7 +251,7 @@ container = FlextContainer()
 
 # Configure and register
 settings = FlextAuthSettings()
-auth_service = FlextAuth(settings=settings)
+auth_service = FlextAuth(runtime_settings=settings)
 container.bind("auth_service", auth_service)
 
 # Use from container

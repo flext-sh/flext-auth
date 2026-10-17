@@ -47,7 +47,7 @@ class TestsFlextAuthApi:
         """The settings property returns the exact settings instance supplied."""
         settings = FlextAuthSettings.model_validate({})
 
-        auth = FlextAuth(settings=settings)
+        auth = FlextAuth(runtime_settings=settings)
 
         assert auth.settings is settings
 
