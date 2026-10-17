@@ -106,7 +106,7 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     "Fallback principal name for Kerberos ticket data without a principal."
     SCOPE_SEPARATOR: Final[str] = " "
     "OAuth scope separator."
-    DEFAULT_TIMEOUT: Final[float] = float(c.DEFAULT_TIMEOUT_SECONDS)
+    DEFAULT_TIMEOUT: Final[int] = c.DEFAULT_TIMEOUT_SECONDS
     "Default request timeout in seconds."
     DEFAULT_MAX_RETRIES: Final[int] = 3
     "Default maximum retry attempts."
