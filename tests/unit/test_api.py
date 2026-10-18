@@ -2,7 +2,7 @@
 
 These tests exercise only the observable public contract of ``FlextAuth``
 (registration, credential authentication, token minting, service exposure and
-singleton semantics) through its published methods and properties. No private
+instance-scoped registries) through its published methods and properties. No private
 attribute, internal collaborator, or implementation detail is asserted.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -13,9 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import FlextAuth, FlextAuthRegistry, FlextAuthSettings, t
-from flext_auth.services import FlextAuthIdentityService, FlextAuthSessionService
-from tests import c, tm
+from flext_auth import FlextAuth, FlextAuthSettings, t
+from tests import c, p, tm
 
 
 class TestsFlextAuthApi:
@@ -24,7 +23,7 @@ class TestsFlextAuthApi:
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     @staticmethod
-    def _fresh_auth() -> FlextAuth:
+    def _fresh_auth() -> p.Auth.Service:
         """Return an isolated FlextAuth with no seeded admin user."""
         return FlextAuth.quick_start(create_admin_user=False)
 
@@ -33,14 +32,9 @@ class TestsFlextAuthApi:
         """quick_start yields a facade whose public services are available."""
         auth = TestsFlextAuthApi._fresh_auth()
 
-        # The payload vocabulary is deliberately closed over comparable
-        # shapes, so service availability asserts the published contract
-        # types through the payload-free ``is_`` probe (arbitrary domain
-        # objects are not payload leaves by design).
-        tm.that(auth.identity_service, is_=FlextAuthIdentityService)
-        tm.that(auth.session_service, is_=FlextAuthSessionService)
-        tm.that(auth.session_service, is_=FlextAuthSessionService)
-        tm.that(auth.registry, is_=FlextAuthRegistry)
+        tm.that(auth.identity_service, is_=p.Auth.IdentityService)
+        tm.that(auth.session_service, is_=p.Auth.SessionService)
+        tm.that(auth.registry, is_=p.Registry)
 
     @staticmethod
     def test_settings_property_returns_injected_settings() -> None:
@@ -52,12 +46,12 @@ class TestsFlextAuthApi:
         assert auth.settings is settings
 
     @staticmethod
-    def test_fetch_global_returns_the_same_singleton_instance() -> None:
-        """fetch_global is idempotent: repeated calls return one instance."""
-        first = FlextAuth.fetch_global()
-        second = FlextAuth.fetch_global()
+    def test_constructors_own_independent_registries() -> None:
+        """Constructors are isolated; sharing requires explicit registry injection."""
+        first = FlextAuth()
+        second = FlextAuth()
 
-        assert first is second
+        assert first.registry is not second.registry
 
     @staticmethod
     def test_registry_list_providers_returns_a_list() -> None:

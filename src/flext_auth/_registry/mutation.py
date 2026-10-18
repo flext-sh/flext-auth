@@ -1,4 +1,4 @@
-"""Auth registry mutation operations.
+"""Auth provider mutations over one canonical registration record.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,130 +6,108 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
-
-from flext_auth import c, m, p, r, t, u
+from flext_auth import c, m, p, r, t
 from flext_auth._registry import FlextAuthRegistryLookup
 
 
 class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
-    """Write-side registration and configuration mutations for providers."""
+    """Preserve domain metadata without a second registry or partial category writes."""
 
-    @override
-    def clear(self) -> None:
-        """Unregister every provider held in the registry."""
+    def clear(self) -> p.Result[bool]:
+        """Remove providers in order, stopping at the original first failure."""
         for name in self.list_providers():
-            self.unregister(name)
+            result = self.unregister(name)
+            if result.failure:
+                return result
+        return r[bool].ok(True)
 
     def register_provider(
         self,
         name: str,
         provider: p.Auth.FlextAuthBaseProvider,
-        metadata: m.Auth.Providers.Metadata | None = None,
+        metadata: p.Auth.ProviderMetadata | None = None,
         configuration: t.ConfigurationMapping | None = None,
     ) -> p.Result[bool]:
-        """Register auth provider with optional settings and metadata.
-
-        Args:
-            name: Unique registration name for the provider.
-            provider: Provider instance to register.
-            metadata: Optional registry metadata for the provider.
-            configuration: Optional provider configuration mapping.
-
-        Returns:
-            Success when registration (and any optional metadata and
-            configuration registration) succeeded; a failed registration
-            rolls back the partially stored entries.
-
-        """
-        provider_wrapper = m.Auth.ProviderWrapper(
-            category=c.Auth.REGISTRY_PROVIDERS_CATEGORY,
-            provider=provider,
-        )
-        provider_result = self._registry.register_plugin(
+        """Validate once, then register provider, config and metadata as one value."""
+        try:
+            candidate = m.Auth.ProviderWrapper(
+                category=c.Auth.REGISTRY_PROVIDERS_CATEGORY,
+                provider=provider,
+                configuration=configuration,
+                metadata=metadata,
+            )
+        except c.ValidationError as exc:
+            return r[bool].fail(str(exc), exception=exc)
+        names = self.registry.list_plugins(c.Auth.REGISTRY_PROVIDERS_CATEGORY)
+        if names.failure:
+            return r[bool].from_failure(names)
+        if name in names.value:
+            previous = self.fetch_registration(name)
+            if previous.failure:
+                return r[bool].from_failure(previous)
+            record = previous.value
+            if record.provider is provider:
+                same_config = (
+                    configuration is None
+                    or record.configuration == candidate.configuration
+                )
+                same_metadata = (
+                    metadata is None
+                    or record.metadata is metadata
+                    or (
+                        record.metadata is not None
+                        and record.metadata.model_dump() == metadata.model_dump()
+                    )
+                )
+                if same_config and same_metadata:
+                    return r[bool].ok(True)
+        return self.registry.register_plugin(
             c.Auth.REGISTRY_PROVIDERS_CATEGORY,
             name,
-            provider_wrapper,
+            candidate,
         )
-        if provider_result.failure:
-            return provider_result
-        if configuration:
-            config_wrapper = m.Auth.ConfigWrapper(
-                category=c.Auth.REGISTRY_CONFIG_CATEGORY,
-                data=u.scalar_mapping_adapter().validate_python(configuration),
-            )
-            config_result = self._registry.register_plugin(
-                c.Auth.REGISTRY_CONFIG_CATEGORY,
-                name,
-                config_wrapper,
-            )
-            if config_result.failure:
-                self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
-                return config_result
-        if metadata:
-            metadata_wrapper = m.Auth.MetadataWrapper(
-                category=c.Auth.REGISTRY_METADATA_CATEGORY,
-                data=metadata,
-            )
-            metadata_result = self._registry.register_plugin(
-                c.Auth.REGISTRY_METADATA_CATEGORY,
-                name,
-                metadata_wrapper,
-            )
-            if metadata_result.failure:
-                self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
-                self.unregister_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
-                return metadata_result
-        return r[bool].ok(value=True)
 
     def unregister(self, name: str) -> p.Result[bool]:
-        """Unregister provider and cleanup auth-specific data.
-
-        Args:
-            name: Registered provider name.
-
-        Returns:
-            Success once the provider and its config and metadata entries
-            are removed; failure when the provider was never registered.
-
-        """
-        provider_result = self.unregister_plugin(
-            c.Auth.REGISTRY_PROVIDERS_CATEGORY,
-            name,
-        )
-        if provider_result.failure:
-            return r[bool].fail(f"Provider '{name}' not registered")
-        self.unregister_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
-        self.unregister_plugin(c.Auth.REGISTRY_METADATA_CATEGORY, name)
-        return r[bool].ok(value=True)
+        """Remove the single provider record and preserve the core failure cause."""
+        return self.registry.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
 
     def update_config(
         self,
         name: str,
-        settings: t.ConfigurationMapping,
+        settings: t.JsonMapping,
     ) -> p.Result[bool]:
-        """Update provider configuration.
-
-        Args:
-            name: Registered provider name.
-            settings: Replacement configuration mapping.
-
-        Returns:
-            Success when the new configuration is stored; failure when the
-            provider is not registered.
-
-        """
-        if not self.has_provider(name):
-            return r[bool].fail(f"Provider '{name}' not registered")
-        self.unregister_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
-        config_wrapper = m.Auth.ConfigWrapper(
-            category=c.Auth.REGISTRY_CONFIG_CATEGORY,
-            data=u.scalar_mapping_adapter().validate_python(settings),
-        )
-        return self._registry.register_plugin(
-            c.Auth.REGISTRY_CONFIG_CATEGORY,
+        """Validate the complete replacement before releasing the existing key."""
+        previous = self.fetch_registration(name)
+        if previous.failure:
+            return r[bool].from_failure(previous)
+        record = previous.value
+        try:
+            candidate = m.Auth.ProviderWrapper.model_validate({
+                "category": c.Auth.REGISTRY_PROVIDERS_CATEGORY,
+                "provider": record.provider,
+                "configuration": settings,
+                "metadata": record.metadata,
+            })
+        except c.ValidationError as exc:
+            return r[bool].fail(str(exc), exception=exc)
+        if not isinstance(record.provider, p.Auth.ConfigurableProvider):
+            return r[bool].fail(
+                f"Provider '{name}' does not support explicit reconfiguration",
+            )
+        configuration = candidate.configuration
+        if configuration is None:
+            return r[bool].fail(f"Provider '{name}' requires a configuration")
+        configured = record.provider.with_configuration(configuration)
+        if configured.failure:
+            return r[bool].from_failure(configured)
+        candidate = candidate.model_copy(update={"provider": configured.value})
+        removed = self.unregister(name)
+        if removed.failure:
+            return removed
+        return self.registry.register_plugin(
+            c.Auth.REGISTRY_PROVIDERS_CATEGORY,
             name,
-            config_wrapper,
+            candidate,
         )
 
 

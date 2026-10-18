@@ -39,25 +39,15 @@ class FlextAuthProtocolsAuthIdentity:
         "Identity roles."
         failed_attempts: int
         "Failed login attempts count."
-        locked_until: t.Auth.DateTimeValue
+        locked_until: datetime
         "Lock expiration time (datetime.min means not locked)."
-        last_access: t.Auth.DateTimeValue
+        last_access: datetime
         credential_hash: str
         token: str
         session_id: str
         permissions: t.StrSequence
 
-        def with_successful_access(self) -> None: ...
-
-        @property
-        def email(self) -> str:
-            """Alias for contact property (backward compatibility)."""
-            ...
-
-        @property
-        def username(self) -> str:
-            """Alias for name property (backward compatibility)."""
-            ...
+        def with_successful_access(self) -> FlextAuthProtocolsAuthIdentity.Identity: ...
 
         def locked(self) -> bool:
             """Check if identity is locked.

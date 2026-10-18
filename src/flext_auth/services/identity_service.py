@@ -11,27 +11,10 @@ from datetime import timedelta
 from flext_auth import c, m, p, r, s, t, u
 
 
-class FlextAuthIdentityService(s):
+class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
     """Identity service using flext-core patterns and railway-oriented programming."""
 
-    def __init__(
-        self,
-        *,
-        dispatcher: p.Dispatcher,
-        managers: u.Auth.ServiceManagers | None = None,
-    ) -> None:
-        """Initialize with dependency injection."""
-        super().__init__()
-        self._managers = (
-            managers if managers is not None else u.Auth.ServiceManagers(dispatcher)
-        )
-
-    @property
-    def identity_manager(self) -> u.Auth.FlextAuthUserManager:
-        """Direct access to identity manager for client orchestration."""
-        return self._managers.user_manager
-
-    def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> p.Result[bool]:
+    def _handle_failed_attempt(self, identity: p.Auth.Identity) -> p.Result[bool]:
         """Count the failed attempt, lock after the configured limit, and persist it.
 
         Args:
@@ -67,7 +50,7 @@ class FlextAuthIdentityService(s):
         self,
         name: str,
         credential: str,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.Identity]:
         """Railway-oriented identity authentication with account lockout.
 
         Args:
@@ -81,15 +64,15 @@ class FlextAuthIdentityService(s):
         """
         identity_result = self.identity_manager.fetch_user_by_username(name)
         if identity_result.failure:
-            return r[m.Auth.AuthIdentity].from_failure(identity_result)
+            return r[p.Auth.Identity].from_failure(identity_result)
         identity = identity_result.value
         if identity.locked():
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.Identity].fail(
                 "Account is locked due to too many failed attempts",
             )
         verification_result = identity.verify_credential(credential)
         if verification_result.failure:
-            return r[m.Auth.AuthIdentity].from_failure(verification_result)
+            return r[p.Auth.Identity].from_failure(verification_result)
         if verification_result.value:
             identity.with_successful_access()
             return self.identity_manager.update_user(
@@ -100,8 +83,8 @@ class FlextAuthIdentityService(s):
             )
         failed_attempt_result = self._handle_failed_attempt(identity)
         if failed_attempt_result.failure:
-            return r[m.Auth.AuthIdentity].from_failure(failed_attempt_result)
-        return r[m.Auth.AuthIdentity].fail("Invalid credentials")
+            return r[p.Auth.Identity].from_failure(failed_attempt_result)
+        return r[p.Auth.Identity].fail("Invalid credentials")
 
     def authorize_identity(
         self,
@@ -127,7 +110,7 @@ class FlextAuthIdentityService(s):
 
     def _log_authorization(
         self,
-        identity: m.Auth.AuthIdentity,
+        identity: p.Auth.Identity,
         permission: str,
         resource: str | None,
     ) -> bool:
@@ -192,7 +175,7 @@ class FlextAuthIdentityService(s):
         contact: str,
         credential: str,
         roles: t.StrSequence | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.Identity]:
         """Railway-oriented identity creation with credential hashing.
 
         Args:
@@ -225,12 +208,12 @@ class FlextAuthIdentityService(s):
                 for error in exc.errors()
             ]
             error_msg = "; ".join(error_messages) if error_messages else str(exc)
-            return r[m.Auth.AuthIdentity].fail(error_msg)
+            return r[p.Auth.Identity].fail(error_msg, exception=exc)
         except c.EXC_BROAD_IO_TYPE as exc:
-            return r[m.Auth.AuthIdentity].fail(str(exc), exception=exc)
+            return r[p.Auth.Identity].fail(str(exc), exception=exc)
         min_length = c.Auth.CREDENTIAL_MIN_LENGTH
         if len(credential) < min_length:
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.Identity].fail(
                 f"Credential must be at least {min_length} characters long",
             )
         return (
@@ -270,7 +253,7 @@ class FlextAuthIdentityService(s):
 
     def _persist_credential(
         self,
-        identity: m.Auth.AuthIdentity,
+        identity: p.Auth.Identity,
         credential: str,
     ) -> p.Result[bool]:
         """Validate, hash and persist a replacement through the existing manager.

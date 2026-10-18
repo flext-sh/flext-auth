@@ -104,18 +104,6 @@ class FlextAuthModelsAuthResponse:
             description="Original domain metadata of this provider registration.",
         )
 
-    class ConfigWrapper(m.Value):
-        """Protocol-conformant wrapper for settings data."""
-
-        category: Annotated[str, u.Field(description="Config category")]
-        data: Annotated[t.ConfigurationMapping, u.Field(description="Config data")]
-
-    class MetadataWrapper(m.Value):
-        """Protocol-conformant wrapper for metadata."""
-
-        category: Annotated[str, u.Field(description="Metadata category")]
-        data: Annotated[m.Value, u.Field(description="Metadata")]
-
     class Providers:
         """Provider-related models namespace."""
 

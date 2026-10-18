@@ -12,6 +12,9 @@ from typing import TYPE_CHECKING
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings
+from tests.fixtures.auth import TestsFlextAuthFixtures
+
+auth_api = TestsFlextAuthFixtures.auth_api
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

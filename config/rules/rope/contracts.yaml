@@ -1,0 +1,31 @@
+rules:
+  - id: auth-api-registry-provider-lookup
+    phase: contract-normalization
+    pattern: '${api}.registry.get'
+    goal: '${api}.fetch_provider'
+    arguments:
+      api: type=flext_auth.api.FlextAuth
+  - id: auth-api-registry-provider-list
+    phase: contract-normalization
+    pattern: '${api}.registry.list_providers'
+    goal: '${api}.list_providers'
+    arguments:
+      api: type=flext_auth.api.FlextAuth
+  - id: auth-protocol-registry-provider-list
+    phase: contract-normalization
+    pattern: '${api}.registry.list_providers'
+    goal: '${api}.list_providers'
+    arguments:
+      api: type=flext_auth._protocols.auth_service.FlextAuthProtocolsAuthService.Service
+  - id: auth-api-explicit-instance
+    phase: contract-normalization
+    pattern: '${api}.fetch_global()'
+    goal: '${api}()'
+    arguments:
+      api: name=flext_auth.api.FlextAuth
+  - id: auth-api-injected-settings
+    phase: contract-normalization
+    pattern: '${api}.with_settings(${settings})'
+    goal: '${api}(runtime_settings=${settings})'
+    arguments:
+      api: name=flext_auth.api.FlextAuth

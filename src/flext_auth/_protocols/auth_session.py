@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from flext_api import p
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from flext_auth import t
 
 
@@ -27,6 +29,12 @@ class FlextAuthProtocolsAuthSession:
         @property
         def token(self) -> str: ...
 
+        @property
+        def expires_at(self) -> datetime: ...
+
+        @property
+        def session_id(self) -> str: ...
+
     @runtime_checkable
     class SessionManager(Protocol):
         """Session storage operations consumed by auth services."""
@@ -41,6 +49,17 @@ class FlextAuthProtocolsAuthSession:
             ip_address: str | None = None,
             user_agent: str | None = None,
         ) -> p.Result[FlextAuthProtocolsAuthSession.Session]: ...
+
+        def get_active_sessions(
+            self,
+            user_id: str,
+        ) -> p.Result[t.SequenceOf[FlextAuthProtocolsAuthSession.Session]]: ...
+
+        def end_session(self, user_id: str) -> p.Result[bool]: ...
+
+        def end_session_by_id(self, session_id: str) -> p.Result[bool]: ...
+
+        def get_total_active_sessions(self) -> int: ...
 
     @runtime_checkable
     class Token(Protocol):

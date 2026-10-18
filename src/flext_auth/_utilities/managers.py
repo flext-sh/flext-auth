@@ -16,7 +16,7 @@ from flext_auth._utilities._managers import (
 )
 
 if TYPE_CHECKING:
-    from flext_auth import p, t
+    from flext_auth import t
 
 
 class FlextAuthUtilitiesManagers(
@@ -26,25 +26,6 @@ class FlextAuthUtilitiesManagers(
     FlextAuthUserManagers,
 ):
     """Namespace class for all authentication managers following FLEXT patterns."""
-
-    class ServiceManagers:
-        """Manager composition helper for auth services."""
-
-        __slots__ = ("dispatcher", "rate_limiter", "session_manager", "user_manager")
-
-        def __init__(self, dispatcher: p.Dispatcher) -> None:
-            """Initialize all standard managers used by services.
-
-            Args:
-                dispatcher: Shared dispatcher handed to the managers.
-
-            """
-            self.dispatcher = dispatcher
-            self.user_manager = FlextAuthUtilitiesManagers.FlextAuthUserManager()
-            self.session_manager = FlextAuthUtilitiesManagers.FlextAuthSessionManager()
-            self.rate_limiter = FlextAuthUtilitiesManagers.FlextAuthRateLimiter(
-                dispatcher,
-            )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthUtilitiesManagers"]

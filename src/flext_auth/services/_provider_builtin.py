@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth import FlextAuthSettings, p, t
+from flext_auth import p, t
 from flext_auth.providers import (
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
@@ -20,27 +20,14 @@ from flext_auth.providers import (
     FlextAuthRfcProvider,
     FlextAuthSamlProvider,
 )
+from flext_auth.services import FlextAuthProviderService
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-class FlextAuthProviderBuiltinRegistration:
-    """Registration mixin provisioning the builtin auth providers."""
-
-    _providers: p.Auth.ProviderRegistry
-
-    if TYPE_CHECKING:
-
-        @property
-        def settings(self) -> FlextAuthSettings:
-            """Settings supplied by the shared service runtime."""
-            raise NotImplementedError
-
-        @property
-        def logger(self) -> p.Logger:
-            """Logger supplied by the service facade."""
-            raise NotImplementedError
+class FlextAuthProviderBuiltinRegistration(FlextAuthProviderService):
+    """Provider composition invoked explicitly by the API constructor only."""
 
     @staticmethod
     def _build_provider_init_config(
@@ -108,10 +95,13 @@ class FlextAuthProviderBuiltinRegistration:
             ("apikey", FlextAuthApiKeyProvider, lambda: True),
         ]
         for name, provider_class, condition in providers:
+            if self.has_provider(name):
+                self.fetch_provider(name).unwrap()
+                continue
             if condition():
                 provider_init_config = self._build_provider_init_config(provider_config)
                 provider = provider_class(provider_init_config)
-                self._providers.register_provider(
+                self.register_provider(
                     name,
                     provider,
                     configuration=provider_init_config,

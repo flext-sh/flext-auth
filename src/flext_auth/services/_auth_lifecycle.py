@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Self
 
-from flext_auth import c, m, p, s, t
+from flext_auth import c, p, s, t
 
 
 class FlextAuthApplicationLifecycle(s, ABC):
@@ -28,7 +28,7 @@ class FlextAuthApplicationLifecycle(s, ABC):
         password: str,
         roles: t.StrSequence | None = None,
         role: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.Identity]:
         """Register a new user identity with a hashed credential.
 
         Args:

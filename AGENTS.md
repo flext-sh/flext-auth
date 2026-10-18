@@ -21,11 +21,11 @@ extensibility.
 
 ```text
 src/flext_auth/
-├── api.py            # FlextAuth (inherits FlextAuthApplicationService)
+├── api.py            # FlextAuth composition root, application/provider services via MRO
 ├── base.py
 ├── providers/        # api-key, basic, certificate, jwt, ldap, oauth2/oidc, saml, kerberos, rfc
 ├── services/         # auth_service, provider_service (lifecycle/session/token)
-├── _registry/        # lookup.py, plugins.py, metadata.py (provider registry)
+├── _registry/        # base.py, lookup.py, mutation.py (provider domain operations)
 ├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
 └── _config.py _settings.py _constants/ _models/ _protocols/ _utilities/
 ```
@@ -34,15 +34,24 @@ src/flext_auth/
 
 | Symbol            | Kind    | Location                                 | Role                                            |
 | ----------------- | ------- | ---------------------------------------- | ----------------------------------------------- |
-| `FlextAuth`       | class   | `api.py`                                 | facade (inherits `FlextAuthApplicationService`) |
+| `FlextAuth`       | class   | `api.py`                                 | application/provider MRO composition root       |
 | `AuthService`     | class   | `services/auth_service.py`               | auth lifecycle                                  |
 | `ProviderService` | class   | `services/provider_service.py`           | provider orchestration                          |
-| registry          | modules | `_registry/{lookup,plugins,metadata}.py` | provider selection                              |
+| registry          | modules | `_registry/{base,lookup,mutation}.py` | provider selection                              |
 
 ## Conventions (specific to this package)
 
 - Provider selection/extensibility is **registry-driven**; authentication
   lifecycle/session/token services are separate from provider implementations.
+- `api.py` alone composes the registry and service graph. Each `FlextAuth()` owns
+  its registry; sharing requires explicit injection of the same `p.Registry`.
+  Services inherit required, excluded `t.Port[p.*]` fields from `m.Auth` options.
+- Provider operations are inherited directly on the API. `api.registry` is the
+  canonical core registry, not a second auth facade. One provider wrapper owns its
+  provider identity, configuration and original domain metadata under one key.
+- Configuration replacement validates ingress and requires the provider's explicit
+  `p.Auth.ConfigurableProvider` lifecycle before removal. JWT supplies that capability;
+  unsupported providers fail without mutation. Token lookups are not cached.
 - Canonical reference for pure-declaration `_settings.py`: `@field_validator`
   normalization + `@computed_field @property` derived secret, nothing else.
 - Config/settings canonical pattern: ADR-012.
