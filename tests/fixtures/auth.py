@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
+from typing import ClassVar, override
 
 import pytest
 
@@ -21,28 +21,42 @@ class TestsFlextAuthFixtures:
     class PolicyLockedJwtProvider(FlextAuthJwtProvider):
         """Real JWT provider whose explicit domain policy rejects reconfiguration."""
 
+        _configuration_failure: ClassVar[p.Result[p.Auth.FlextAuthBaseProvider]]
+
         def __init__(
             self,
             configuration: t.ConfigurationMapping,
             failure: p.Result[p.Auth.FlextAuthBaseProvider],
         ) -> None:
-            """Retain the original policy failure and otherwise use real JWT behavior."""
+            """Retain the policy failure and otherwise use real JWT behavior."""
             super().__init__(settings=configuration)
-            self._configuration_failure = failure
+            TestsFlextAuthFixtures.PolicyLockedJwtProvider._configuration_failure = (
+                failure
+            )
 
         @override
+        @staticmethod
         def with_configuration(
-            self,
             configuration: t.ConfigurationMapping,
         ) -> p.Result[p.Auth.FlextAuthBaseProvider]:
-            """Reject the requested lifecycle with the declared failure unchanged."""
+            """Reject the requested lifecycle with the declared failure unchanged.
+
+            Returns:
+                The declared policy failure, with its original cause intact.
+
+            """
             _ = configuration
-            return self._configuration_failure
+            return TestsFlextAuthFixtures.PolicyLockedJwtProvider._configuration_failure
 
     @staticmethod
     @pytest.fixture
     def auth_api() -> p.Auth.Service:
-        """Compose a fresh registry and real domain services for each test."""
+        """Compose a fresh registry and real domain services for each test.
+
+        Returns:
+            A real auth API owning its registry and domain services.
+
+        """
         return FlextAuth()
 
 

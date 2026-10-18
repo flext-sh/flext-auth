@@ -122,17 +122,20 @@ class FlextAuthUtilitiesAuthValidation:
         return current_time > expiry_time
 
     @staticmethod
-    def hash_password(password: str) -> str:
+    def hash_password(password: str, *, rounds: int | None = None) -> str:
         """Hash a password using bcrypt.
 
         Args:
             password: Plain credential to hash.
+            rounds: Explicit domain policy, or the existing default when omitted.
 
         Returns:
             Salted bcrypt hash of the credential.
 
         """
-        salt = bcrypt.gensalt(rounds=c.Auth.DEFAULT_HASH_ROUNDS)
+        salt = bcrypt.gensalt(
+            rounds=c.Auth.DEFAULT_HASH_ROUNDS if rounds is None else rounds,
+        )
         return bcrypt.hashpw(password.encode(), salt).decode()
 
     @staticmethod

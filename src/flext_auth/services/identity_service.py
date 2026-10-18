@@ -64,7 +64,7 @@ class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
         """
         identity_result = self.identity_manager.fetch_user_by_username(name)
         if identity_result.failure:
-            return r[p.Auth.Identity].from_failure(identity_result)
+            return identity_result
         identity = identity_result.value
         if identity.locked():
             return r[p.Auth.Identity].fail(
@@ -129,7 +129,7 @@ class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
         self.logger.debug(
             "Authorization check",
             username=identity.name,
-            resource=resource if resource is not None else "",
+            resource=resource,
             action=permission,
             allowed=allowed,
         )
@@ -201,16 +201,8 @@ class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
                 credential=credential,
                 roles=user_roles,
             )
-        except c.ValidationError as exc:
-            error_messages: t.StrSequence = [
-                f"{(error.get('loc') or ('unknown',))[0]}: "
-                f"{error.get('msg', 'Validation error')}"
-                for error in exc.errors()
-            ]
-            error_msg = "; ".join(error_messages) if error_messages else str(exc)
-            return r[p.Auth.Identity].fail(error_msg, exception=exc)
         except c.EXC_BROAD_IO_TYPE as exc:
-            return r[p.Auth.Identity].fail(str(exc), exception=exc)
+            return r[p.Auth.Identity].fail_op("Identity creation", exc)
         min_length = c.Auth.CREDENTIAL_MIN_LENGTH
         if len(credential) < min_length:
             return r[p.Auth.Identity].fail(
@@ -218,7 +210,12 @@ class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
             )
         return (
             r[str]
-            .ok(m.Auth.PasswordUtil.hash_password(credential))
+            .ok(
+                u.Auth.hash_password(
+                    credential,
+                    rounds=c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS,
+                )
+            )
             .flat_map(
                 lambda ch: self.identity_manager.create_user(
                     username=request.name,

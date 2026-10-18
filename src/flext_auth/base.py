@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
 from typing import override
 
 from flext_core import FlextService
@@ -14,12 +13,12 @@ from flext_core import FlextService
 from flext_auth import FlextAuthSettings, m, p, r, t
 
 
-class FlextAuthServiceBase(FlextService[bool], ABC):
+class FlextAuthServiceBase(FlextService[bool]):
     """Base class for auth services with typed configuration access."""
 
     @property
     @override
-    def settings(self) -> FlextAuthSettings:
+    def settings(self) -> p.Auth.Settings:
         """Typed auth settings namespace.
 
         Raises:
@@ -27,16 +26,13 @@ class FlextAuthServiceBase(FlextService[bool], ABC):
 
         """
         current = super().settings
-        if not isinstance(current, FlextAuthSettings):
-            msg = (
-                f"{type(self).__name__} runtime settings must be FlextAuthSettings, "
-                f"got {type(current).__name__}"
-            )
+        if not isinstance(current, p.Auth.Settings):
+            msg = "Auth service runtime requires the auth settings contract"
             raise TypeError(msg)
         return current
 
     @classmethod
-    def runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
+    def runtime_bootstrap_options(cls) -> p.RuntimeBootstrapOptions:
         """Declare the settings owner consumed by the shared service runtime.
 
         Returns:

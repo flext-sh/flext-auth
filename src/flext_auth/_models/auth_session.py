@@ -33,16 +33,17 @@ class FlextAuthModelsAuthSession:
             u.Field(description="Refresh token", exclude=True),
         ] = ""
 
+        @m.computed_field
         @property
         def user_id(self) -> str:
             """User ID property for protocol compatibility."""
             return self.identity_id
 
+        @m.computed_field
         @property
         def expired(self) -> bool:
             """Whether token is expired."""
-            current_time: datetime = u.now()
-            return current_time > self.expires_at
+            return u.now() > self.expires_at
 
 
 __all__: list[str] = ["FlextAuthModelsAuthSession"]

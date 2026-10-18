@@ -15,6 +15,8 @@ class FlextAuthConstantsAuthEnums:
 
     DEFAULT_ADMIN_USERNAME: ClassVar[str] = "admin"
     DEFAULT_ADMIN_EMAIL: ClassVar[str] = "admin@example.com"
+    DEFAULT_ADMIN_CREDENTIAL: ClassVar[str] = "AdminPass123!"
+    DEFAULT_ADMIN_ROLES: ClassVar[tuple[str, ...]] = ("ADMIN",)
 
     @unique
     class TokenTypes(StrEnum):
@@ -51,6 +53,7 @@ class FlextAuthConstantsAuthEnums:
         BASIC = "basic"
         JWT = "jwt"
         OAUTH2 = "oauth2"
+        OIDC = "oidc"
         SAML = "saml"
         LDAP = "ldap"
         CERTIFICATE = "certificate"

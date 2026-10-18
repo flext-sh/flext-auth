@@ -17,7 +17,7 @@ class FlextAuthModelsAuthProviderConfig:
     """Provider configuration model namespace."""
 
     class RegistryPortOptions(m.ArbitraryTypesModel):
-        """Required canonical registry; services never construct this dependency."""
+        """Required registry supplied by the API composition root."""
 
         registry: t.Port[p.Registry] = m.Field(
             exclude=True,
@@ -25,7 +25,7 @@ class FlextAuthModelsAuthProviderConfig:
         )
 
     class ApplicationPortOptions(m.ArbitraryTypesModel):
-        """Domain services supplied by the authentication composition root."""
+        """Required identity and session domain capabilities."""
 
         identity_service: t.Port[p.Auth.IdentityService] = m.Field(
             exclude=True,
@@ -37,7 +37,7 @@ class FlextAuthModelsAuthProviderConfig:
         )
 
     class IdentityPortOptions(m.ArbitraryTypesModel):
-        """Required identity persistence capability."""
+        """Identity persistence required by identity operations."""
 
         identity_manager: t.Port[p.Auth.IdentityManager] = m.Field(
             exclude=True,
@@ -45,7 +45,7 @@ class FlextAuthModelsAuthProviderConfig:
         )
 
     class SessionPortOptions(m.ArbitraryTypesModel):
-        """Required token-provider and session persistence capabilities."""
+        """Required provider and session persistence capabilities."""
 
         provider_service: t.Port[p.Auth.ProviderService] = m.Field(
             exclude=True,

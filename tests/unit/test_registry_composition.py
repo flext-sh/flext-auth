@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthRegistry
+from flext_auth._registry import FlextAuthRegistryBase
 from flext_auth.providers import FlextAuthBasicProvider, FlextAuthJwtTokenValidator
 from tests import c, m, p, r, tm, u
 from tests.fixtures.auth import TestsFlextAuthFixtures
@@ -16,6 +17,26 @@ from tests.fixtures.auth import TestsFlextAuthFixtures
 
 class TestsFlextAuthRegistryComposition:
     """Registry lifetime and metadata do not replace real auth behavior."""
+
+    @staticmethod
+    def test_provider_credentials_preserve_secret_exclusion_and_lookup_failure(
+        auth_api: p.Auth.Service,
+    ) -> None:
+        """Credential validation stays secret-excluding without masking lookup errors."""
+        request = m.Auth.CredentialValidation(
+            username="provider-user",
+            password=c.TEST_CREDENTIAL,
+        )
+        tm.that("password" not in request.model_dump(), eq=True)
+        expected = auth_api.fetch_provider("absent-provider")
+        rejected = auth_api.authenticate_with_provider(
+            request.username,
+            request.password,
+            provider="absent-provider",
+        )
+        tm.fail(rejected, code=expected.error_code)
+        tm.that(rejected.error, eq=expected.error)
+        tm.that(rejected.error_data, eq=expected.error_data)
 
     @staticmethod
     def test_api_registries_are_isolated_and_sharing_is_explicit(
@@ -30,6 +51,11 @@ class TestsFlextAuthRegistryComposition:
         tm.that(shared.registry is auth_api.registry, eq=True)
         tm.that(tm.ok(shared.fetch_provider("custom")) is provider, eq=True)
         tm.fail(independent.fetch_provider("custom"))
+        builtin = c.Auth.ProviderTypes.BASIC.value
+        tm.ok(auth_api.unregister(builtin), eq=True)
+        after_removal = FlextAuth(registry=auth_api.registry)
+        tm.fail(after_removal.fetch_provider(builtin))
+        tm.that(tm.ok(after_removal.fetch_provider("custom")) is provider, eq=True)
 
     @staticmethod
     def test_provider_identity_metadata_and_config_survive_registration(
@@ -180,8 +206,8 @@ class TestsFlextAuthRegistryComposition:
         with pytest.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({})
         with pytest.raises(c.ValidationError):
-            m.Auth.RegistryPortOptions.model_validate({"registry": "invalid"})
-        port = m.Auth.RegistryPortOptions(registry=u.build_registry())
+            FlextAuthRegistryBase.model_validate({"registry": "invalid"})
+        port = FlextAuthRegistryBase(registry=u.build_registry())
         tm.that("registry" not in port.model_dump(), eq=True)
         tm.that(
             "registry" not in port.model_json_schema().get("properties", {}), eq=True

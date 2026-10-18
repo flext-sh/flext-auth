@@ -17,11 +17,19 @@ from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthProviderMi
 class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
+    @staticmethod
     def with_configuration(
-        self,
         configuration: t.ConfigurationMapping,
     ) -> p.Result[p.Auth.FlextAuthBaseProvider]:
-        """Build a JWT replacement using this owner's complete dependency graph."""
+        """Build a JWT replacement using this owner's complete dependency graph.
+
+        Args:
+            configuration: Provider configuration mapping with scalar values.
+
+        Returns:
+            A new JWT provider built from the supplied configuration.
+
+        """
         return r[p.Auth.FlextAuthBaseProvider].ok(
             FlextAuthJwtProvider(settings=configuration),
         )

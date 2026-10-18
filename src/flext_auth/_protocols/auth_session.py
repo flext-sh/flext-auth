@@ -11,29 +11,11 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from flext_api import p
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from flext_auth import t
 
 
 class FlextAuthProtocolsAuthSession:
     """Protocol namespace for tokens and authentication responses."""
-
-    @runtime_checkable
-    class Session(p.HasModelDump, Protocol):
-        """Persisted session capability consumed by application orchestration."""
-
-        @property
-        def unique_id(self) -> str: ...
-
-        @property
-        def token(self) -> str: ...
-
-        @property
-        def expires_at(self) -> datetime: ...
-
-        @property
-        def session_id(self) -> str: ...
 
     @runtime_checkable
     class SessionManager(Protocol):
@@ -108,6 +90,16 @@ class FlextAuthProtocolsAuthSession:
         def user_id(self) -> str:
             """User identifier."""
             ...
+
+    @runtime_checkable
+    class Session(Token, p.HasModelDump, Protocol):
+        """Persisted identity over the existing token contract."""
+
+        @property
+        def unique_id(self) -> str: ...
+
+        @property
+        def session_id(self) -> str: ...
 
     @runtime_checkable
     class AuthenticationResponse(Protocol):

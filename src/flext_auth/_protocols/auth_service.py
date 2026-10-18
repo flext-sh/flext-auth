@@ -24,7 +24,7 @@ class FlextAuthProtocolsAuthService:
     """Protocol namespace for auth and provider services."""
 
     @runtime_checkable
-    class ApplicationConfig(Protocol):
+    class ApplicationConfig(p.HasModelDump, Protocol):
         """Settings capability used by application session orchestration."""
 
         @property
@@ -34,13 +34,37 @@ class FlextAuthProtocolsAuthService:
         def expiry_minutes(self) -> int: ...
 
     @runtime_checkable
+    class Settings(p.Settings, Protocol):
+        """Auth namespace capability over the existing core settings contract."""
+
+        @property
+        def Auth(self) -> FlextAuthProtocolsAuthService.ApplicationConfig: ...
+
+    @runtime_checkable
+    class ProviderService(Protocol):
+        """Minimal provider resolution capability consumed by token workflows."""
+
+        def fetch_jwt_provider(
+            self,
+        ) -> p.Result[FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider]: ...
+
+    @runtime_checkable
     class Service(
-        p.Service[bool], FlextAuthProtocolsAuthProvider.ProviderRegistry, Protocol
+        p.Service[bool],
+        FlextAuthProtocolsAuthProvider.ProviderRegistry,
+        ProviderService,
+        Protocol,
     ):
         """Protocol for authentication service-like objects."""
 
         @property
         def registry(self) -> p.Registry: ...
+
+        @property
+        def settings(self) -> FlextAuthProtocolsAuthService.Settings: ...
+
+        @property
+        def config(self) -> FlextAuthProtocolsAuthService.ApplicationConfig: ...
 
         @property
         def identity_service(self) -> FlextAuthProtocolsAuthService.IdentityService: ...
@@ -53,6 +77,24 @@ class FlextAuthProtocolsAuthService:
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
 
         def create_token(self, identity_id: str) -> p.Result[str]: ...
+
+        def authenticate_with_provider(
+            self,
+            username: str,
+            password: str,
+            provider: str = ...,
+        ) -> p.Result[FlextAuthProtocolsAuthSession.Token]: ...
+
+        def generate_token_for_user(
+            self,
+            user: FlextAuthProtocolsAuthIdentity.Identity,
+            provider: str = ...,
+            token_kind: str = ...,
+            token_type: str | None = None,
+            expiry_minutes: int | None = None,
+        ) -> p.Result[str]: ...
+
+        def validate_token(self, token: str, provider: str = ...) -> p.Result[bool]: ...
 
         def authenticate_user(
             self,
@@ -104,21 +146,6 @@ class FlextAuthProtocolsAuthService:
             ...
 
     @runtime_checkable
-    class ProviderService(Protocol):
-        """Protocol for provider services consumed by token workflows."""
-
-        def fetch_jwt_provider(
-            self,
-        ) -> p.Result[FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider]:
-            """Resolve the JWT authentication provider through the registry.
-
-            Returns:
-                The registered JWT provider; failure when absent.
-
-            """
-            ...
-
-    @runtime_checkable
     class IdentityService(Protocol):
         """Identity use cases required by the public authentication facade."""
 
@@ -164,6 +191,12 @@ class FlextAuthProtocolsAuthService:
     @runtime_checkable
     class SessionService(Protocol):
         """Token and session capabilities consumed by the application service."""
+
+        @property
+        def user_manager(self) -> FlextAuthProtocolsAuthIdentity.IdentityManager: ...
+
+        @property
+        def provider_service(self) -> FlextAuthProtocolsAuthService.ProviderService: ...
 
         @property
         def session_manager(self) -> FlextAuthProtocolsAuthSession.SessionManager: ...

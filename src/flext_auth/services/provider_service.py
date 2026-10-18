@@ -16,7 +16,7 @@ class FlextAuthProviderService(FlextAuthRegistry):
         self,
         username: str,
         password: str,
-        provider: str = "basic",
+        provider: str = c.Auth.ProviderTypes.BASIC.value,
     ) -> p.Result[p.Auth.Token]:
         """Railway-oriented user authentication with provider selection.
 
@@ -31,16 +31,19 @@ class FlextAuthProviderService(FlextAuthRegistry):
 
         """
         credentials = m.Auth.CredentialValidation(username=username, password=password)
+        payload = u.json_dict_adapter().validate_python({
+            "username": credentials.username,
+            "password": credentials.password,
+            "metadata": credentials.metadata,
+        })
         return self.fetch_provider(provider).flat_map(
-            lambda auth_provider: auth_provider.authenticate(
-                credentials.model_dump(exclude_none=True),
-            ),
+            lambda auth_provider: auth_provider.authenticate(payload),
         )
 
     def generate_token_for_user(
         self,
         user: p.Auth.Identity,
-        provider: str = "jwt",
+        provider: str = c.Auth.ProviderTypes.JWT.value,
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
@@ -76,9 +79,13 @@ class FlextAuthProviderService(FlextAuthRegistry):
             The registered JWT provider instance; failure when absent.
 
         """
-        return self.fetch_provider("jwt")
+        return self.fetch_provider(c.Auth.ProviderTypes.JWT.value)
 
-    def validate_token(self, token: str, provider: str = "jwt") -> p.Result[bool]:
+    def validate_token(
+        self,
+        token: str,
+        provider: str = c.Auth.ProviderTypes.JWT.value,
+    ) -> p.Result[bool]:
         """Railway-oriented token validation with direct provider access.
 
         Args:

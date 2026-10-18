@@ -6,19 +6,63 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from flext_auth import FlextAuth, m, settings
 from flext_auth.providers import FlextAuthJwtTokenValidator
-from tests import c, tm
+from tests import c, p, t, tm
 
 
 class TestsFlextAuthSessionRealFlows:
     """Token flow tests using only FlextAuth public API."""
 
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+
+    @staticmethod
+    def test_settings_and_bootstrap_use_existing_runtime_contracts() -> None:
+        """The actual API runtime supplies auth settings through structural ports."""
+        configured = settings.clone()
+        auth = FlextAuth(runtime_settings=configured)
+        tm.that(auth.settings, is_=p.Auth.Settings)
+        tm.that(auth.runtime_bootstrap_options(), is_=p.RuntimeBootstrapOptions)
+        tm.that(auth.settings.Auth.expiry_minutes, eq=configured.Auth.expiry_minutes)
+        tm.that(
+            auth.settings.Auth.session_expiry_minutes,
+            eq=configured.Auth.session_expiry_minutes,
+        )
+
+    @staticmethod
+    def test_token_audits_omit_credentials_and_keep_results(
+        caplog: t.Tests.LogCapture,
+    ) -> None:
+        """Real runtime audit events contain decisions, never token fragments."""
+        caplog.set_level(logging.DEBUG)
+        auth = FlextAuth(runtime_settings=settings.clone(log_level="DEBUG"))
+        identity = tm.ok(
+            auth.register_user(
+                "audit-user",
+                "audit@example.com",
+                c.TEST_CREDENTIAL,
+            )
+        )
+        token = tm.ok(auth.create_token(identity.unique_id))
+        refreshed = tm.ok(auth.session_service.refresh_token(token))
+        tm.ok(auth.session_service.validate_token(refreshed.token))
+        marker = "sensitive-credential-marker"
+        tm.fail(auth.session_service.refresh_token(marker))
+        tm.fail(auth.session_service.validate_token(marker))
+        audit = caplog.text
+        tm.that(audit, has="Token creation successful")
+        tm.that(audit, has="Token refresh successful")
+        tm.that(audit, has="Token validation")
+        tm.that(audit, has=identity.unique_id)
+        for material in (token, refreshed.token, marker, "sensitive", token[:9]):
+            tm.that(material not in audit, eq=True)
+        tm.that(refreshed.user_id, eq=identity.unique_id)
+        tm.that(refreshed, is_=p.Auth.Session)
 
     @staticmethod
     def test_identity_extras_preserve_supported_payload_values() -> None:

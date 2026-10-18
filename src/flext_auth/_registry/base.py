@@ -13,7 +13,13 @@ class FlextAuthRegistryBase(s, m.Auth.RegistryPortOptions):
     """Auth provider registry backed by `p.Registry`."""
 
     def fetch_registration(self, name: str) -> p.Result[p.Auth.ProviderRegistration]:
-        """Read the single provider record without conversion or legacy probes."""
+        """Read the single provider record without conversion or legacy probes.
+
+        Returns:
+            The stored provider registration record; failure when absent or
+            not provider-conformant.
+
+        """
         result = self.registry.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
         if result.failure:
             return r[p.Auth.ProviderRegistration].from_failure(result)
@@ -59,9 +65,9 @@ class FlextAuthRegistryBase(s, m.Auth.RegistryPortOptions):
             caps = provider.supports()
             return r[set[str]].ok(caps)
         except c.EXC_BROAD_IO_TYPE as exc:
-            return r[set[str]].fail(
-                f"Provider '{name}' capabilities resolution failed: {exc}",
-                exception=exc,
+            return r[set[str]].fail_op(
+                f"Provider '{name}' capabilities resolution",
+                exc,
             )
 
 

@@ -6,16 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
-
-from flext_auth import c, m, p, r, t
-from flext_auth.services import FlextAuthApplicationLifecycle
+from flext_auth import c, m, p, r, s, t
 
 
-class FlextAuthApplicationService(
-    FlextAuthApplicationLifecycle,
-    m.Auth.ApplicationPortOptions,
-):
+class FlextAuthApplicationService(s, m.Auth.ApplicationPortOptions):
     """Authentication application service used by the API composition."""
 
     @property
@@ -34,8 +28,8 @@ class FlextAuthApplicationService(
             authentication is rejected.
 
         """
-        username = credentials.get("username") or ""
-        password = credentials.get("password") or ""
+        username = credentials.get("username")
+        password = credentials.get("password")
         if not username or not password:
             return r[p.Auth.Identity].fail(
                 "Invalid credentials: username and password required",
@@ -75,16 +69,15 @@ class FlextAuthApplicationService(
             user_id=identity.unique_id,
             token=token_result.value,
             expires_in_minutes=self.config.session_expiry_minutes,
-            ip_address=ip_address or "",
-            user_agent=user_agent or "",
+            ip_address=ip_address,
+            user_agent=user_agent,
         )
         if session_result.failure:
             return r[p.Auth.Identity].from_failure(session_result)
         identity.token = token_result.value
         identity.session_id = session_result.value.unique_id
-        return r[p.Auth.Identity].ok(identity)
+        return auth_result
 
-    @override
     def register_user(
         self,
         username: str,

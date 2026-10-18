@@ -24,7 +24,7 @@ src/flext_auth/
 ├── api.py            # FlextAuth composition root, application/provider services via MRO
 ├── base.py
 ├── providers/        # api-key, basic, certificate, jwt, ldap, oauth2/oidc, saml, kerberos, rfc
-├── services/         # auth_service, provider_service (lifecycle/session/token)
+├── services/         # auth_service, identity_service, provider_service, session_service
 ├── _registry/        # base.py, lookup.py, mutation.py (provider domain operations)
 ├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
 └── _config.py _settings.py _constants/ _models/ _protocols/ _utilities/
@@ -46,6 +46,12 @@ src/flext_auth/
 - `api.py` alone composes the registry and service graph. Each `FlextAuth()` owns
   its registry; sharing requires explicit injection of the same `p.Registry`.
   Services inherit required, excluded `t.Port[p.*]` fields from `m.Auth` options.
+- Builtin provider selection and optional admin provisioning live only in the API
+  composition root. Services do not construct managers, registries or providers.
+- The service base consumes `p.Auth.Settings` and core `p.RuntimeBootstrapOptions`;
+  concrete models appear only at runtime construction/validation boundaries.
+- Token audits use the inherited service logger and retain decision/user/kind data,
+  never token values, token prefixes or untrusted provider error text.
 - Provider operations are inherited directly on the API. `api.registry` is the
   canonical core registry, not a second auth facade. One provider wrapper owns its
   provider identity, configuration and original domain metadata under one key.
