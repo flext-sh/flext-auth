@@ -89,7 +89,7 @@ class FlextAuthSessionService(s, m.Auth.SessionPortOptions):
                 user_result,
             )
         user = user_result.value
-        user_dict = u.TypingAdapterJson.json_dict_adapter().validate_python(
+        user_dict = u.json_dict_adapter().validate_python(
             user.model_dump(mode="json", exclude={"credential_hash"}),
         )
         token_result = self.provider_service.fetch_jwt_provider().flat_map(
@@ -113,7 +113,7 @@ class FlextAuthSessionService(s, m.Auth.SessionPortOptions):
         )
         return r[str].ok(token_value)
 
-    def refresh_token(self, token: str) -> p.Result[p.Auth.Session]:
+    def refresh_token(self, token: str) -> p.Result[m.Auth.AuthSession]:
         """Railway-oriented token refresh with audit logging.
 
         Args:
@@ -135,7 +135,7 @@ class FlextAuthSessionService(s, m.Auth.SessionPortOptions):
                 old_token_id=self._short_token(token),
                 reason=error or "",
             )
-            return r[p.Auth.Session].from_failure(result)
+            return r[m.Auth.AuthSession].from_failure(result)
         refreshed = result.value
         auth_token = m.Auth.AuthSession(
             domain_events=[],
@@ -149,7 +149,7 @@ class FlextAuthSessionService(s, m.Auth.SessionPortOptions):
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(auth_token.token),
         )
-        return r[p.Auth.Session].ok(auth_token)
+        return r[m.Auth.AuthSession].ok(auth_token)
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Railway-oriented token validation with audit logging.
