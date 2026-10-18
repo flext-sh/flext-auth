@@ -102,6 +102,38 @@ class FlextAuthProtocolsAuthService:
             ...
 
     @runtime_checkable
+    class IdentityService(Protocol):
+        """Identity use cases required by the public authentication facade."""
+
+        def authenticate_identity(
+            self,
+            name: str,
+            credential: str,
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
+
+        def create_identity(
+            self,
+            name: str,
+            contact: str,
+            credential: str,
+            roles: t.StrSequence | None = None,
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
+
+    @runtime_checkable
+    class SessionService(Protocol):
+        """Token and session capabilities consumed by the application service."""
+
+        @property
+        def session_manager(self) -> FlextAuthProtocolsAuthSession.SessionManager: ...
+
+        def generate_jwt_token(
+            self,
+            user_id: str,
+            expires_in_minutes: int | None = None,
+            token_kind: str = ...,
+        ) -> p.Result[str]: ...
+
+    @runtime_checkable
     class RequestWithHeaders(Protocol):
         """Protocol for request-like objects with a headers attribute."""
 

@@ -10,11 +10,55 @@ from typing import Annotated
 
 from flext_api import m, u
 
-from flext_auth import t
+from flext_auth import p, t
 
 
 class FlextAuthModelsAuthProviderConfig:
     """Provider configuration model namespace."""
+
+    class RegistryPortOptions(m.ArbitraryTypesModel):
+        """Required canonical registry; services never construct this dependency."""
+
+        registry: t.Port[p.Registry] = m.Field(
+            exclude=True,
+            description="Instance-scoped registry supplied by the API composition.",
+        )
+
+    class ApplicationPortOptions(m.ArbitraryTypesModel):
+        """Domain services supplied by the authentication composition root."""
+
+        identity_service: t.Port[p.Auth.IdentityService] = m.Field(
+            exclude=True,
+            description="Identity operations using the composed user manager.",
+        )
+        session_service: t.Port[p.Auth.SessionService] = m.Field(
+            exclude=True,
+            description="Token and session operations using the same identity store.",
+        )
+
+    class IdentityPortOptions(m.ArbitraryTypesModel):
+        """Required identity persistence capability."""
+
+        identity_manager: t.Port[p.Auth.IdentityManager] = m.Field(
+            exclude=True,
+            description="Identity manager explicitly supplied by the API.",
+        )
+
+    class SessionPortOptions(m.ArbitraryTypesModel):
+        """Required token-provider and session persistence capabilities."""
+
+        provider_service: t.Port[p.Auth.ProviderService] = m.Field(
+            exclude=True,
+            description="Provider resolver bound to the composed registry.",
+        )
+        user_manager: t.Port[p.Auth.IdentityManager] = m.Field(
+            exclude=True,
+            description="The same identity manager used by identity operations.",
+        )
+        session_manager: t.Port[p.Auth.SessionManager] = m.Field(
+            exclude=True,
+            description="Session manager supplied by the API composition.",
+        )
 
     class ProviderConfig(m.FlexibleModel):
         """Generic provider configuration (immutable value object)."""

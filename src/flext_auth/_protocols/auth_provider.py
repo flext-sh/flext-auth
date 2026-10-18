@@ -8,16 +8,47 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
+from flext_api import p
+
 from flext_auth import c, t
 
 if TYPE_CHECKING:
-    from flext_api import p
-
     from flext_auth._protocols import FlextAuthProtocolsAuthSession
 
 
 class FlextAuthProtocolsAuthProvider:
     """Protocol namespace for provider registries and providers."""
+
+    @runtime_checkable
+    class ProviderMetadata(p.HasModelDump, Protocol):
+        """Domain metadata preserved with the registered provider."""
+
+        @property
+        def name(self) -> str: ...
+
+        @property
+        def version(self) -> str: ...
+
+        @property
+        def capabilities(self) -> t.VariadicTuple[str]: ...
+
+        @property
+        def extras(self) -> t.JsonMapping: ...
+
+    @runtime_checkable
+    class ProviderRegistration(p.HasModelDump, Protocol):
+        """Single owned registration record in the canonical core registry."""
+
+        @property
+        def provider(self) -> FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider: ...
+
+        @property
+        def configuration(self) -> t.ConfigurationMapping | None: ...
+
+        @property
+        def metadata(
+            self,
+        ) -> FlextAuthProtocolsAuthProvider.ProviderMetadata | None: ...
 
     @runtime_checkable
     class ProviderRegistry(Protocol):

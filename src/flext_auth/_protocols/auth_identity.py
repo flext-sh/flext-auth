@@ -20,14 +20,14 @@ class FlextAuthProtocolsAuthIdentity:
     """Protocol namespace for identities and identity managers."""
 
     @runtime_checkable
-    class Identity(p.Service[bool], Protocol):
+    class Identity(p.HasModelDump, Protocol):
         """Protocol for identity/user-like objects in authentication.
 
         Structural typing interface for identity objects. Models implement
         this protocol through attribute matching (structural typing).
         """
 
-        id: str
+        unique_id: str
         "Unique identity identifier."
         name: str
         "Identity name/username."
@@ -41,6 +41,13 @@ class FlextAuthProtocolsAuthIdentity:
         "Failed login attempts count."
         locked_until: t.Auth.DateTimeValue
         "Lock expiration time (datetime.min means not locked)."
+        last_access: t.Auth.DateTimeValue
+        credential_hash: str
+        token: str
+        session_id: str
+        permissions: t.StrSequence
+
+        def with_successful_access(self) -> None: ...
 
         @property
         def email(self) -> str:
@@ -109,6 +116,22 @@ class FlextAuthProtocolsAuthIdentity:
     @runtime_checkable
     class IdentityManager(Protocol):
         """Protocol for identity manager mutation used by identity services."""
+
+        def fetch_user(
+            self, user_id: str
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
+
+        def fetch_user_by_username(
+            self, username: str
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
+
+        def create_user(
+            self,
+            username: str,
+            email: str,
+            password_hash: str,
+            roles: t.StrSequence | None = None,
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
 
         def update_user(
             self,

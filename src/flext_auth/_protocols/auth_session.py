@@ -8,12 +8,39 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
+from flext_api import p
+
 if TYPE_CHECKING:
     from flext_auth import t
 
 
 class FlextAuthProtocolsAuthSession:
     """Protocol namespace for tokens and authentication responses."""
+
+    @runtime_checkable
+    class Session(p.HasModelDump, Protocol):
+        """Persisted session capability consumed by application orchestration."""
+
+        @property
+        def unique_id(self) -> str: ...
+
+        @property
+        def token(self) -> str: ...
+
+    @runtime_checkable
+    class SessionManager(Protocol):
+        """Session storage operations consumed by auth services."""
+
+        def cleanup_expired_sessions(self) -> p.Result[int]: ...
+
+        def create_session(
+            self,
+            user_id: str,
+            token: str,
+            expires_in_minutes: int = ...,
+            ip_address: str | None = None,
+            user_agent: str | None = None,
+        ) -> p.Result[FlextAuthProtocolsAuthSession.Session]: ...
 
     @runtime_checkable
     class Token(Protocol):

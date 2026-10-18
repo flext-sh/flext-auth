@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import Annotated, ClassVar
+from typing import Annotated
 
 from flext_api import m, u
 
@@ -86,18 +86,23 @@ class FlextAuthModelsAuthResponse:
     # REGISTRY WRAPPER MODELS - Internal registry wrappers
     # =========================================================================
 
-    class ProviderWrapper(m.Value):
-        """Wrapper for auth provider instances."""
-
-        model_config: ClassVar[m.ConfigDict] = m.ConfigDict(
-            arbitrary_types_allowed=True,
-        )
+    class ProviderWrapper(m.ContractModel):
+        """One registration preserving provider identity, config and metadata."""
 
         category: Annotated[str, u.Field(description="Provider category")]
-        provider: Annotated[
-            p.Auth.FlextAuthBaseProvider,
-            u.Field(description="Provider instance"),
-        ]
+        provider: t.Port[p.Auth.FlextAuthBaseProvider] = u.Field(
+            exclude=True,
+            description="Provider instance, retained by identity.",
+        )
+        configuration: t.ConfigurationMapping | None = u.Field(
+            default=None,
+            description="Validated provider configuration.",
+        )
+        metadata: t.Port[p.Auth.ProviderMetadata | None] = u.Field(
+            default=None,
+            exclude=True,
+            description="Original domain metadata of this provider registration.",
+        )
 
     class ConfigWrapper(m.Value):
         """Protocol-conformant wrapper for settings data."""
