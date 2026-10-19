@@ -13,10 +13,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth.services._auth_lifecycle import FlextAuthApplicationLifecycle
-    from flext_auth.services._provider_builtin import (
-        FlextAuthProviderBuiltinRegistration,
-    )
     from flext_auth.services.auth_service import FlextAuthApplicationService
     from flext_auth.services.identity_service import FlextAuthIdentityService
     from flext_auth.services.provider_service import FlextAuthProviderService
@@ -24,10 +20,8 @@ if TYPE_CHECKING:
 
 
 __all__: tuple[str, ...] = (
-    "FlextAuthApplicationLifecycle",
     "FlextAuthApplicationService",
     "FlextAuthIdentityService",
-    "FlextAuthProviderBuiltinRegistration",
     "FlextAuthProviderService",
     "FlextAuthSessionService",
 )
@@ -36,10 +30,8 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
-        "FlextAuthApplicationLifecycle": "._auth_lifecycle",
         "FlextAuthApplicationService": ".auth_service",
         "FlextAuthIdentityService": ".identity_service",
-        "FlextAuthProviderBuiltinRegistration": "._provider_builtin",
         "FlextAuthProviderService": ".provider_service",
         "FlextAuthSessionService": ".session_service",
     }),
