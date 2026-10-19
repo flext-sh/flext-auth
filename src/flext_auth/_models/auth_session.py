@@ -20,17 +20,17 @@ class FlextAuthModelsAuthSession:
     class AuthSession(m.Entity):
         """Generic authentication token entity."""
 
-        identity_id: Annotated[str, u.Field(..., description="Identity ID")]
-        token: Annotated[str, u.Field(..., description="Token value", exclude=True)]
-        expires_at: Annotated[datetime, u.Field(..., description="Expiration time")]
-        token_type: Annotated[str, u.Field(description="Token type")] = (
+        identity_id: Annotated[str, m.Field(..., description="Identity ID")]
+        token: Annotated[str, m.Field(..., description="Token value", exclude=True)]
+        expires_at: Annotated[datetime, m.Field(..., description="Expiration time")]
+        token_type: Annotated[str, m.Field(description="Token type")] = (
             c.Auth.TokenTypes.BEARER.value
         )
-        session_id: Annotated[str, u.Field(description="Session ID")] = ""
-        is_revoked: Annotated[bool, u.Field(description="Revoked status")] = False
+        session_id: Annotated[str, m.Field(description="Session ID")] = ""
+        is_revoked: Annotated[bool, m.Field(description="Revoked status")] = False
         refresh_token: Annotated[
             str,
-            u.Field(description="Refresh token", exclude=True),
+            m.Field(description="Refresh token", exclude=True),
         ] = ""
 
         @m.computed_field
