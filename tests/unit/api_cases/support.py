@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from flext_auth import FlextAuth, m
+from flext_auth import FlextAuth
 from tests import TestsFlextAuthUtilities
 
 if TYPE_CHECKING:
-    from flext_auth import t
+    from flext_auth import p, t
 
 
 class TestsFlextAuthApiTestDataHelper:
@@ -21,36 +21,35 @@ class TestsFlextAuthApiTestDataHelper:
     UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "flext-auth-unit-" + "9f2k"
 
     @staticmethod
-    def registered_session() -> tuple[FlextAuth, m.Auth.AuthIdentity, t.JsonMapping]:
+    def registered_session() -> tuple[FlextAuth, p.Auth.Identity, t.StrMapping]:
         """Register and authenticate one identity through the public facade.
 
         Returns:
-            The resulting ``tuple[FlextAuth, m.Auth.AuthIdentity, t.JsonMapping]``.
+            The facade, its public identity result, and the submitted string fields.
 
         """
         auth = FlextAuth()
         test_data = TestsFlextAuthApiTestDataHelper.create_test_auth_data()
         register_result = auth.register_user(
-            username=str(test_data["username"]),
-            email=str(test_data["email"]),
-            password=str(test_data["password"]),
+            username=test_data["username"],
+            email=test_data["email"],
+            password=test_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]),
-            str(test_data["password"]),
+            test_data["username"],
+            test_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
-        TestsFlextAuthUtilities.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
         return auth, identity, test_data
 
     @staticmethod
-    def create_test_user_data() -> t.JsonMapping:
+    def create_test_user_data() -> t.StrMapping:
         """Create test user data.
 
         Returns:
-            The resulting ``t.JsonMapping``.
+            The string fields consumed by user registration.
 
         """
         return {
@@ -61,11 +60,11 @@ class TestsFlextAuthApiTestDataHelper:
         }
 
     @staticmethod
-    def create_test_auth_data() -> t.JsonMapping:
+    def create_test_auth_data() -> t.StrMapping:
         """Create test authentication data.
 
         Returns:
-            The resulting ``t.JsonMapping``.
+            The string fields consumed by authentication.
 
         """
         return {

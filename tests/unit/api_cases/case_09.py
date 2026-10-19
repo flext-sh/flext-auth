@@ -48,14 +48,14 @@ class TestsFlextAuthApiCase09:
         auth = FlextAuth()
         test_data = self._TestDataHelper.create_test_auth_data()
         register_result = auth.register_user(
-            username=str(test_data["username"]),
-            email=str(test_data["email"]),
-            password=str(test_data["password"]),
+            username=test_data["username"],
+            email=test_data["email"],
+            password=test_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_data["username"]),
-            str(test_data["password"]),
+            test_data["username"],
+            test_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
         identity = auth_result.value
@@ -80,15 +80,15 @@ class TestsFlextAuthApiCase09:
         test_auth_data = self._TestDataHelper.create_test_auth_data()
         tm.that(auth, none=False)
         register_result = auth.register_user(
-            username=str(test_user_data["username"]),
-            email=str(test_user_data["email"]),
-            password=str(test_user_data["password"]),
+            username=test_user_data["username"],
+            email=test_user_data["email"],
+            password=test_user_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(register_result, is_=r)
         TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]),
-            str(test_auth_data["password"]),
+            test_auth_data["username"],
+            test_auth_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(auth_result, is_=r)
         TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)

@@ -122,7 +122,7 @@ class TestsFlextAuthApiCase02:
     def test_default_provider_name() -> None:
         """Test default provider is set to jwt."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        providers = auth.registry.list_providers()
+        providers = auth.list_providers()
         TestsFlextAuthUtilities.Tests.Matchers.that(providers, has="jwt")
 
     @staticmethod

@@ -23,14 +23,9 @@ class TestsFlextAuthApi:
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     @staticmethod
-    def _fresh_auth() -> p.Auth.Service:
-        """Return an isolated FlextAuth with no seeded admin user."""
-        return FlextAuth.quick_start(create_admin_user=False)
-
-    @staticmethod
     def test_quick_start_exposes_public_service_properties() -> None:
         """quick_start yields a facade whose public services are available."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         tm.that(auth.identity_service, is_=p.Auth.IdentityService)
         tm.that(auth.session_service, is_=p.Auth.SessionService)
@@ -39,7 +34,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_settings_property_returns_injected_settings() -> None:
         """The settings property returns the exact settings instance supplied."""
-        settings = FlextAuthSettings.model_validate({})
+        settings = FlextAuthSettings()
 
         auth = FlextAuth(runtime_settings=settings)
 
@@ -54,18 +49,21 @@ class TestsFlextAuthApi:
         assert first.registry is not second.registry
 
     @staticmethod
-    def test_registry_list_providers_returns_a_list() -> None:
-        """registry.list_providers exposes a list contract."""
-        auth = TestsFlextAuthApi._fresh_auth()
+    def test_list_providers_exposes_the_registered_names() -> None:
+        """The public sequence names providers reachable through the same facade."""
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
-        providers = auth.registry.list_providers()
+        providers = auth.list_providers()
 
-        tm.that(providers, is_=list)
+        expected = tm.ok(auth.registry.list_plugins(c.Auth.REGISTRY_PROVIDERS_CATEGORY))
+        tm.that(providers, eq=expected)
+        for name in providers:
+            tm.ok(auth.fetch_provider(name))
 
     @staticmethod
     def test_register_user_succeeds_and_returns_identity() -> None:
         """Registering a valid user succeeds and returns the new identity."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         result = auth.register_user("validuser", "user@example.com", c.TEST_CREDENTIAL)
 
@@ -77,7 +75,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_register_user_normalizes_email_to_lowercase() -> None:
         """Email contact is normalized to lowercase on the returned identity."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         result = auth.register_user("mixeduser", "MixED@Example.COM", c.TEST_CREDENTIAL)
 
@@ -94,7 +92,7 @@ class TestsFlextAuthApi:
         role: str | None,
     ) -> None:
         """Registration succeeds whether role, roles, or neither is provided."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         result = auth.register_user(
             "roleuser",
@@ -109,7 +107,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_register_user_rejects_too_short_username() -> None:
         """A username below the minimum length fails with an error message."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         result = auth.register_user("ab", "short@example.com", c.TEST_CREDENTIAL)
 
@@ -119,7 +117,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_register_user_rejects_weak_password() -> None:
         """A password that is too short fails validation with an error."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         result = auth.register_user("weakuser", "weak@example.com", "weak")
 
@@ -130,7 +128,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_register_user_rejects_duplicate_username() -> None:
         """Registering an already-taken username fails; the first one wins."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         first = auth.register_user("dupuser", "dup1@example.com", c.TEST_CREDENTIAL)
         second = auth.register_user("dupuser", "dup2@example.com", c.TEST_CREDENTIAL)
@@ -142,7 +140,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_authenticate_with_valid_credentials_returns_identity() -> None:
         """Authenticating a registered user with the right password succeeds."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("authuser", "auth@example.com", c.TEST_CREDENTIAL)
 
         result = auth.authenticate({
@@ -156,7 +154,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_authenticate_with_wrong_password_fails() -> None:
         """Authenticating with an incorrect password fails with an error."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("authuser", "auth@example.com", c.TEST_CREDENTIAL)
 
         result = auth.authenticate({"username": "authuser", "password": "w" + "0" * 12})
@@ -177,7 +175,7 @@ class TestsFlextAuthApi:
         credentials: t.StrMapping,
     ) -> None:
         """Empty username or password fails before any provider dispatch."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         result = auth.authenticate(credentials)
 
@@ -187,7 +185,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_create_token_for_registered_user_returns_jwt() -> None:
         """create_token mints a three-segment JWT for a valid identity id."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
         registered = auth.register_user(
             "tokenuser",
             "token@example.com",
@@ -203,7 +201,7 @@ class TestsFlextAuthApi:
     @staticmethod
     def test_create_token_rejects_empty_identity_id() -> None:
         """create_token fails for an empty identity id with a clear error."""
-        auth = TestsFlextAuthApi._fresh_auth()
+        auth = FlextAuth.quick_start(create_admin_user=False)
 
         result = auth.create_token("")
 
