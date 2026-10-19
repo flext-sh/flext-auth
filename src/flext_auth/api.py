@@ -123,7 +123,12 @@ class FlextAuth(FlextAuthApplicationService, FlextAuthProviderService):
 
     @classmethod
     def quick_start(cls, *, create_admin_user: bool = True) -> Self:
-        """Compose the API and require requested admin provisioning to succeed."""
+        """Compose the API and require requested admin provisioning to succeed.
+
+        Returns:
+            The composed authentication API.
+
+        """
         auth = cls()
         if create_admin_user:
             auth.register_user(

@@ -22,7 +22,7 @@ class TestsFlextAuthRegistryComposition:
     def test_provider_credentials_preserve_secret_exclusion_and_lookup_failure(
         auth_api: p.Auth.Service,
     ) -> None:
-        """Credential validation stays secret-excluding without masking lookup errors."""
+        """Exclude credential secrets without masking provider lookup errors."""
         request = m.Auth.CredentialValidation(
             username="provider-user",
             password=c.TEST_CREDENTIAL,
