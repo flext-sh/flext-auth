@@ -32,16 +32,18 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         username: str,
         email: str,
         password_hash: str,
+        roles: t.StrSequence | None = None,
         **extra_fields: t.Scalar | t.StrSequence | datetime | None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.Identity]:
         """Create a new user.
 
         Args:
             username: Unique account name for the identity.
             email: Contact address, normalized to lowercase.
             password_hash: Pre-hashed credential to store.
-            **extra_fields: Optional identity extras such as roles,
-                permissions, or profile fields.
+            roles: Explicit roles, or the model-owned defaults when omitted.
+            **extra_fields: Optional identity extras such as permissions
+                or profile fields.
 
         Returns:
             The created identity entity; failure when the username or
@@ -55,10 +57,12 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
             for existing_user_data in self._users.values()
         )
         if duplicate_identity_exists:
-            return r[m.Auth.AuthIdentity].fail("Identity already exists")
+            return r[p.Auth.Identity].fail("Identity already exists")
 
         user_id = str(uuid4())
         now = u.now()
+        if roles is not None:
+            extra_fields["roles"] = roles
         normalized_identity_extras = self.IdentityExtras.model_validate(
             extra_fields,
         ).model_dump(exclude_none=True)
@@ -89,7 +93,7 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
             "updated_at": now,
         }
         self._users[username] = storage_data
-        return r[m.Auth.AuthIdentity].ok(user)
+        return r[p.Auth.Identity].ok(user)
 
 
 __all__: list[str] = ["FlextAuthUserManagerCreate"]

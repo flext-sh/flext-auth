@@ -164,8 +164,7 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
         "status": c.Status.SUCCESS.value,
         "message": "Authentication successful",
-        # Null sentinel in response template; "token" in key trips B105.
-        "token_type": None,  # nosec B105 - null sentinel in response template
+        "token_type": None,
     })
     "Template for successful authentication responses."
 
