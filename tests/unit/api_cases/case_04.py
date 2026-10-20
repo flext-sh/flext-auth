@@ -23,12 +23,12 @@ class TestsFlextAuthApiCase04:
         username = "beareruser"
         password = c.TEST_CREDENTIAL
         register_result = auth.register_user(username, "bearer@example.com", password)
-        tm.that(register_result.success, eq=True)
+        tm.ok(register_result.success)
         identity = register_result.value
         auth_result = auth.authenticate_user(username, password)
-        tm.that(auth_result.success, eq=True)
+        tm.ok(auth_result.success)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        tm.that(token_result.success, eq=True)
+        tm.ok(token_result.success)
         tm.that(token_result.error, none=True)
 
     @staticmethod
@@ -44,13 +44,13 @@ class TestsFlextAuthApiCase04:
             "127.0.0.1",
             "test-user-agent",
         )
-        tm.that(auth_result.success, eq=True)
+        tm.ok(auth_result.success)
         identity = auth_result.value
         tm.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
             identity.unique_id,
         )
-        tm.that(sessions_result.success, eq=True)
+        tm.ok(sessions_result.success)
         sessions = sessions_result.value
         tm.that(sessions, is_=list)
         tm.that(len(sessions), gte=0)
@@ -63,7 +63,7 @@ class TestsFlextAuthApiCase04:
         password = c.TEST_CREDENTIAL
         auth.register_user(username, "logout@example.com", password)
         auth_result = auth.authenticate_user(username, password)
-        tm.that(auth_result.success, eq=True)
+        tm.ok(auth_result.success)
         identity = auth_result.value
         tm.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
@@ -76,14 +76,14 @@ class TestsFlextAuthApiCase04:
                 logout_result = auth.session_service.session_manager.end_session_by_id(
                     session_id,
                 )
-                tm.that(logout_result.success, eq=True)
+                tm.ok(logout_result.success)
 
     @staticmethod
     def test_cleanup_expired_sessions() -> None:
         """Test cleanup of expired sessions."""
         auth: FlextAuth = FlextAuth()
         cleanup_result = auth.session_service.cleanup_expired_sessions()
-        tm.that(cleanup_result.success, eq=True)
+        tm.ok(cleanup_result.success)
         cleaned_count = cleanup_result.value
         tm.that(cleaned_count, is_=int)
         tm.that(cleaned_count, gte=0)
@@ -95,9 +95,9 @@ class TestsFlextAuthApiCase04:
         username = "syncuser"
         password = c.TEST_CREDENTIAL
         create_result = auth.register_user(username, "sync@example.com", password)
-        tm.that(create_result.success, eq=True)
+        tm.ok(create_result.success)
         auth_result = auth.authenticate_user(username, password)
-        tm.that(auth_result.success, eq=True)
+        tm.ok(auth_result.success)
 
     @staticmethod
     def test_quick_start_default() -> None:
@@ -132,9 +132,9 @@ class TestsFlextAuthApiCase04:
         auth.register_user(username, "lock@example.com", password)
         for _ in range(c.Auth.MAX_ATTEMPTS_DEFAULT):
             failed_auth = auth.authenticate_user(username, c.TEST_CREDENTIAL + "_wrong")
-            tm.that(not failed_auth.success, eq=True)
+            tm.ok(not failed_auth.success)
         locked_auth = auth.authenticate_user(username, password)
-        tm.that(not locked_auth.success, eq=True)
+        tm.ok(not locked_auth.success)
         tm.that(
             (
                 "locked" in (locked_auth.error or "").lower()
@@ -148,5 +148,5 @@ class TestsFlextAuthApiCase04:
         """Test password strength requirements."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("weakuser", "weak@example.com", "weak")
-        tm.that(not result.success, eq=True)
+        tm.ok(not result.success)
         tm.that(result.error, none=False)

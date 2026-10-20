@@ -26,7 +26,7 @@ class TestsFlextAuthRegistryComposition:
             username="provider-user",
             password=c.TEST_CREDENTIAL,
         )
-        tm.that("password" not in request.model_dump(), eq=True)
+        tm.ok("password" not in request.model_dump())
         expected = auth_api.fetch_provider("absent-provider")
         rejected = auth_api.authenticate_with_provider(
             request.username,
@@ -46,15 +46,15 @@ class TestsFlextAuthRegistryComposition:
         shared = FlextAuth(registry=auth_api.registry)
         provider = FlextAuthBasicProvider()
         tm.ok(auth_api.register_provider("custom", provider), eq=True)
-        tm.that(auth_api.registry is independent.registry, eq=False)
-        tm.that(shared.registry is auth_api.registry, eq=True)
-        tm.that(tm.ok(shared.fetch_provider("custom")) is provider, eq=True)
+        tm.fail(auth_api.registry is independent.registry)
+        tm.ok(shared.registry is auth_api.registry)
+        tm.ok(tm.ok(shared.fetch_provider("custom")) is provider)
         tm.fail(independent.fetch_provider("custom"))
         builtin = c.Auth.ProviderTypes.BASIC.value
         tm.ok(auth_api.unregister(builtin), eq=True)
         after_removal = FlextAuth(registry=auth_api.registry)
         tm.fail(after_removal.fetch_provider(builtin))
-        tm.that(tm.ok(after_removal.fetch_provider("custom")) is provider, eq=True)
+        tm.ok(tm.ok(after_removal.fetch_provider("custom")) is provider)
 
     @staticmethod
     def test_provider_identity_metadata_and_config_survive_registration(
@@ -76,12 +76,12 @@ class TestsFlextAuthRegistryComposition:
             ),
             eq=True,
         )
-        tm.that(tm.ok(auth_api.fetch_provider("custom")) is provider, eq=True)
-        tm.that(tm.ok(auth_api.fetch_metadata("custom")) is metadata, eq=True)
+        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is provider)
+        tm.ok(tm.ok(auth_api.fetch_metadata("custom")) is metadata)
         tm.that(tm.ok(auth_api.fetch_config("custom")), eq=configuration)
         registration = tm.ok(auth_api.fetch_registration("custom"))
-        tm.that(registration.provider is provider, eq=True)
-        tm.that(registration.metadata is metadata, eq=True)
+        tm.ok(registration.provider is provider)
+        tm.ok(registration.metadata is metadata)
         tm.that(registration.configuration, eq=configuration)
 
     @staticmethod
@@ -95,10 +95,10 @@ class TestsFlextAuthRegistryComposition:
         tm.ok(auth_api.register_provider("custom", first), eq=True)
         conflict = auth_api.register_provider("custom", second)
         tm.fail(conflict)
-        tm.that(tm.ok(auth_api.fetch_provider("custom")) is first, eq=True)
+        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is first)
         tm.ok(auth_api.unregister("custom"), eq=True)
         tm.ok(auth_api.register_provider("custom", second), eq=True)
-        tm.that(tm.ok(auth_api.fetch_provider("custom")) is second, eq=True)
+        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is second)
 
     @staticmethod
     def test_invalid_registration_input_and_unsupported_reconfiguration_preserve_record(
@@ -117,11 +117,11 @@ class TestsFlextAuthRegistryComposition:
                 "provider": provider,
                 "configuration": {"issuer": ["invalid-scalar"]},
             })
-        tm.that(tm.ok(auth_api.fetch_registration("custom")) is original, eq=True)
-        tm.that(tm.ok(auth_api.fetch_provider("custom")) is provider, eq=True)
+        tm.ok(tm.ok(auth_api.fetch_registration("custom")) is original)
+        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is provider)
         replacement = {"issuer": "replacement"}
         tm.fail(auth_api.update_config("custom", replacement))
-        tm.that(tm.ok(auth_api.fetch_registration("custom")) is original, eq=True)
+        tm.ok(tm.ok(auth_api.fetch_registration("custom")) is original)
         tm.that(tm.ok(auth_api.fetch_config("custom")), eq=configuration)
 
     @staticmethod
@@ -145,12 +145,12 @@ class TestsFlextAuthRegistryComposition:
         configuration = {**tm.ok(auth_api.fetch_config("jwt")), "issuer": issuer}
         tm.ok(auth_api.update_config("jwt", configuration), eq=True)
         replacement = tm.ok(auth_api.fetch_provider("jwt"))
-        tm.that(replacement is previous, eq=False)
+        tm.fail(replacement is previous)
         validator = FlextAuthJwtTokenValidator(replacement)
         current_token = tm.ok(auth_api.create_token(identity.unique_id))
         claims = tm.ok(validator.validate_token(current_token))
         tm.that(claims["iss"], eq=issuer)
-        tm.that(claims["iss"] != old_claims.get("iss"), eq=True)
+        tm.ok(claims["iss"] != old_claims.get("iss"))
         tm.ok(auth_api.session_service.validate_token(current_token))
 
     @staticmethod
@@ -190,11 +190,11 @@ class TestsFlextAuthRegistryComposition:
         original = tm.ok(auth_api.fetch_registration("locked"))
         rejected = auth_api.update_config("locked", configuration)
         tm.fail(rejected)
-        tm.that(rejected.exception is cause, eq=True)
+        tm.ok(rejected.exception is cause)
         tm.that(rejected.error, eq=failure.error)
         tm.that(rejected.error_data, eq=failure.error_data)
-        tm.that(tm.ok(auth_api.fetch_registration("locked")) is original, eq=True)
-        tm.that(tm.ok(auth_api.fetch_provider("locked")) is provider, eq=True)
+        tm.ok(tm.ok(auth_api.fetch_registration("locked")) is original)
+        tm.ok(tm.ok(auth_api.fetch_provider("locked")) is provider)
 
     @staticmethod
     def test_required_registry_port_is_validated_and_excluded() -> None:
@@ -204,7 +204,7 @@ class TestsFlextAuthRegistryComposition:
         with pytest.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({"registry": "invalid"})
         port = FlextAuthRegistry(registry=u.build_registry())
-        tm.that("registry" not in port.model_dump(), eq=True)
+        tm.ok("registry" not in port.model_dump())
         tm.that(
             "registry" not in port.model_json_schema().get("properties", {}), eq=True
         )

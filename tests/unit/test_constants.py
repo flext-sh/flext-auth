@@ -239,7 +239,7 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test exposed membership sets are immutable."""
         tm.that(valid_set, is_=frozenset)
-        tm.that(hasattr(valid_set, "add"), eq=False)
+        tm.fail(hasattr(valid_set, "add"))
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -250,7 +250,7 @@ class TestsFlextAuthConstants:
         mapping: Mapping[str, t.JsonValue],
     ) -> None:
         """Published mappings do not advertise a mutable interface."""
-        tm.that(isinstance(mapping, MutableMapping), eq=False)
+        tm.fail(isinstance(mapping, MutableMapping))
 
     # ----- Mapping contract: required keys and payload shape -----
 

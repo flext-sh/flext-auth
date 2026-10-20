@@ -69,7 +69,7 @@ class TestsFlextAuthSessionRealFlows:
             tm.that(audit, has="Token validation")
             tm.that(audit, has=identity.unique_id)
             for material in (token, refreshed.token, marker, "sensitive", token[:9]):
-                tm.that(material not in audit, eq=True)
+                tm.ok(material not in audit)
             tm.that(refreshed.user_id, eq=identity.unique_id)
             tm.that(refreshed, is_=p.Auth.Session)
         finally:
@@ -135,7 +135,7 @@ class TestsFlextAuthSessionRealFlows:
         """Test validate token rejects invalid token."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         invalid_result = auth.session_service.validate_token("invalid.jwt.token")
-        tm.that(invalid_result.success, eq=False)
+        tm.fail(invalid_result.success)
 
     @staticmethod
     def test_authenticate_user_and_create_token_sequence() -> None:

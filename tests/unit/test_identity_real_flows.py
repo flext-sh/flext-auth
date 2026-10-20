@@ -56,7 +56,7 @@ class TestsFlextAuthIdentityRealFlows:
         after_success = tm.ok(manager.fetch_user(identity.unique_id))
         tm.that(after_success.failed_attempts, eq=0)
         tm.that(after_success.last_access, eq=authenticated.last_access)
-        tm.that(after_success.last_access > identity.last_access, eq=True)
+        tm.ok(after_success.last_access > identity.last_access)
         tm.that(after_success.locked_until, eq=identity.locked_until)
         tm.that(authenticated.unique_id, eq=identity.unique_id)
         tm.fail(
