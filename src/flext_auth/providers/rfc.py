@@ -114,13 +114,13 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return r[bool].ok(value=True)
 
     @override
-    def authenticate(self, credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
+    def authenticate(self, _credentials: t.JsonMapping) -> p.Result[p.Auth.Token]:
         """Authenticate user with provided credentials.
 
         This is an abstract method that must be implemented by RFC-specific providers.
 
         Args:
-            credentials: Dictionary containing authentication credentials.
+            _credentials: Dictionary containing authentication credentials.
 
         Returns:
             r[p.Auth.Token]: Authentication token on success, error on failure
@@ -131,13 +131,13 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         )
 
     @override
-    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
+    def validate(self, _token: str | p.Auth.Token) -> p.Result[bool]:
         """Validate authentication token.
 
         This is an abstract method that must be implemented by RFC-specific providers.
 
         Args:
-            token: Token to validate
+            _token: Token to validate
 
         Returns:
             r[bool]: True if valid, False if invalid, error on failure
