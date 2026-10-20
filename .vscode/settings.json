@@ -1,7 +1,7 @@
 {
   "files.autoSave": "afterDelay",
   "python.analysis.diagnosticMode": "workspace",
-  "python.defaultInterpreterPath": "${workspaceFolder}/../.venv/bin/python",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
   "python.terminal.activateEnvInCurrentTerminal": true,
   "python.terminal.activateEnvironment": true,
   "ruff.configurationPreference": "filesystemFirst",
@@ -10,8 +10,7 @@
   "ruff.lint.preview": true,
   "shellcheck.useWorkspaceRootAsCwd": true,
   "python-envs.workspaceSearchPaths": [
-    "./.venv",
-    "./*/.venv"
+    "./.venv"
   ],
   "files.exclude": {
     "**/__pycache__": true,
@@ -29,6 +28,7 @@
     "**/.mimosa": true,
     "**/.mypy_cache": true,
     "**/.omo": true,
+    "**/.pylance_cache": true,
     "**/.pytest_cache": true,
     "**/.reports": true,
     "**/.ropeproject": true,
@@ -42,6 +42,7 @@
     "**/.turbo": true,
     "**/.venv": true,
     "**/.venv.*": true,
+    "**/*.egg-info": true,
     "**/_tmp_*": true,
     "**/*.bak": true,
     "**/*.orig": true,
@@ -52,7 +53,10 @@
     "**/node_modules": true,
     "**/protos": true,
     "**/site": true,
-    "**/target": true
+    "**/target": true,
+    "**/.pyrefly_cache": true,
+    "**/.tox": true,
+    "**/venv": true
   },
   "files.watcherExclude": {
     "**/__pycache__/**": true,
@@ -86,15 +90,19 @@
     "**/.venv.*/**": true,
     "**/*.egg-info/**": true,
     "**/_tmp_*/**": true,
-    "**/*.bak/**": true,
-    "**/*.orig/**": true,
-    "**/*.rej/**": true,
-    "**/*.swp/**": true,
+    "**/*.bak": true,
+    "**/*.orig": true,
+    "**/*.rej": true,
+    "**/*.swp": true,
     "**/build/**": true,
     "**/dist/**": true,
     "**/node_modules/**": true,
     "**/protos/**": true,
-    "**/target/**": true
+    "**/site/**": true,
+    "**/target/**": true,
+    "**/.pyrefly_cache/**": true,
+    "**/.tox/**": true,
+    "**/venv/**": true
   },
   "search.exclude": {
     "**/__pycache__": true,
@@ -112,6 +120,7 @@
     "**/.mimosa": true,
     "**/.mypy_cache": true,
     "**/.omo": true,
+    "**/.pylance_cache": true,
     "**/.pytest_cache": true,
     "**/.reports": true,
     "**/.ropeproject": true,
@@ -125,6 +134,7 @@
     "**/.turbo": true,
     "**/.venv": true,
     "**/.venv.*": true,
+    "**/*.egg-info": true,
     "**/_tmp_*": true,
     "**/*.bak": true,
     "**/*.orig": true,
@@ -135,11 +145,14 @@
     "**/node_modules": true,
     "**/protos": true,
     "**/site": true,
-    "**/target": true
+    "**/target": true,
+    "**/.pyrefly_cache": true,
+    "**/.tox": true,
+    "**/venv": true
   },
   "terminal.integrated.env.linux": {
-    "PATH": "${workspaceFolder}/../.venv/bin:${env:PATH}",
-    "VIRTUAL_ENV": "${workspaceFolder}/../.venv"
+    "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}",
+    "VIRTUAL_ENV": "${workspaceFolder}/.venv"
   },
   "shellcheck.useRepositoryRootAsCwd": true,
   "python.analysis.autoFormatStrings": true,
@@ -147,13 +160,13 @@
   "python.analysis.completeFunctionParens": true,
   "python.analysis.findRefsInBackgroundThread": false,
   "python.analysis.generateWithTypeAnnotation": true,
-  "python.analysis.gotoOverrideCodeLens": false,
-  "python.analysis.includeAliasesFromUserFiles": false,
-  "python.analysis.includeExtraPathSymbolsInSymbolSearch": false,
+  "python.analysis.gotoOverrideCodeLens": true,
+  "python.analysis.includeAliasesFromUserFiles": true,
+  "python.analysis.includeExtraPathSymbolsInSymbolSearch": true,
   "python.analysis.includeVenvInWorkspaceSymbols": false,
   "python.analysis.useNearestConfiguration": true,
   "python.analysis.usePerProjectEnvironments": false,
-  "python.analysis.userFileIndexingLimit": 2000,
+  "python.analysis.userFileIndexingLimit": -1,
   "python.languageServer": "Pylance",
   "python.pyrefly.diagnosticMode": "workspace",
   "python.pyrefly.disableLanguageServices": true,
@@ -161,8 +174,8 @@
   "python.pyrefly.syncNotebooks": false,
   "python.testing.pytestEnabled": false,
   "python.testing.unittestEnabled": false,
-  "python.useEnvironmentsExtension": false,
-  "pyrefly.lspPath": "${workspaceFolder}/../.venv/bin/pyrefly",
+  "python.useEnvironmentsExtension": true,
+  "pyrefly.lspPath": "${workspaceFolder}/.venv/bin/pyrefly",
   "markdownlint.configFile": ".markdownlint.json",
   "git.autoRepositoryDetection": "subFolders",
   "git.detectSubmodules": true,
@@ -172,10 +185,10 @@
   "githubPullRequests.autoRepositoryDetection": true,
   "githubPullRequests.ignoreSubmodules": false,
   "ruff.interpreter": [
-    "${workspaceFolder}/../.venv/bin/python"
+    "${workspaceFolder}/.venv/bin/python"
   ],
   "ruff.path": [
-    "${workspaceFolder}/../.venv/bin/ruff"
+    "${workspaceFolder}/.venv/bin/ruff"
   ],
   "markdownlint.lintWorkspaceGlobs": [
     "!**/.git/**",
@@ -195,8 +208,7 @@
   "[python]": {
     "diffEditor.ignoreTrimWhitespace": true,
     "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave.source.organizeImports": "explicit"
+    "editor.formatOnSave": false
   },
   "yaml.disableSchemaDetection": [
     "**/.github/workflows/*.yml",
@@ -209,5 +221,37 @@
   "[markdown]": {
     "editor.defaultFormatter": "rvben.rumdl",
     "editor.formatOnSave": false
-  }
+  },
+  "editor.mouseWheelZoom": true,
+  "explorer.excludeGitIgnore": true,
+  "search.useIgnoreFiles": true,
+  "search.useGlobalIgnoreFiles": false,
+  "search.useParentIgnoreFiles": false,
+  "telemetry.feedback.enabled": false,
+  "python.analysis.addExtraPathsForPythonProjects": false,
+  "python.analysis.diagnosticsSource": "Pylance + Pyright",
+  "python.analysis.displayEnglishDiagnostics": true,
+  "python.analysis.enableAsyncProgram": false,
+  "python.analysis.enableExternalTypeServer": false,
+  "python.analysis.enableParallelIndexing": false,
+  "python.analysis.enablePydanticSupport": true,
+  "python.analysis.enablePyreflyShadowExperiment": false,
+  "python.analysis.enablePyreflyNotification": false,
+  "python.analysis.enablePyreflyNotificationForAll": false,
+  "python.analysis.enableSnippetExtraTelemetry": false,
+  "python.analysis.indexing": true,
+  "python.analysis.inlayHints.callArgumentNames": "all",
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.pytestParameters": true,
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.languageServerBackend": "default",
+  "python.analysis.languageServerMode": "default",
+  "python.analysis.logLevel": "Information",
+  "python.analysis.pyrightVersion": "fromEnvironment",
+  "python.analysis.referencesCodeLens": true,
+  "python.analysis.renameInDocstrings": true,
+  "python.analysis.showOnlyDirectDependenciesInAutoImport": false,
+  "python.analysis.supportDocstringTemplate": true,
+  "python.analysis.useDefaultExcludes": true,
+  "python.analysis.useLibraryCodeForTypes": true
 }
