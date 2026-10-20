@@ -90,7 +90,7 @@ auth = FlextAuth.quick_start(create_admin_user=False)
 
 # Passwords are hashed using bcrypt when registering users
 result = auth.register_user("alice", "alice@example.com", "SecurePassword123!")
-assert result.success
+tm.ok(result.success)
 ```
 
 **Security Settings**:

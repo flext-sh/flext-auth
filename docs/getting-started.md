@@ -338,7 +338,7 @@ def test_authentication_workflow() -> None:
 
     assert register_result.success
     identity = register_result.unwrap()
-    assert identity.name == "testuser"
+    tm.that(identity.name, eq="testuser")
 
     # Authenticate user
     auth_result = auth.authenticate_user("testuser", "testpass123")

@@ -6,10 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import r, tm
-
-from flext_auth import FlextAuth, m
-from tests import TestsFlextAuthUtilities
+from flext_auth import FlextAuth
+from tests import TestsFlextAuthUtilities, m, r, tm
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 

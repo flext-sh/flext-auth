@@ -465,7 +465,7 @@ class TestAuthIntegration:
 
         # Act
         result = auth.register_user("test", "test@example.com", "password123")
-        assert result.success
+        tm.ok(result.success)
 
         auth_result = auth.authenticate_user("test", "password123")
         assert auth_result.success
