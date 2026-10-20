@@ -127,7 +127,8 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
 
         """
         return r[p.Auth.Token].fail(
-            "RFC provider authenticate() must be implemented by subclass",
+            "RFC provider authenticate() must be implemented by subclass: "
+            f"{_credentials!r}",
         )
 
     @override
@@ -143,7 +144,9 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        return r[bool].fail("RFC provider validate() must be implemented by subclass")
+        return r[bool].fail(
+            f"RFC provider validate() must be implemented by subclass: {_token!r}",
+        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthRfcProvider"]
