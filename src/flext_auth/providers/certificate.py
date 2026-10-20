@@ -41,25 +41,17 @@ class FlextAuthCertificateProvider(
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        if isinstance(token, str):
-            token_value = token
-        else:
-            token_protocol: p.Auth.Token = token
-            token_value = token_protocol.token
-        return self.validate_token(token_value)
+        _ = token
+        return self.validate_token()
 
     @staticmethod
-    def validate_token(token: str) -> p.Result[bool]:
+    def validate_token() -> p.Result[bool]:
         """Validate authentication token.
-
-        Args:
-            token: Token to validate
 
         Returns:
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        _ = token
         return r[bool].fail("Not implemented")
 
 

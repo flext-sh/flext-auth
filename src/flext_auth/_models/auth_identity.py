@@ -70,7 +70,7 @@ class FlextAuthModelsAuthIdentity:
         )
         session_id: Annotated[str, m.Field(description="Session ID")] = ""
 
-        @u.model_validator(mode="before")
+        @m.model_validator(mode="before")
         @classmethod
         def normalize_token_claims[TPayload](
             cls,

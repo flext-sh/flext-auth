@@ -33,7 +33,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
         token: str | None = None
         session_id: str | None = None
 
-        @u.field_validator("roles", "permissions", mode="before")
+        @m.field_validator("roles", "permissions", mode="before")
         @classmethod
         def normalize_str_sequence(
             cls,
@@ -56,7 +56,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
                 return u.strict_str_sequence_adapter().validate_python(value)
             return []
 
-        @u.field_validator("failed_attempts", mode="before")
+        @m.field_validator("failed_attempts", mode="before")
         @classmethod
         def normalize_failed_attempts(
             cls,
@@ -79,7 +79,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
                 return int(value)
             return 0
 
-        @u.field_validator("locked_until", "last_access", mode="before")
+        @m.field_validator("locked_until", "last_access", mode="before")
         @classmethod
         def normalize_datetime(
             cls,
