@@ -1,9 +1,5 @@
 Infra:
   codegen:
-    vscode:
-      settings:
-      - - python.analysis.usePerProjectEnvironments
-        - false
     repository:
       namespace_scan_dirs:
       - src
