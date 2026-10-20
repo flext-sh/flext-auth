@@ -28,11 +28,9 @@ if TYPE_CHECKING:
         FlextAuthModelsAuthUserIdentityExtras,
     )
     from flext_auth._models.base import FlextAuthModelsBase
-    from flext_auth._models.config import FlextAuthConfigModels
 
 
 __all__: tuple[str, ...] = (
-    "FlextAuthConfigModels",
     "FlextAuthModelsAuth",
     "FlextAuthModelsAuthCredential",
     "FlextAuthModelsAuthIdentity",
@@ -48,7 +46,6 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
-        "FlextAuthConfigModels": ".config",
         "FlextAuthModelsAuth": ".auth",
         "FlextAuthModelsAuthCredential": ".auth_credential",
         "FlextAuthModelsAuthIdentity": ".auth_identity",

@@ -10,12 +10,29 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import p, t
+from flext_auth import p, r, t
 from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthProviderMixin
 
 
 class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
+
+    @staticmethod
+    def with_configuration(
+        configuration: t.ConfigurationMapping,
+    ) -> p.Result[p.Auth.FlextAuthBaseProvider]:
+        """Build a JWT replacement using this owner's complete dependency graph.
+
+        Args:
+            configuration: Provider configuration mapping with scalar values.
+
+        Returns:
+            A new JWT provider built from the supplied configuration.
+
+        """
+        return r[p.Auth.FlextAuthBaseProvider].ok(
+            FlextAuthJwtProvider(settings=configuration),
+        )
 
     @property
     def rfc_version(self) -> str:

@@ -106,7 +106,7 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     "Fallback principal name for Kerberos ticket data without a principal."
     SCOPE_SEPARATOR: Final[str] = " "
     "OAuth scope separator."
-    DEFAULT_TIMEOUT: Final[float] = float(c.DEFAULT_TIMEOUT_SECONDS)
+    DEFAULT_TIMEOUT: Final[int] = c.DEFAULT_TIMEOUT_SECONDS
     "Default request timeout in seconds."
     DEFAULT_MAX_RETRIES: Final[int] = 3
     "Default maximum retry attempts."
@@ -164,8 +164,7 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
         "status": c.Status.SUCCESS.value,
         "message": "Authentication successful",
-        # Null sentinel in response template; "token" in key trips B105.
-        "token_type": None,  # nosec B105 - null sentinel in response template
+        "token_type": None,
     })
     "Template for successful authentication responses."
 

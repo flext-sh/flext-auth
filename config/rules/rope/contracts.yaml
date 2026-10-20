@@ -1,0 +1,85 @@
+rules:
+  - id: auth-jwt-registry-selector-owner
+    phase: contract-normalization
+    pattern: '${lookup}("jwt")'
+    goal: '${lookup}(c.Auth.ProviderTypes.JWT.value)'
+    arguments:
+      lookup:
+        - name=flext_auth._registry.base.FlextAuthRegistryBase.fetch_provider
+        - name=flext_auth._registry.lookup.FlextAuthRegistryLookup.fetch_config
+        - name=flext_auth._registry.mutation.FlextAuthRegistryMutation.unregister
+        - name=flext_auth._protocols.auth_provider.FlextAuthProtocolsAuthProvider.ProviderRegistry.fetch_provider
+        - name=flext_auth._protocols.auth_provider.FlextAuthProtocolsAuthProvider.ProviderRegistry.fetch_config
+        - name=flext_auth._protocols.auth_provider.FlextAuthProtocolsAuthProvider.ProviderRegistry.unregister
+    imports:
+      c: from flext_auth import c
+    bindings:
+      c.Auth.ProviderTypes.JWT: flext_auth._constants.auth_enums.FlextAuthConstantsAuthEnums.ProviderTypes.JWT
+  - id: auth-session-result-contract
+    phase: contract-normalization
+    pattern: '${result}[${model}]'
+    goal: '${result}[p.Auth.Session]'
+    arguments:
+      result:
+        - name=flext_core.result.FlextResult
+        - name=flext_core._protocols.result.FlextProtocolsResult.Result
+      model: name=flext_auth._models.auth_session.FlextAuthModelsAuthSession.AuthSession
+    imports:
+      p: from flext_auth import p
+    bindings:
+      p.Auth.Session: flext_auth._protocols.auth_session.FlextAuthProtocolsAuthSession.Session
+  - id: auth-registration-result-contract
+    phase: contract-normalization
+    pattern: '${result}[${model}]'
+    goal: '${result}[p.Auth.ProviderRegistration]'
+    arguments:
+      result:
+        - name=flext_core.result.FlextResult
+        - name=flext_core._protocols.result.FlextProtocolsResult.Result
+      model: name=flext_auth._models.auth_response.FlextAuthModelsAuthResponse.ProviderWrapper
+    imports:
+      p: from flext_auth import p
+    bindings:
+      p.Auth.ProviderRegistration: flext_auth._protocols.auth_provider.FlextAuthProtocolsAuthProvider.ProviderRegistration
+  - id: auth-credential-hashing-utility
+    phase: contract-normalization
+    pattern: '${hash}(${credential})'
+    goal: 'u.Auth.hash_password(${credential}, rounds=c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS)'
+    arguments:
+      hash: name=flext_auth._models.auth_credential.FlextAuthModelsAuthCredential.PasswordUtil.hash_password
+    imports:
+      u: from flext_auth import u
+      c: from flext_auth import c
+    bindings:
+      u.Auth.hash_password: flext_auth._utilities.auth_validation.FlextAuthUtilitiesAuthValidation.hash_password
+      c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS: flext_auth._constants.auth_security.FlextAuthConstantsAuthSecurity.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS
+  - id: auth-api-registry-provider-lookup
+    phase: contract-normalization
+    pattern: '${api}.registry.get'
+    goal: '${api}.fetch_provider'
+    arguments:
+      api: type=flext_auth.api.FlextAuth
+  - id: auth-api-registry-provider-list
+    phase: contract-normalization
+    pattern: '${api}.registry.list_providers'
+    goal: '${api}.list_providers'
+    arguments:
+      api: type=flext_auth.api.FlextAuth
+  - id: auth-protocol-registry-provider-list
+    phase: contract-normalization
+    pattern: '${api}.registry.list_providers'
+    goal: '${api}.list_providers'
+    arguments:
+      api: type=flext_auth._protocols.auth_service.FlextAuthProtocolsAuthService.Service
+  - id: auth-api-explicit-instance
+    phase: contract-normalization
+    pattern: '${api}.fetch_global()'
+    goal: '${api}()'
+    arguments:
+      api: name=flext_auth.api.FlextAuth
+  - id: auth-api-injected-settings
+    phase: contract-normalization
+    pattern: '${api}.with_settings(${settings})'
+    goal: '${api}(runtime_settings=${settings})'
+    arguments:
+      api: name=flext_auth.api.FlextAuth

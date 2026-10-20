@@ -316,8 +316,8 @@ class TestNewFeature:
         result = auth.register_user("test_user", "test@example.com", "SecurePass123!")
 
         # Assert
-        assert result.success
-        assert result.unwrap().name == "test_user"
+        tm.ok(result.success)
+        tm.that(result.unwrap().name, eq="test_user")
 ```
 
 ---

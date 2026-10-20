@@ -13,17 +13,15 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth._utilities import _managers
-    from flext_auth._utilities._managers.auth_managers_session import (
-        FlextAuthSessionManagers,
-    )
-    from flext_auth._utilities._managers.rate_limiter import (
+    from flext_auth._utilities import _managers as _managers
+    from flext_auth._utilities._managers import (
         FlextAuthRateLimiterManagers,
+        FlextAuthSessionManagers,
+        FlextAuthUserManagerCreate,
+        FlextAuthUserManagerRead,
+        FlextAuthUserManagers,
+        FlextAuthUserManagerWrite,
     )
-    from flext_auth._utilities._managers.user import FlextAuthUserManagers
-    from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
-    from flext_auth._utilities._managers.user_read import FlextAuthUserManagerRead
-    from flext_auth._utilities._managers.user_write import FlextAuthUserManagerWrite
     from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
     from flext_auth._utilities.auth_response import FlextAuthUtilitiesAuthResponse
     from flext_auth._utilities.auth_session import FlextAuthUtilitiesAuthSession

@@ -119,14 +119,17 @@ class TestsFlextAuthApiCase05:
     @staticmethod
     def test_flext_auth_initialization_with_overrides() -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
-        settings = FlextAuthSettings.model_validate({
-            "expiry_minutes": 120,
-            "hash_rounds": 10,
-            "secret_key": "s" + "0" * 40,
-        })
-        auth = FlextAuth(settings=settings)
+        settings = FlextAuthSettings(
+            Auth=FlextAuthSettings.AuthSettings(
+                expiry_minutes=120,
+                hash_rounds=10,
+                secret_key="s" * c.Auth.SECRET_MIN_LENGTH,
+            ),
+        )
+        auth = FlextAuth(runtime_settings=settings)
+        tm.that(auth.config is settings.Auth, eq=True)
         tm.that(auth.config.expiry_minutes, eq=120)
-        tm.that(auth.config.hash_rounds, eq=10)
+        tm.that(settings.Auth.hash_rounds, eq=10)
 
     @staticmethod
     def test_register_user_edge_cases() -> None:

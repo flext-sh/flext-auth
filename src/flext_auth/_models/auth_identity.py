@@ -29,46 +29,46 @@ class FlextAuthModelsAuthIdentity:
 
         name: Annotated[
             str,
-            u.Field(
+            m.Field(
                 ...,
                 min_length=c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH,
                 max_length=c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH,
                 description="Unique identity name",
             ),
         ]
-        contact: Annotated[str, u.Field(..., description="Contact info")]
+        contact: Annotated[str, m.Field(..., description="Contact info")]
         credential_hash: Annotated[
             str,
-            u.Field(description="Hashed credential", exclude=True),
+            m.Field(description="Hashed credential", exclude=True),
         ] = ""
-        full_name: Annotated[str, u.Field(description="Full name")] = ""
-        is_active: Annotated[bool, u.Field(description="Active status")] = True
-        roles: t.StrSequence = u.Field(
+        full_name: Annotated[str, m.Field(description="Full name")] = ""
+        is_active: Annotated[bool, m.Field(description="Active status")] = True
+        roles: t.StrSequence = m.Field(
             default_factory=lambda: [c.Auth.RoleTypes.USER.value],
             description="Roles",
         )
-        permissions: t.StrSequence = u.Field(
+        permissions: t.StrSequence = m.Field(
             default_factory=tuple,
             description="List of permissions assigned to the identity",
         )
         failed_attempts: Annotated[
             t.NonNegativeInt,
-            u.Field(description="Failed attempts"),
+            m.Field(description="Failed attempts"),
         ] = 0
-        locked_until: datetime = u.Field(
+        locked_until: datetime = m.Field(
             default_factory=lambda: datetime.min.replace(tzinfo=UTC),
             description="Lock time (datetime.min means not locked)",
         )
-        last_access: datetime = u.Field(
+        last_access: datetime = m.Field(
             default_factory=lambda: datetime.min.replace(tzinfo=UTC),
             description="Last access (datetime.min means never accessed)",
         )
 
         # Additional attributes expected by tests
-        token: Annotated[str, u.Field(description="Associated token", exclude=True)] = (
+        token: Annotated[str, m.Field(description="Associated token", exclude=True)] = (
             ""
         )
-        session_id: Annotated[str, u.Field(description="Session ID")] = ""
+        session_id: Annotated[str, m.Field(description="Session ID")] = ""
 
         @u.model_validator(mode="before")
         @classmethod

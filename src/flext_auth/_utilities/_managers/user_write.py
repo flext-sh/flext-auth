@@ -10,13 +10,14 @@ from typing import TYPE_CHECKING
 
 from flext_api import r, u
 
+from flext_auth import m
 from flext_auth._utilities._managers import FlextAuthUserManagerRead
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
     from datetime import datetime
 
-    from flext_auth import m, p, t
+    from flext_auth import p, t
 
 
 class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
@@ -122,13 +123,20 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         filtered_updates: t.Auth.ManagersUserData = {
             k: v for k, v in updates.items() if v is not None
         }
-        return self._find_user_by_id(user_id).map(
-            lambda ud: (
-                ud[1].update(filtered_updates),
-                ud[1].update({"updated_at": u.now()}),
-                self._create_identity_from_storage(ud[1]),
-            )[2],
+        lookup = self._find_user_by_id(user_id)
+        if lookup.failure:
+            return r[m.Auth.AuthIdentity].from_failure(lookup)
+        _, stored = lookup.value
+        filtered_updates["updated_at"] = u.now()
+        validated = lookup.map(
+            lambda _: self._create_identity_from_storage({
+                **stored,
+                **filtered_updates,
+            }),
         )
+        if validated.success:
+            stored.update(filtered_updates)
+        return validated
 
     @staticmethod
     def _apply_list_modification(
@@ -152,7 +160,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         """
         field_list_value = user_data.get(field)
         if not isinstance(field_list_value, list):
-            msg = f"u.Field '{field}' must be a list for modification"
+            msg = f"m.Field '{field}' must be a list for modification"
             raise TypeError(msg)
         if add and value not in field_list_value:
             field_list_value.append(value)

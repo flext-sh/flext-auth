@@ -20,14 +20,14 @@ class FlextAuthProtocolsAuthIdentity:
     """Protocol namespace for identities and identity managers."""
 
     @runtime_checkable
-    class Identity(p.Service[bool], Protocol):
+    class Identity(p.HasModelDump, Protocol):
         """Protocol for identity/user-like objects in authentication.
 
         Structural typing interface for identity objects. Models implement
         this protocol through attribute matching (structural typing).
         """
 
-        id: str
+        unique_id: str
         "Unique identity identifier."
         name: str
         "Identity name/username."
@@ -39,18 +39,15 @@ class FlextAuthProtocolsAuthIdentity:
         "Identity roles."
         failed_attempts: int
         "Failed login attempts count."
-        locked_until: t.Auth.DateTimeValue
+        locked_until: datetime
         "Lock expiration time (datetime.min means not locked)."
+        last_access: datetime
+        credential_hash: str
+        token: str
+        session_id: str
+        permissions: t.StrSequence
 
-        @property
-        def email(self) -> str:
-            """Alias for contact property (backward compatibility)."""
-            ...
-
-        @property
-        def username(self) -> str:
-            """Alias for name property (backward compatibility)."""
-            ...
+        def with_successful_access(self) -> FlextAuthProtocolsAuthIdentity.Identity: ...
 
         def locked(self) -> bool:
             """Check if identity is locked.
@@ -109,6 +106,22 @@ class FlextAuthProtocolsAuthIdentity:
     @runtime_checkable
     class IdentityManager(Protocol):
         """Protocol for identity manager mutation used by identity services."""
+
+        def fetch_user(
+            self, user_id: str
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
+
+        def fetch_user_by_username(
+            self, username: str
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
+
+        def create_user(
+            self,
+            username: str,
+            email: str,
+            password_hash: str,
+            roles: t.StrSequence | None = None,
+        ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
 
         def update_user(
             self,

@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import c, m, p, r, t
+from flext_auth import c, p, r, t
 from flext_auth._registry import FlextAuthRegistryBase
 
 
@@ -29,11 +29,6 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         """
         return self.has_provider(name)
 
-    def clear(self) -> None:
-        """Unregister every provider held in the registry."""
-        for name in self.list_providers():
-            self.unregister_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
-
     def find_by_capability(self, capability: str) -> p.Result[t.StrSequence]:
         """Find providers with specific capability.
 
@@ -44,11 +39,13 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             Names of registered providers declaring the capability.
 
         """
-        matching = [
-            name
-            for name in self.list_providers()
-            if self.has_capability(name, capability).value
-        ]
+        matching: list[str] = []
+        for name in self.list_providers():
+            result = self.has_capability(name, capability)
+            if result.failure:
+                return r[t.StrSequence].from_failure(result)
+            if result.value:
+                matching.append(name)
         return r[t.StrSequence].ok(matching)
 
     def fetch_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
@@ -62,54 +59,35 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             is unregistered or holds no valid settings.
 
         """
-        if not self.has_provider(name):
-            return r[t.ScalarMapping].fail(f"Provider '{name}' not registered")
-        config_result = self.fetch_plugin(c.Auth.REGISTRY_CONFIG_CATEGORY, name)
-        if config_result.failure:
-            return r[t.ScalarMapping].fail("No settings")
-        wrapper = config_result.value
-        settings = getattr(wrapper, "data", None)
+        result = self.fetch_registration(name)
+        if result.failure:
+            return r[t.ConfigurationMapping].from_failure(result)
+        settings = result.value.configuration
         if settings is None:
-            return r[t.ScalarMapping].fail("Invalid settings format")
-        return r[t.ScalarMapping].ok(settings)
+            return r[t.ConfigurationMapping].fail(
+                f"Provider '{name}' has no configuration"
+            )
+        return r[t.ConfigurationMapping].ok(settings)
 
-    def fetch_metadata(self, name: str) -> p.Result[m.Auth.Providers.Metadata]:
+    def fetch_metadata(self, name: str) -> p.Result[p.Auth.ProviderMetadata]:
         """Fetch provider metadata.
 
         Args:
             name: Registered provider name.
 
         Returns:
-            The stored metadata, or a default metadata record when the
-            provider is unregistered or stores none.
+            The original domain metadata; absent registrations or metadata fail.
 
         """
-        if not self.has_provider(name):
-            return r[m.Auth.Providers.Metadata].fail(
-                f"Provider '{name}' not registered",
-            )
-        metadata_result = self.fetch_plugin(c.Auth.REGISTRY_METADATA_CATEGORY, name)
-        if metadata_result.failure:
-            return r[m.Auth.Providers.Metadata].ok(
-                m.Auth.Providers.Metadata(
-                    name=name,
-                    version=c.Auth.PROVIDER_VERSION,
-                    capabilities=(),
-                    extras={},
-                ),
-            )
-        wrapper = metadata_result.value
-        metadata = getattr(wrapper, "data", None)
+        result = self.fetch_registration(name)
+        if result.failure:
+            return r[p.Auth.ProviderMetadata].from_failure(result)
+        metadata = result.value.metadata
         if metadata is None:
-            return r[m.Auth.Providers.Metadata].ok(
-                m.Auth.Providers.Metadata(
-                    name=name,
-                    version=c.Auth.PROVIDER_VERSION,
-                    capabilities=(),
-                    extras={},
-                ),
+            return r[p.Auth.ProviderMetadata].fail(
+                f"Provider '{name}' has no metadata",
             )
-        return r[m.Auth.Providers.Metadata].ok(metadata)
+        return r[p.Auth.ProviderMetadata].ok(metadata)
 
     def has_capability(self, name: str, capability: str) -> p.Result[bool]:
         """Check if provider has capability.
@@ -138,9 +116,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             Whether a provider is registered under the name.
 
         """
-        result = self.fetch_plugin(c.Auth.REGISTRY_PROVIDERS_CATEGORY, name)
-        success: bool = result.success
-        return success
+        return name in self.list_providers()
 
     def list_providers(self) -> t.StrSequence:
         """List registered provider names.
@@ -149,13 +125,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
             Names of all registered providers.
 
         """
-        result = self.list_plugins(c.Auth.REGISTRY_PROVIDERS_CATEGORY)
-        if result.failure:
-            return list[str]()
-        plugins = result.unwrap()
-        if isinstance(plugins, list):
-            return list(plugins)
-        return list[str]()
+        return self.registry.list_plugins(c.Auth.REGISTRY_PROVIDERS_CATEGORY).unwrap()
 
 
 __all__: list[str] = ["FlextAuthRegistryLookup"]

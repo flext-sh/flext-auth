@@ -16,14 +16,12 @@ if TYPE_CHECKING:
     from flext_auth._registry.base import FlextAuthRegistryBase
     from flext_auth._registry.lookup import FlextAuthRegistryLookup
     from flext_auth._registry.mutation import FlextAuthRegistryMutation
-    from flext_auth._registry.plugins import FlextAuthRegistryPlugins
 
 
 __all__: tuple[str, ...] = (
     "FlextAuthRegistryBase",
     "FlextAuthRegistryLookup",
     "FlextAuthRegistryMutation",
-    "FlextAuthRegistryPlugins",
 )
 
 install_lazy_exports(
@@ -33,7 +31,6 @@ install_lazy_exports(
         "FlextAuthRegistryBase": ".base",
         "FlextAuthRegistryLookup": ".lookup",
         "FlextAuthRegistryMutation": ".mutation",
-        "FlextAuthRegistryPlugins": ".plugins",
     }),
     public_exports=__all__,
 )

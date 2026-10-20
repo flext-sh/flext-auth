@@ -27,7 +27,7 @@ class FlextAuthOAuth2Introspection:
         form_payload: t.MutableStrMapping = {
             "token": token,
             # RFC 7662 wire literal, not a credential.
-            "token_type_hint": "access_token",  # nosec B105,
+            "token_type_hint": "access_token",
         }
         auth_method = self._token_endpoint_auth_method
         client_id = self.provider_config.client_id or ""

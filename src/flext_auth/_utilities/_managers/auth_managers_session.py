@@ -8,11 +8,9 @@ from __future__ import annotations
 
 from collections.abc import MutableMapping, MutableSequence, Sequence
 from datetime import datetime, timedelta
-from typing import ClassVar
 from uuid import uuid4
 
 from flext_api import e, r, u
-from flext_core import FlextContainer
 
 from flext_auth import m, p, t
 
@@ -25,8 +23,6 @@ class FlextAuthSessionManagers:
 
     """
 
-    _container_type: ClassVar[p.ContainerType] = FlextContainer
-
     class FlextAuthSessionManager:
         """In-memory session store keyed by generated session IDs."""
 
@@ -34,9 +30,6 @@ class FlextAuthSessionManagers:
             """Initialize the manager with an empty session store."""
             super().__init__()
             self.logger = u.fetch_logger(__name__)
-            self._dispatcher: p.Dispatcher = (
-                FlextAuthSessionManagers._container_type.shared().dispatcher().unwrap()
-            )
             self._sessions: MutableMapping[str, t.Auth.ManagersSessionData] = {}
 
         def cleanup_expired_sessions(self) -> p.Result[int]:
@@ -93,6 +86,7 @@ class FlextAuthSessionManagers:
             }
             self._sessions[session_id] = session_data
             session = m.Auth.AuthSession(
+                unique_id=session_id,
                 domain_events=[],
                 identity_id=str(session_data["identity_id"]),
                 token=str(session_data["session_token"]),

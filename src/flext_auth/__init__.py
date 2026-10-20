@@ -17,16 +17,7 @@ from flext_auth.__version__ import __version__
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, x
 
-    from flext_auth import (
-        _constants,
-        _models,
-        _protocols,
-        _registry,
-        _typings,
-        _utilities,
-        providers,
-        services,
-    )
+    from flext_auth import providers as providers, services as services
     from flext_auth.__version__ import (
         FlextAuthVersion,
         __author__,
@@ -70,12 +61,6 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "_constants",
-    "_models",
-    "_protocols",
-    "_registry",
-    "_typings",
-    "_utilities",
     "auth",
     "c",
     "config",
@@ -117,12 +102,6 @@ install_lazy_exports(
         "__title__": ".__version__",
         "__url__": ".__version__",
         "__version_info__": ".__version__",
-        "_constants": "._constants",
-        "_models": "._models",
-        "_protocols": "._protocols",
-        "_registry": "._registry",
-        "_typings": "._typings",
-        "_utilities": "._utilities",
         "auth": ".api",
         "c": ".constants",
         "config": "._config",

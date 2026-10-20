@@ -166,7 +166,7 @@ settings = FlextAuthSettings(
 )
 
 # Use custom configuration
-auth = FlextAuth(settings=settings)
+auth = FlextAuth(runtime_settings=settings)
 ```
 
 ---
@@ -251,7 +251,7 @@ container = FlextContainer()
 
 # Configure and register
 settings = FlextAuthSettings()
-auth_service = FlextAuth(settings=settings)
+auth_service = FlextAuth(runtime_settings=settings)
 container.bind("auth_service", auth_service)
 
 # Use from container
@@ -338,7 +338,7 @@ def test_authentication_workflow() -> None:
 
     assert register_result.success
     identity = register_result.unwrap()
-    assert identity.name == "testuser"
+    tm.that(identity.name, eq="testuser")
 
     # Authenticate user
     auth_result = auth.authenticate_user("testuser", "testpass123")

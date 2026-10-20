@@ -8,12 +8,40 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
+from flext_api import p
+
 if TYPE_CHECKING:
     from flext_auth import t
 
 
 class FlextAuthProtocolsAuthSession:
     """Protocol namespace for tokens and authentication responses."""
+
+    @runtime_checkable
+    class SessionManager(Protocol):
+        """Session storage operations consumed by auth services."""
+
+        def cleanup_expired_sessions(self) -> p.Result[int]: ...
+
+        def create_session(
+            self,
+            user_id: str,
+            token: str,
+            expires_in_minutes: int = ...,
+            ip_address: str | None = None,
+            user_agent: str | None = None,
+        ) -> p.Result[FlextAuthProtocolsAuthSession.Session]: ...
+
+        def get_active_sessions(
+            self,
+            user_id: str,
+        ) -> p.Result[t.SequenceOf[FlextAuthProtocolsAuthSession.Session]]: ...
+
+        def end_session(self, user_id: str) -> p.Result[bool]: ...
+
+        def end_session_by_id(self, session_id: str) -> p.Result[bool]: ...
+
+        def get_total_active_sessions(self) -> int: ...
 
     @runtime_checkable
     class Token(Protocol):
@@ -62,6 +90,16 @@ class FlextAuthProtocolsAuthSession:
         def user_id(self) -> str:
             """User identifier."""
             ...
+
+    @runtime_checkable
+    class Session(Token, p.HasModelDump, Protocol):
+        """Persisted identity over the existing token contract."""
+
+        @property
+        def unique_id(self) -> str: ...
+
+        @property
+        def session_id(self) -> str: ...
 
     @runtime_checkable
     class AuthenticationResponse(Protocol):

@@ -82,7 +82,7 @@ from flext_auth import FlextAuth, FlextAuthSettings
 container = FlextContainer()
 
 settings = FlextAuthSettings()
-auth_service = FlextAuth(settings=settings)
+auth_service = FlextAuth(runtime_settings=settings)
 container.bind("auth_service", auth_service)
 
 
@@ -418,7 +418,7 @@ flext_env = os.getenv("FLEXT_ENV", "development")
 
 # Create environment-specific configuration
 auth_config = FlextAuthSettings()
-auth = FlextAuth(settings=auth_config)
+auth = FlextAuth(runtime_settings=auth_config)
 u.Cli.info(f"Environment: {flext_env}")
 ```
 
@@ -440,7 +440,7 @@ class FlextAuthWorkspaceSettings(FlextSettings):
 
     def get_auth_service(self) -> p.Result[FlextAuth]:
         """Get configured authentication service."""
-        return r[FlextAuth].ok(FlextAuth(settings=self.auth_config))
+        return r[FlextAuth].ok(FlextAuth(runtime_settings=self.auth_config))
 ```
 
 ---
@@ -465,7 +465,7 @@ class TestAuthIntegration:
 
         # Act
         result = auth.register_user("test", "test@example.com", "password123")
-        assert result.success
+        tm.ok(result.success)
 
         auth_result = auth.authenticate_user("test", "password123")
         assert auth_result.success

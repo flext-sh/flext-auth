@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
+from flext_api import p
+
 from flext_auth import c, t
 
 if TYPE_CHECKING:
-    from flext_api import p
-
     from flext_auth._protocols import FlextAuthProtocolsAuthSession
 
 
@@ -20,17 +20,57 @@ class FlextAuthProtocolsAuthProvider:
     """Protocol namespace for provider registries and providers."""
 
     @runtime_checkable
+    class ConfigurableProvider(Protocol):
+        """Explicit lifecycle capability for providers owning their dependencies."""
+
+        def with_configuration(
+            self,
+            configuration: t.ConfigurationMapping,
+        ) -> p.Result[FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider]: ...
+
+    @runtime_checkable
+    class ProviderMetadata(p.HasModelDump, Protocol):
+        """Domain metadata preserved with the registered provider."""
+
+        @property
+        def name(self) -> str: ...
+
+        @property
+        def version(self) -> str: ...
+
+        @property
+        def capabilities(self) -> t.VariadicTuple[str]: ...
+
+        @property
+        def extras(self) -> t.JsonMapping: ...
+
+    @runtime_checkable
+    class ProviderRegistration(p.HasModelDump, Protocol):
+        """Single owned registration record in the canonical core registry."""
+
+        @property
+        def provider(self) -> FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider: ...
+
+        @property
+        def configuration(self) -> t.ConfigurationMapping | None: ...
+
+        @property
+        def metadata(
+            self,
+        ) -> FlextAuthProtocolsAuthProvider.ProviderMetadata | None: ...
+
+    @runtime_checkable
     class ProviderRegistry(Protocol):
         """Registry operations consumed by provider orchestration."""
 
-        def get(
+        def fetch_provider(
             self,
-            data: str,
+            name: str,
         ) -> p.Result[FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider]:
             """Resolve the registered provider by name.
 
             Args:
-                data: Registered provider name.
+                name: Registered provider name.
 
             Returns:
                 The provider instance; failure when unregistered.
@@ -51,7 +91,7 @@ class FlextAuthProtocolsAuthProvider:
             self,
             name: str,
             provider: FlextAuthProtocolsAuthProvider.FlextAuthBaseProvider,
-            *,
+            metadata: FlextAuthProtocolsAuthProvider.ProviderMetadata | None = None,
             configuration: t.ConfigurationMapping | None = None,
         ) -> p.Result[bool]:
             """Register the provided implementation under its name.
@@ -59,6 +99,7 @@ class FlextAuthProtocolsAuthProvider:
             Args:
                 name: Unique registration name for the provider.
                 provider: Provider instance to register.
+                metadata: Optional domain metadata associated with the provider.
                 configuration: Optional provider configuration mapping.
 
             Returns:
@@ -66,6 +107,22 @@ class FlextAuthProtocolsAuthProvider:
 
             """
             ...
+
+        def fetch_registration(
+            self, name: str
+        ) -> p.Result[FlextAuthProtocolsAuthProvider.ProviderRegistration]: ...
+
+        def fetch_config(self, name: str) -> p.Result[t.ConfigurationMapping]: ...
+
+        def fetch_metadata(
+            self, name: str
+        ) -> p.Result[FlextAuthProtocolsAuthProvider.ProviderMetadata]: ...
+
+        def update_config(
+            self, name: str, settings: t.ConfigurationMapping
+        ) -> p.Result[bool]: ...
+
+        def unregister(self, name: str) -> p.Result[bool]: ...
 
     @runtime_checkable
     class FlextAuthBaseProvider(Protocol):

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from flext_api import m, u
+from flext_api import m
 
 from flext_auth import c, t
 
@@ -21,7 +21,7 @@ class FlextAuthModelsAuthIdentityRequest:
 
         name: Annotated[
             str,
-            u.Field(
+            m.Field(
                 ...,
                 min_length=c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH,
                 max_length=c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH,
@@ -30,7 +30,7 @@ class FlextAuthModelsAuthIdentityRequest:
         ]
         contact: Annotated[
             t.NonEmptyStr,
-            u.Field(
+            m.Field(
                 ...,
                 pattern=c.Auth.PATTERN_EMAIL,
                 description="Contact info (email)",
@@ -38,15 +38,15 @@ class FlextAuthModelsAuthIdentityRequest:
         ]
         credential: Annotated[
             str,
-            u.Field(
+            m.Field(
                 ...,
                 min_length=c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH,
                 description="Credential (password/key)",
                 exclude=True,
             ),
         ]
-        full_name: Annotated[str, u.Field(description="Full name")] = ""
-        roles: t.StrSequence = u.Field(
+        full_name: Annotated[str, m.Field(description="Full name")] = ""
+        roles: t.StrSequence = m.Field(
             default_factory=lambda: [c.Auth.RoleTypes.USER.value],
             description="Roles",
         )

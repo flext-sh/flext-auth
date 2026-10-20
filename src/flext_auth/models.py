@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FLEXT Auth models facade.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -9,18 +10,17 @@ from __future__ import annotations
 from flext_api import FlextApiModels
 
 from flext_auth import t
-from flext_auth._models.auth import FlextAuthModelsAuth
-from flext_auth._models.auth_credential import FlextAuthModelsAuthCredential
-from flext_auth._models.auth_identity import FlextAuthModelsAuthIdentity
-from flext_auth._models.auth_identity_request import FlextAuthModelsAuthIdentityRequest
-from flext_auth._models.auth_provider_config import FlextAuthModelsAuthProviderConfig
-from flext_auth._models.auth_response import FlextAuthModelsAuthResponse
-from flext_auth._models.auth_session import FlextAuthModelsAuthSession
-from flext_auth._models.auth_user_identity_extras import (
+from flext_auth._models import (
+    FlextAuthModelsAuth,
+    FlextAuthModelsAuthCredential,
+    FlextAuthModelsAuthIdentity,
+    FlextAuthModelsAuthIdentityRequest,
+    FlextAuthModelsAuthProviderConfig,
+    FlextAuthModelsAuthResponse,
+    FlextAuthModelsAuthSession,
     FlextAuthModelsAuthUserIdentityExtras,
+    FlextAuthModelsBase,
 )
-from flext_auth._models.base import FlextAuthModelsBase
-from flext_auth._models.config import FlextAuthConfigModels
 
 
 class FlextAuthModels(FlextApiModels):
@@ -36,7 +36,6 @@ class FlextAuthModels(FlextApiModels):
         FlextAuthModelsAuthResponse,
         FlextAuthModelsAuthUserIdentityExtras,
         FlextAuthModelsBase,
-        FlextAuthConfigModels,
     ):
         """Authentication model namespace."""
 

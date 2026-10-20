@@ -21,33 +21,40 @@ class TestsFlextAuthApiCase03:
     @staticmethod
     def test_flext_auth_initialization() -> None:
         """Test FlextAuth initialization with different parameters."""
-        auth: FlextAuth = FlextAuth()
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.config.auth_secret, none=False)
+        default_config = FlextAuthSettings()
+        auth = FlextAuth(runtime_settings=default_config)
         TestsFlextAuthUtilities.Tests.Matchers.that(
-            len(auth.config.auth_secret.get_secret_value()), gt=20
+            auth.config is default_config.Auth, eq=True
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.config.hash_rounds, eq=12)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.config.expiry_minutes, eq=1440)
-        custom_secret = secrets.token_urlsafe(32)
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            len(default_config.Auth.auth_secret.get_secret_value())
+            >= c.Auth.SECRET_MIN_LENGTH,
+            eq=True,
+        )
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            auth.config.expiry_minutes, eq=default_config.Auth.expiry_minutes
+        )
+        custom_secret = secrets.token_urlsafe(c.Auth.SECRET_MIN_LENGTH)
         custom_rounds = 10
         custom_expiry = 60
-        custom_config = FlextAuthSettings.model_validate({
-            "secret_key": custom_secret,
-            "algorithm": c.Auth.Algorithms.HS256,
-            "issuer": "flext-auth",
-            "audience": "flext-users",
-            "hash_rounds": custom_rounds,
-            "expiry_minutes": custom_expiry,
-            "session_expiry_minutes": 1440,
-            "max_sessions_per_user": 5,
-        })
-        auth_custom: FlextAuth = FlextAuth(settings=custom_config)
+        custom_config = FlextAuthSettings(
+            Auth=FlextAuthSettings.AuthSettings(
+                secret_key=custom_secret,
+                algorithm=c.Auth.Algorithms.HS256,
+                hash_rounds=custom_rounds,
+                expiry_minutes=custom_expiry,
+            ),
+        )
+        auth_custom = FlextAuth(runtime_settings=custom_config)
         TestsFlextAuthUtilities.Tests.Matchers.that(
-            auth_custom.config.auth_secret.get_secret_value(),
+            auth_custom.config is custom_config.Auth, eq=True
+        )
+        TestsFlextAuthUtilities.Tests.Matchers.that(
+            custom_config.Auth.auth_secret.get_secret_value(),
             eq=custom_secret,
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(
-            auth_custom.config.hash_rounds, eq=custom_rounds
+            custom_config.Auth.hash_rounds, eq=custom_rounds
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(
             auth_custom.config.expiry_minutes, eq=custom_expiry

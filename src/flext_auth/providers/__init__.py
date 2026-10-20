@@ -13,10 +13,12 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth.providers import _mixins
-    from flext_auth.providers._mixins.codec import FlextAuthProviderCodecMixin
-    from flext_auth.providers._mixins.tokens import FlextAuthProviderTokenMixin
-    from flext_auth.providers._mixins.validation import FlextAuthProviderValidationMixin
+    from flext_auth.providers import _mixins as _mixins
+    from flext_auth.providers._mixins import (
+        FlextAuthProviderCodecMixin,
+        FlextAuthProviderTokenMixin,
+        FlextAuthProviderValidationMixin,
+    )
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider

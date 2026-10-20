@@ -6,87 +6,21 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, override
-
-from flext_core import FlextContainer
-
-from flext_auth import FlextAuthRegistry, FlextAuthSettings, c, m, p, r, settings, t, u
-from flext_auth.services import (
-    FlextAuthApplicationLifecycle,
-    FlextAuthIdentityService,
-    FlextAuthProviderService,
-    FlextAuthSessionService,
-)
+from flext_auth import c, m, p, r, t
+from flext_auth.services import FlextAuthProviderService
 
 
-class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
+class FlextAuthApplicationService(
+    FlextAuthProviderService, m.Auth.ApplicationPortOptions
+):
     """Authentication application service used by the API composition."""
 
-    _container_type: ClassVar[p.ContainerType] = FlextContainer
-    _registry: FlextAuthRegistry
-    _dispatcher: p.Dispatcher
-    _provider_service: FlextAuthProviderService
-    _identity_service: FlextAuthIdentityService
-    _session_service: FlextAuthSessionService
-    _auth_settings: FlextAuthSettings
-
-    def __init__(self, settings: p.Settings | None = None) -> None:
-        """Initialize with dependency injection and event bus.
-
-        Args:
-            settings: Optional settings payload overriding the global auth
-                settings.
-
-        """
-        resolved_settings = (
-            FlextAuthSettings.model_validate(settings.model_dump())
-            if settings is not None
-            else FlextAuthSettings.fetch_global()
-        )
-        self._auth_settings = resolved_settings
-        self._registry = FlextAuthRegistry()
-        self._dispatcher = self._container_type.shared().dispatcher().unwrap()
-        shared_managers = u.Auth.ServiceManagers(self._dispatcher)
-        self._provider_service = FlextAuthProviderService(
-            settings=resolved_settings,
-            registry=self._registry,
-        )
-        self._identity_service = FlextAuthIdentityService(
-            dispatcher=self._dispatcher,
-            managers=shared_managers,
-        )
-        self._session_service = FlextAuthSessionService(
-            provider_service=self._provider_service,
-            dispatcher=self._dispatcher,
-            managers=shared_managers,
-        )
-
     @property
-    def settings(self) -> FlextAuthSettings:
-        """The resolved auth settings bound to this facade."""
-        return self._auth_settings
-
-    @property
-    def config(self) -> FlextAuthSettings.AuthSettings:
+    def config(self) -> p.Auth.ApplicationConfig:
         """The namespaced auth configuration (``settings.Auth``)."""
-        return self._auth_settings.Auth
+        return self.settings.Auth
 
-    @property
-    def identity_service(self) -> FlextAuthIdentityService:
-        """The identity service handling credential resolution."""
-        return self._identity_service
-
-    @property
-    def registry(self) -> FlextAuthRegistry:
-        """The provider registry holding registered auth providers."""
-        return self._registry
-
-    @property
-    def session_service(self) -> FlextAuthSessionService:
-        """The session service managing authentication sessions."""
-        return self._session_service
-
-    def authenticate(self, credentials: t.StrMapping) -> p.Result[m.Auth.AuthIdentity]:
+    def authenticate(self, credentials: t.StrMapping) -> p.Result[p.Auth.Identity]:
         """Validate credentials mapping and dispatch to the identity service.
 
         Args:
@@ -97,13 +31,13 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             authentication is rejected.
 
         """
-        username = credentials.get("username") or ""
-        password = credentials.get("password") or ""
+        username = credentials.get("username")
+        password = credentials.get("password")
         if not username or not password:
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.Identity].fail(
                 "Invalid credentials: username and password required",
             )
-        return self._identity_service.authenticate_identity(username, password)
+        return self.identity_service.authenticate_identity(username, password)
 
     def authenticate_user(
         self,
@@ -111,7 +45,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         password: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.Identity]:
         """Authenticate and provision token + session for the user.
 
         Args:
@@ -125,30 +59,28 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             when authentication, token creation, or session creation fails.
 
         """
-        auth_result = self._identity_service.authenticate_identity(username, password)
+        auth_result = self.identity_service.authenticate_identity(username, password)
         if auth_result.failure:
             return auth_result
         identity = auth_result.value
-        token_result = self._session_service.generate_jwt_token(
+        token_result = self.session_service.generate_jwt_token(
             user_id=identity.unique_id,
-            expires_in_minutes=settings.Auth.expiry_minutes,
         )
         if token_result.failure:
-            return r[m.Auth.AuthIdentity].from_failure(token_result)
-        session_result = self._session_service.session_manager.create_session(
+            return r[p.Auth.Identity].from_failure(token_result)
+        session_result = self.session_service.session_manager.create_session(
             user_id=identity.unique_id,
             token=token_result.value,
-            expires_in_minutes=settings.Auth.session_expiry_minutes,
-            ip_address=ip_address or "",
-            user_agent=user_agent or "",
+            expires_in_minutes=self.config.session_expiry_minutes,
+            ip_address=ip_address,
+            user_agent=user_agent,
         )
         if session_result.failure:
-            return r[m.Auth.AuthIdentity].from_failure(session_result)
+            return r[p.Auth.Identity].from_failure(session_result)
         identity.token = token_result.value
         identity.session_id = session_result.value.unique_id
-        return r[m.Auth.AuthIdentity].ok(identity)
+        return auth_result
 
-    @override
     def register_user(
         self,
         username: str,
@@ -156,7 +88,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
         password: str,
         roles: t.StrSequence | None = None,
         role: str | None = None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.Identity]:
         """Register user with default USER role if none provided.
 
         Args:
@@ -176,7 +108,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
             user_roles = [role]
         else:
             user_roles = [c.Auth.RoleTypes.USER.value]
-        return self._identity_service.create_identity(
+        return self.identity_service.create_identity(
             name=username,
             contact=email,
             credential=password,
@@ -198,10 +130,7 @@ class FlextAuthApplicationService(FlextAuthApplicationLifecycle):
                 identity_id = identity
             case _:
                 return r[str].fail("Identity ID must be a non-empty string")
-        return self._session_service.generate_jwt_token(
-            user_id=identity_id,
-            expires_in_minutes=settings.Auth.expiry_minutes,
-        )
+        return self.session_service.generate_jwt_token(user_id=identity_id)
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthApplicationService"]
