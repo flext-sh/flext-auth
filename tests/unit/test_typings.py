@@ -32,22 +32,25 @@ class TestsFlextAuthTypings:
     def test_composes_flext_api_types_via_mro() -> None:
         # Arrange / Act / Assert: the facade IS a specialization of the API layer.
         """Test composes flext api types via mro."""
-        assert issubclass(FlextAuthTypes, FlextApiTypes)
+        tm.that(FlextAuthTypes, where=lambda value: issubclass(value, FlextApiTypes))
 
     @staticmethod
     def test_composes_flext_auth_types_via_mro() -> None:
         """Test composes flext auth types via mro."""
-        assert issubclass(FlextAuthTypes, FlextAuthTypes)
+        tm.that(FlextAuthTypes, where=lambda value: issubclass(value, FlextAuthTypes))
 
     @staticmethod
     def test_exposes_auth_domain_namespace() -> None:
         """Test exposes auth domain namespace."""
-        assert hasattr(TestsFlextAuthTypes, "Auth")
+        tm.that(TestsFlextAuthTypes, where=lambda value: hasattr(value, "Auth"))
 
     @staticmethod
     def test_auth_datetime_alias_resolves_to_datetime() -> None:
         """Test auth datetime alias resolves to datetime."""
-        assert TestsFlextAuthTypes.Auth.DateTimeValue.__value__ is datetime
+        tm.that(
+            TestsFlextAuthTypes.Auth.DateTimeValue.__value__,
+            where=lambda value: value is datetime,
+        )
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -91,7 +94,7 @@ class TestsFlextAuthTypings:
     ) -> None:
         # Assert: MRO composition keeps the upstream contract reachable.
         """Test upstream api types reachable through facade."""
-        assert hasattr(TestsFlextAuthTypes, inherited_type)
+        tm.that(TestsFlextAuthTypes, where=lambda value: hasattr(value, inherited_type))
 
     @staticmethod
     @pytest.mark.parametrize(

@@ -21,7 +21,7 @@ class TestsFlextAuthFixtures:
     class PolicyLockedJwtProvider(FlextAuthJwtProvider):
         """Real JWT provider whose explicit domain policy rejects reconfiguration."""
 
-        _configuration_failure: ClassVar[p.Result[p.Auth.FlextAuthBaseProvider]]
+        configuration_failure: ClassVar[p.Result[p.Auth.FlextAuthBaseProvider]]
 
         def __init__(
             self,
@@ -30,7 +30,7 @@ class TestsFlextAuthFixtures:
         ) -> None:
             """Retain the policy failure and otherwise use real JWT behavior."""
             super().__init__(settings=configuration)
-            TestsFlextAuthFixtures.PolicyLockedJwtProvider._configuration_failure = (
+            TestsFlextAuthFixtures.PolicyLockedJwtProvider.configuration_failure = (
                 failure
             )
 
@@ -46,7 +46,7 @@ class TestsFlextAuthFixtures:
 
             """
             _ = configuration
-            return TestsFlextAuthFixtures.PolicyLockedJwtProvider._configuration_failure
+            return TestsFlextAuthFixtures.PolicyLockedJwtProvider.configuration_failure
 
     @staticmethod
     @pytest.fixture

@@ -165,7 +165,10 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test enum construction round trips from wire value."""
         for member in enum_cls:
-            assert enum_cls(member.value) is member
+            tm.that(
+                enum_cls(member.value),
+                where=lambda value, member=member: value is member,
+            )
 
     # ----- Derivation invariants: frozensets mirror their StrEnum -----
 
@@ -219,7 +222,7 @@ class TestsFlextAuthConstants:
         high: int,
     ) -> None:
         """Test lower bound never exceeds its paired upper bound."""
-        assert low <= high
+        tm.that(low <= high, truth=True)
 
     # ----- Immutability guarantees of exposed collections -----
 

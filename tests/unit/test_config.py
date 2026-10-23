@@ -286,6 +286,7 @@ class TestsFlextAuthConfig:
     @staticmethod
     @pytest.mark.parametrize("nested_environment", [False, True])
     def test_yaml_policy_keeps_environment_and_parameter_precedence(
+        *,
         nested_environment: bool,
     ) -> None:
         """Native environment capabilities preserve YAML and parameter precedence."""

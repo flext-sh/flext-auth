@@ -164,6 +164,7 @@ class TestsFlextAuthSessionRealFlows:
     def test_injected_settings_own_token_and_session_lifetimes(
         expiry_minutes: int,
         session_expiry_minutes: int,
+        *,
         clone_settings: bool,
     ) -> None:
         """Both token entrypoints and stored sessions honor the injected settings."""
