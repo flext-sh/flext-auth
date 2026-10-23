@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings, c, m, t
-from tests import TestsFlextAuthUtilities, tm
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings, m, t
+from tests import TestsFlextAuthUtilities, c, tm
 
 
 class TestsFlextAuthConfig:
@@ -189,7 +189,7 @@ class TestsFlextAuthConfig:
         tm.fail(result.success)
         tm.that(result.error, none=False)
         tm.that(
-            "user" in (result.error or "").lower(),
+            c.ContextScope.USER in (result.error or "").lower(),
             eq=True,
         )
 

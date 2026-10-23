@@ -228,7 +228,7 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[m.
 
     return r[m.Dict].ok({
         "authenticated": True,
-        "user": identity.name,
+        c.ContextScope.USER: identity.name,
         "token": token_result.unwrap(),
     })
 
@@ -281,7 +281,7 @@ result = auth.register_user(
     username="charlie",
     email="charlie@example.com",
     password=os.environ["FLEXT_DEMO_PASSWORD"],
-    roles=["user"],
+    roles=[c.ContextScope.USER],
 )
 
 if result.success:

@@ -20,7 +20,10 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
 
     Example:
         >>> provider = FlextAuthLdapProvider()
-        >>> result = provider.authenticate({"username": "user", "password": "password"})
+        >>> result = provider.authenticate({
+        ...     "username": c.ContextScope.USER,
+        ...     "password": "password",
+        ... })
         >>> if result.success:
         ...     token = result.value
         ...     u.Cli.print(f"Authenticated with token: {token.token}")

@@ -8,10 +8,8 @@ from __future__ import annotations
 
 import time
 
-from flext_tests import r
-
 from flext_auth import FlextAuth, m
-from tests import TestsFlextAuthUtilities
+from tests import TestsFlextAuthUtilities, c, r
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 
@@ -92,7 +90,7 @@ class TestsFlextAuthApiCase10:
                 "username": "regular_user",
                 "email": "user@company.com",
                 "password": f"{credential}-regular",
-                "role": "user",
+                "role": c.ContextScope.USER,
             },
             {
                 "username": "guest_user",

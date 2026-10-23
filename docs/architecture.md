@@ -1056,7 +1056,7 @@ registry = FlextAuthRegistry()
 auth = FlextAuth()
 
 # Authenticate with default provider
-result = auth.authenticate({"username": "user", "password": "pass"})
+result = auth.authenticate({"username": c.ContextScope.USER, "password": "pass"})
 
 # List available providers
 providers = registry.list_providers()
@@ -1080,7 +1080,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 provider = FlextAuthJwtProvider(settings={})
 auth = FlextAuth.with_provider(provider)
-result = auth.authenticate({"username": "user", "password": "pass"})
+result = auth.authenticate({"username": c.ContextScope.USER, "password": "pass"})
 ```
 
 #### Pattern 4: Token Retry
@@ -1089,7 +1089,7 @@ result = auth.authenticate({"username": "user", "password": "pass"})
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-identity_result = auth.authenticate_user("user", "pass")
+identity_result = auth.authenticate_user(c.ContextScope.USER, "pass")
 if identity_result.success:
     token = identity_result.unwrap().token
 ```

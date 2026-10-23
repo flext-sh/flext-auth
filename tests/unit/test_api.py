@@ -85,7 +85,7 @@ class TestsFlextAuthApi:
     @staticmethod
     @pytest.mark.parametrize(
         ("roles", "role"),
-        [(None, "user"), (["admin"], None), (None, None)],
+        [(None, c.ContextScope.USER), (["admin"], None), (None, None)],
     )
     def test_register_user_accepts_role_variants(
         roles: list[str] | None,

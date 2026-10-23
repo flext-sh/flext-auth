@@ -53,7 +53,7 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     "Subject claim key."
     KEY_IDENTITY_ID: Final[str] = "identity_id"
     "Identity identifier claim key."
-    KEY_USER_ID: Final[str] = "user_id"
+    KEY_USER_ID: Final[str] = c.ContextKey.USER_ID
     "User identifier payload key."
     KEY_USERNAME: Final[str] = "username"
     "Username claim key."

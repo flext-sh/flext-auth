@@ -18,7 +18,7 @@ class TestsFlextAuthIdentityRealFlows:
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
     @staticmethod
-    @pytest.mark.parametrize("operation", ["change", "reset", "access"])
+    @pytest.mark.parametrize(c.ContextScope.OPERATION, ["change", "reset", "access"])
     def test_persisted_credential_and_access_state(operation: str) -> None:
         """Credentials and successful access remain visible after fresh reads."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -69,7 +69,7 @@ class TestsFlextAuthIdentityRealFlows:
 
     @staticmethod
     @pytest.mark.parametrize(
-        ("operation", "failure"),
+        (c.ContextScope.OPERATION, "failure"),
         [
             ("change", "incorrect"),
             ("change", "short"),

@@ -45,7 +45,7 @@ class FlextAuthAdvancedFeaturesExample:
             username="advanced_user",
             email="advanced@example.com",
             password=demo_password,
-            roles=["admin", "user"],
+            roles=["admin", c.ContextScope.USER],
         )
         if user_result.failure:
             return r[bool].from_failure(user_result)
@@ -67,9 +67,9 @@ class FlextAuthAdvancedFeaturesExample:
         """
         auth = FlextAuth()
         for username, roles in (
-            ("admin", ["admin", "user"]),
-            ("manager", ["manager", "user"]),
-            ("employee", ["user"]),
+            ("admin", ["admin", c.ContextScope.USER]),
+            ("manager", ["manager", c.ContextScope.USER]),
+            ("employee", [c.ContextScope.USER]),
         ):
             result = auth.register_user(
                 username,
@@ -92,7 +92,9 @@ class FlextAuthAdvancedFeaturesExample:
 
         """
         auth = FlextAuth()
-        password = FlextAuthAdvancedFeaturesExample._demo_credential("session")
+        password = FlextAuthAdvancedFeaturesExample._demo_credential(
+            c.ContextScope.SESSION
+        )
         user_result = auth.register_user("sessionuser", "session@example.com", password)
         if user_result.failure:
             return r[bool].from_failure(user_result)

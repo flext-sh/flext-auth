@@ -184,7 +184,7 @@ def login() -> Response:
     if auth_result.success:
         identity = auth_result.unwrap()
         session["token"] = identity.token
-        session["user"] = identity.name
+        session[c.ContextScope.USER] = identity.name
         return redirect(url_for("dashboard"))
     flash(f"Login failed: {auth_result.error}")
     return redirect(url_for("login_page"))
@@ -236,7 +236,7 @@ def login_handler(model: LoginInput) -> t.JsonValue:
     identity = result.unwrap()
     return {
         "authenticated": True,
-        "user": identity.name,
+        c.ContextScope.USER: identity.name,
         "token": identity.token,
     }
 

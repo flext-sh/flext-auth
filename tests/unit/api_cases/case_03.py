@@ -68,13 +68,13 @@ class TestsFlextAuthApiCase03:
             username="testuser",
             email="test@example.com",
             password=c.TEST_CREDENTIAL,
-            roles=["user"],
+            roles=[c.ContextScope.USER],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=True)
         user = result.value
         TestsFlextAuthUtilities.Tests.Matchers.that(user.name, eq="testuser")
         TestsFlextAuthUtilities.Tests.Matchers.that(user.contact, eq="test@example.com")
-        TestsFlextAuthUtilities.Tests.Matchers.that(user.roles, has="user")
+        TestsFlextAuthUtilities.Tests.Matchers.that(user.roles, has=c.ContextScope.USER)
         TestsFlextAuthUtilities.Tests.Matchers.that(user.is_active, eq=True)
 
     @staticmethod

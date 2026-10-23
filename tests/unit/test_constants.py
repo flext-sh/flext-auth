@@ -18,8 +18,8 @@ from enum import StrEnum
 
 import pytest
 
-from flext_auth import c, t
-from tests import tm
+from flext_auth import t
+from tests import c, tm
 
 
 class TestsFlextAuthConstants:
@@ -127,7 +127,7 @@ class TestsFlextAuthConstants:
             (c.Auth.ProviderTypes.KERBEROS, "kerberos"),
             (c.Auth.ProviderTypes.APIKEY, "apikey"),
             (c.Auth.RoleTypes.ADMIN, "admin"),
-            (c.Auth.RoleTypes.USER, "user"),
+            (c.Auth.RoleTypes.USER, c.ContextScope.USER),
             (c.Auth.RoleTypes.MODERATOR, "moderator"),
             (c.Auth.RoleTypes.GUEST, "guest"),
             (c.Auth.PermissionTypes.READ, "read"),

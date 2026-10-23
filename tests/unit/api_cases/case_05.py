@@ -29,21 +29,23 @@ class TestsFlextAuthApiCase05:
     def test_empty_email_registration() -> None:
         """Test registration with empty email."""
         auth: FlextAuth = FlextAuth()
-        result = auth.register_user("user", "", "Password123!")
+        result = auth.register_user(c.ContextScope.USER, "", "Password123!")
         tm.ok(not result.success)
 
     @staticmethod
     def test_empty_password_registration() -> None:
         """Test registration with empty password."""
         auth: FlextAuth = FlextAuth()
-        result = auth.register_user("user", "test@example.com", "")
+        result = auth.register_user(c.ContextScope.USER, "test@example.com", "")
         tm.ok(not result.success)
 
     @staticmethod
     def test_invalid_email_registration() -> None:
         """Test registration with invalid email."""
         auth: FlextAuth = FlextAuth()
-        result = auth.register_user("user", "invalid-email", "Password123!")
+        result = auth.register_user(
+            c.ContextScope.USER, "invalid-email", "Password123!"
+        )
         tm.ok(not result.success)
 
     @staticmethod
