@@ -9,7 +9,7 @@ from __future__ import annotations
 from flext_auth import c, m, p, r, s
 
 
-class FlextAuthRegistryBase(s, m.Auth.RegistryPortOptions):
+class FlextAuthRegistryBase(m.Auth.RegistryPortOptions, s):
     """Auth provider registry backed by `p.Registry`."""
 
     def fetch_registration(self, name: str) -> p.Result[p.Auth.ProviderRegistration]:

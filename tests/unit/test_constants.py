@@ -165,10 +165,7 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test enum construction round trips from wire value."""
         for member in enum_cls:
-            tm.that(
-                enum_cls(member.value),
-                where=lambda value: value is member,
-            )
+            tm.that(enum_cls(member.value) is member, eq=True)
 
     # ----- Derivation invariants: frozensets mirror their StrEnum -----
 

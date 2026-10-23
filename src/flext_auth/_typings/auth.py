@@ -10,7 +10,7 @@ from collections.abc import Callable, MutableMapping, MutableSequence
 from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
-from flext_api import t
+from flext_api import m as api_models, t
 
 from flext_auth import c
 
@@ -24,7 +24,7 @@ class FlextAuthTypesAuth:
     type TokenRequestType = c.Auth.TokenTypes | str
     type ProvidersKey = Annotated[
         str,
-        m.Field(
+        api_models.Field(
             min_length=1,
             max_length=c.Auth.VALIDATION_SHORT_NAME_MAX,
             pattern=c.PATTERN_IDENTIFIER_LOWERCASE,

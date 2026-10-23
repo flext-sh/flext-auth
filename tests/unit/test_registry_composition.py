@@ -203,7 +203,19 @@ class TestsFlextAuthRegistryComposition:
             FlextAuthRegistry.model_validate({})
         with pytest.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({"registry": "invalid"})
-        port = FlextAuthRegistry(registry=u.build_registry())
+        registry = u.build_registry()
+        with pytest.raises(c.ValidationError):
+            FlextAuthRegistry.model_validate({
+                "registry": registry,
+                "runtime_settings": "invalid",
+            })
+        with pytest.raises(c.ValidationError):
+            FlextAuthRegistry.model_validate({
+                "registry": registry,
+                "unexpected": True,
+            })
+        port = FlextAuthRegistry(registry=registry)
+        tm.ok(port.registry is registry)
         tm.ok("registry" not in port.model_dump())
         tm.that(
             "registry" not in port.model_json_schema().get("properties", {}), eq=True
