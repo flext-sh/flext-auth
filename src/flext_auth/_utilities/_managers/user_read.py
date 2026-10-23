@@ -14,7 +14,6 @@ from flext_auth import m, p, t
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
-    from datetime import datetime
 
 
 class FlextAuthUserManagerRead:
@@ -65,7 +64,7 @@ class FlextAuthUserManagerRead:
             The identity entity rebuilt from the storage fields.
 
         """
-        identity_data: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
+        identity_data: t.Auth.ManagersUserData = {
             field: storage_data[field]
             for field in m.Auth.AuthIdentity.model_fields
             if field in storage_data

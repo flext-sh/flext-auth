@@ -37,7 +37,8 @@ class FlextAuthProtocolsAuthService:
     class Settings(p.Settings, Protocol):
         """Auth namespace capability over the existing core settings contract."""
 
-        Auth: FlextAuthProtocolsAuthService.ApplicationConfig
+        @property
+        def Auth(self) -> FlextAuthProtocolsAuthService.ApplicationConfig: ...
 
     @runtime_checkable
     class ProviderService(Protocol):

@@ -130,7 +130,7 @@ class FlextAuthModelsAuthIdentity:
                     else c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN
                 )
                 contact = f"{identity_id}@{domain}"
-            roles_value = payload.get(c.Auth.KEY_ROLES)
+            roles_value: t.JsonPayload = payload.get(c.Auth.KEY_ROLES)
             if roles_value is None:
                 scope_value = payload.get(c.Auth.KEY_SCOPE)
                 scope_text = (

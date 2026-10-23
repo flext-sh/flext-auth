@@ -32,12 +32,12 @@ class TestsFlextAuthTypings:
     def test_composes_flext_api_types_via_mro() -> None:
         # Arrange / Act / Assert: the facade IS a specialization of the API layer.
         """Test composes flext api types via mro."""
-        tm.that(FlextAuthTypes, where=lambda value: issubclass(value, FlextApiTypes))
+        tm.that(FlextApiTypes in FlextAuthTypes.__mro__)
 
     @staticmethod
     def test_composes_flext_auth_types_via_mro() -> None:
         """Test composes flext auth types via mro."""
-        tm.that(FlextAuthTypes, where=lambda value: issubclass(value, FlextAuthTypes))
+        tm.that(FlextAuthTypes in FlextAuthTypes.__mro__)
 
     @staticmethod
     def test_exposes_auth_domain_namespace() -> None:

@@ -167,7 +167,7 @@ class TestsFlextAuthConstants:
         for member in enum_cls:
             tm.that(
                 enum_cls(member.value),
-                where=lambda value, member=member: value is member,
+                where=lambda value: value is member,
             )
 
     # ----- Derivation invariants: frozensets mirror their StrEnum -----
