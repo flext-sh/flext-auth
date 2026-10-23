@@ -131,12 +131,14 @@ package_name = "flext_auth"
 scan_dirs = ["src"]
 
 [tool.hatch.build.targets.wheel]
+exclude = ["/src/flext_auth/config"]
 only-include = ["src/flext_auth"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/flext_auth" = "flext_auth"
 
 [tool.hatch.build.targets.wheel.force-include]
+"src/flext_auth/config" = "flext_auth/config"
 "pyproject.toml" = "flext_auth/pyproject.toml"
 
 [tool.hatch.build.targets.sdist]
