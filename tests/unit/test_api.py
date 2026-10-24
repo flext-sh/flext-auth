@@ -162,7 +162,10 @@ class TestsFlextAuthApi:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("authuser", "auth@example.com", c.TEST_CREDENTIAL)
 
-        result = auth.authenticate({"username": "authuser", "password": "w" + "0" * 12})
+        result = auth.authenticate({
+            "username": "authuser",
+            "password": "w" + c.ParserBooleanToken.ZERO * 12,
+        })
 
         tm.fail(result)
         tm.that(result.error, truth=True)

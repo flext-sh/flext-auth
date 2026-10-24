@@ -297,10 +297,10 @@ from datetime import UTC, datetime
 
 from flext_cli import u
 
-from flext_auth import m as auth_m
+from flext_auth import m
 
 # Create session; the token is issued by the auth service, never inlined
-session = auth_m.Auth.Session(
+session = m.Auth.Session(
     identity_id="user-id",
     session_token=os.environ["FLEXT_DEMO_SESSION_TOKEN"],
     expires_at=datetime.now(UTC),

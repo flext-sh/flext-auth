@@ -249,7 +249,7 @@ class TestsFlextAuthConfig:
         "invalid_policy",
         [
             {"unexpected_policy": True},
-            {"jwt": {"min_secret_key_length": "1"}},
+            {"jwt": {"min_secret_key_length": c.ParserBooleanToken.ONE}},
             {"oauth2": {"flows": [False]}},
         ],
     )

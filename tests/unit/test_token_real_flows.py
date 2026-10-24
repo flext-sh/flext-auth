@@ -86,7 +86,7 @@ class TestsFlextAuthSessionRealFlows:
         extras = m.Auth.UserIdentityExtras.model_validate({
             "roles": [role],
             "permissions": ["profile.read"],
-            "failed_attempts": "1",
+            "failed_attempts": c.ParserBooleanToken.ONE,
             "locked_until": instant,
             "last_access": instant.isoformat(),
         })
