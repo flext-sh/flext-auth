@@ -98,7 +98,7 @@ class FlextAuthModelsAuthResponse:
             default=None,
             description="Validated provider configuration.",
         )
-        metadata: t.Port[p.Auth.ProviderMetadata | None] = m.Field(
+        metadata: t.Port[p.Auth.ProviderMetadata] | None = m.Field(
             default=None,
             exclude=True,
             description="Original domain metadata of this provider registration.",
