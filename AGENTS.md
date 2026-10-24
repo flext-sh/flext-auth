@@ -1,12 +1,13 @@
 # AGENTS.md — flext-auth
 
-> **Parent workspace law** lives in [`../AGENTS.md`](../AGENTS.md) — read it first.
-> Universal engineering core: `~/.agents/UNIVERSAL_CORE.md`. Composition: global
-> skills + parent/root `AGENTS.md` + this scope delta. Do not re-embed universal law.
->
-> **Standalone / independent mode:** when `../AGENTS.md` does not resolve, pin the
-> parent raw `AGENTS.md` URL to the same branch/release as this package (never
-> `main`): <https://raw.githubusercontent.com/flext-sh/flext/0.12.0-dev/AGENTS.md>
+Read the branch-matched [FLEXT root](../AGENTS.md) and its local flext-law through
+that root's authority entry point. In standalone mode resolve the same branch or
+release; a coincidental parent instruction file does not establish FLEXT authority.
+This file adds only this package's domain delta. Command routing, architecture
+and universal execution stay with their parent owners.
+
+Embedded AI Hub or Beads generated blocks are retired delivery material, not
+active local rules. Their withdrawal remains the publisher's responsibility.
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-BEGIN -->
 
@@ -16,28 +17,6 @@
 
 Enterprise authentication & authorization service. Provider-based, registry-driven
 extensibility.
-
-## Structure
-
-```text
-src/flext_auth/
-├── api.py            # FlextAuth composition root, application/provider services via MRO
-├── base.py
-├── providers/        # api-key, basic, certificate, jwt, ldap, oauth2/oidc, saml, kerberos, rfc
-├── services/         # auth_service, identity_service, provider_service, session_service
-├── _registry/        # base.py, lookup.py, mutation.py (provider domain operations)
-├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
-└── _config.py _settings.py _constants/ _models/ _protocols/ _utilities/
-```
-
-## Code Map
-
-| Symbol            | Kind    | Location                                 | Role                                            |
-| ----------------- | ------- | ---------------------------------------- | ----------------------------------------------- |
-| `FlextAuth`       | class   | `api.py`                                 | application/provider MRO composition root       |
-| `AuthService`     | class   | `services/auth_service.py`               | auth lifecycle                                  |
-| `ProviderService` | class   | `services/provider_service.py`           | provider orchestration                          |
-| registry          | modules | `_registry/{base,lookup,mutation}.py` | provider selection                              |
 
 ## Conventions (specific to this package)
 
@@ -60,18 +39,6 @@ src/flext_auth/
   unsupported providers fail without mutation. Token lookups are not cached.
 - Canonical reference for pure-declaration `_settings.py`: `@field_validator`
   normalization + `@computed_field @property` derived secret, nothing else.
-- Config/settings canonical pattern: ADR-012.
-- Codemod governance (ast-grep + make mod): ADR-014.
-
-## Commands
-
-Run from the workspace root (selector-free; the root dispatcher routes to every
-member — `PROJECT=` is not a root Make variable):
-
-```bash
-make check
-make test
-```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->
 
