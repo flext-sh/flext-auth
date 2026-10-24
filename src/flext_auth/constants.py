@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FlextAuth constants facade.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -10,7 +11,14 @@ from typing import TYPE_CHECKING
 
 from flext_api import FlextApiConstants
 
-from flext_auth._constants import FlextAuthConstantsAuth, FlextAuthConstantsBase
+from flext_auth._constants import (
+    FlextAuthConstantsAuth,
+    FlextAuthConstantsAuthClaims,
+    FlextAuthConstantsAuthEnums,
+    FlextAuthConstantsAuthSecurity,
+    FlextAuthConstantsAuthValues,
+    FlextAuthConstantsBase,
+)
 
 if TYPE_CHECKING:
     from flext_auth import t
@@ -19,7 +27,14 @@ if TYPE_CHECKING:
 class FlextAuthConstants(FlextApiConstants):
     """FlextAuth domain constants extending the API constants namespace."""
 
-    class Auth(FlextAuthConstantsBase, FlextAuthConstantsAuth):
+    class Auth(
+        FlextAuthConstantsAuth,
+        FlextAuthConstantsAuthValues,
+        FlextAuthConstantsAuthSecurity,
+        FlextAuthConstantsAuthClaims,
+        FlextAuthConstantsAuthEnums,
+        FlextAuthConstantsBase,
+    ):
         """Authentication constants namespace."""
 
 

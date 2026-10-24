@@ -88,11 +88,8 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return {"rfc", "validate"}
 
     @staticmethod
-    def supports_rfc_feature(feature: str) -> bool:
+    def supports_rfc_feature() -> bool:
         """Check if a specific RFC feature is supported.
-
-        Args:
-            feature: RFC feature name (e.g., "token_introspection", "pkce")
 
         Returns:
             bool: True if feature is supported, False otherwise
@@ -101,15 +98,11 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         RFC-specific feature support.
 
         """
-        _ = feature
         return False
 
     @staticmethod
-    def validate_rfc_compliance(operation: str) -> p.Result[bool]:
+    def validate_rfc_compliance() -> p.Result[bool]:
         """Validate that an operation follows RFC standards.
-
-        Args:
-            operation: Operation name to validate (e.g., "authenticate", "validate")
 
         Returns:
             r[bool]: True if compliant, False if not, error on failure
@@ -118,7 +111,6 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         RFC-specific validation logic.
 
         """
-        _ = operation
         return r[bool].ok(value=True)
 
     @override
@@ -135,7 +127,8 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
 
         """
         return r[p.Auth.Token].fail(
-            "RFC provider authenticate() must be implemented by subclass",
+            "RFC provider authenticate() must be implemented by subclass: "
+            f"{credentials!r}",
         )
 
     @override
@@ -151,7 +144,9 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        return r[bool].fail("RFC provider validate() must be implemented by subclass")
+        return r[bool].fail(
+            f"RFC provider validate() must be implemented by subclass: {token!r}",
+        )
 
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthRfcProvider"]

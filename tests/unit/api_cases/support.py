@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from flext_auth import FlextAuth
-from tests import TestsFlextAuthUtilities
+from tests import TestsFlextAuthUtilities, c
 
 if TYPE_CHECKING:
     from flext_auth import p, t
@@ -56,7 +56,7 @@ class TestsFlextAuthApiTestDataHelper:
             "username": "test_user",
             "email": "test@example.com",
             "password": TestsFlextAuthApiTestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
-            "role": "user",
+            "role": c.ContextScope.USER,
         }
 
     @staticmethod
@@ -82,7 +82,7 @@ class TestsFlextAuthApiTestDataHelper:
 
         """
         return {
-            "user_id": "user_123",
+            c.ContextKey.USER_ID: "user_123",
             "session_id": "session_123",
             "expires_at": "2025-12-31T23:59:59Z",
         }

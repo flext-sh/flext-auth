@@ -70,7 +70,7 @@ class FlextAuthModelsAuthIdentity:
         )
         session_id: Annotated[str, m.Field(description="Session ID")] = ""
 
-        @u.model_validator(mode="before")
+        @m.model_validator(mode="before")
         @classmethod
         def normalize_token_claims[TPayload](
             cls,
@@ -130,7 +130,7 @@ class FlextAuthModelsAuthIdentity:
                     else c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN
                 )
                 contact = f"{identity_id}@{domain}"
-            roles_value = payload.get(c.Auth.KEY_ROLES)
+            roles_value: t.JsonPayload = payload.get(c.Auth.KEY_ROLES)
             if roles_value is None:
                 scope_value = payload.get(c.Auth.KEY_SCOPE)
                 scope_text = (

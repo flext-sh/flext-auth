@@ -23,35 +23,37 @@ class TestsFlextAuthApiCase05:
         """Test registration with empty username."""
         auth: FlextAuth = FlextAuth()
         result = auth.register_user("", "empty@example.com", "Password123!")
-        tm.that(not result.success, eq=True)
+        tm.ok(not result.success)
 
     @staticmethod
     def test_empty_email_registration() -> None:
         """Test registration with empty email."""
         auth: FlextAuth = FlextAuth()
-        result = auth.register_user("user", "", "Password123!")
-        tm.that(not result.success, eq=True)
+        result = auth.register_user(c.ContextScope.USER, "", "Password123!")
+        tm.ok(not result.success)
 
     @staticmethod
     def test_empty_password_registration() -> None:
         """Test registration with empty password."""
         auth: FlextAuth = FlextAuth()
-        result = auth.register_user("user", "test@example.com", "")
-        tm.that(not result.success, eq=True)
+        result = auth.register_user(c.ContextScope.USER, "test@example.com", "")
+        tm.ok(not result.success)
 
     @staticmethod
     def test_invalid_email_registration() -> None:
         """Test registration with invalid email."""
         auth: FlextAuth = FlextAuth()
-        result = auth.register_user("user", "invalid-email", "Password123!")
-        tm.that(not result.success, eq=True)
+        result = auth.register_user(
+            c.ContextScope.USER, "invalid-email", "Password123!"
+        )
+        tm.ok(not result.success)
 
     @staticmethod
     def test_nonexistent_user_authentication() -> None:
         """Test authentication of non-existent user."""
         auth: FlextAuth = FlextAuth()
         auth_result = auth.authenticate_user("nonexistent", "password")
-        tm.that(not auth_result.success, eq=True)
+        tm.ok(not auth_result.success)
         tm.that(auth_result.error, none=False)
         tm.that(auth_result.error or "", empty=False)
 
@@ -62,8 +64,8 @@ class TestsFlextAuthApiCase05:
         logout_result = auth.session_service.session_manager.end_session_by_id(
             "invalid_session_id",
         )
-        tm.that(not logout_result.success, eq=True)
-        tm.that(not logout_result.success, eq=True)
+        tm.ok(not logout_result.success)
+        tm.ok(not logout_result.success)
         tm.that((logout_result.error or ""), has="not found")
 
     @staticmethod
@@ -84,7 +86,7 @@ class TestsFlextAuthApiCase05:
                 "nonexistent_user",
             )
         )
-        tm.that(not nonexistent_result.success, eq=True)
+        tm.ok(not nonexistent_result.success)
         tm.that(nonexistent_result.error, none=False)
         tm.that((nonexistent_result.error or "").lower(), has="not found")
 
@@ -127,7 +129,7 @@ class TestsFlextAuthApiCase05:
             ),
         )
         auth = FlextAuth(runtime_settings=settings)
-        tm.that(auth.config is settings.Auth, eq=True)
+        tm.ok(auth.config is settings.Auth)
         tm.that(auth.config.expiry_minutes, eq=120)
         tm.that(settings.Auth.hash_rounds, eq=10)
 
@@ -140,7 +142,7 @@ class TestsFlextAuthApiCase05:
             email="invalid-email-format",
             password=c.TEST_CREDENTIAL,
         )
-        tm.that(not result.success, eq=True)
+        tm.ok(not result.success)
         error_msg = result.error or ""
         tm.that(
             (

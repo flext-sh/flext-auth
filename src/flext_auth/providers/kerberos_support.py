@@ -52,13 +52,8 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         @staticmethod
-        def validate_ticket(
-            _ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
+        def validate_ticket() -> p.Result[m.Auth.KerberosTicketData]:
             """Validate Kerberos ticket.
-
-            Args:
-                _ticket_data: Ticket data to validate.
 
             Returns:
                 A validated ticket record placeholder.
@@ -129,7 +124,8 @@ class FlextAuthKerberosSupport:
                 The validated ticket record.
 
             """
-            return self.provider.ticket_validator.validate_ticket(ticket_data)
+            _ = ticket_data
+            return self.provider.ticket_validator.validate_ticket()
 
     def _ticket_validator_callable(
         self,

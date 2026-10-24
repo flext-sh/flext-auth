@@ -228,7 +228,7 @@ def process_authentication_workflow(username: str, password: str) -> p.Result[m.
 
     return r[m.Dict].ok({
         "authenticated": True,
-        "user": identity.name,
+        c.ContextScope.USER: identity.name,
         "token": token_result.unwrap(),
     })
 
@@ -281,7 +281,7 @@ result = auth.register_user(
     username="charlie",
     email="charlie@example.com",
     password=os.environ["FLEXT_DEMO_PASSWORD"],
-    roles=["user"],
+    roles=[c.ContextScope.USER],
 )
 
 if result.success:
@@ -297,10 +297,10 @@ from datetime import UTC, datetime
 
 from flext_cli import u
 
-from flext_auth import m as auth_m
+from flext_auth import m
 
 # Create session; the token is issued by the auth service, never inlined
-session = auth_m.Auth.Session(
+session = m.Auth.Session(
     identity_id="user-id",
     session_token=os.environ["FLEXT_DEMO_SESSION_TOKEN"],
     expires_at=datetime.now(UTC),

@@ -38,7 +38,7 @@ class TestsFlextAuthApi:
 
         auth = FlextAuth(runtime_settings=settings)
 
-        assert auth.settings is settings
+        tm.that(auth.settings, where=lambda value: value is settings)
 
     @staticmethod
     def test_constructors_own_independent_registries() -> None:
@@ -46,7 +46,7 @@ class TestsFlextAuthApi:
         first = FlextAuth()
         second = FlextAuth()
 
-        assert first.registry is not second.registry
+        tm.that(first.registry, where=lambda value: value is not second.registry)
 
     @staticmethod
     def test_list_providers_exposes_the_registered_names() -> None:
@@ -70,7 +70,7 @@ class TestsFlextAuthApi:
         tm.ok(result)
         identity = result.value
         tm.that(identity.name, eq="validuser")
-        assert identity.unique_id
+        tm.that(identity.unique_id, truth=True)
 
     @staticmethod
     def test_register_user_normalizes_email_to_lowercase() -> None:
@@ -85,7 +85,7 @@ class TestsFlextAuthApi:
     @staticmethod
     @pytest.mark.parametrize(
         ("roles", "role"),
-        [(None, "user"), (["admin"], None), (None, None)],
+        [(None, c.ContextScope.USER), (["admin"], None), (None, None)],
     )
     def test_register_user_accepts_role_variants(
         roles: list[str] | None,
@@ -112,7 +112,7 @@ class TestsFlextAuthApi:
         result = auth.register_user("ab", "short@example.com", c.TEST_CREDENTIAL)
 
         tm.fail(result)
-        assert result.error
+        tm.that(result.error, truth=True)
 
     @staticmethod
     def test_register_user_rejects_weak_password() -> None:
@@ -123,7 +123,12 @@ class TestsFlextAuthApi:
 
         tm.fail(result)
         error_text = (result.error or "").lower()
-        assert "at least 8 characters" in error_text or "credential" in error_text
+        tm.that(
+            error_text,
+            where=lambda value: (
+                "at least 8 characters" in value or "credential" in value
+            ),
+        )
 
     @staticmethod
     def test_register_user_rejects_duplicate_username() -> None:
@@ -135,7 +140,7 @@ class TestsFlextAuthApi:
 
         tm.ok(first)
         tm.fail(second)
-        assert second.error
+        tm.that(second.error, truth=True)
 
     @staticmethod
     def test_authenticate_with_valid_credentials_returns_identity() -> None:
@@ -157,10 +162,13 @@ class TestsFlextAuthApi:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("authuser", "auth@example.com", c.TEST_CREDENTIAL)
 
-        result = auth.authenticate({"username": "authuser", "password": "w" + "0" * 12})
+        result = auth.authenticate({
+            "username": "authuser",
+            "password": "w" + c.ParserBooleanToken.ZERO * 12,
+        })
 
         tm.fail(result)
-        assert result.error
+        tm.that(result.error, truth=True)
 
     @staticmethod
     @pytest.mark.parametrize(

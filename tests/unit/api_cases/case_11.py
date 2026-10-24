@@ -79,8 +79,7 @@ class TestsFlextAuthApiCase11:
         TestsFlextAuthUtilities.Tests.Matchers.ok(token_result)
 
         validation_result = auth.session_service.validate_token(token_result.value)
-        TestsFlextAuthUtilities.Tests.Matchers.ok(validation_result)
-        TestsFlextAuthUtilities.Tests.Matchers.that(validation_result.value, eq=True)
+        TestsFlextAuthUtilities.Tests.Matchers.ok(validation_result, eq=True, is_=bool)
 
     @staticmethod
     def test_public_api_validate_token_failure() -> None:

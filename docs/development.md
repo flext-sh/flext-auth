@@ -344,7 +344,10 @@ class AuthenticationService:
 
     def process(self, request: t.StrMapping) -> p.Result[t.StrMapping]:
         # Service implementation
-        return r[t.StrMapping].ok({"status": "processed", "request": request})
+        return r[t.StrMapping].ok({
+            "status": "processed",
+            c.ContextScope.REQUEST: request,
+        })
 ```
 
 ### Error Handling
