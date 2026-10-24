@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FLEXT Auth Types.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -14,7 +15,7 @@ from flext_auth._typings import FlextAuthTypesAuth, FlextAuthTypesBase
 class FlextAuthTypes(FlextApiTypes):
     """Authentication-specific type definitions extending t via MRO."""
 
-    class Auth(FlextAuthTypesBase, FlextAuthTypesAuth):
+    class Auth(FlextAuthTypesAuth, FlextAuthTypesBase):
         """Auth domain namespace (flat members per AGENTS.md §149)."""
 
 
