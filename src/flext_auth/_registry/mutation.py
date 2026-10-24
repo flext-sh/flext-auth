@@ -93,7 +93,7 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
     def _reconfiguration_candidate(
         name: str,
         record: p.Auth.ProviderRegistration,
-        settings: t.JsonMapping,
+        settings: t.ConfigurationMapping,
     ) -> p.Result[m.Auth.ProviderWrapper]:
         """Validate the complete replacement wrapper before any registry mutation.
 
@@ -109,12 +109,12 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
 
         """
         try:
-            candidate = m.Auth.ProviderWrapper.model_validate({
-                "category": c.Auth.REGISTRY_PROVIDERS_CATEGORY,
-                "provider": record.provider,
-                "configuration": settings,
-                "metadata": record.metadata,
-            })
+            candidate = m.Auth.ProviderWrapper(
+                category=c.Auth.REGISTRY_PROVIDERS_CATEGORY,
+                provider=record.provider,
+                configuration=settings,
+                metadata=record.metadata,
+            )
         except c.ValidationError as exc:
             return r[m.Auth.ProviderWrapper].fail_op("Provider configuration", exc)
         if not isinstance(record.provider, p.Auth.ConfigurableProvider):
@@ -130,13 +130,18 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         if configured.failure:
             return r[m.Auth.ProviderWrapper].from_failure(configured)
         return r[m.Auth.ProviderWrapper].ok(
-            candidate.model_copy(update={"provider": configured.value}),
+            m.Auth.ProviderWrapper(
+                category=candidate.category,
+                provider=configured.value,
+                configuration=configuration,
+                metadata=candidate.metadata,
+            )
         )
 
     def update_config(
         self,
         name: str,
-        settings: t.JsonMapping,
+        settings: t.ConfigurationMapping,
     ) -> p.Result[bool]:
         """Validate the complete replacement before releasing the existing key.
 

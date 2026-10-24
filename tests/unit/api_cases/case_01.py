@@ -86,7 +86,7 @@ class TestsFlextAuthApiCase01:
     def test_registry_lists_providers() -> None:
         """Registry exposes list_providers() returning a list."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        providers = auth.registry.list_providers()
+        providers = auth.list_providers()
         TestsFlextAuthUtilities.Tests.Matchers.that(providers, is_=list)
 
     @staticmethod

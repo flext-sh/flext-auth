@@ -6,14 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import logging
+import io
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_auth import FlextAuth, m, settings
+from flext_auth import FlextAuth, FlextAuthSettings, m
 from flext_auth.providers import FlextAuthJwtTokenValidator
-from tests import c, p, t, tm
+from tests import c, p, tm, u
 
 
 class TestsFlextAuthSessionRealFlows:
@@ -24,7 +24,7 @@ class TestsFlextAuthSessionRealFlows:
     @staticmethod
     def test_settings_and_bootstrap_use_existing_runtime_contracts() -> None:
         """The actual API runtime supplies auth settings through structural ports."""
-        configured = settings.clone()
+        configured = FlextAuthSettings()
         auth = FlextAuth(runtime_settings=configured)
         tm.that(auth.settings, is_=p.Auth.Settings)
         tm.that(auth.runtime_bootstrap_options(), is_=p.RuntimeBootstrapOptions)
@@ -35,34 +35,48 @@ class TestsFlextAuthSessionRealFlows:
         )
 
     @staticmethod
-    def test_token_audits_omit_credentials_and_keep_results(
-        caplog: t.Tests.LogCapture,
-    ) -> None:
+    def test_token_audits_omit_credentials_and_keep_results() -> None:
         """Real runtime audit events contain decisions, never token fragments."""
-        caplog.set_level(logging.DEBUG)
-        auth = FlextAuth(runtime_settings=settings.clone(log_level="DEBUG"))
-        identity = tm.ok(
-            auth.register_user(
-                "audit-user",
-                "audit@example.com",
-                c.TEST_CREDENTIAL,
+        previous_options = u.logging_options()
+        previous_settings = u.logging_settings()
+        configured = FlextAuthSettings(log_level="DEBUG")
+        stream = io.StringIO()
+        try:
+            u.configure_structlog(
+                runtime_settings=configured,
+                settings=m.StructlogOptions(
+                    handlers=(u.create_logging_handler(stream=stream),),
+                    async_logging=False,
+                ),
             )
-        )
-        token = tm.ok(auth.create_token(identity.unique_id))
-        refreshed = tm.ok(auth.session_service.refresh_token(token))
-        tm.ok(auth.session_service.validate_token(refreshed.token))
-        marker = "sensitive-credential-marker"
-        tm.fail(auth.session_service.refresh_token(marker))
-        tm.fail(auth.session_service.validate_token(marker))
-        audit = caplog.text
-        tm.that(audit, has="Token creation successful")
-        tm.that(audit, has="Token refresh successful")
-        tm.that(audit, has="Token validation")
-        tm.that(audit, has=identity.unique_id)
-        for material in (token, refreshed.token, marker, "sensitive", token[:9]):
-            tm.that(material not in audit, eq=True)
-        tm.that(refreshed.user_id, eq=identity.unique_id)
-        tm.that(refreshed, is_=p.Auth.Session)
+            auth = FlextAuth(runtime_settings=configured)
+            identity = tm.ok(
+                auth.register_user(
+                    "audit-user",
+                    "audit@example.com",
+                    c.TEST_CREDENTIAL,
+                )
+            )
+            token = tm.ok(auth.create_token(identity.unique_id))
+            refreshed = tm.ok(auth.session_service.refresh_token(token))
+            tm.ok(auth.session_service.validate_token(refreshed.token))
+            marker = "sensitive-credential-marker"
+            tm.fail(auth.session_service.refresh_token(marker))
+            tm.fail(auth.session_service.validate_token(marker))
+            audit = stream.getvalue()
+            tm.that(audit, has="Token creation successful")
+            tm.that(audit, has="Token refresh successful")
+            tm.that(audit, has="Token validation")
+            tm.that(audit, has=identity.unique_id)
+            for material in (token, refreshed.token, marker, "sensitive", token[:9]):
+                tm.that(material not in audit, eq=True)
+            tm.that(refreshed.user_id, eq=identity.unique_id)
+            tm.that(refreshed, is_=p.Auth.Session)
+        finally:
+            u.configure_structlog(
+                settings=previous_options,
+                runtime_settings=previous_settings,
+            )
 
     @staticmethod
     def test_identity_extras_preserve_supported_payload_values() -> None:
@@ -153,11 +167,11 @@ class TestsFlextAuthSessionRealFlows:
         clone_settings: bool,
     ) -> None:
         """Both token entrypoints and stored sessions honor the injected settings."""
-        configured = settings.clone(
-            Auth={
-                "expiry_minutes": expiry_minutes,
-                "session_expiry_minutes": session_expiry_minutes,
-            },
+        configured = FlextAuthSettings(
+            Auth=FlextAuthSettings.AuthSettings(
+                expiry_minutes=expiry_minutes,
+                session_expiry_minutes=session_expiry_minutes,
+            ),
         )
         tm.that(configured.Auth.expiry_minutes, eq=expiry_minutes)
         tm.that(configured.Auth.session_expiry_minutes, eq=session_expiry_minutes)
@@ -181,7 +195,7 @@ class TestsFlextAuthSessionRealFlows:
             c.TEST_CREDENTIAL,
         ).unwrap()
         finished = datetime.now(UTC)
-        validator = FlextAuthJwtTokenValidator(auth.registry.get("jwt").unwrap())
+        validator = FlextAuthJwtTokenValidator(auth.fetch_provider("jwt").unwrap())
         for token in (created, authenticated.token):
             claims = validator.validate_token(token).unwrap()
             tm.that(
