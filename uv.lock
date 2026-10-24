@@ -527,19 +527,10 @@ name = "flext-auth"
 version = "0.12.0"
 source = { editable = "." }
 dependencies = [
-    { name = "annotated-types" },
     { name = "bcrypt" },
-    { name = "beartype" },
-    { name = "dependency-injector" },
     { name = "flext-api" },
     { name = "flext-core" },
-    { name = "packaging" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
     { name = "pyjwt" },
-    { name = "pyyaml" },
-    { name = "structlog" },
-    { name = "typing-extensions" },
 ]
 
 [package.dev-dependencies]
@@ -551,6 +542,7 @@ dev = [
     { name = "bandit" },
     { name = "deptry" },
     { name = "editables" },
+    { name = "flext-infra" },
     { name = "flext-tests" },
     { name = "hypothesis" },
     { name = "mkdocs" },
@@ -587,7 +579,6 @@ dev = [
     { name = "types-click" },
     { name = "types-defusedxml" },
     { name = "types-docker" },
-    { name = "types-flask" },
     { name = "types-grpcio" },
     { name = "types-jsonschema" },
     { name = "types-ldap3" },
@@ -611,19 +602,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "annotated-types", specifier = ">=0.8.0" },
     { name = "bcrypt", specifier = ">=5.0.0" },
-    { name = "beartype", specifier = ">=0.22.9" },
-    { name = "dependency-injector", specifier = ">=4.49.1" },
     { name = "flext-api", git = "https://github.com/flext-sh/flext-api.git?rev=0.12.0-dev" },
     { name = "flext-core", git = "https://github.com/flext-sh/flext-core.git?rev=0.12.0-dev" },
-    { name = "packaging", specifier = ">=26.3" },
-    { name = "pydantic", specifier = ">=2.14.0,<3" },
-    { name = "pydantic-settings", specifier = ">=2.15.0" },
     { name = "pyjwt", specifier = ">=2.15.1" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "structlog", specifier = ">=26.1.0" },
-    { name = "typing-extensions", specifier = ">=4.16.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -633,6 +615,7 @@ dev = [
     { name = "bandit", specifier = ">=1.9.4" },
     { name = "deptry" },
     { name = "editables", specifier = ">=0.6" },
+    { name = "flext-infra", git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev" },
     { name = "flext-tests", git = "https://github.com/flext-sh/flext-tests.git?rev=0.12.0-dev" },
     { name = "hypothesis" },
     { name = "mkdocs" },
@@ -645,7 +628,7 @@ dev = [
     { name = "mkdocs-redirects", specifier = ">=1.2.3" },
     { name = "mkdocs-section-index", specifier = ">=0.3.12" },
     { name = "mkdocstrings", specifier = ">=1.0.6" },
-    { name = "mkdocstrings-python", specifier = ">=2.0.8" },
+    { name = "mkdocstrings-python", specifier = ">=2.0.9" },
     { name = "msgpack-types" },
     { name = "mypy", specifier = ">=2.3.1" },
     { name = "platformdirs", specifier = ">=4.12.0" },
@@ -669,7 +652,6 @@ dev = [
     { name = "types-click", specifier = ">=7.1.8" },
     { name = "types-defusedxml", specifier = ">=0.7.0.20260504" },
     { name = "types-docker", specifier = ">=7.2.0.20260827" },
-    { name = "types-flask", specifier = ">=1.1.6" },
     { name = "types-grpcio" },
     { name = "types-jsonschema", specifier = ">=4.26.0.20260518" },
     { name = "types-ldap3", specifier = ">=2.9.13.20260827" },
@@ -2082,11 +2064,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "84.0.0"
+version = "84.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6d/44/f5da03a8ef95d369145c5bb53050e7877c9f3d312e128605fd9504829143/setuptools-84.0.0.tar.gz", hash = "sha256:f4695c21257f0d9b537ec2692c941d02ee143b7cc1276941349a546573b2ef73", size = 1168449, upload-time = "2026-08-08T18:27:58.365Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/73/eb/7e5f628ee2eb168fecbf8026de7856b2543d6d609cc85f086b9a91ac93d6/setuptools-84.1.0.tar.gz", hash = "sha256:23657205b63d4d31395ab917815247f694aafad28cd21316bf5fd45a51048ea0", size = 1171783, upload-time = "2026-10-19T20:11:43.489Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl", hash = "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670", size = 818216, upload-time = "2026-08-08T18:27:56.719Z" },
+    { url = "https://files.pythonhosted.org/packages/18/02/b4bbb90f8f29e334898ff45c6d9b1fffaa6f378017052b3023a06262b5f7/setuptools-84.1.0-py3-none-any.whl", hash = "sha256:5231689c6ac8156cd155cfb98c3fd6fb252c3e7e9bd3d78b64d3c55f132624c9", size = 819380, upload-time = "2026-10-19T20:11:41.684Z" },
 ]
 
 [[package]]
@@ -2255,38 +2237,12 @@ wheels = [
 ]
 
 [[package]]
-name = "types-flask"
-version = "1.1.6"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "types-click" },
-    { name = "types-jinja2" },
-    { name = "types-werkzeug" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/79/65/728a104973133a45fba50f3d1e1ee832287666ac74cfd47004cea8402ea3/types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf", size = 9829, upload-time = "2021-11-26T06:21:31.199Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/60/6c/a98a0c29c39d8a6283ac704f3d36f0d570d8dee931e9d46d6cc60d436bec/types_Flask-1.1.6-py3-none-any.whl", hash = "sha256:6ab8a9a5e258b76539d652f6341408867298550b19b81f0e41e916825fc39087", size = 13733, upload-time = "2021-11-26T06:21:30.365Z" },
-]
-
-[[package]]
 name = "types-grpcio"
 version = "1.84.0.20260928"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/29/db/c27d359c03c8d77917599d046d436424d74b08fb7e657c26d593912adb12/types_grpcio-1.84.0.20260928.tar.gz", hash = "sha256:eacb229deeb94e23a37c7ed0dd739dd2098ee63c7e432cc88340109ae3ad2fc1", size = 15892, upload-time = "2026-09-28T07:50:44.444Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/74/f2/0a9f21ae6db691facba76d7443ebb26c016e28ce2fa094642ca4a899e15b/types_grpcio-1.84.0.20260928-py3-none-any.whl", hash = "sha256:f0b54cbed12cf8fb0d8e6e7e699562da06515ca5a88014a209bf75780d6d1145", size = 15965, upload-time = "2026-09-28T07:50:43.62Z" },
-]
-
-[[package]]
-name = "types-jinja2"
-version = "2.11.9"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "types-markupsafe" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/46/c4/b82309bfed8195de7997672deac301bd6f5bd5cbb6a3e392b7fe780d7852/types-Jinja2-2.11.9.tar.gz", hash = "sha256:dbdc74a40aba7aed520b7e4d89e8f0fe4286518494208b35123bcf084d4b8c81", size = 13302, upload-time = "2021-11-26T06:21:17.496Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/b0/e79d84748f1d34304f13191424348a719c3febaa3493835370fe9528e1e6/types_Jinja2-2.11.9-py3-none-any.whl", hash = "sha256:60a1e21e8296979db32f9374d8a239af4cb541ff66447bb915d8ad398f9c63b2", size = 18190, upload-time = "2021-11-26T06:21:16.18Z" },
 ]
 
 [[package]]
@@ -2311,15 +2267,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/12/5a/71a62370bd5ece50c0ab63d764b76200a8ede95efa0e74f16d9246b3f0bb/types_ldap3-2.9.13.20260827.tar.gz", hash = "sha256:06091fb1d93f2a012c446f7476dfc72fc2ae5e818552506c1f87770b4e2264ec", size = 34632, upload-time = "2026-08-27T12:07:07.974Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/7c/a63bba957b18a33497fadadd285e6a2c4fd2ac25c3dcbf13f6945442c833/types_ldap3-2.9.13.20260827-py3-none-any.whl", hash = "sha256:11917e8e5f34c6c31a256cd361182b188d346f44fe70d036c4843c5cc9d03d96", size = 57457, upload-time = "2026-08-27T12:07:07.073Z" },
-]
-
-[[package]]
-name = "types-markupsafe"
-version = "1.1.10"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/39/31/b5f059142d058aec41e913d8e0eff0a967e7bc46f9a2ba2f31bc11cff059/types-MarkupSafe-1.1.10.tar.gz", hash = "sha256:85b3a872683d02aea3a5ac2a8ef590193c344092032f58457287fbf8e06711b1", size = 2986, upload-time = "2021-11-27T03:18:07.558Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/d6/b8effb1c48539260a5eb4196afc55efac4ea1684a4991977555eb266b2ef/types_MarkupSafe-1.1.10-py3-none-any.whl", hash = "sha256:ca2bee0f4faafc45250602567ef38d533e877d2ddca13003b319c551ff5b3cc5", size = 3998, upload-time = "2021-11-27T03:18:06.398Z" },
 ]
 
 [[package]]
@@ -2460,15 +2407,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4b/11/6ece999e91f2ccb848ab4420f3f4816e78ac0541f739e6864affdaaa5737/types_toml-0.10.8.20260518.tar.gz", hash = "sha256:80e10facd24fdeda9d5c672187d72be3ac284843788d67f5aae59e3e016db6fe", size = 9419, upload-time = "2026-05-18T06:02:16.719Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/91/25/489751806bf5c95e4007f8e17409199c54d31e49ffbea07c5729b1286c8e/types_toml-0.10.8.20260518-py3-none-any.whl", hash = "sha256:0e564ab05f6fde62a315b3b5a9b6624fda569399795d30a37e64705a70459303", size = 9669, upload-time = "2026-05-18T06:02:15.86Z" },
-]
-
-[[package]]
-name = "types-werkzeug"
-version = "1.0.9"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/eb/43/161261d2ac1fc20e944aa108e48a98ff0d994e19b498d6fb19d6637caf05/types-Werkzeug-1.0.9.tar.gz", hash = "sha256:5cc269604c400133d452a40cee6397655f878fc460e03fde291b9e3a5eaa518c", size = 23909, upload-time = "2021-11-26T06:21:28.33Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4a/c1/eaf8426126eafa46d649afb2fddede327043fbc2e84021b8b09a7fa15115/types_Werkzeug-1.0.9-py3-none-any.whl", hash = "sha256:194bd5715a13c598f05c63e8a739328657590943bce941e8a3619a6b5d4a54ec", size = 36186, upload-time = "2021-11-26T06:21:27.37Z" },
 ]
 
 [[package]]
