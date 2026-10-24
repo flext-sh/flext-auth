@@ -9,7 +9,6 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthRegistry
-from flext_auth._registry import FlextAuthRegistryBase
 from flext_auth.providers import FlextAuthBasicProvider, FlextAuthJwtTokenValidator
 from tests import c, m, p, r, tm, u
 from tests.fixtures.auth import TestsFlextAuthFixtures
@@ -80,15 +79,10 @@ class TestsFlextAuthRegistryComposition:
         tm.that(tm.ok(auth_api.fetch_provider("custom")) is provider, eq=True)
         tm.that(tm.ok(auth_api.fetch_metadata("custom")) is metadata, eq=True)
         tm.that(tm.ok(auth_api.fetch_config("custom")), eq=configuration)
-        tm.that(
-            tm.ok(
-                auth_api.registry.fetch_plugin(
-                    c.Auth.REGISTRY_PROVIDERS_CATEGORY, "custom"
-                )
-            )
-            is tm.ok(auth_api.fetch_registration("custom")),
-            eq=True,
-        )
+        registration = tm.ok(auth_api.fetch_registration("custom"))
+        tm.that(registration.provider is provider, eq=True)
+        tm.that(registration.metadata is metadata, eq=True)
+        tm.that(registration.configuration, eq=configuration)
 
     @staticmethod
     def test_repeated_provider_is_idempotent_conflicts_do_not_overwrite(
@@ -107,19 +101,22 @@ class TestsFlextAuthRegistryComposition:
         tm.that(tm.ok(auth_api.fetch_provider("custom")) is second, eq=True)
 
     @staticmethod
-    def test_config_validation_precedes_removal_and_preserves_cause(
+    def test_invalid_registration_input_and_unsupported_reconfiguration_preserve_record(
         auth_api: p.Auth.Service,
     ) -> None:
-        """Invalid ingress preserves the old record and its ValidationError."""
+        """Validate untrusted input before requesting a typed reconfiguration."""
         provider = FlextAuthBasicProvider()
         configuration = {"issuer": "initial"}
         tm.ok(
             auth_api.register_provider("custom", provider, configuration=configuration)
         )
         original = tm.ok(auth_api.fetch_registration("custom"))
-        rejected = auth_api.update_config("custom", {"issuer": ["invalid-scalar"]})
-        tm.fail(rejected)
-        tm.that(rejected.exception, is_=c.ValidationError)
+        with pytest.raises(c.ValidationError):
+            m.Auth.ProviderWrapper.model_validate({
+                "category": c.Auth.REGISTRY_PROVIDERS_CATEGORY,
+                "provider": provider,
+                "configuration": {"issuer": ["invalid-scalar"]},
+            })
         tm.that(tm.ok(auth_api.fetch_registration("custom")) is original, eq=True)
         tm.that(tm.ok(auth_api.fetch_provider("custom")) is provider, eq=True)
         replacement = {"issuer": "replacement"}
@@ -144,9 +141,8 @@ class TestsFlextAuthRegistryComposition:
         old_claims = tm.ok(
             FlextAuthJwtTokenValidator(previous).validate_token(old_token)
         )
-        configuration = dict(tm.ok(auth_api.fetch_config("jwt")))
-        issuer = f"{configuration.get('issuer') or 'configured'}-replacement"
-        configuration["issuer"] = issuer
+        issuer = f"{identity.unique_id}-replacement"
+        configuration = {**tm.ok(auth_api.fetch_config("jwt")), "issuer": issuer}
         tm.ok(auth_api.update_config("jwt", configuration), eq=True)
         replacement = tm.ok(auth_api.fetch_provider("jwt"))
         tm.that(replacement is previous, eq=False)
@@ -206,8 +202,8 @@ class TestsFlextAuthRegistryComposition:
         with pytest.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({})
         with pytest.raises(c.ValidationError):
-            FlextAuthRegistryBase.model_validate({"registry": "invalid"})
-        port = FlextAuthRegistryBase(registry=u.build_registry())
+            FlextAuthRegistry.model_validate({"registry": "invalid"})
+        port = FlextAuthRegistry(registry=u.build_registry())
         tm.that("registry" not in port.model_dump(), eq=True)
         tm.that(
             "registry" not in port.model_json_schema().get("properties", {}), eq=True
