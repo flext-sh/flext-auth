@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from flext_api import FlextApiModels
 
-from flext_auth import t
 from flext_auth._models import (
     FlextAuthModelsAuth,
     FlextAuthModelsAuthCredential,
@@ -41,5 +40,4 @@ class FlextAuthModels(FlextApiModels):
 
 
 m = FlextAuthModels
-
-__all__: t.MutableSequenceOf[str] = ["FlextAuthModels", "m"]
+__all__: list[str] = ["FlextAuthModels", "m"]

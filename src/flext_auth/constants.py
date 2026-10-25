@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_api import FlextApiConstants
 
 from flext_auth._constants import (
@@ -19,9 +17,6 @@ from flext_auth._constants import (
     FlextAuthConstantsAuthValues,
     FlextAuthConstantsBase,
 )
-
-if TYPE_CHECKING:
-    from flext_auth import t
 
 
 class FlextAuthConstants(FlextApiConstants):
@@ -39,5 +34,4 @@ class FlextAuthConstants(FlextApiConstants):
 
 
 c = FlextAuthConstants
-
-__all__: t.MutableSequenceOf[str] = ["FlextAuthConstants", "c"]
+__all__: list[str] = ["FlextAuthConstants", "c"]

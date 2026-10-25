@@ -15,7 +15,6 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, x
 
-    from flext_auth import providers as providers, services as services
     from flext_auth.__version__ import (
         FlextAuthVersion,
         __author__,
@@ -69,10 +68,8 @@ __all__: tuple[str, ...] = (
     "m",
     "main",
     "p",
-    "providers",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "u",
@@ -110,10 +107,8 @@ install_lazy_exports(
         "m": ".models",
         "main": ".cli",
         "p": ".protocols",
-        "providers": ".providers",
         "r": "flext_api",
         "s": ".base",
-        "services": ".services",
         "settings": "._settings",
         "t": ".typings",
         "u": ".utilities",

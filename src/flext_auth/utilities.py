@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from flext_api import FlextApiUtilities
 
-from flext_auth import t
 from flext_auth._utilities import (
     FlextAuthUtilitiesAuth,
     FlextAuthUtilitiesAuthResponse,
@@ -37,5 +36,4 @@ class FlextAuthUtilities(FlextApiUtilities):
 
 
 u = FlextAuthUtilities
-
-__all__: t.MutableSequenceOf[str] = ["FlextAuthUtilities", "u"]
+__all__: list[str] = ["FlextAuthUtilities", "u"]

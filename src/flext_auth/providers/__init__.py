@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth.providers import _mixins as _mixins
     from flext_auth.providers._mixins import (
         FlextAuthProviderCodecMixin,
         FlextAuthProviderTokenMixin,
@@ -57,7 +56,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthProviderValidationMixin",
     "FlextAuthRfcProvider",
     "FlextAuthSamlProvider",
-    "_mixins",
 )
 
 install_lazy_exports(
@@ -83,7 +81,6 @@ install_lazy_exports(
         "FlextAuthProviderValidationMixin": "._mixins.validation",
         "FlextAuthRfcProvider": ".rfc",
         "FlextAuthSamlProvider": ".saml",
-        "_mixins": "._mixins",
     }),
     public_exports=__all__,
 )

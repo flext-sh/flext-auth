@@ -20,5 +20,4 @@ class FlextAuthProtocols(FlextApiProtocols):
 
 
 p = FlextAuthProtocols
-
 __all__: list[str] = ["FlextAuthProtocols", "p"]

@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth._utilities import _managers as _managers
     from flext_auth._utilities._managers import (
         FlextAuthRateLimiterManagers,
         FlextAuthSessionManagers,
@@ -43,7 +42,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthUtilitiesAuthValidation",
     "FlextAuthUtilitiesBase",
     "FlextAuthUtilitiesManagers",
-    "_managers",
 )
 
 install_lazy_exports(
@@ -62,7 +60,6 @@ install_lazy_exports(
         "FlextAuthUtilitiesAuthValidation": ".auth_validation",
         "FlextAuthUtilitiesBase": ".base",
         "FlextAuthUtilitiesManagers": ".managers",
-        "_managers": "._managers",
     }),
     public_exports=__all__,
 )
