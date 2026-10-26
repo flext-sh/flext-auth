@@ -441,7 +441,9 @@ make check
 
    auth = FlextAuth.quick_start(create_admin_user=False)
    # Specify generic type for r
-   result: p.Result[User] = auth.register_user(c.ContextScope.USER, "user@example.com", "password123")
+    result: p.Result[User] = auth.register_user(
+        c.ContextScope.USER, "user@example.com", "password123"
+    )
 ```
 
 ### Import Issues
