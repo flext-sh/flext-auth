@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiUtilities
+from flext_api import u
 
 from flext_auth._utilities import (
     FlextAuthUtilitiesAuth,
@@ -20,7 +20,7 @@ from flext_auth._utilities import (
 from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
 
 
-class FlextAuthUtilities(FlextApiUtilities):
+class FlextAuthUtilities(u):
     """FlextAuth advanced utilities extending the API utility namespace."""
 
     class Auth(

@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiConstants
+from flext_api import c
 
 from flext_auth._constants import (
     FlextAuthConstantsAuth,
@@ -19,7 +19,7 @@ from flext_auth._constants import (
 )
 
 
-class FlextAuthConstants(FlextApiConstants):
+class FlextAuthConstants(c):
     """FlextAuth domain constants extending the API constants namespace."""
 
     class Auth(
