@@ -38,6 +38,21 @@ flext-auth uses `FlextAuthSettings` extending
 [flext-core](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/README.md)
 `FlextSettings` patterns for environment-aware configuration management.
 
+Business policy remains at `FlextAuthConfig.AuthPolicy`, including its nested
+policy classes. These layer-zero declarations use native Pydantic foundations,
+not the aggregate domain `m.FrozenModel` preset (ADR-005 section 2). The misplaced
+inherited `EnforcedModel.__pydantic_on_complete__` architectural callback is
+deliberately removed from these policy classes; its behavior is not preserved.
+Core enforcement is unchanged, and static architectural checks over Auth source
+remain mandatory. No business validator is removed or waived.
+
+Every former preset configuration option remains explicit on each policy model:
+forbidden extras, deferred schema building, assignment validation, enum values,
+strict inputs, default validation and frozen instances. Whitespace stripping
+remains disabled on `AuthPolicy`, `Jwt` and `OAuth2`, and enabled on the other
+policy classes. The native JSON adapter and strict JSON validation boundary remain
+in place so YAML lists populate tuple fields without enabling Python coercion.
+
 ---
 
 ## FlextAuthSettings

@@ -23,7 +23,8 @@ extensibility.
 src/flext_auth/
 ├── api.py            # FlextAuth composition root, application/provider services via MRO
 ├── base.py
-├── providers/        # api-key, basic, certificate, jwt, ldap, oauth2/oidc, saml, kerberos, rfc
+├── providers/        # api-key, basic, certificate, jwt, ldap,
+│                     # oauth2/oidc, saml, kerberos, rfc
 ├── services/         # auth_service, identity_service, provider_service, session_service
 ├── _registry/        # base.py, lookup.py, mutation.py (provider domain operations)
 ├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
