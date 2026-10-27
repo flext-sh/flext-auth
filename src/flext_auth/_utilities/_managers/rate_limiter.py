@@ -84,7 +84,7 @@ class FlextAuthRateLimiterManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
-            attempts_list: t.MutableSequenceOf[datetime] = (
+            attempts_list: t.Auth.ManagersAttemptEvents = (
                 [] if attempts_raw is None else list(attempts_raw)
             )
             if attempts_raw is None:

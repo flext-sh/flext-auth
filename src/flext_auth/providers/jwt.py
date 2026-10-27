@@ -60,8 +60,7 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             Whether the token is accepted.
 
         """
-        token_value = token if isinstance(token, str) else token.token
-        return self.validate_token(token_value)
+        return self.validate_token(self._extract_token_string(token))
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Validate JWT token.

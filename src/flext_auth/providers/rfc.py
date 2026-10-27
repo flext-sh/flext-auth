@@ -131,22 +131,5 @@ class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             f"{credentials!r}",
         )
 
-    @override
-    def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate authentication token.
-
-        This is an abstract method that must be implemented by RFC-specific providers.
-
-        Args:
-            token: Token to validate
-
-        Returns:
-            r[bool]: True if valid, False if invalid, error on failure
-
-        """
-        return r[bool].fail(
-            f"RFC provider validate() must be implemented by subclass: {token!r}",
-        )
-
 
 __all__: t.MutableSequenceOf[str] = ["FlextAuthRfcProvider"]

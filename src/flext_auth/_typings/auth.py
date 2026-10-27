@@ -7,12 +7,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, MutableMapping, MutableSequence
-from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
 from flext_api import m as api_models, t
 
 from flext_auth import c
+from flext_auth._typings import FlextAuthTypesBase
 
 if TYPE_CHECKING:
     from flext_auth import m
@@ -32,12 +32,11 @@ class FlextAuthTypesAuth:
         ),
     ]
 
-    type ManagersDateTimeValue = datetime
     type ManagersManagerValue = t.JsonValue | t.Scalar | t.StrSequence
     type ManagersUserData = MutableMapping[str, ManagersManagerValue]
     type ManagersLogEntry = MutableMapping[str, ManagersManagerValue]
     type ManagersSessionData = t.MutableMetadataMapping
-    type ManagersAttemptEvents = MutableSequence[ManagersDateTimeValue]
+    type ManagersAttemptEvents = MutableSequence[FlextAuthTypesBase.DateTimeValue]
     type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
 
     type KerberosTicketValidator = Callable[

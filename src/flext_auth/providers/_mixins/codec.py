@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import c, e, p, r, t, u
+from flext_auth import c, p, r, t, u
 
 
 class FlextAuthProviderCodecMixin:
@@ -84,24 +84,19 @@ class FlextAuthProviderCodecMixin:
 
     @staticmethod
     def _extract_token_string(token: str | p.Auth.Token) -> str:
-        """Extract token string from token or Token t.JsonValue.
+        """Extract the token string from a token value or token entity.
+
+        Coercion is total: an empty token flows onward so the domain
+        validators own the failure through the result railway.
 
         Args:
             token: Token as plain string or token entity.
 
         Returns:
-            The token string.
-
-        Raises:
-            e.ValidationError: If token cannot be extracted.
+            The token string carried by the input.
 
         """
-        token_value = token.token if isinstance(token, p.Auth.Token) else token
-        token_text = token_value
-        if token_text:
-            return token_text
-        error_msg = f"Invalid token type: expected str or Token, got {type(token)}"
-        raise e.ValidationError(error_msg, field="token", value=str(type(token)))
+        return token.token if isinstance(token, p.Auth.Token) else token
 
 
 __all__: list[str] = ["FlextAuthProviderCodecMixin"]
