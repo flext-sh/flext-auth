@@ -38,7 +38,10 @@ class TestsFlextAuthApi:
 
         auth = FlextAuth(runtime_settings=settings)
 
-        tm.that(auth.settings, where=lambda value: value is settings)
+        def has_injected_settings(value: p.Auth.Settings) -> bool:
+            return value is settings
+
+        tm.that(auth.settings, where=has_injected_settings)
 
     @staticmethod
     def test_constructors_own_independent_registries() -> None:
@@ -46,7 +49,10 @@ class TestsFlextAuthApi:
         first = FlextAuth()
         second = FlextAuth()
 
-        tm.that(first.registry, where=lambda value: value is not second.registry)
+        def is_independent_registry(value: p.Registry) -> bool:
+            return value is not second.registry
+
+        tm.that(first.registry, where=is_independent_registry)
 
     @staticmethod
     def test_list_providers_exposes_the_registered_names() -> None:
@@ -123,12 +129,11 @@ class TestsFlextAuthApi:
 
         tm.fail(result)
         error_text = (result.error or "").lower()
-        tm.that(
-            error_text,
-            where=lambda value: (
-                "at least 8 characters" in value or "credential" in value
-            ),
-        )
+
+        def mentions_failure_reason(value: str) -> bool:
+            return "at least 8 characters" in value or "credential" in value
+
+        tm.that(error_text, where=mentions_failure_reason)
 
     @staticmethod
     def test_register_user_rejects_duplicate_username() -> None:

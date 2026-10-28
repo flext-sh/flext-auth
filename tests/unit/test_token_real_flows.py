@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_auth import FlextAuth, FlextAuthSettings, m
+from flext_auth import FlextAuth, FlextAuthSettings, m, t
 from flext_auth.providers import FlextAuthJwtTokenValidator
 from tests import c, p, tm, u
 
@@ -197,27 +197,29 @@ class TestsFlextAuthSessionRealFlows:
         ).unwrap()
         finished = datetime.now(UTC)
         validator = FlextAuthJwtTokenValidator(auth.fetch_provider("jwt").unwrap())
+
+        def claims_have_configured_lifetime(value: t.JsonMapping) -> bool:
+            return (
+                isinstance(value["iat"], int)
+                and isinstance(value["exp"], int)
+                and value["exp"] - value["iat"]
+                == timedelta(minutes=expiry_minutes).total_seconds()
+            )
+
         for token in (created, authenticated.token):
             claims = validator.validate_token(token).unwrap()
-            tm.that(
-                claims,
-                where=lambda value: (
-                    isinstance(value["iat"], int)
-                    and isinstance(value["exp"], int)
-                    and value["exp"] - value["iat"]
-                    == timedelta(minutes=expiry_minutes).total_seconds()
-                ),
-            )
+            tm.that(claims, where=claims_have_configured_lifetime)
 
         sessions = auth.session_service.session_manager.get_active_sessions(
             registered.unique_id,
         ).unwrap()
         tm.that(len(sessions), eq=1)
         lifetime = timedelta(minutes=session_expiry_minutes)
-        tm.that(
-            sessions[0].expires_at,
-            where=lambda value: started + lifetime <= value <= finished + lifetime,
-        )
+
+        def expires_within_bounds(value: datetime) -> bool:
+            return started + lifetime <= value <= finished + lifetime
+
+        tm.that(sessions[0].expires_at, where=expires_within_bounds)
         tm.that(sessions[0].unique_id, eq=authenticated.session_id)
         tm.that(sessions[0].session_id, eq=authenticated.session_id)
         tm.ok(
