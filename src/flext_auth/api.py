@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from typing import Self
 
-from flext_auth import FlextAuthSettings, c, p, t, u
+from flext_auth import FlextAuthSettings
+from flext_auth.constants import c
+from flext_auth.protocols import p
 from flext_auth.providers import (
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
@@ -27,6 +29,8 @@ from flext_auth.services import (
     FlextAuthProviderService,
     FlextAuthSessionService,
 )
+from flext_auth.typings import t
+from flext_auth.utilities import u
 
 
 class FlextAuth(FlextAuthApplicationService):
