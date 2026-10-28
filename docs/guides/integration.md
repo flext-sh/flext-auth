@@ -238,15 +238,6 @@ CLI authentication patterns:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_cli import FlextCliCli, FlextCliSettings, m, t
 
 from flext_auth import FlextAuth
