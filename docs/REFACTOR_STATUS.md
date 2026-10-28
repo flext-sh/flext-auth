@@ -20,10 +20,10 @@
 
 ```text
 class FlextAuth(
-    FlextAuthIdentityMixin,
-    FlextAuthTokenMixin,
-    FlextAuthSessionMixin,
-    FlextAuthProviderMixin,
+    FlextAuthIdentity,
+    FlextAuthToken,
+    FlextAuthSession,
+    FlextAuthProvider,
     FlextAuthServiceBase,
 ):
     """All domain methods inherited via MRO."""

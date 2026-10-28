@@ -13,24 +13,24 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth.providers._mixins.codec import FlextAuthProviderCodecMixin
-    from flext_auth.providers._mixins.tokens import FlextAuthProviderTokenMixin
-    from flext_auth.providers._mixins.validation import FlextAuthProviderValidationMixin
+    from flext_auth.providers._mixins.codec import FlextAuthProviderCodec
+    from flext_auth.providers._mixins.tokens import FlextAuthProviderToken
+    from flext_auth.providers._mixins.validation import FlextAuthProviderValidation
 
 
 __all__: tuple[str, ...] = (
-    "FlextAuthProviderCodecMixin",
-    "FlextAuthProviderTokenMixin",
-    "FlextAuthProviderValidationMixin",
+    "FlextAuthProviderCodec",
+    "FlextAuthProviderToken",
+    "FlextAuthProviderValidation",
 )
 
 install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
-        "FlextAuthProviderCodecMixin": ".codec",
-        "FlextAuthProviderTokenMixin": ".tokens",
-        "FlextAuthProviderValidationMixin": ".validation",
+        "FlextAuthProviderCodec": ".codec",
+        "FlextAuthProviderToken": ".tokens",
+        "FlextAuthProviderValidation": ".validation",
     }),
     public_exports=__all__,
 )

@@ -10,10 +10,10 @@ from collections.abc import Mapping
 from datetime import datetime, timedelta
 
 from flext_auth import c, m, p, r, t, u
-from flext_auth.providers._mixins import FlextAuthProviderCodecMixin
+from flext_auth.providers._mixins import FlextAuthProviderCodec
 
 
-class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
+class FlextAuthProviderToken(FlextAuthProviderCodec):
     """Token generation and refresh operations for JWT providers."""
 
     _provider_config: t.ScalarMapping | None
@@ -144,4 +144,4 @@ class FlextAuthProviderTokenMixin(FlextAuthProviderCodecMixin):
         return r[p.Auth.Token].ok(refreshed)
 
 
-__all__: list[str] = ["FlextAuthProviderTokenMixin"]
+__all__: list[str] = ["FlextAuthProviderToken"]

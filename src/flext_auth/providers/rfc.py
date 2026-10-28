@@ -15,10 +15,10 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import p, r, t
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthProvider
 
 
-class FlextAuthRfcProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthRfcProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """Base class for RFC-compliant authentication providers.
 
     This class extends FlextAuthBaseProvider with RFC-specific functionality

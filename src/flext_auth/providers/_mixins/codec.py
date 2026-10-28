@@ -9,7 +9,7 @@ from __future__ import annotations
 from flext_auth import c, p, r, t, u
 
 
-class FlextAuthProviderCodecMixin:
+class FlextAuthProviderCodec:
     """JWT encode/decode helpers shared by token-based providers."""
 
     _provider_config: t.ScalarMapping | None
@@ -99,4 +99,4 @@ class FlextAuthProviderCodecMixin:
         return token.token if isinstance(token, p.Auth.Token) else token
 
 
-__all__: list[str] = ["FlextAuthProviderCodecMixin"]
+__all__: list[str] = ["FlextAuthProviderCodec"]

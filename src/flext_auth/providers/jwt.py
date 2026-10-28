@@ -11,10 +11,10 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import p, r, t
-from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthProvider
 
 
-class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthJwtProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
     @staticmethod

@@ -13,10 +13,10 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import p, t
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthProvider
 
 
-class FlextAuthApiKeyProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthApiKeyProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """API key authentication provider.
 
     Provides API key-based authentication with token validation.

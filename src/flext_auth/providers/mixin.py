@@ -9,17 +9,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flext_auth.providers._mixins import (
-    FlextAuthProviderTokenMixin,
-    FlextAuthProviderValidationMixin,
+    FlextAuthProviderToken,
+    FlextAuthProviderValidation,
 )
 
 if TYPE_CHECKING:
     from flext_auth import t
 
 
-class FlextAuthProviderMixin(
-    FlextAuthProviderTokenMixin,
-    FlextAuthProviderValidationMixin,
+class FlextAuthProvider(
+    FlextAuthProviderToken,
+    FlextAuthProviderValidation,
 ):
     """Common functionality for authentication providers."""
 
@@ -41,4 +41,4 @@ class FlextAuthProviderMixin(
         return self._provider_config
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthProviderMixin"]
+__all__: t.MutableSequenceOf[str] = ["FlextAuthProvider"]

@@ -12,10 +12,10 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import p, t
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthProvider
 
 
-class FlextAuthBasicProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthBasicProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """HTTP Basic authentication provider.
 
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).

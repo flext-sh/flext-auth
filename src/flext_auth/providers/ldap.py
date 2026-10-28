@@ -9,10 +9,10 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import p, t
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthProvider
 
 
-class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthLdapProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.

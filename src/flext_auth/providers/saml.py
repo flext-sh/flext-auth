@@ -13,10 +13,10 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth import p, r, t
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthProvider
 
 
-class FlextAuthSamlProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthSamlProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """SAML 2.0 authentication provider.
 
     Provides SAML 2.0 authentication support following the FlextAuthBaseProvider
