@@ -48,8 +48,8 @@ class TestsFlextAuthFixtures:
             _ = configuration
             return TestsFlextAuthFixtures.PolicyLockedJwtProvider.configuration_failure
 
-    @staticmethod
     @pytest.fixture
+    @staticmethod
     def auth_api() -> p.Auth.Service:
         """Compose a fresh registry and real domain services for each test.
 

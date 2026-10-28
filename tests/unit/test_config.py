@@ -22,8 +22,8 @@ class TestsFlextAuthConfig:
 
     pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
 
-    @staticmethod
     @pytest.fixture
+    @staticmethod
     def settings() -> FlextAuthSettings:
         """Provide the current global settings instance.
 
