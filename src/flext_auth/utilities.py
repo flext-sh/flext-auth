@@ -17,7 +17,6 @@ from flext_auth._utilities import (
     FlextAuthUtilitiesBase,
     FlextAuthUtilitiesManagers,
 )
-from flext_auth._utilities._managers.user_create import FlextAuthUserManagerCreate
 
 
 class FlextAuthUtilities(u):
@@ -30,7 +29,6 @@ class FlextAuthUtilities(u):
         FlextAuthUtilitiesAuthSession,
         FlextAuthUtilitiesManagers,
         FlextAuthUtilitiesBase,
-        FlextAuthUserManagerCreate,
     ):
         """Auth-specific utility namespace."""
 
