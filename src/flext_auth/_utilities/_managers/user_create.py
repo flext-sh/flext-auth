@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableMapping, Sequence
 from typing import TYPE_CHECKING, ClassVar
 from uuid import uuid4
 
@@ -15,7 +16,6 @@ from flext_auth import m, p, t
 from flext_auth._utilities._managers import FlextAuthUserManagerWrite
 
 if TYPE_CHECKING:
-    from collections.abc import MutableMapping
     from datetime import datetime
 
 
@@ -32,8 +32,8 @@ class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
         username: str,
         email: str,
         password_hash: str,
-        roles: t.StrSequence | None = None,
-        **extra_fields: t.Scalar | t.StrSequence | datetime | None,
+        roles: Sequence[str] | None = None,
+        **extra_fields: t.Scalar | Sequence[str] | datetime | None,
     ) -> p.Result[p.Auth.Identity]:
         """Create a new user.
 

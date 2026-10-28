@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, MutableSequence
 from typing import override
 
 from flext_auth import c, m, p, r, t, u
@@ -33,7 +34,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         self.ticket_validator = self._KerberosTicketValidator(self)
         self._service_handler = self._KerberosServiceHandler(self)
         self._auth_manager = self._KerberosAuthManager(self)
-        self._active_tickets: t.MappingKV[str, m.Auth.KerberosTicketData] = {}
+        self._active_tickets: Mapping[str, m.Auth.KerberosTicketData] = {}
 
     @override
     def supports(self) -> set[str]:
@@ -132,4 +133,4 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         return cls._identity_from_claims(claims)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthKerberosProvider"]
+__all__: MutableSequence[str] = ["FlextAuthKerberosProvider"]

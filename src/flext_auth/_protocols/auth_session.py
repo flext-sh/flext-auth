@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
@@ -35,7 +36,7 @@ class FlextAuthProtocolsAuthSession:
         def get_active_sessions(
             self,
             user_id: str,
-        ) -> p.Result[t.SequenceOf[FlextAuthProtocolsAuthSession.Session]]: ...
+        ) -> p.Result[Sequence[FlextAuthProtocolsAuthSession.Session]]: ...
 
         def end_session(self, user_id: str) -> p.Result[bool]: ...
 

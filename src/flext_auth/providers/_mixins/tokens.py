@@ -16,7 +16,7 @@ from flext_auth.providers._mixins import FlextAuthProviderCodec
 class FlextAuthProviderToken(FlextAuthProviderCodec):
     """Token generation and refresh operations for JWT providers."""
 
-    _provider_config: t.ScalarMapping | None
+    _provider_config: Mapping[str, t.Scalar] | None
 
     def generate_token(
         self,

@@ -92,7 +92,7 @@ class TestsFlextAuthTypings:
         [
             "JsonValue",
             "Scalar",
-            "StrSequence",
+            "Sequence[str]",
             "MutableJsonMapping",
             "MutableMetadataMapping",
         ],

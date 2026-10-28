@@ -6,14 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableMapping
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from flext_api import r, u
 
 if TYPE_CHECKING:
-    from collections.abc import MutableMapping
-
     from flext_auth import p, t
 
 

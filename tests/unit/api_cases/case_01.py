@@ -20,10 +20,10 @@ class TestsFlextAuthApiCase01:
     def test_auth_service_initialization_exposes_public_services() -> None:
         """FlextAuth quick_start initializes the public service properties."""
         auth = FlextAuth.quick_start(create_admin_user=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.identity_service, none=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.session_service, none=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.session_service, none=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.registry, none=False)
+        TestsFlextAuthUtilities.that(auth.identity_service, none=False)
+        TestsFlextAuthUtilities.that(auth.session_service, none=False)
+        TestsFlextAuthUtilities.that(auth.session_service, none=False)
+        TestsFlextAuthUtilities.that(auth.registry, none=False)
 
     @staticmethod
     def test_username_validation_processor() -> None:
@@ -34,33 +34,33 @@ class TestsFlextAuthApiCase01:
             "test@example.com",
             "ValidPass123!",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(result_valid.success, eq=True)
+        TestsFlextAuthUtilities.that(result_valid.success, eq=True)
         result_short = auth.register_user("ab", "test2@example.com", "ValidPass123!")
-        TestsFlextAuthUtilities.Tests.Matchers.that(not result_short.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result_short.error, none=False)
+        TestsFlextAuthUtilities.that(not result_short.success, eq=True)
+        TestsFlextAuthUtilities.that(result_short.error, none=False)
 
     @staticmethod
     def test_email_normalization_processor() -> None:
         """Test email normalization to lowercase."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.register_user("testuser", "TEST@EXAMPLE.COM", "ValidPass123!")
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=True)
+        TestsFlextAuthUtilities.that(result.success, eq=True)
         user_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "testuser",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(user_result.success, eq=True)
+        TestsFlextAuthUtilities.that(user_result.success, eq=True)
         user = user_result.value
-        TestsFlextAuthUtilities.Tests.Matchers.that(user.contact, eq="test@example.com")
+        TestsFlextAuthUtilities.that(user.contact, eq="test@example.com")
 
     @staticmethod
     def test_password_strength_validation_processor() -> None:
         """Test password strength validation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.register_user("user1", "user1@example.com", "weak")
-        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.error, none=False)
+        TestsFlextAuthUtilities.that(not result.success, eq=True)
+        TestsFlextAuthUtilities.that(result.error, none=False)
         error_text = (result.error or "").lower()
-        TestsFlextAuthUtilities.Tests.Matchers.that(
+        TestsFlextAuthUtilities.that(
             ("at least 8 characters" in error_text or "credential" in error_text),
             eq=True,
         )
@@ -70,7 +70,7 @@ class TestsFlextAuthApiCase01:
         """Test that identity service operations work correctly."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         result = auth.register_user("cmduser", "cmd@example.com", "CmdPass123!")
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=True)
+        TestsFlextAuthUtilities.that(result.success, eq=True)
 
     @staticmethod
     def test_query_handlers_registered() -> None:
@@ -80,14 +80,14 @@ class TestsFlextAuthApiCase01:
         result = auth.identity_service.identity_manager.fetch_user_by_username(
             "queryuser",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=True)
+        TestsFlextAuthUtilities.that(result.success, eq=True)
 
     @staticmethod
     def test_registry_lists_providers() -> None:
         """Registry exposes list_providers() returning a list."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         providers = auth.list_providers()
-        TestsFlextAuthUtilities.Tests.Matchers.that(providers, is_=list)
+        TestsFlextAuthUtilities.that(providers, is_=list)
 
     @staticmethod
     def test_username_index_management() -> None:
@@ -97,7 +97,7 @@ class TestsFlextAuthApiCase01:
         user_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "indexuser",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(user_result.success, eq=True)
+        TestsFlextAuthUtilities.that(user_result.success, eq=True)
 
     @staticmethod
     def test_email_index_management() -> None:
@@ -107,11 +107,9 @@ class TestsFlextAuthApiCase01:
         user_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "emailuser",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(user_result.success, eq=True)
+        TestsFlextAuthUtilities.that(user_result.success, eq=True)
         user = user_result.value
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            user.contact, eq="email@example.com"
-        )
+        TestsFlextAuthUtilities.that(user.contact, eq="email@example.com")
 
     @staticmethod
     def test_user_sessions_index_management() -> None:
@@ -119,19 +117,19 @@ class TestsFlextAuthApiCase01:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("sessionuser", "session@example.com", "SessionPass123!")
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
+        TestsFlextAuthUtilities.that(auth_result.success, eq=True)
         user = auth_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
             user.unique_id,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(sessions_result.success, eq=True)
+        TestsFlextAuthUtilities.that(sessions_result.success, eq=True)
 
     @staticmethod
     def test_custom_config_initialization() -> None:
         """Test initialization with custom configuration."""
         custom_config = FlextAuthSettings.fetch_global()
         auth = FlextAuth(runtime_settings=custom_config)
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth.settings, eq=custom_config)
+        TestsFlextAuthUtilities.that(auth.settings, eq=custom_config)
 
     @staticmethod
     def test_get_user_sessions() -> None:
@@ -139,13 +137,13 @@ class TestsFlextAuthApiCase01:
         auth = FlextAuth.quick_start(create_admin_user=False)
         auth.register_user("sessuser", "sess@example.com", "SessPass123!")
         auth_result = auth.authenticate_user("sessuser", "SessPass123!")
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
+        TestsFlextAuthUtilities.that(auth_result.success, eq=True)
         user_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "sessuser",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(user_result.success, eq=True)
+        TestsFlextAuthUtilities.that(user_result.success, eq=True)
         user = user_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
             user.unique_id,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(sessions_result.success, eq=True)
+        TestsFlextAuthUtilities.that(sessions_result.success, eq=True)

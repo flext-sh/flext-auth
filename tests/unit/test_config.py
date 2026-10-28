@@ -11,6 +11,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableMapping
+
 import pytest
 
 from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings, m, t
@@ -295,7 +297,7 @@ class TestsFlextAuthConfig:
         source = m.EnvSettingsSource(FlextAuthConfig)
         prefix = source.env_prefix
         delimiter = source.env_nested_delimiter
-        environment: t.MutableMappingKV[str, str] = {}
+        environment: MutableMapping[str, str] = {}
         expected_minimum = minimum
         if not nested_environment:
             environment[f"{prefix}Auth"] = TestsFlextAuthUtilities.Cli.json_dumps({

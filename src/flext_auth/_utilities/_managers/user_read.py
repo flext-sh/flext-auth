@@ -6,14 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import MutableMapping
 
 from flext_api import e, r
 
 from flext_auth import m, p, t
-
-if TYPE_CHECKING:
-    from collections.abc import MutableMapping
 
 
 class FlextAuthUserManagerRead:
@@ -103,7 +100,7 @@ class FlextAuthUserManagerRead:
     def _find_user_by_id(
         self,
         user_id: str,
-    ) -> p.Result[t.Pair[str, t.Auth.ManagersUserData]]:
+    ) -> p.Result[tuple[str, t.Auth.ManagersUserData]]:
         """Find user by ID (either identity_id, unique_id, or id field).
 
         Eliminates duplication across 7 methods.

@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime
 from typing import Annotated, Self, cast
 
@@ -43,11 +43,11 @@ class FlextAuthModelsAuthIdentity:
         ] = ""
         full_name: Annotated[str, m.Field(description="Full name")] = ""
         is_active: Annotated[bool, m.Field(description="Active status")] = True
-        roles: t.StrSequence = m.Field(
+        roles: Sequence[str] = m.Field(
             default_factory=lambda: [c.Auth.RoleTypes.USER.value],
             description="Roles",
         )
-        permissions: t.StrSequence = m.Field(
+        permissions: Sequence[str] = m.Field(
             default_factory=tuple,
             description="List of permissions assigned to the identity",
         )
@@ -75,7 +75,7 @@ class FlextAuthModelsAuthIdentity:
         def normalize_token_claims[TPayload](
             cls,
             data: TPayload,
-        ) -> TPayload | t.MutableMappingKV[str, t.JsonPayload]:
+        ) -> TPayload | MutableMapping[str, t.JsonPayload]:
             """Normalize OAuth/Kerberos claim payloads into identity fields.
 
             Pydantic hands before-model validators the raw untrusted input; the
@@ -99,7 +99,7 @@ class FlextAuthModelsAuthIdentity:
             # typed model this validator feeds, so the parse re-keys once and
             # hands the mapping downstream in the fleet's JSON vocabulary.
             typed_payload = cast("Mapping[str, t.JsonPayload]", data)
-            payload: t.MutableMappingKV[str, t.JsonPayload] = dict(typed_payload)
+            payload: MutableMapping[str, t.JsonPayload] = dict(typed_payload)
             if c.Auth.KEY_NAME in payload and c.Auth.KEY_CONTACT in payload:
                 return original
             identity_candidates = tuple(
@@ -147,7 +147,7 @@ class FlextAuthModelsAuthIdentity:
                     if scope_text
                     else [c.Auth.RoleTypes.USER.value]
                 )
-            normalized: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
+            normalized: MutableMapping[str, t.JsonPayload | datetime] = {
                 c.FIELD_ID: identity_id,
                 c.Auth.KEY_NAME: name,
                 c.Auth.KEY_CONTACT: contact,

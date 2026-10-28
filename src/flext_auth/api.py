@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence, Sequence
 from typing import Self
 
 from flext_auth import FlextAuthSettings
@@ -74,8 +75,8 @@ class FlextAuth(FlextAuthApplicationService):
             for key, value in self.settings.Auth.model_dump().items()
             if isinstance(value, (str, int, bool))
         }
-        providers: t.SequenceOf[
-            t.Triple[t.Auth.ProvidersKey, type[p.Auth.FlextAuthBaseProvider], bool]
+        providers: Sequence[
+            tuple[t.Auth.ProvidersKey, type[p.Auth.FlextAuthBaseProvider], bool]
         ] = (
             (c.Auth.ProviderTypes.BASIC.value, FlextAuthBasicProvider, True),
             (
@@ -148,4 +149,4 @@ auth: p.Auth.Service = FlextAuth()
 """Public application instance, explicitly composed at the API boundary."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuth", "auth"]
+__all__: MutableSequence[str] = ["FlextAuth", "auth"]

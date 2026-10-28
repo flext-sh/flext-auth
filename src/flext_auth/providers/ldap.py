@@ -6,9 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
-from flext_auth import p, t
+from flext_auth import p
 from flext_auth.providers import FlextAuthProvider
 
 
@@ -41,4 +42,4 @@ class FlextAuthLdapProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
         return {"ldap", "validate"}
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthLdapProvider"]
+__all__: MutableSequence[str] = ["FlextAuthLdapProvider"]

@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, MutableSequence
 from typing import override
 
 from flext_auth import p, r, t
@@ -34,7 +35,7 @@ class FlextAuthRfcProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
 
     """
 
-    def __init__(self, settings: t.MappingKV[str, t.Primitives] | None = None) -> None:
+    def __init__(self, settings: Mapping[str, t.Primitives] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration.
 
         Args:
@@ -46,7 +47,7 @@ class FlextAuthRfcProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     @staticmethod
     def project_to_scalar_config(
         settings: t.ConfigurationMapping | None,
-    ) -> t.MappingKV[str, t.Primitives] | None:
+    ) -> Mapping[str, t.Primitives] | None:
         """Project provider settings into the RFC base scalar contract.
 
         Filters out non-primitive values (only keeps str/int/bool entries),
@@ -132,4 +133,4 @@ class FlextAuthRfcProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
         )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthRfcProvider"]
+__all__: MutableSequence[str] = ["FlextAuthRfcProvider"]

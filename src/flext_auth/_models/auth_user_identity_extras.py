@@ -25,8 +25,8 @@ class FlextAuthModelsAuthUserIdentityExtras:
 
         full_name: str | None = None
         is_active: bool | None = None
-        roles: t.StrSequence | None = None
-        permissions: t.StrSequence | None = None
+        roles: Sequence[str] | None = None
+        permissions: Sequence[str] | None = None
         failed_attempts: int | None = None
         locked_until: datetime | None = None
         last_access: datetime | None = None
@@ -38,7 +38,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
         def normalize_str_sequence(
             cls,
             value: t.JsonPayload,
-        ) -> t.StrSequence | None:
+        ) -> Sequence[str] | None:
             """Normalize sequence-like values to strict string sequences.
 
             Args:

@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
+
 from flext_auth import c, p, r, t, u
 
 
@@ -52,4 +54,4 @@ class FlextAuthJwtTokenValidator:
             return r[t.Auth.TokensClaimMap].fail_op("Token validation", exc)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthJwtTokenValidator"]
+__all__: MutableSequence[str] = ["FlextAuthJwtTokenValidator"]

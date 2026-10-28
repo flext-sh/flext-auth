@@ -9,9 +9,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
-from flext_auth import p, t
+from flext_auth import p
 from flext_auth.providers import FlextAuthProvider
 
 
@@ -37,4 +38,4 @@ class FlextAuthBasicProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
         return {"basic", "validate"}
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthBasicProvider"]
+__all__: MutableSequence[str] = ["FlextAuthBasicProvider"]

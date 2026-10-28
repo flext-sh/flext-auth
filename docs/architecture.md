@@ -207,6 +207,15 @@ patterns and production quality.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from typing import Protocol
 
 from flext_auth import FlextAuthRegistry, m
@@ -224,7 +233,7 @@ class FlextAuth(s):
     # Core operations
     def authenticate(
         self,
-        credentials: t.StrMapping,
+        credentials: Mapping[str, str],
     ) -> p.Result[auth_m.Auth.AuthIdentity]: ...
 
     def register_user(
@@ -232,7 +241,7 @@ class FlextAuth(s):
         username: str,
         email: str,
         password: str,
-        roles: t.StrSequence | None = None,
+        roles: Sequence[str] | None = None,
     ) -> p.Result[auth_m.Auth.AuthIdentity]: ...
 
     def create_token(self, identity_id: str) -> p.Result[str]: ...
@@ -259,6 +268,15 @@ class FlextAuthBaseProvider(Protocol):
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_core import p, s, t
 
 
@@ -276,9 +294,9 @@ class FlextAuthRegistry(s):
 
     def get(self, name: str) -> p.Result[FlextAuthBaseProvider]: ...
 
-    def list_providers(self) -> t.StrSequence: ...
+    def list_providers(self) -> Sequence[str]: ...
 
-    def resolve_capabilities(self, name: str) -> p.Result[t.StrSequence]: ...
+    def resolve_capabilities(self, name: str) -> p.Result[Sequence[str]]: ...
 ```
 
 ### 3. Base Provider Protocol (`providers/base.py`)
@@ -287,6 +305,15 @@ class FlextAuthRegistry(s):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from typing import Protocol
 
@@ -316,7 +343,7 @@ class FlextAuthBaseProvider(Protocol):
         """Revoke authentication token."""
         ...
 
-    def supports(self) -> t.StrSequence:
+    def supports(self) -> Sequence[str]:
         """Return supported capabilities."""
         ...
 
@@ -413,6 +440,15 @@ class FlextAuthBaseProvider(Protocol):
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from typing import Protocol
 
 from flext_cli import u
@@ -462,7 +498,7 @@ class FlextAuthExampleProvider(s):
     def revoke(self, token: str | m.Auth.AuthToken) -> p.Result[bool]:
         """Revoke token if provider supports it."""
 
-    def supports(self) -> t.StrSequence:
+    def supports(self) -> Sequence[str]:
         """Return provider capabilities."""
         return ["token", "validate", "refresh"]
 
@@ -488,6 +524,15 @@ class FlextAuthExampleProvider(s):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from typing import Protocol
 
@@ -526,6 +571,15 @@ class BaseTransportAdapter(Protocol):
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_api import FlextApi
 from flext_cli import u
 from flext_core import c, m, p, r, t
@@ -556,6 +610,15 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_grpc import FlextGrpc
 from flext_cli import u
 from flext_core import c, m, p, r, t
@@ -589,6 +652,15 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_cli import u
 from flext_core import c, m, p, r, t
 
@@ -615,6 +687,15 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from typing import Protocol
 
 class BaseProtocolHandler(Protocol):
@@ -635,6 +716,15 @@ class BaseProtocolHandler(Protocol):
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 import json
 from flext_core import c, m, p, r, t
 
@@ -665,6 +755,15 @@ class RestProtocolHandler(BaseProtocolHandler):
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_core import c, m, p, r, t
 
 
@@ -700,6 +799,15 @@ class SoapProtocolHandler(BaseProtocolHandler):
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_core import p, r, s, t
 from flext_auth import m
 
@@ -739,7 +847,7 @@ class TokenManager(s):
         credentials: dict,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-        retry_on: t.SequenceOf[type[Exception]] | None = None,
+        retry_on: Sequence[type[Exception]] | None = None,
     ) -> p.Result[auth_m.Auth.AuthToken]:
         """Get token with automatic retry on failure."""
         return self._retry.execute(
@@ -771,6 +879,15 @@ class TokenManager(s):
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from collections.abc import Callable
 from time import sleep
 
@@ -785,7 +902,7 @@ class RetryPolicy:
         func: Callable,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
-        retry_on: t.SequenceOf[type[Exception]] | None = None,
+        retry_on: Sequence[type[Exception]] | None = None,
         **kwargs: t.Scalar,
     ) -> p.Result[t.JsonValue]:
         """Execute function with retry logic."""
@@ -811,6 +928,15 @@ class RetryPolicy:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_cli import u
 
@@ -875,6 +1001,15 @@ class TokenCache:
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_cli import u
 from flext_core import m, p, r, t
 
@@ -921,6 +1056,15 @@ class CredentialManager:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from datetime import UTC, datetime
 
@@ -976,6 +1120,15 @@ class SecurityValidator:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_api import FlextApi
 from flext_ldap import ldap
 
@@ -1012,6 +1165,15 @@ All providers and managers extend `s` for consistency:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_cli import u
 
@@ -1066,6 +1228,15 @@ providers = registry.list_providers()
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_auth import FlextAuth
 from flext_core import c, m, p, r, t
 

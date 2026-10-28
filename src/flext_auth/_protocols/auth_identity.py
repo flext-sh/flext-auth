@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
@@ -35,7 +36,7 @@ class FlextAuthProtocolsAuthIdentity:
         "Contact information (e.g., email)."
         is_active: bool
         "Active status."
-        roles: t.StrSequence
+        roles: Sequence[str]
         "Identity roles."
         failed_attempts: int
         "Failed login attempts count."
@@ -45,7 +46,7 @@ class FlextAuthProtocolsAuthIdentity:
         credential_hash: str
         token: str
         session_id: str
-        permissions: t.StrSequence
+        permissions: Sequence[str]
 
         def with_successful_access(self) -> FlextAuthProtocolsAuthIdentity.Identity: ...
 
@@ -120,13 +121,13 @@ class FlextAuthProtocolsAuthIdentity:
             username: str,
             email: str,
             password_hash: str,
-            roles: t.StrSequence | None = None,
+            roles: Sequence[str] | None = None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
 
         def update_user(
             self,
             user_id: str,
-            **updates: t.Scalar | t.StrSequence | datetime | None,
+            **updates: t.Scalar | Sequence[str] | datetime | None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]:
             """Update an identity and return the resulting identity.
 

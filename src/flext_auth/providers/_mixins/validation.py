@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from flext_auth import p, r, t, u
 
 
@@ -67,7 +69,7 @@ class FlextAuthProviderValidation:
     @staticmethod
     def _validate_credentials_dict(
         credentials: t.JsonMapping,
-        required_fields: t.StrSequence,
+        required_fields: Sequence[str],
     ) -> p.Result[bool]:
         """Validate that credentials contain required fields.
 

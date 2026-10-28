@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
@@ -34,7 +35,7 @@ class FlextAuthProtocolsAuthTransport:
             ...         url: str,
             ...         method: str = "POST",
             ...         data: t.ConfigurationMapping | None = None,
-            ...         headers: t.StrMapping | None = None,
+            ...         headers: Mapping[str, str] | None = None,
             ...     ) -> p.Result[t.ConfigurationMapping]:
             ...         # HTTP-specific implementation
             ...         pass
@@ -55,7 +56,7 @@ class FlextAuthProtocolsAuthTransport:
             url: str,
             method: str = "POST",
             data: t.ConfigurationMapping | None = None,
-            headers: t.StrMapping | None = None,
+            headers: Mapping[str, str] | None = None,
             **kwargs: t.Scalar,
         ) -> p.Result[t.ConfigurationMapping]:
             """Send a request using this transport.

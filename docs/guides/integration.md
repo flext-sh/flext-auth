@@ -76,6 +76,15 @@ Use `FlextContainer` for dependency injection:
 
 ```{.python .notest}
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service
@@ -126,6 +135,15 @@ Authentication middleware for REST APIs:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -153,7 +171,7 @@ def authenticate_request(
 @app.get("/protected")
 def protected_endpoint(
     token: Annotated[str, Depends(authenticate_request)],
-) -> t.StrDict:
+) -> dict[str, str]:
     return {"message": "Hello authenticated user", "token": token}
 ```
 
@@ -163,6 +181,15 @@ Web application authentication flows:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from collections.abc import Callable
 
@@ -210,6 +237,15 @@ CLI authentication patterns:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_cli import FlextCliCli, FlextCliSettings, m, t
 
@@ -270,6 +306,15 @@ flext-auth acts as an authentication service provider for the ecosystem:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth
 from flext_core import FlextContainer, m, p
 
@@ -297,6 +342,15 @@ Pattern for service-to-service authentication:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi
 
@@ -340,6 +394,15 @@ Integration with flext-db-oracle for user storage:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import m
 from flext_core import p
 
@@ -365,6 +428,15 @@ Integration with Redis for session management:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from typing import Protocol
 
@@ -429,6 +501,15 @@ Integration with FLEXT workspace configuration:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import FlextSettings, p, r
 
@@ -453,6 +534,15 @@ Test authentication with other FLEXT services:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_auth import FlextAuth
 
@@ -485,6 +575,15 @@ Plans for OAuth2 provider integration:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth
 from flext_core import m, p
 
@@ -511,6 +610,15 @@ Plans for SAML integration:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_auth import FlextAuth, m
 from flext_core import p

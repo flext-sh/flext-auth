@@ -11,9 +11,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import pytest
 
-from flext_auth import FlextAuth, FlextAuthSettings, t
+from flext_auth import FlextAuth, FlextAuthSettings
 from tests import c, p, tm
 
 
@@ -185,7 +187,7 @@ class TestsFlextAuthApi:
         ],
     )
     def test_authenticate_rejects_missing_credentials(
-        credentials: t.StrMapping,
+        credentials: Mapping[str, str],
     ) -> None:
         """Empty username or password fails before any provider dispatch."""
         auth = FlextAuth.quick_start(create_admin_user=False)

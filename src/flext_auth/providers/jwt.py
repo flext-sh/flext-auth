@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
 from flext_auth import p, r, t
@@ -76,4 +77,4 @@ class FlextAuthJwtProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
         return validator.validate_token(token).map(lambda _payload: True)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthJwtProvider"]
+__all__: MutableSequence[str] = ["FlextAuthJwtProvider"]

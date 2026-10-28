@@ -395,6 +395,15 @@ u.Cli.info(f"Expired sessions removed: {session_count}")
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 # Implement session cleanup
 def cleanup_expired_sessions() -> None:

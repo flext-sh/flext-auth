@@ -6,7 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import t
+from collections.abc import MutableSequence
+
 from flext_auth._registry import FlextAuthRegistryMutation
 
 
@@ -14,4 +15,4 @@ class FlextAuthRegistry(FlextAuthRegistryMutation):
     """Auth provider registry backed by the canonical registry DSL."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthRegistry"]
+__all__: MutableSequence[str] = ["FlextAuthRegistry"]

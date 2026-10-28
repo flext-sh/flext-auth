@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableSequence
 from typing import TYPE_CHECKING, override
 
 from flext_auth import e, m, t, u
@@ -19,7 +19,9 @@ if TYPE_CHECKING:
 class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
     """OAuth2 provider using focused configuration and token operation owners."""
 
-    def __init__(self, settings: m.Auth.ProviderConfig | t.ScalarMapping) -> None:
+    def __init__(
+        self, settings: m.Auth.ProviderConfig | Mapping[str, t.Scalar]
+    ) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
         Railway-oriented initialization with proper error handling.
@@ -37,12 +39,14 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
             if isinstance(settings, Mapping)
             else settings.model_dump(mode="json", exclude_none=True)
         )
-        normalized_config: t.ScalarMapping = u.scalar_mapping_adapter().validate_python(
-            raw_config,
+        normalized_config: Mapping[str, t.Scalar] = (
+            u.scalar_mapping_adapter().validate_python(
+                raw_config,
+            )
         )
         scalar_config = self.project_to_scalar_config(normalized_config) or {}
         super().__init__(scalar_config)
-        self._oauth2_config: t.MappingKV[str, t.Primitives] = scalar_config
+        self._oauth2_config: Mapping[str, t.Primitives] = scalar_config
         # Pydantic-typed view of the OAuth2 config — eliminates dict.get + isinstance
         # narrowing at every access site. ProviderConfig owns the field-typing
         # contract and validation centralization.
@@ -75,4 +79,4 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
         return "RFC 6749"
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthOAuth2Provider"]
+__all__: MutableSequence[str] = ["FlextAuthOAuth2Provider"]

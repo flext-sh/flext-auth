@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import ClassVar
 
 from flext_auth import m, p, r, settings, t, u
@@ -15,7 +15,7 @@ from flext_auth import m, p, r, settings, t, u
 class FlextAuthKerberosSupport:
     """Kerberos validation and ticket helper owner."""
 
-    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = ("realm", "kdc", "service_principal")
+    _KERBEROS_REQUIRED: ClassVar[Sequence[str]] = ("realm", "kdc", "service_principal")
 
     _external_ticket_validator: t.Auth.KerberosTicketValidator | None = None
 

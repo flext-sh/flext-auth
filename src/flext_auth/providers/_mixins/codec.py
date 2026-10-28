@@ -6,13 +6,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_auth import c, p, r, t, u
 
 
 class FlextAuthProviderCodec:
     """JWT encode/decode helpers shared by token-based providers."""
 
-    _provider_config: t.ScalarMapping | None
+    _provider_config: Mapping[str, t.Scalar] | None
 
     def _decode_token_claims(self, token: str) -> p.Result[t.Auth.TokensClaimMap]:
         """Decode JWT token and return claims payload.

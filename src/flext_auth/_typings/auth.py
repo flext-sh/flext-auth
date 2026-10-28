@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, MutableMapping, MutableSequence
+from collections.abc import Callable, MutableMapping, MutableSequence, Sequence
 from typing import TYPE_CHECKING, Annotated
 
 from flext_api import m as api_models, t
@@ -32,7 +32,7 @@ class FlextAuthTypesAuth:
         ),
     ]
 
-    type ManagersManagerValue = t.JsonValue | t.Scalar | t.StrSequence
+    type ManagersManagerValue = t.JsonValue | t.Scalar | Sequence[str]
     type ManagersUserData = MutableMapping[str, ManagersManagerValue]
     type ManagersLogEntry = MutableMapping[str, ManagersManagerValue]
     type ManagersSessionData = t.MutableMetadataMapping

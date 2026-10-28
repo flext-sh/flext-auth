@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
@@ -78,7 +79,7 @@ class FlextAuthProtocolsAuthProvider:
             """
             ...
 
-        def list_providers(self) -> t.StrSequence:
+        def list_providers(self) -> Sequence[str]:
             """Return registered provider names.
 
             Returns:
@@ -133,7 +134,7 @@ class FlextAuthProtocolsAuthProvider:
         OAuth2, SAML, etc.).
         """
 
-        def __init__(self, settings: t.ScalarMapping | None = None) -> None:
+        def __init__(self, settings: Mapping[str, t.Scalar] | None = None) -> None:
             """Initialize provider with optional configuration.
 
             Args:
@@ -143,7 +144,7 @@ class FlextAuthProtocolsAuthProvider:
             ...
 
         @property
-        def settings(self) -> t.ScalarMapping | None:
+        def settings(self) -> Mapping[str, t.Scalar] | None:
             """Provider configuration mapping."""
             ...
 
