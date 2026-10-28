@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Iterator
 
 import pytest
 
@@ -15,9 +15,6 @@ from flext_auth import FlextAuth, FlextAuthSettings
 from tests.fixtures.auth import TestsFlextAuthFixtures
 
 auth_api = TestsFlextAuthFixtures.auth_api
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
 
 
 @pytest.fixture

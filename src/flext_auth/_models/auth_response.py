@@ -114,7 +114,7 @@ class FlextAuthModelsAuthResponse:
             version: Annotated[str, m.Field(description="Provider version")] = (
                 c.Auth.PROVIDER_VERSION
             )
-            capabilities: t.VariadicTuple[str] = m.Field(
+            capabilities: tuple[str, ...] = m.Field(
                 default_factory=tuple,
                 description="Provider capabilities",
             )

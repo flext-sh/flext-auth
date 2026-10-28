@@ -71,22 +71,22 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     "OAuth scope claim key."
     KEY_CONTACT_DOMAIN: Final[str] = "contact_domain"
     "Local contact-domain override key for identity claim normalization."
-    TOKEN_IDENTITY_KEYS: Final[t.VariadicTuple[str]] = (
+    TOKEN_IDENTITY_KEYS: Final[tuple[str, ...]] = (
         KEY_SUBJECT,
         KEY_IDENTITY_ID,
         KEY_USER_ID,
         KEY_USERNAME,
     )
     "Identity claim keys in priority order."
-    TOKEN_NAME_KEYS: Final[t.VariadicTuple[str]] = (
+    TOKEN_NAME_KEYS: Final[tuple[str, ...]] = (
         KEY_NAME,
         KEY_PREFERRED_USERNAME,
         KEY_USERNAME,
     )
     "Display-name claim keys in priority order."
-    TOKEN_CONTACT_KEYS: Final[t.VariadicTuple[str]] = (KEY_CONTACT, KEY_EMAIL)
+    TOKEN_CONTACT_KEYS: Final[tuple[str, ...]] = (KEY_CONTACT, KEY_EMAIL)
     "Contact claim keys in priority order."
-    TOKEN_IDENTITY_PASSTHROUGH_FIELDS: Final[t.VariadicTuple[str]] = (
+    TOKEN_IDENTITY_PASSTHROUGH_FIELDS: Final[tuple[str, ...]] = (
         "credential_hash",
         "failed_attempts",
         "full_name",
