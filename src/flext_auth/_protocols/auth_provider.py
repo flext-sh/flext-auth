@@ -14,11 +14,31 @@ from flext_api import p
 from flext_auth import c, t
 
 if TYPE_CHECKING:
+    from flext_auth import m
     from flext_auth._protocols import FlextAuthProtocolsAuthSession
 
 
 class FlextAuthProtocolsAuthProvider:
     """Protocol namespace for provider registries and providers."""
+
+    @runtime_checkable
+    class KerberosTicketValidator(Protocol):
+        """External Kerberos ticket validation contract."""
+
+        def __call__(
+            self,
+            ticket: str,
+        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+            """Validate one Kerberos ticket into its authenticated identity.
+
+            Args:
+                ticket: The opaque Kerberos ticket presented by the caller.
+
+            Returns:
+                The authenticated identity, ticket details, or mapping.
+
+            """
+            ...
 
     @runtime_checkable
     class ConfigurableProvider(Protocol):

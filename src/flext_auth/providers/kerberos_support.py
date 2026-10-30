@@ -17,7 +17,7 @@ class FlextAuthKerberosSupport:
 
     _KERBEROS_REQUIRED: ClassVar[Sequence[str]] = ("realm", "kdc", "service_principal")
 
-    _external_ticket_validator: t.Auth.KerberosTicketValidator | None = None
+    _external_ticket_validator: p.Auth.KerberosTicketValidator | None = None
 
     def _validate_kerberos_configuration(self) -> p.Result[bool]:
         """Railway-oriented validation of the typed Kerberos settings namespace.
