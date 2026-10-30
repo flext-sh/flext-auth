@@ -6,16 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, MutableMapping, MutableSequence
-from datetime import datetime
-from typing import TYPE_CHECKING, Annotated
+from collections.abc import MutableMapping, MutableSequence, Sequence
+from typing import Annotated
 
-from flext_api import t
+from flext_api import m as api_models, t
 
 from flext_auth import c
-
-if TYPE_CHECKING:
-    from flext_auth import m
+from flext_auth._typings import FlextAuthTypesBase
 
 
 class FlextAuthTypesAuth:
@@ -24,7 +21,7 @@ class FlextAuthTypesAuth:
     type TokenRequestType = c.Auth.TokenTypes | str
     type ProvidersKey = Annotated[
         str,
-        m.Field(
+        api_models.Field(
             min_length=1,
             max_length=c.Auth.VALIDATION_SHORT_NAME_MAX,
             pattern=c.PATTERN_IDENTIFIER_LOWERCASE,
@@ -32,18 +29,12 @@ class FlextAuthTypesAuth:
         ),
     ]
 
-    type ManagersDateTimeValue = datetime
-    type ManagersManagerValue = t.JsonValue | t.Scalar | t.StrSequence
+    type ManagersManagerValue = t.JsonValue | t.Scalar | Sequence[str]
     type ManagersUserData = MutableMapping[str, ManagersManagerValue]
     type ManagersLogEntry = MutableMapping[str, ManagersManagerValue]
     type ManagersSessionData = t.MutableMetadataMapping
-    type ManagersAttemptEvents = MutableSequence[ManagersDateTimeValue]
+    type ManagersAttemptEvents = MutableSequence[FlextAuthTypesBase.DateTimeValue]
     type ManagersAttemptData = MutableMapping[str, ManagersAttemptEvents]
-
-    type KerberosTicketValidator = Callable[
-        [str],
-        m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
-    ]
 
 
 __all__: list[str] = ["FlextAuthTypesAuth"]

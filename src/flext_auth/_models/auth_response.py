@@ -98,7 +98,7 @@ class FlextAuthModelsAuthResponse:
             default=None,
             description="Validated provider configuration.",
         )
-        metadata: t.Port[p.Auth.ProviderMetadata | None] = m.Field(
+        metadata: t.Port[p.Auth.ProviderMetadata] | None = m.Field(
             default=None,
             exclude=True,
             description="Original domain metadata of this provider registration.",
@@ -114,7 +114,7 @@ class FlextAuthModelsAuthResponse:
             version: Annotated[str, m.Field(description="Provider version")] = (
                 c.Auth.PROVIDER_VERSION
             )
-            capabilities: t.VariadicTuple[str] = m.Field(
+            capabilities: tuple[str, ...] = m.Field(
                 default_factory=tuple,
                 description="Provider capabilities",
             )

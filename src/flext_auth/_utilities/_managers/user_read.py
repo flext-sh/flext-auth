@@ -6,15 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import MutableMapping
 
 from flext_api import e, r
 
 from flext_auth import m, p, t
-
-if TYPE_CHECKING:
-    from collections.abc import MutableMapping
-    from datetime import datetime
 
 
 class FlextAuthUserManagerRead:
@@ -65,7 +61,7 @@ class FlextAuthUserManagerRead:
             The identity entity rebuilt from the storage fields.
 
         """
-        identity_data: t.MutableMappingKV[str, t.JsonPayload | datetime] = {
+        identity_data: t.Auth.ManagersUserData = {
             field: storage_data[field]
             for field in m.Auth.AuthIdentity.model_fields
             if field in storage_data
@@ -104,7 +100,7 @@ class FlextAuthUserManagerRead:
     def _find_user_by_id(
         self,
         user_id: str,
-    ) -> p.Result[t.Pair[str, t.Auth.ManagersUserData]]:
+    ) -> p.Result[tuple[str, t.Auth.ManagersUserData]]:
         """Find user by ID (either identity_id, unique_id, or id field).
 
         Eliminates duplication across 7 methods.

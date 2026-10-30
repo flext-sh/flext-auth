@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 
-from examples import p, r, u
+from examples import c, p, r, u
 from flext_auth import FlextAuth, FlextAuthSettings
 
 
@@ -48,7 +48,7 @@ class FlextAuthBasicUsageFlows:
             username="lifecycleuser",
             email="lifecycle@example.com",
             password=password,
-            roles=["user"],
+            roles=[c.Auth.RoleTypes.USER],
         )
         if register_result.failure:
             return r[bool].from_failure(register_result)

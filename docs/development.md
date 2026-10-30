@@ -132,6 +132,15 @@ All code must follow FLEXT patterns:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import m, p, r
 
 
@@ -165,6 +174,15 @@ def authenticate_user_legacy(username: str, password: str) -> m.Auth.AuthIdentit
 
 ```text
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_auth import m, p, r
 
 
@@ -303,6 +321,15 @@ tests/
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth
 
 
@@ -331,6 +358,15 @@ Follow FLEXT service patterns:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_cli import u
 
 from flext_auth import p, r, t
@@ -342,9 +378,12 @@ class AuthenticationService:
         self._container = FlextContainer()
         self.logger = u.fetch_logger(__name__)
 
-    def process(self, request: t.StrMapping) -> p.Result[t.StrMapping]:
+    def process(self, request: Mapping[str, str]) -> p.Result[Mapping[str, str]]:
         # Service implementation
-        return r[t.StrMapping].ok({"status": "processed", "request": request})
+        return r[Mapping[str, str]].ok({
+            "status": "processed",
+            c.ContextScope.REQUEST: request,
+        })
 ```
 
 ### Error Handling
@@ -353,6 +392,15 @@ Use r exclusively:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_auth import FlextAuth, m, p, r
 

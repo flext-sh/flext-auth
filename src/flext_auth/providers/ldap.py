@@ -6,13 +6,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
-from flext_auth import p, t
-from flext_auth.providers import FlextAuthProviderMixin
+from flext_auth import p
+from flext_auth.providers import FlextAuthProvider
 
 
-class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthLdapProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.
@@ -20,7 +21,10 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
 
     Example:
         >>> provider = FlextAuthLdapProvider()
-        >>> result = provider.authenticate({"username": "user", "password": "password"})
+        >>> result = provider.authenticate({
+        ...     "username": c.ContextScope.USER,
+        ...     "password": "password",
+        ... })
         >>> if result.success:
         ...     token = result.value
         ...     u.Cli.print(f"Authenticated with token: {token.token}")
@@ -38,4 +42,4 @@ class FlextAuthLdapProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider
         return {"ldap", "validate"}
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthLdapProvider"]
+__all__: MutableSequence[str] = ["FlextAuthLdapProvider"]

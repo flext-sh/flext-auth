@@ -6,9 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence, Sequence
 from datetime import timedelta
 
-from flext_auth import c, m, p, r, s, t, u
+from flext_auth import c, m, p, r, s, u
 
 
 class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
@@ -174,7 +175,7 @@ class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
         name: str,
         contact: str,
         credential: str,
-        roles: t.StrSequence | None = None,
+        roles: Sequence[str] | None = None,
     ) -> p.Result[p.Auth.Identity]:
         """Railway-oriented identity creation with credential hashing.
 
@@ -190,7 +191,7 @@ class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
 
         """
         if roles is None:
-            user_roles: t.StrSequence = []
+            user_roles: Sequence[str] = []
         else:
             user_roles = roles
         normalized_contact = contact.lower()
@@ -272,4 +273,4 @@ class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):
         )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthIdentityService"]
+__all__: MutableSequence[str] = ["FlextAuthIdentityService"]

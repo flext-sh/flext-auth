@@ -32,22 +32,33 @@ class TestsFlextAuthTypings:
     def test_composes_flext_api_types_via_mro() -> None:
         # Arrange / Act / Assert: the facade IS a specialization of the API layer.
         """Test composes flext api types via mro."""
-        assert issubclass(FlextAuthTypes, FlextApiTypes)
+        tm.that(FlextApiTypes in FlextAuthTypes.__mro__)
 
     @staticmethod
     def test_composes_flext_auth_types_via_mro() -> None:
         """Test composes flext auth types via mro."""
-        assert issubclass(FlextAuthTypes, FlextAuthTypes)
+        tm.that(FlextAuthTypes in FlextAuthTypes.__mro__)
 
     @staticmethod
     def test_exposes_auth_domain_namespace() -> None:
         """Test exposes auth domain namespace."""
-        assert hasattr(TestsFlextAuthTypes, "Auth")
+
+        def has_auth_namespace(value: type) -> bool:
+            return hasattr(value, "Auth")
+
+        tm.that(TestsFlextAuthTypes, where=has_auth_namespace)
 
     @staticmethod
     def test_auth_datetime_alias_resolves_to_datetime() -> None:
         """Test auth datetime alias resolves to datetime."""
-        assert TestsFlextAuthTypes.Auth.DateTimeValue.__value__ is datetime
+
+        def is_datetime_alias(value: object) -> bool:
+            return value is datetime
+
+        tm.that(
+            TestsFlextAuthTypes.Auth.DateTimeValue.__value__,
+            where=is_datetime_alias,
+        )
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -81,7 +92,7 @@ class TestsFlextAuthTypings:
         [
             "JsonValue",
             "Scalar",
-            "StrSequence",
+            "Sequence[str]",
             "MutableJsonMapping",
             "MutableMetadataMapping",
         ],
@@ -91,7 +102,11 @@ class TestsFlextAuthTypings:
     ) -> None:
         # Assert: MRO composition keeps the upstream contract reachable.
         """Test upstream api types reachable through facade."""
-        assert hasattr(TestsFlextAuthTypes, inherited_type)
+
+        def exposes_inherited_type(value: type) -> bool:
+            return hasattr(value, inherited_type)
+
+        tm.that(TestsFlextAuthTypes, where=exposes_inherited_type)
 
     @staticmethod
     @pytest.mark.parametrize(

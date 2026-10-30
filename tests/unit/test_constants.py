@@ -18,8 +18,8 @@ from enum import StrEnum
 
 import pytest
 
-from flext_auth import c, t
-from tests import tm
+from flext_auth import t
+from tests import c, tm
 
 
 class TestsFlextAuthConstants:
@@ -127,7 +127,7 @@ class TestsFlextAuthConstants:
             (c.Auth.ProviderTypes.KERBEROS, "kerberos"),
             (c.Auth.ProviderTypes.APIKEY, "apikey"),
             (c.Auth.RoleTypes.ADMIN, "admin"),
-            (c.Auth.RoleTypes.USER, "user"),
+            (c.Auth.RoleTypes.USER, c.ContextScope.USER),
             (c.Auth.RoleTypes.MODERATOR, "moderator"),
             (c.Auth.RoleTypes.GUEST, "guest"),
             (c.Auth.PermissionTypes.READ, "read"),
@@ -165,7 +165,7 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test enum construction round trips from wire value."""
         for member in enum_cls:
-            assert enum_cls(member.value) is member
+            tm.that(enum_cls(member.value) is member, eq=True)
 
     # ----- Derivation invariants: frozensets mirror their StrEnum -----
 
@@ -219,7 +219,7 @@ class TestsFlextAuthConstants:
         high: int,
     ) -> None:
         """Test lower bound never exceeds its paired upper bound."""
-        assert low <= high
+        tm.that(low <= high, truth=True)
 
     # ----- Immutability guarantees of exposed collections -----
 
@@ -239,7 +239,7 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test exposed membership sets are immutable."""
         tm.that(valid_set, is_=frozenset)
-        tm.that(hasattr(valid_set, "add"), eq=False)
+        tm.fail(hasattr(valid_set, "add"))
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -250,7 +250,7 @@ class TestsFlextAuthConstants:
         mapping: Mapping[str, t.JsonValue],
     ) -> None:
         """Published mappings do not advertise a mutable interface."""
-        tm.that(isinstance(mapping, MutableMapping), eq=False)
+        tm.fail(isinstance(mapping, MutableMapping))
 
     # ----- Mapping contract: required keys and payload shape -----
 

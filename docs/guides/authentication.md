@@ -84,6 +84,15 @@ The main authentication orchestrator handles all authentication operations:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)

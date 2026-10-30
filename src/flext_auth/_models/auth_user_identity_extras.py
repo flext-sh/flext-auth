@@ -25,20 +25,20 @@ class FlextAuthModelsAuthUserIdentityExtras:
 
         full_name: str | None = None
         is_active: bool | None = None
-        roles: t.StrSequence | None = None
-        permissions: t.StrSequence | None = None
+        roles: Sequence[str] | None = None
+        permissions: Sequence[str] | None = None
         failed_attempts: int | None = None
         locked_until: datetime | None = None
         last_access: datetime | None = None
         token: str | None = None
         session_id: str | None = None
 
-        @u.field_validator("roles", "permissions", mode="before")
+        @m.field_validator("roles", "permissions", mode="before")
         @classmethod
         def normalize_str_sequence(
             cls,
             value: t.JsonPayload,
-        ) -> t.StrSequence | None:
+        ) -> Sequence[str] | None:
             """Normalize sequence-like values to strict string sequences.
 
             Args:
@@ -56,7 +56,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
                 return u.strict_str_sequence_adapter().validate_python(value)
             return []
 
-        @u.field_validator("failed_attempts", mode="before")
+        @m.field_validator("failed_attempts", mode="before")
         @classmethod
         def normalize_failed_attempts(
             cls,
@@ -79,7 +79,7 @@ class FlextAuthModelsAuthUserIdentityExtras:
                 return int(value)
             return 0
 
-        @u.field_validator("locked_until", "last_access", mode="before")
+        @m.field_validator("locked_until", "last_access", mode="before")
         @classmethod
         def normalize_datetime(
             cls,

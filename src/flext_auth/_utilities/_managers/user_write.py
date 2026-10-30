@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableMapping, Sequence
 from typing import TYPE_CHECKING
 
 from flext_api import r, u
@@ -14,7 +15,6 @@ from flext_auth import m
 from flext_auth._utilities._managers import FlextAuthUserManagerRead
 
 if TYPE_CHECKING:
-    from collections.abc import MutableMapping
     from datetime import datetime
 
     from flext_auth import p, t
@@ -108,7 +108,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
     def update_user(
         self,
         user_id: str,
-        **updates: t.Scalar | t.StrSequence | datetime | None,
+        **updates: t.Scalar | Sequence[str] | datetime | None,
     ) -> p.Result[m.Auth.AuthIdentity]:
         """Update user data.
 

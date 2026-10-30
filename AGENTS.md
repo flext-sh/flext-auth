@@ -1,7 +1,8 @@
 # AGENTS.md — flext-auth
 
 > **Parent workspace law** lives in [`../AGENTS.md`](../AGENTS.md) — read it first.
-> Universal engineering core: `~/.agents/UNIVERSAL_CORE.md`. Composition: global
+> Universal engineering core: follow the parent root's canonical governance route.
+> Composition: global
 > skills + parent/root `AGENTS.md` + this scope delta. Do not re-embed universal law.
 >
 > **Standalone / independent mode:** when `../AGENTS.md` does not resolve, pin the
@@ -23,7 +24,8 @@ extensibility.
 src/flext_auth/
 ├── api.py            # FlextAuth composition root, application/provider services via MRO
 ├── base.py
-├── providers/        # api-key, basic, certificate, jwt, ldap, oauth2/oidc, saml, kerberos, rfc
+├── providers/        # api-key, basic, certificate, jwt, ldap,
+│                     # oauth2/oidc, saml, kerberos, rfc
 ├── services/         # auth_service, identity_service, provider_service, session_service
 ├── _registry/        # base.py, lookup.py, mutation.py (provider domain operations)
 ├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
@@ -58,9 +60,10 @@ src/flext_auth/
 - Configuration replacement validates ingress and requires the provider's explicit
   `p.Auth.ConfigurableProvider` lifecycle before removal. JWT supplies that capability;
   unsupported providers fail without mutation. Token lookups are not cached.
-- Canonical reference for pure-declaration `_settings.py`: `@field_validator`
+- Settings declaration contract, independent of the historical module spelling:
+  `@field_validator`
   normalization + `@computed_field @property` derived secret, nothing else.
-- Config/settings canonical pattern: ADR-012.
+- Config/settings canonical pattern: ADR-005 (SSOT) and ADR-024 (DI config contract).
 - Codemod governance (ast-grep + make mod): ADR-014.
 
 ## Commands
@@ -70,7 +73,7 @@ member — `PROJECT=` is not a root Make variable):
 
 ```bash
 make check
-make test
+make tests
 ```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->

@@ -27,7 +27,7 @@
 - Public symbol exports: `FlextAuth`, `FlextAuthConfig`, `FlextAuthConstants`,
   `FlextAuthModels`, `FlextAuthProtocols`, `FlextAuthRegistry`, `FlextAuthServiceBase`,
   `FlextAuthSettings`, `FlextAuthTypes`, `FlextAuthUtilities` (+5 more)
-- Exported module shortcuts: `providers`, `services`
+- Exported module shortcuts: _none_
 - Generated module pages: `9`
 
 ## Next Pages

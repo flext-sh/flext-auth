@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import jwt
 from flext_api import r, u
 
@@ -18,7 +20,7 @@ class FlextAuthUtilitiesAuthSession:
     @staticmethod
     def decode_token(
         token: str,
-        config: m.Auth.ProviderConfig | t.ScalarMapping,
+        config: m.Auth.ProviderConfig | Mapping[str, t.Scalar],
         *,
         verify: bool = True,
     ) -> p.Result[t.Auth.TokensClaimMap]:

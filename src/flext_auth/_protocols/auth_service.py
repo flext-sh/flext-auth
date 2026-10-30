@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
@@ -13,7 +14,6 @@ from flext_api import p
 from flext_auth._protocols import FlextAuthProtocolsAuthProvider
 
 if TYPE_CHECKING:
-    from flext_auth import t
     from flext_auth._protocols import (
         FlextAuthProtocolsAuthIdentity,
         FlextAuthProtocolsAuthSession,
@@ -72,7 +72,7 @@ class FlextAuthProtocolsAuthService:
         def session_service(self) -> FlextAuthProtocolsAuthService.SessionService: ...
 
         def authenticate(
-            self, credentials: t.StrMapping
+            self, credentials: Mapping[str, str]
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
 
         def create_token(self, identity_id: str) -> p.Result[str]: ...
@@ -124,7 +124,7 @@ class FlextAuthProtocolsAuthService:
             username: str,
             email: str,
             password: str,
-            roles: t.StrSequence | None = None,
+            roles: Sequence[str] | None = None,
             role: str | None = None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]:
             """Register new user.
@@ -164,7 +164,7 @@ class FlextAuthProtocolsAuthService:
             name: str,
             contact: str,
             credential: str,
-            roles: t.StrSequence | None = None,
+            roles: Sequence[str] | None = None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
 
         def authorize_identity(
@@ -219,7 +219,7 @@ class FlextAuthProtocolsAuthService:
     class RequestWithHeaders(Protocol):
         """Protocol for request-like objects with a headers attribute."""
 
-        headers: t.StrMapping
+        headers: Mapping[str, str]
 
 
 __all__: list[str] = ["FlextAuthProtocolsAuthService"]

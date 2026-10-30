@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
@@ -13,11 +14,31 @@ from flext_api import p
 from flext_auth import c, t
 
 if TYPE_CHECKING:
+    from flext_auth import m
     from flext_auth._protocols import FlextAuthProtocolsAuthSession
 
 
 class FlextAuthProtocolsAuthProvider:
     """Protocol namespace for provider registries and providers."""
+
+    @runtime_checkable
+    class KerberosTicketValidator(Protocol):
+        """External Kerberos ticket validation contract."""
+
+        def __call__(
+            self,
+            ticket: str,
+        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+            """Validate one Kerberos ticket into its authenticated identity.
+
+            Args:
+                ticket: The opaque Kerberos ticket presented by the caller.
+
+            Returns:
+                The authenticated identity, ticket details, or mapping.
+
+            """
+            ...
 
     @runtime_checkable
     class ConfigurableProvider(Protocol):
@@ -39,7 +60,7 @@ class FlextAuthProtocolsAuthProvider:
         def version(self) -> str: ...
 
         @property
-        def capabilities(self) -> t.VariadicTuple[str]: ...
+        def capabilities(self) -> tuple[str, ...]: ...
 
         @property
         def extras(self) -> t.JsonMapping: ...
@@ -78,7 +99,7 @@ class FlextAuthProtocolsAuthProvider:
             """
             ...
 
-        def list_providers(self) -> t.StrSequence:
+        def list_providers(self) -> Sequence[str]:
             """Return registered provider names.
 
             Returns:
@@ -133,7 +154,7 @@ class FlextAuthProtocolsAuthProvider:
         OAuth2, SAML, etc.).
         """
 
-        def __init__(self, settings: t.ScalarMapping | None = None) -> None:
+        def __init__(self, settings: Mapping[str, t.Scalar] | None = None) -> None:
             """Initialize provider with optional configuration.
 
             Args:
@@ -143,7 +164,7 @@ class FlextAuthProtocolsAuthProvider:
             ...
 
         @property
-        def settings(self) -> t.ScalarMapping | None:
+        def settings(self) -> Mapping[str, t.Scalar] | None:
             """Provider configuration mapping."""
             ...
 

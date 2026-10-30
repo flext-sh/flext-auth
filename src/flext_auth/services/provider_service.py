@@ -6,7 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthRegistry, c, m, p, t, u
+from collections.abc import MutableSequence
+
+from flext_auth import FlextAuthRegistry, c, m, p, u
 
 
 class FlextAuthProviderService(FlextAuthRegistry):
@@ -101,4 +103,4 @@ class FlextAuthProviderService(FlextAuthRegistry):
         )
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthProviderService"]
+__all__: MutableSequence[str] = ["FlextAuthProviderService"]

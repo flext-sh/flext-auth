@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import http.client
 from base64 import b64encode
+from collections.abc import Mapping
 from http import HTTPStatus
 from urllib.parse import urlencode, urlparse
 
@@ -17,7 +18,7 @@ from flext_auth import c, m, p, r, t, u
 class FlextAuthOAuth2Introspection:
     """OAuth2 token introspection helper owner."""
 
-    _oauth2_config: t.MappingKV[str, t.Primitives]
+    _oauth2_config: Mapping[str, t.Primitives]
     _token_endpoint_auth_method: str
     provider_config: m.Auth.ProviderConfig
 
@@ -52,25 +53,25 @@ class FlextAuthOAuth2Introspection:
                 )
         return r[str].ok(urlencode(form_payload))
 
-    def _build_introspection_headers(self) -> p.Result[t.StrMapping]:
+    def _build_introspection_headers(self) -> p.Result[Mapping[str, str]]:
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/x-www-form-urlencoded",
         }
         auth_method = self._token_endpoint_auth_method
         if auth_method != "client_secret_basic":
-            return r[t.StrMapping].ok(headers)
+            return r[Mapping[str, str]].ok(headers)
         client_id = self.provider_config.client_id or ""
         client_secret = self.provider_config.client_secret or ""
         if not client_id or not client_secret:
-            return r[t.StrMapping].fail(
+            return r[Mapping[str, str]].fail(
                 "OAuth2 client_id and client_secret are required for"
                 " client_secret_basic",
             )
         auth_input = f"{client_id}:{client_secret}".encode()
         encoded_auth = b64encode(auth_input).decode("ascii")
         headers["Authorization"] = f"Basic {encoded_auth}"
-        return r[t.StrMapping].ok(headers)
+        return r[Mapping[str, str]].ok(headers)
 
     def _introspect_token(self, token: str) -> p.Result[t.JsonMapping]:
         endpoint_result = self._introspection_endpoint()
