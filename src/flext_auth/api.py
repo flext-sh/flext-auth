@@ -11,6 +11,8 @@ from __future__ import annotations
 from collections.abc import MutableSequence, Sequence
 from typing import Self
 
+from flext_core import FlextRegistry
+
 from flext_auth import FlextAuthSettings
 from flext_auth.constants import c
 from flext_auth.protocols import p
@@ -44,7 +46,7 @@ class FlextAuth(FlextAuthApplicationService):
         runtime_settings: p.Settings | None = None,
     ) -> None:
         """Compose an isolated graph, or explicitly share injected capabilities."""
-        elected_registry = registry if registry is not None else u.build_registry()
+        elected_registry = registry if registry is not None else FlextRegistry.create()
         elected_settings = (
             runtime_settings if runtime_settings is not None else FlextAuthSettings()
         )

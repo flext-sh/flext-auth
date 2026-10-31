@@ -7,10 +7,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from flext_core import FlextRegistry
 
 from flext_auth import FlextAuth, FlextAuthRegistry
 from flext_auth.providers import FlextAuthBasicProvider, FlextAuthJwtTokenValidator
-from tests import c, m, p, r, tm, u
+from tests import c, m, p, r, tm
 from tests.fixtures.auth import TestsFlextAuthFixtures
 
 
@@ -203,7 +204,7 @@ class TestsFlextAuthRegistryComposition:
             FlextAuthRegistry.model_validate({})
         with pytest.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({"registry": "invalid"})
-        registry = u.build_registry()
+        registry = FlextRegistry.create()
         with pytest.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({
                 "registry": registry,
