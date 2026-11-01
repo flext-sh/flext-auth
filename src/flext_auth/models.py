@@ -9,17 +9,7 @@ from __future__ import annotations
 
 from flext_api import m
 
-from flext_auth._models import (
-    FlextAuthModelsAuth,
-    FlextAuthModelsAuthCredential,
-    FlextAuthModelsAuthIdentity,
-    FlextAuthModelsAuthIdentityRequest,
-    FlextAuthModelsAuthProviderConfig,
-    FlextAuthModelsAuthResponse,
-    FlextAuthModelsAuthSession,
-    FlextAuthModelsAuthUserIdentityExtras,
-    FlextAuthModelsBase,
-)
+from flext_auth._models import FlextAuthModelsAuth, FlextAuthModelsBase
 
 
 class FlextAuthModels(m):
@@ -27,13 +17,6 @@ class FlextAuthModels(m):
 
     class Auth(
         FlextAuthModelsAuth,
-        FlextAuthModelsAuthCredential,
-        FlextAuthModelsAuthSession,
-        FlextAuthModelsAuthIdentityRequest,
-        FlextAuthModelsAuthIdentity,
-        FlextAuthModelsAuthProviderConfig,
-        FlextAuthModelsAuthResponse,
-        FlextAuthModelsAuthUserIdentityExtras,
         FlextAuthModelsBase,
     ):
         """Authentication model namespace."""

@@ -15,7 +15,7 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_tests import td, tf, tk, tm
 
-    from flext_auth import api, auth, cli, config, d, e, h, main, r, settings, web, x
+    from flext_auth import auth, config, d, e, h, main, r, settings, x
     from tests.base import TestsFlextAuthServiceBase, s
     from tests.constants import TestsFlextAuthConstants, c
     from tests.models import TestsFlextAuthModels, m
@@ -33,10 +33,8 @@ __all__: tuple[str, ...] = (
     "TestsFlextAuthSettings",
     "TestsFlextAuthTypes",
     "TestsFlextAuthUtilities",
-    "api",
     "auth",
     "c",
-    "cli",
     "config",
     "d",
     "e",
@@ -53,7 +51,6 @@ __all__: tuple[str, ...] = (
     "tk",
     "tm",
     "u",
-    "web",
     "x",
 )
 
@@ -68,10 +65,8 @@ install_lazy_exports(
         "TestsFlextAuthSettings": ".settings",
         "TestsFlextAuthTypes": ".typings",
         "TestsFlextAuthUtilities": ".utilities",
-        "api": "flext_auth",
         "auth": "flext_auth",
         "c": ".constants",
-        "cli": "flext_auth",
         "config": "flext_auth",
         "d": "flext_auth",
         "e": "flext_auth",
@@ -88,7 +83,6 @@ install_lazy_exports(
         "tk": "flext_tests",
         "tm": "flext_tests",
         "u": ".utilities",
-        "web": "flext_auth",
         "x": "flext_auth",
     }),
     public_exports=__all__,
