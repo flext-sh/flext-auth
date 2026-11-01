@@ -154,7 +154,7 @@ prod_config = FlextAuthSettings(
 
 ### Validate Configuration
 
-````python notest
+````python
 from flext_auth import FlextAuthSettings
 from flext_cli import u
 

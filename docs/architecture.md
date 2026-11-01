@@ -266,7 +266,7 @@ class FlextAuthBaseProvider(Protocol):
 
 **Interface**:
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -797,7 +797,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
 
 **Interface**:
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (
@@ -858,9 +858,7 @@ class TokenManager(s):
             retry_on=retry_on or [],
         )
 
-    def refresh_token(
-        self, token: m.Auth.AuthToken
-    ) -> p.Result[auth_m.Auth.AuthToken]:
+    def refresh_token(self, token: m.Auth.AuthToken) -> p.Result[auth_m.Auth.AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self._provider.supports():
             return r[auth_m.Auth.AuthToken].fail(
@@ -999,7 +997,7 @@ class TokenCache:
 
 ### Credential Management (`credentials/manager.py`)
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (

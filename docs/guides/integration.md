@@ -74,7 +74,7 @@ else:
 
 Use `FlextContainer` for dependency injection:
 
-```{.python .notest}
+```python
 from __future__ import annotations
 
 from collections.abc import (

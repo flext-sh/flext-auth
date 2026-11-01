@@ -251,7 +251,7 @@ if result.success:
 
 ### Container Integration
 
-```{.python .notest}
+```python
 from flext_cli import u
 from flext_auth import FlextAuth, FlextAuthSettings
 

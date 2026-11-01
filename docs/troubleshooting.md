@@ -95,7 +95,7 @@ if existing_user.success:
 
 **Problem**: User authentication fails unexpectedly
 
-```{.python .notest}
+```python
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -163,7 +163,7 @@ bearer_value = "<jwt-header>.<jwt-payload>.<jwt-signature>"
 
 1. **Token Expiration**:
 
-```{.python .notest}
+```python
 import jwt
 
 # Check token expiration without validation
@@ -195,7 +195,7 @@ u.Cli.info(f"JWT Secret: {settings.Auth.secret_key}")
 
 **Problem**: Configuration not loading correctly
 
-```{.python .notest}
+```python
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
@@ -214,7 +214,7 @@ u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")
 
 1. **Valid Environment Names**:
 
-```{.python .notest}
+```python
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
    settings = FlextAuthSettings()
@@ -435,7 +435,7 @@ make check
 
 1. **Type Annotations**:
 
-```{.python .notest}
+```python
    from flext_auth import User, p
 
 
@@ -445,7 +445,7 @@ make check
 
 1. **r Types**:
 
-```{.python .notest}
+```python
    from flext_auth import FlextAuth, User, p
 
    auth = FlextAuth.quick_start(create_admin_user=False)
@@ -505,7 +505,7 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 
 1. **Session timeout management**:
 
-```{.python .notest}
+```python
    # Implement session cleanup
    def cleanup_sessions():
        """Clean expired sessions."""
@@ -515,7 +515,7 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 
 1. **External session storage** (future):
 
-```{.python .notest}
+```python
    # Future Redis integration
    class RedisSessionStorage:
        def store_session(self, session):
