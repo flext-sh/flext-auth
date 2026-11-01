@@ -11,9 +11,6 @@ from flext_api import u
 
 from flext_auth._utilities import (
     FlextAuthUtilitiesAuth,
-    FlextAuthUtilitiesAuthResponse,
-    FlextAuthUtilitiesAuthSession,
-    FlextAuthUtilitiesAuthValidation,
     FlextAuthUtilitiesBase,
     FlextAuthUtilitiesManagers,
 )
@@ -24,9 +21,6 @@ class FlextAuthUtilities(u):
 
     class Auth(
         FlextAuthUtilitiesAuth,
-        FlextAuthUtilitiesAuthValidation,
-        FlextAuthUtilitiesAuthResponse,
-        FlextAuthUtilitiesAuthSession,
         FlextAuthUtilitiesManagers,
         FlextAuthUtilitiesBase,
     ):

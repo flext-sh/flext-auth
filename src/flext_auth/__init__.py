@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_api import api, cli, d, e, h, r, web, x
+    from flext_api import d, e, h, r, x
 
     from flext_auth.__version__ import (
         FlextAuthVersion,
@@ -59,10 +59,8 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "api",
     "auth",
     "c",
-    "cli",
     "config",
     "d",
     "e",
@@ -75,7 +73,6 @@ __all__: tuple[str, ...] = (
     "settings",
     "t",
     "u",
-    "web",
     "x",
 )
 
@@ -101,10 +98,8 @@ install_lazy_exports(
         "__title__": ".__version__",
         "__url__": ".__version__",
         "__version_info__": ".__version__",
-        "api": "flext_api",
         "auth": ".api",
         "c": ".constants",
-        "cli": "flext_api",
         "config": "._config",
         "d": "flext_api",
         "e": "flext_api",
@@ -117,7 +112,6 @@ install_lazy_exports(
         "settings": "._settings",
         "t": ".typings",
         "u": ".utilities",
-        "web": "flext_api",
         "x": "flext_api",
     }),
     public_exports=__all__,

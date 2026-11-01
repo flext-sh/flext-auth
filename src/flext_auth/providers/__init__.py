@@ -13,9 +13,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth.providers._mixins.codec import FlextAuthProviderCodec
-    from flext_auth.providers._mixins.tokens import FlextAuthProviderToken
-    from flext_auth.providers._mixins.validation import FlextAuthProviderValidation
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
@@ -49,9 +46,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthOAuth2Tokens",
     "FlextAuthOidcProvider",
     "FlextAuthProvider",
-    "FlextAuthProviderCodec",
-    "FlextAuthProviderToken",
-    "FlextAuthProviderValidation",
     "FlextAuthRfcProvider",
     "FlextAuthSamlProvider",
 )
@@ -73,10 +67,7 @@ install_lazy_exports(
         "FlextAuthOAuth2Provider": ".oauth2",
         "FlextAuthOAuth2Tokens": ".oauth2_tokens",
         "FlextAuthOidcProvider": ".oidc",
-        "FlextAuthProviderCodec": "._mixins.codec",
         "FlextAuthProvider": ".mixin",
-        "FlextAuthProviderToken": "._mixins.tokens",
-        "FlextAuthProviderValidation": "._mixins.validation",
         "FlextAuthRfcProvider": ".rfc",
         "FlextAuthSamlProvider": ".saml",
     }),

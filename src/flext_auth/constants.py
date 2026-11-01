@@ -9,14 +9,7 @@ from __future__ import annotations
 
 from flext_api import c
 
-from flext_auth._constants import (
-    FlextAuthConstantsAuth,
-    FlextAuthConstantsAuthClaims,
-    FlextAuthConstantsAuthEnums,
-    FlextAuthConstantsAuthSecurity,
-    FlextAuthConstantsAuthValues,
-    FlextAuthConstantsBase,
-)
+from flext_auth._constants import FlextAuthConstantsAuth, FlextAuthConstantsBase
 
 
 class FlextAuthConstants(c):
@@ -24,10 +17,6 @@ class FlextAuthConstants(c):
 
     class Auth(
         FlextAuthConstantsAuth,
-        FlextAuthConstantsAuthValues,
-        FlextAuthConstantsAuthSecurity,
-        FlextAuthConstantsAuthClaims,
-        FlextAuthConstantsAuthEnums,
         FlextAuthConstantsBase,
     ):
         """Authentication constants namespace."""
