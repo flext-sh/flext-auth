@@ -554,11 +554,7 @@ quote-style = "double"
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint]
-extend-safe-fixes = [
-  "relative-imports",
-  "typing-only-first-party-import",
-  "camelcase-imported-as-lowercase",
-]
+extend-safe-fixes = ["relative-imports", "camelcase-imported-as-lowercase"]
 extend-select = ["missing-blank-line-after-last-section"]
 ignore = [
   "missing-trailing-comma",
