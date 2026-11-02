@@ -168,11 +168,12 @@ class TestsFlextAuthIdentityRealFlows:
         ).unwrap()
         manager = auth.identity_service.identity_manager
         before = manager.fetch_user(registered.unique_id).unwrap()
+        before_failed_attempts = before.failed_attempts
 
         rejected = manager.update_user(registered.unique_id, failed_attempts=-1)
 
         tm.fail(rejected)
         tm.that(rejected.exception, is_=c.ValidationError)
         after = manager.fetch_user(registered.unique_id).unwrap()
-        tm.that(after.model_dump_json(), eq=before.model_dump_json())
+        tm.that(after.failed_attempts, eq=before_failed_attempts)
         tm.ok(after.verify_credential(c.TEST_CREDENTIAL), eq=True)

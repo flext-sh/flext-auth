@@ -124,14 +124,14 @@ class TestsFlextAuthApiCase10:
         test_user_data = self._TestDataHelper.create_test_user_data()
         test_auth_data = self._TestDataHelper.create_test_auth_data()
         register_result = auth.register_user(
-            username=str(test_user_data["username"]),
-            email=str(test_user_data["email"]),
-            password=str(test_user_data["password"]),
+            username=test_user_data["username"],
+            email=test_user_data["email"],
+            password=test_user_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(register_result, is_=r, ok=True)
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]),
-            str(test_auth_data["password"]),
+            test_auth_data["username"],
+            test_auth_data["password"],
         )
         TestsFlextAuthUtilities.Tests.Matchers.that(auth_result, is_=r, ok=True)
         authenticated_identity = auth_result.value
@@ -150,7 +150,7 @@ class TestsFlextAuthApiCase10:
             result = auth.register_user(
                 username=f"user_{i}",
                 email=f"user_{i}@example.com",
-                password=str(test_user_data["password"]),
+                password=test_user_data["password"],
             )
             TestsFlextAuthUtilities.Tests.Matchers.that(result, is_=r)
             TestsFlextAuthUtilities.Tests.Matchers.that(result.success, eq=True)
