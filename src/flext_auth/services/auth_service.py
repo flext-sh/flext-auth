@@ -6,10 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import c, m, p, r, s, t
+from flext_auth import c, m, p, r, t
+from flext_auth.services import FlextAuthProviderService
 
 
-class FlextAuthApplicationService(s, m.Auth.ApplicationPortOptions):
+class FlextAuthApplicationService(
+    FlextAuthProviderService, m.Auth.ApplicationPortOptions
+):
     """Authentication application service used by the API composition."""
 
     @property

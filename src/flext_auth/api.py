@@ -29,7 +29,7 @@ from flext_auth.services import (
 )
 
 
-class FlextAuth(FlextAuthApplicationService, FlextAuthProviderService):
+class FlextAuth(FlextAuthApplicationService):
     """Authentication facade composing identity, token, session and providers."""
 
     def __init__(

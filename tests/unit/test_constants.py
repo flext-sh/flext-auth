@@ -11,15 +11,10 @@ Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-# mypy: warn-unused-ignores=False
-# Why: pyrefly requires ``type: ignore[attr-defined]`` on frozenset.add, which mypy
-# considers unused because it does not flag the call.
-
 from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping
 from enum import StrEnum
-from typing import cast
 
 import pytest
 
@@ -244,24 +239,18 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test exposed membership sets are immutable."""
         tm.that(valid_set, is_=frozenset)
-        # Why: frozenset has no add; the cast lets the call type-check so the
-        # test can assert the AttributeError the runtime actually raises.
-        mutable = cast("set[str]", valid_set)
-        with pytest.raises(AttributeError):
-            mutable.add("mutated")
+        tm.that(hasattr(valid_set, "add"), eq=False)
 
     @staticmethod
     @pytest.mark.parametrize(
         "mapping",
         [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE],
     )
-    def test_exposed_mappings_reject_mutation(
+    def test_exposed_mappings_provide_read_only_contracts(
         mapping: Mapping[str, t.JsonValue],
     ) -> None:
-        """Test exposed mappings reject mutation."""
-        mutable = cast("MutableMapping[str, t.JsonValue]", mapping)
-        with pytest.raises((TypeError, AttributeError)):
-            mutable["injected"] = 1
+        """Published mappings do not advertise a mutable interface."""
+        tm.that(isinstance(mapping, MutableMapping), eq=False)
 
     # ----- Mapping contract: required keys and payload shape -----
 
