@@ -52,7 +52,7 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         @staticmethod
-        def validate_ticket() -> p.Result[m.Auth.KerberosTicketData]:
+        def validate_ticket() -> p.Result[p.Auth.KerberosTicketData]:
             """Validate Kerberos ticket.
 
             Returns:
@@ -63,7 +63,7 @@ class FlextAuthKerberosSupport:
                 ticket="validated_ticket",
                 principal="kerberos_user",
             )
-            return r[m.Auth.KerberosTicketData].ok(result)
+            return r[p.Auth.KerberosTicketData].ok(result)
 
     ticket_validator: _KerberosTicketValidator
 
@@ -83,7 +83,7 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
     @staticmethod
-    def handle_service_ticket(ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
+    def handle_service_ticket(ticket: str) -> p.Result[p.Auth.KerberosTicketData]:
         """Handle Kerberos service ticket.
 
         Args:
@@ -94,7 +94,7 @@ class FlextAuthKerberosSupport:
 
         """
         result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
-        return r[m.Auth.KerberosTicketData].ok(result)
+        return r[p.Auth.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
@@ -113,8 +113,8 @@ class FlextAuthKerberosSupport:
 
         def authenticate_ticket(
             self,
-            ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
+            ticket_data: p.Auth.KerberosTicketData,
+        ) -> p.Result[p.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket.
 
             Args:
@@ -139,7 +139,7 @@ class FlextAuthKerberosSupport:
 
         def validated(
             ticket: str,
-        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+        ) -> p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             """Validate a raw ticket through the external validator.
 
             Args:

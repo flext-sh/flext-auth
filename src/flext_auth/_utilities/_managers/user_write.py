@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 
 from flext_api import r, u
 
-from flext_auth import m
 from flext_auth._utilities._managers import FlextAuthUserManagerRead
 
 if TYPE_CHECKING:
@@ -109,7 +108,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         self,
         user_id: str,
         **updates: t.Scalar | Sequence[str] | datetime | None,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Update user data.
 
         Args:
@@ -125,7 +124,7 @@ class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):
         }
         lookup = self._find_user_by_id(user_id)
         if lookup.failure:
-            return r[m.Auth.AuthIdentity].from_failure(lookup)
+            return r[p.Auth.AuthIdentity].from_failure(lookup)
         _, stored = lookup.value
         filtered_updates["updated_at"] = u.now()
         validated = lookup.map(

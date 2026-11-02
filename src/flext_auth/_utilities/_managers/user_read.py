@@ -18,7 +18,7 @@ class FlextAuthUserManagerRead:
 
     _users: MutableMapping[str, t.Auth.ManagersUserData]
 
-    def fetch_user(self, user_id: str) -> p.Result[m.Auth.AuthIdentity]:
+    def fetch_user(self, user_id: str) -> p.Result[p.Auth.AuthIdentity]:
         """Fetch user by ID.
 
         Args:
@@ -32,7 +32,7 @@ class FlextAuthUserManagerRead:
             lambda ud: self._create_identity_from_storage(ud[1]),
         )
 
-    def fetch_user_by_username(self, username: str) -> p.Result[m.Auth.AuthIdentity]:
+    def fetch_user_by_username(self, username: str) -> p.Result[p.Auth.AuthIdentity]:
         """Fetch user by username.
 
         Args:
@@ -43,15 +43,15 @@ class FlextAuthUserManagerRead:
 
         """
         if username not in self._users:
-            return e.fail_not_found("User", "", result_type=r[m.Auth.AuthIdentity])
+            return e.fail_not_found("User", "", result_type=r[p.Auth.AuthIdentity])
         storage_data = self._users[username]
         user = self._create_identity_from_storage(storage_data)
-        return r[m.Auth.AuthIdentity].ok(user)
+        return r[p.Auth.AuthIdentity].ok(user)
 
     def _create_identity_from_storage(
         self,
         storage_data: t.Auth.ManagersUserData,
-    ) -> m.Auth.AuthIdentity:
+    ) -> p.Auth.AuthIdentity:
         """Create Identity model from storage data, filtering out non-model fields.
 
         Args:
@@ -67,7 +67,7 @@ class FlextAuthUserManagerRead:
             if field in storage_data
         }
         identity_data["unique_id"] = self._extract_identity_id(storage_data)
-        identity: m.Auth.AuthIdentity = m.Auth.AuthIdentity.model_validate(
+        identity: p.Auth.AuthIdentity = m.Auth.AuthIdentity.model_validate(
             identity_data,
         )
         return identity

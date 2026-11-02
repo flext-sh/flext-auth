@@ -317,7 +317,7 @@ class AuthenticationProvider:
         self._auth = FlextAuth.quick_start(create_admin_user=False)
         self._container = FlextContainer()
 
-    def authenticate_service_request(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
+    def authenticate_service_request(self, token: str) -> p.Result[p.Auth.AuthIdentity]:
         """Authenticate requests from other FLEXT services."""
         # Decode token via the token service to resolve the identity id
         return self._auth.token_service.decode_token(token)
@@ -359,7 +359,7 @@ class ServiceA:
         result = self._auth.create_token("service-a")
         return result.unwrap() if result.success else ""
 
-    def call_service_b(self, data: dict) -> p.Result[m.Dict]:
+    def call_service_b(self, data: dict) -> p.Result[p.Dict]:
         """Call Service B with authentication."""
         headers = {
             "Authorization": f"Bearer {self._get_service_token()}",
@@ -407,7 +407,7 @@ class UserRepository:
 
     def create_user(
         self,
-        user: m.Auth.AuthIdentity,
+        user: p.Auth.AuthIdentity,
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Create user in database."""
         # Oracle-specific implementation
@@ -447,7 +447,7 @@ class RedisSessionStorage:
     def __init__(self, redis_client: RedisClient) -> None:
         self._redis = redis_client
 
-    def store_session(self, session: m.Auth.Session) -> p.Result[bool]:
+    def store_session(self, session: p.Auth.Session) -> p.Result[bool]:
         """Store session in Redis."""
         try:
             session_data = session.model_dump_json()
@@ -590,7 +590,7 @@ class OAuth2Provider:
         """OAuth2 authorization endpoint."""
         # Implementation using flext-auth
 
-    def token(self, code: str, client_id: str) -> p.Result[m.Dict]:
+    def token(self, code: str, client_id: str) -> p.Result[p.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
 ```

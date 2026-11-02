@@ -224,18 +224,18 @@ from flext_core import m, p, r
 auth = FlextAuth.quick_start(create_admin_user=False)
 
 
-def process_authentication_workflow(username: str, password: str) -> p.Result[m.Dict]:
+def process_authentication_workflow(username: str, password: str) -> p.Result[p.Dict]:
     """Authentication workflow using r error handling."""
     result = auth.authenticate_user(username, password)
     if result.failure:
-        return r[m.Dict].fail(result.error)
+        return r[p.Dict].fail(result.error)
 
     identity = result.unwrap()
     token_result = auth.create_token(identity.unique_id)
     if token_result.failure:
-        return r[m.Dict].fail(token_result.error)
+        return r[p.Dict].fail(token_result.error)
 
-    return r[m.Dict].ok({
+    return r[p.Dict].ok({
         "authenticated": True,
         c.ContextScope.USER: identity.name,
         "token": token_result.unwrap(),

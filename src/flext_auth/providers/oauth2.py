@@ -20,7 +20,7 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
     """OAuth2 provider using focused configuration and token operation owners."""
 
     def __init__(
-        self, settings: m.Auth.ProviderConfig | Mapping[str, t.Scalar]
+        self, settings: p.Auth.ProviderConfig | Mapping[str, t.Scalar]
     ) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
@@ -50,7 +50,7 @@ class FlextAuthOAuth2Provider(FlextAuthOAuth2Tokens):
         # Pydantic-typed view of the OAuth2 config — eliminates dict.get + isinstance
         # narrowing at every access site. ProviderConfig owns the field-typing
         # contract and validation centralization.
-        self.provider_config: m.Auth.ProviderConfig = (
+        self.provider_config: p.Auth.ProviderConfig = (
             m.Auth.ProviderConfig.model_validate({
                 "name": str(scalar_config.get("name", "oauth2")),
                 "type": str(scalar_config.get("type", "oauth2")),

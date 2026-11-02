@@ -145,21 +145,21 @@ from flext_auth import m, p, r
 
 
 # ✅ Correct - Use r for error handling
-def authenticate_user(username: str, password: str) -> p.Result[m.Auth.AuthIdentity]:
+def authenticate_user(username: str, password: str) -> p.Result[p.Auth.AuthIdentity]:
     if not username:
         msg = "Username required"
-        return r[m.Auth.AuthIdentity].fail(msg)
+        return r[p.Auth.AuthIdentity].fail(msg)
     if not password:
         msg = "Password required"
-        return r[m.Auth.AuthIdentity].fail(msg)
+        return r[p.Auth.AuthIdentity].fail(msg)
 
     # Authentication logic would resolve an identity here
     identity = m.Auth.AuthIdentity(username=username, contact="user@example.com")
-    return r[m.Auth.AuthIdentity].ok(identity)
+    return r[p.Auth.AuthIdentity].ok(identity)
 
 
 # ❌ Incorrect - Don't use exceptions for business logic
-def authenticate_user_legacy(username: str, password: str) -> m.Auth.AuthIdentity:
+def authenticate_user_legacy(username: str, password: str) -> p.Auth.AuthIdentity:
     if not username:
         msg = "Username required"
         raise ValueError(msg)
@@ -411,11 +411,11 @@ class AuthFlow:
         self,
         username: str,
         password: str,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         if not password:
-            return r[m.Auth.AuthIdentity].fail("Password required")
+            return r[p.Auth.AuthIdentity].fail("Password required")
         return (
-            r[m.Auth.AuthIdentity]
+            r[p.Auth.AuthIdentity]
             .ok(m.Auth.AuthIdentity(username=username, contact="user@example.com"))
             .flat_map(self._create_session)
             .map(self._format_response)
@@ -423,11 +423,11 @@ class AuthFlow:
 
     def _create_session(
         self,
-        identity: m.Auth.AuthIdentity,
-    ) -> p.Result[m.Auth.AuthIdentity]:
-        return r[m.Auth.AuthIdentity].ok(identity)
+        identity: p.Auth.AuthIdentity,
+    ) -> p.Result[p.Auth.AuthIdentity]:
+        return r[p.Auth.AuthIdentity].ok(identity)
 
-    def _format_response(self, identity: m.Auth.AuthIdentity) -> m.Auth.AuthIdentity:
+    def _format_response(self, identity: p.Auth.AuthIdentity) -> p.Auth.AuthIdentity:
         return identity
 
 

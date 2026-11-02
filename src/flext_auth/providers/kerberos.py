@@ -41,7 +41,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         """Return Kerberos provider capabilities."""
         return {"kerberos", "sso", "enterprise", "ticket", "validate"}
 
-    def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
+    def validate_token(self, token: str) -> p.Result[p.Auth.AuthIdentity]:
         """Validate Kerberos token and return user.
 
         Args:
@@ -53,14 +53,14 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
 
         """
         if not token.strip():
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.AuthIdentity].fail(
                 "Kerberos token must be a non-empty string",
             )
         validator = self._ticket_validator_callable()
         if validator is None:
             claims_result = self._decode_token_claims(token)
             if claims_result.failure:
-                return r[m.Auth.AuthIdentity].fail(
+                return r[p.Auth.AuthIdentity].fail(
                     "Kerberos validation requires a configured ticket_validator"
                     " callback or JWT bridge settings (secret_key/issuer/audience)",
                 )
@@ -68,7 +68,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         try:
             validator_payload = validator(token)
         except c.EXC_BROAD_IO_TYPE as exc:
-            return r[m.Auth.AuthIdentity].fail_op(
+            return r[p.Auth.AuthIdentity].fail_op(
                 "Kerberos ticket validator execution",
                 exc,
             )
@@ -77,7 +77,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     @staticmethod
     def _identity_from_claims(
         claims: t.JsonMapping,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Build an identity from decoded claims on the Kerberos contact domain.
 
         Args:
@@ -88,7 +88,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
 
         """
         domain = c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN
-        return r[m.Auth.AuthIdentity].from_validation(
+        return r[p.Auth.AuthIdentity].from_validation(
             {**claims, c.Auth.KEY_CONTACT_DOMAIN: domain},
             m.Auth.AuthIdentity,
         )
@@ -96,8 +96,8 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
     @classmethod
     def _identity_from_validator_payload(
         cls,
-        payload: m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
-    ) -> p.Result[m.Auth.AuthIdentity]:
+        payload: p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData,
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Map a ticket validator payload to an identity.
 
         Args:
@@ -110,11 +110,11 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
 
         """
         if isinstance(payload, m.Auth.AuthIdentity):
-            return r[m.Auth.AuthIdentity].ok(payload)
+            return r[p.Auth.AuthIdentity].ok(payload)
         if isinstance(payload, m.Auth.KerberosTicketData):
             principal = payload.principal or c.Auth.DEFAULT_KERBEROS_USERNAME
             domain = c.Auth.DEFAULT_KERBEROS_CONTACT_DOMAIN
-            return r[m.Auth.AuthIdentity].from_validation(
+            return r[p.Auth.AuthIdentity].from_validation(
                 {
                     c.Auth.KEY_IDENTITY_ID: principal,
                     c.Auth.KEY_NAME: principal,
@@ -126,7 +126,7 @@ class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):
         try:
             claims = u.json_mapping_adapter().validate_python(payload)
         except c.ValidationError as exc:
-            return r[m.Auth.AuthIdentity].fail(
+            return r[p.Auth.AuthIdentity].fail(
                 f"Kerberos ticket validator mapping payload is invalid: {exc}",
                 exception=exc,
             )

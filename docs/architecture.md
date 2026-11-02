@@ -512,7 +512,7 @@ class FlextAuthExampleProvider(s):
             "config_schema": {},
         }
 
-    def _generate_token(self, credentials: dict) -> m.Auth.AuthToken:
+    def _generate_token(self, credentials: dict) -> p.Auth.AuthToken:
         """Generate a token from credentials."""
 ```
 
@@ -547,7 +547,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         credentials: dict,
         metadata: t.JsonMapping | None = None,
-    ) -> p.Result[m.Dict]:
+    ) -> p.Result[p.Dict]:
         """Send authentication request over transport."""
         ...
 
@@ -556,7 +556,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         token: str,
         metadata: t.JsonMapping | None = None,
-    ) -> p.Result[m.Dict]:
+    ) -> p.Result[p.Dict]:
         """Send token validation request over transport."""
         ...
 
@@ -594,14 +594,14 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 
     def send_auth_request(
         self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
-    ) -> p.Result[m.Dict]:
+    ) -> p.Result[p.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(url=endpoint, json=credentials, headers=metadata)
 
         if result.failure:
-            return r[m.Dict].fail(f"HTTP transport failed: {result.error}")
+            return r[p.Dict].fail(f"HTTP transport failed: {result.error}")
 
-        return r[m.Dict].ok(result.unwrap())
+        return r[p.Dict].ok(result.unwrap())
 ```
 
 ### gRPC Transport (`transports/grpc.py`)
@@ -633,7 +633,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
     def send_auth_request(
         self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
-    ) -> p.Result[m.Dict]:
+    ) -> p.Result[p.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
             service="AuthService",
@@ -643,9 +643,9 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         )
 
         if result.failure:
-            return r[m.Dict].fail(f"gRPC transport failed: {result.error}")
+            return r[p.Dict].fail(f"gRPC transport failed: {result.error}")
 
-        return r[m.Dict].ok(result.unwrap())
+        return r[p.Dict].ok(result.unwrap())
 ```
 
 ### WebSocket Transport (`transports/websocket.py`)
@@ -674,7 +674,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
 
     def send_auth_request(
         self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
-    ) -> p.Result[m.Dict]:
+    ) -> p.Result[p.Dict]:
         """Send authentication request via WebSocket."""
         ...
 ```
@@ -707,7 +707,7 @@ class BaseProtocolHandler(Protocol):
         """Format authentication request for protocol."""
         ...
 
-    def parse_auth_response(self, response: bytes | str) -> p.Result[m.Dict]:
+    def parse_auth_response(self, response: bytes | str) -> p.Result[p.Dict]:
         """Parse authentication response from protocol."""
         ...
 ```
@@ -742,13 +742,13 @@ class RestProtocolHandler(BaseProtocolHandler):
         except Exception as e:
             return r[str].fail(f"JSON formatting failed: {e}")
 
-    def parse_auth_response(self, response: str) -> p.Result[m.Dict]:
+    def parse_auth_response(self, response: str) -> p.Result[p.Dict]:
         """Parse JSON REST response."""
         try:
             parsed = json.loads(response)
-            return r[m.Dict].ok(parsed)
+            return r[p.Dict].ok(parsed)
         except Exception as e:
-            return r[m.Dict].fail(f"JSON parsing failed: {e}")
+            return r[p.Dict].fail(f"JSON parsing failed: {e}")
 ```
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
@@ -776,7 +776,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
         """Format as SOAP XML request."""
         ...
 
-    def parse_auth_response(self, response: str) -> p.Result[m.Dict]:
+    def parse_auth_response(self, response: str) -> p.Result[p.Dict]:
         """Parse SOAP XML response."""
         ...
 ```
@@ -858,7 +858,7 @@ class TokenManager(s):
             retry_on=retry_on or [],
         )
 
-    def refresh_token(self, token: m.Auth.AuthToken) -> p.Result[auth_m.Auth.AuthToken]:
+    def refresh_token(self, token: p.Auth.AuthToken) -> p.Result[auth_m.Auth.AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self._provider.supports():
             return r[auth_m.Auth.AuthToken].fail(
@@ -867,7 +867,7 @@ class TokenManager(s):
 
         return self._provider.refresh(token)
 
-    def validate_token(self, token: m.Auth.AuthToken) -> p.Result[bool]:
+    def validate_token(self, token: p.Auth.AuthToken) -> p.Result[bool]:
         """Validate token."""
         return self._provider.validate(token)
 ```
@@ -953,7 +953,7 @@ class TokenCache:
         self._backend = self._create_backend(backend, settings)
         self.logger = u.fetch_logger(__name__)
 
-    def get(self, key: dict) -> m.Auth.AuthToken | None:
+    def get(self, key: dict) -> p.Auth.AuthToken | None:
         """Get token from cache."""
         cache_key = self._hash_credentials(key)
         return self._backend.get(cache_key)
@@ -961,7 +961,7 @@ class TokenCache:
     def set(
         self,
         key: dict,
-        token: m.Auth.AuthToken,
+        token: p.Auth.AuthToken,
         ttl: int | None = None,
     ) -> None:
         """Set token in cache."""
@@ -1027,15 +1027,15 @@ class CredentialManager:
         encrypted = self._cipher.encrypt(credential)
         return self._storage.save(identifier, encrypted, metadata)
 
-    def retrieve_credential(self, identifier: str) -> p.Result[m.Dict]:
+    def retrieve_credential(self, identifier: str) -> p.Result[p.Dict]:
         """Retrieve and decrypt credential."""
         result = self._storage.load(identifier)
         if result.failure:
-            return r[m.Dict].fail(result.error)
+            return r[p.Dict].fail(result.error)
 
         encrypted = result.unwrap()
         decrypted = self._cipher.decrypt(encrypted)
-        return r[m.Dict].ok(decrypted)
+        return r[p.Dict].ok(decrypted)
 
     def rotate_credential(
         self, identifier: str, new_credential: dict
@@ -1074,7 +1074,7 @@ class SecurityValidator:
     """Security validation for authentication operations."""
 
     @staticmethod
-    def validate_token_expiration(token: m.Auth.AuthToken) -> p.Result[bool]:
+    def validate_token_expiration(token: p.Auth.AuthToken) -> p.Result[bool]:
         """Validate token has not expired."""
         if token.expires_at < datetime.now(UTC):
             return r[bool].fail("Token expired")
@@ -1140,7 +1140,7 @@ class FlextWebTransportAdapter:
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
-    def send_request(self, url: str, data: dict) -> p.Result[m.Dict]:
+    def send_request(self, url: str, data: dict) -> p.Result[p.Dict]:
         return self._api.post(url=url, json=data)
 
 
@@ -1244,7 +1244,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
     def send_auth_request(
         self, endpoint: str, credentials: dict, metadata: t.JsonMapping | None = None
-    ) -> p.Result[m.Dict]: ...
+    ) -> p.Result[p.Dict]: ...
 
 
 provider = FlextAuthJwtProvider(settings={})

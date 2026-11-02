@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
 
-from flext_auth import c, t
+from flext_auth import c, p, t
 
 if TYPE_CHECKING:
     from flext_auth import m
@@ -28,7 +28,7 @@ class FlextAuthProtocolsAuthProvider:
         def __call__(
             self,
             ticket: str,
-        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+        ) -> p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             """Validate one Kerberos ticket into its authenticated identity.
 
             Args:
