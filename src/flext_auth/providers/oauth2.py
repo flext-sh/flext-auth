@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import TYPE_CHECKING, override
 
-from flext_auth import e, m, t, u
+from flext_auth import e, m, p, t, u
 from flext_auth.providers import FlextAuthOAuth2Tokens
 
 if TYPE_CHECKING:

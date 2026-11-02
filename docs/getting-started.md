@@ -306,7 +306,7 @@ from datetime import UTC, datetime
 
 from flext_cli import u
 
-from flext_auth import m
+from flext_auth import m, p
 
 # Create session; the token is issued by the auth service, never inlined
 session = m.Auth.Session(

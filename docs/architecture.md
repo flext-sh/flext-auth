@@ -317,7 +317,7 @@ from collections.abc import (
 
 from typing import Protocol
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import p, t
 
 
@@ -453,7 +453,7 @@ from typing import Protocol
 
 from flext_cli import u
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import p, r, s, t
 
 
@@ -809,7 +809,7 @@ from collections.abc import (
     Sequence,
 )
 from flext_core import p, r, s, t
-from flext_auth import m
+from flext_auth import m, p
 
 
 class TokenManager(s):
@@ -938,7 +938,7 @@ from collections.abc import (
 
 from flext_cli import u
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import t
 
 
@@ -1066,7 +1066,7 @@ from collections.abc import (
 
 from datetime import UTC, datetime
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import p, r
 
 
@@ -1130,7 +1130,7 @@ from collections.abc import (
 from flext_api import FlextApi
 from flext_ldap import ldap
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import m, p
 
 
@@ -1175,7 +1175,7 @@ from collections.abc import (
 
 from flext_cli import u
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import p, s
 
 

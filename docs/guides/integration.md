@@ -238,7 +238,7 @@ CLI authentication patterns:
 ```python
 from __future__ import annotations
 
-from flext_cli import FlextCliCli, FlextCliSettings, m, t
+from flext_cli import FlextCliCli, FlextCliSettings, m, p, t
 
 from flext_auth import FlextAuth
 
@@ -394,7 +394,7 @@ from collections.abc import (
     Sequence,
 )
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import p
 
 
@@ -431,7 +431,7 @@ from collections.abc import (
 
 from typing import Protocol
 
-from flext_auth import m
+from flext_auth import m, p
 from flext_core import p, r
 
 

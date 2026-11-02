@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_auth import FlextAuth, FlextAuthSettings, m, t
+from flext_auth import FlextAuth, FlextAuthSettings, m, p, t
 from flext_auth.providers import FlextAuthJwtTokenValidator
 from tests import c, p, tm, u
 

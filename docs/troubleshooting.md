@@ -463,7 +463,7 @@ make check
 
 ```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
-from flext_auth import m
+from flext_auth import m, p
 
 # Access models via namespace
 user = m.Auth.AuthIdentity(name=c.ContextScope.USER, contact="user@example.com")
