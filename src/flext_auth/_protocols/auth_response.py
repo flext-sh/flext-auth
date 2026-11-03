@@ -12,9 +12,8 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import FlextApiProtocols
 
-from flext_auth import t
-
 if TYPE_CHECKING:
+    from flext_auth import t
     from flext_auth._protocols import FlextAuthProtocolsAuthProvider
 
 

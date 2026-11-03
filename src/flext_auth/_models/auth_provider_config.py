@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from flext_api import m, p
+from flext_api import m
 
 from flext_auth import p, t
 
@@ -60,19 +60,37 @@ class FlextAuthModelsAuthProviderConfig:
             description="Session manager supplied by the API composition.",
         )
 
-    class ProviderConfig(m.FlexibleModel):
-        """Generic provider configuration (immutable value object)."""
+    class ProviderIdentityConfig(m.FlexibleModel):
+        """Provider identity and enablement."""
 
         name: Annotated[str, m.Field(..., description="Provider name")]
         type: Annotated[str, m.Field(..., description="Provider type")]
         enabled: Annotated[bool, m.Field(description="Enabled status")] = True
-
-        # Extended configuration fields (migrated from TypedDict)
-        # All optional to support various provider types
         provider_type: Annotated[
             str | None,
             m.Field(description="Authentication provider type"),
         ] = None
+
+        def __contains__(self, key: str) -> bool:
+            """Report whether a configuration field is declared.
+
+            Args:
+                key: Field name to look up.
+
+            Returns:
+                Whether the field exists on this model.
+
+            """
+            return key in self.__class__.model_fields
+
+        @property
+        def configured(self) -> bool:
+            """Whether the provider declares its required name and type."""
+            return bool(self.name and self.type)
+
+    class ProviderTokenConfig(m.FlexibleModel):
+        """Token signing, lifetime, and claim settings."""
+
         secret_key: Annotated[
             str | None,
             m.Field(description="Provider secret key"),
@@ -89,6 +107,14 @@ class FlextAuthModelsAuthProviderConfig:
             int | None,
             m.Field(description="Refresh token expiry in days"),
         ] = None
+        audience: Annotated[str | None, m.Field(description="Token audience claim")] = (
+            None
+        )
+        issuer: Annotated[str | None, m.Field(description="Token issuer claim")] = None
+
+    class ProviderOAuthConfig(m.FlexibleModel):
+        """OAuth client, endpoint, and flow settings."""
+
         client_id: Annotated[
             str | None,
             m.Field(description="OAuth client identifier"),
@@ -110,10 +136,19 @@ class FlextAuthModelsAuthProviderConfig:
             m.Field(description="OAuth redirect URI"),
         ] = None
         scope: Annotated[str | None, m.Field(description="OAuth scope")] = None
-        audience: Annotated[str | None, m.Field(description="Token audience claim")] = (
-            None
-        )
-        issuer: Annotated[str | None, m.Field(description="Token issuer claim")] = None
+        flow: Annotated[str | None, m.Field(description="OAuth flow type")] = None
+        use_pkce: Annotated[
+            bool | None,
+            m.Field(description="Enable PKCE for OAuth"),
+        ] = None
+        token_endpoint_auth_method: Annotated[
+            str | None,
+            m.Field(description="Token endpoint authentication method"),
+        ] = None
+
+    class ProviderKerberosConfig(m.FlexibleModel):
+        """Kerberos realm, KDC, and keytab settings."""
+
         realm: Annotated[str | None, m.Field(description="Kerberos realm")] = None
         kdc_host: Annotated[
             str | None,
@@ -131,6 +166,10 @@ class FlextAuthModelsAuthProviderConfig:
             str | None,
             m.Field(description="Kerberos keytab file path"),
         ] = None
+
+    class ProviderSamlConfig(m.FlexibleModel):
+        """SAML entity, endpoint, and certificate settings."""
+
         entity_id: Annotated[
             str | None,
             m.Field(description="SAML entity identifier"),
@@ -145,6 +184,10 @@ class FlextAuthModelsAuthProviderConfig:
             str | None,
             m.Field(description="SAML X.509 certificate"),
         ] = None
+
+    class ProviderLdapConfig(m.FlexibleModel):
+        """LDAP server, bind, and search settings."""
+
         ldap_url: Annotated[str | None, m.Field(description="LDAP server URL")] = None
         bind_dn: Annotated[
             str | None,
@@ -158,32 +201,20 @@ class FlextAuthModelsAuthProviderConfig:
             str | None,
             m.Field(description="LDAP search filter"),
         ] = None
-        flow: Annotated[str | None, m.Field(description="OAuth flow type")] = None
-        use_pkce: Annotated[
-            bool | None,
-            m.Field(description="Enable PKCE for OAuth"),
-        ] = None
-        token_endpoint_auth_method: Annotated[
-            str | None,
-            m.Field(description="Token endpoint authentication method"),
-        ] = None
 
-        def __contains__(self, key: str) -> bool:
-            """Report whether a configuration field is declared.
+    class ProviderConfig(
+        ProviderLdapConfig,
+        ProviderSamlConfig,
+        ProviderKerberosConfig,
+        ProviderOAuthConfig,
+        ProviderTokenConfig,
+        ProviderIdentityConfig,
+    ):
+        """Generic provider configuration composed by provider family.
 
-            Args:
-                key: Field name to look up.
-
-            Returns:
-                Whether the field exists on this model.
-
-            """
-            return key in self.__class__.model_fields
-
-        @property
-        def configured(self) -> bool:
-            """Whether the provider declares its required name and type."""
-            return bool(self.name and self.type)
+        Bases are listed in reverse so pydantic's reverse-MRO field
+        collection keeps the identity fields first.
+        """
 
 
 __all__: list[str] = ["FlextAuthModelsAuthProviderConfig"]

@@ -64,26 +64,56 @@ if TYPE_CHECKING:
         return value
 
     def model_protocol_11(
+        value: (FlextAuthModels.Auth.ProviderIdentityConfig),
+    ) -> FlextAuthProtocols.Auth.ProviderIdentityConfig:
+        return value
+
+    def model_protocol_12(
+        value: (FlextAuthModels.Auth.ProviderKerberosConfig),
+    ) -> FlextAuthProtocols.Auth.ProviderKerberosConfig:
+        return value
+
+    def model_protocol_13(
+        value: (FlextAuthModels.Auth.ProviderLdapConfig),
+    ) -> FlextAuthProtocols.Auth.ProviderLdapConfig:
+        return value
+
+    def model_protocol_14(
+        value: (FlextAuthModels.Auth.ProviderOAuthConfig),
+    ) -> FlextAuthProtocols.Auth.ProviderOAuthConfig:
+        return value
+
+    def model_protocol_15(
+        value: (FlextAuthModels.Auth.ProviderSamlConfig),
+    ) -> FlextAuthProtocols.Auth.ProviderSamlConfig:
+        return value
+
+    def model_protocol_16(
+        value: (FlextAuthModels.Auth.ProviderTokenConfig),
+    ) -> FlextAuthProtocols.Auth.ProviderTokenConfig:
+        return value
+
+    def model_protocol_17(
         value: (FlextAuthModels.Auth.ProviderWrapper),
     ) -> FlextAuthProtocols.Auth.ProviderWrapper:
         return value
 
-    def model_protocol_12(
+    def model_protocol_18(
         value: (FlextAuthModels.Auth.Providers.Metadata),
     ) -> FlextAuthProtocols.Auth.Metadata:
         return value
 
-    def model_protocol_13(
+    def model_protocol_19(
         value: (FlextAuthModels.Auth.RegistryPortOptions),
     ) -> FlextAuthProtocols.Auth.RegistryPortOptions:
         return value
 
-    def model_protocol_14(
+    def model_protocol_20(
         value: (FlextAuthModels.Auth.SessionPortOptions),
     ) -> FlextAuthProtocols.Auth.SessionPortOptions:
         return value
 
-    def model_protocol_15(
+    def model_protocol_21(
         value: (FlextAuthModels.Auth.UserIdentityExtras),
     ) -> FlextAuthProtocols.Auth.UserIdentityExtras:
         return value

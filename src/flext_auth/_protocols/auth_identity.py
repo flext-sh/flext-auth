@@ -152,51 +152,18 @@ class FlextAuthProtocolsAuthIdentity:
             """List of uncommitted domain events for event sourcing."""
             ...
 
-        @property
-        def name(self) -> str:
-            """Unique identity name."""
-            ...
-
-        @property
-        def contact(self) -> str:
-            """Contact info."""
-            ...
-
-        @property
-        def credential_hash(self) -> str:
-            """Hashed credential."""
-            ...
-
-        @property
-        def full_name(self) -> str:
-            """Full name."""
-            ...
-
-        @property
-        def is_active(self) -> bool:
-            """Active status."""
-            ...
-
+        name: str
+        contact: str
+        credential_hash: str
+        full_name: str
+        is_active: bool
         roles: Sequence[str]
         permissions: Sequence[str]
-
-        @property
-        def failed_attempts(self) -> t.NonNegativeInt:
-            """Failed attempts."""
-            ...
-
+        failed_attempts: t.NonNegativeInt
         locked_until: datetime
         last_access: datetime
-
-        @property
-        def token(self) -> str:
-            """Associated token."""
-            ...
-
-        @property
-        def session_id(self) -> str:
-            """Session ID."""
-            ...
+        token: str
+        session_id: str
 
         def locked(self) -> bool:
             """Check if identity is locked."""

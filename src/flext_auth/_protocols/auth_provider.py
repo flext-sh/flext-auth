@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import p
 
-from flext_auth import c, p, t
+from flext_auth import c, t
 
 if TYPE_CHECKING:
     from flext_auth import m

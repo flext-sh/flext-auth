@@ -12,11 +12,10 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import FlextApiProtocols
 
-from flext_auth import t
-
 if TYPE_CHECKING:
     from flext_api import p
 
+    from flext_auth import t
     from flext_auth._protocols import (
         FlextAuthProtocolsAuthIdentity,
         FlextAuthProtocolsAuthService,
@@ -79,168 +78,13 @@ class FlextAuthProtocolsAuthProviderConfig:
             ...
 
     @runtime_checkable
-    class ProviderConfig(FlextApiProtocols.Model, Protocol):
+    class ProviderIdentityConfig(FlextApiProtocols.Model, Protocol):
         """Structural data contract projected from the owning model."""
 
-        @property
-        def name(self) -> str:
-            """Provider name."""
-            ...
-
-        @property
-        def type(self) -> str:
-            """Provider type."""
-            ...
-
-        @property
-        def enabled(self) -> bool:
-            """Enabled status."""
-            ...
-
-        @property
-        def provider_type(self) -> str | None:
-            """Authentication provider type."""
-            ...
-
-        @property
-        def secret_key(self) -> str | None:
-            """Provider secret key."""
-            ...
-
-        @property
-        def algorithm(self) -> str | None:
-            """Token signing algorithm."""
-            ...
-
-        @property
-        def token_expiry_minutes(self) -> t.PositiveInt | None:
-            """Token expiry in minutes."""
-            ...
-
-        @property
-        def refresh_expiry_days(self) -> int | None:
-            """Refresh token expiry in days."""
-            ...
-
-        @property
-        def client_id(self) -> str | None:
-            """OAuth client identifier."""
-            ...
-
-        @property
-        def client_secret(self) -> str | None:
-            """OAuth client secret."""
-            ...
-
-        @property
-        def authorization_endpoint(self) -> str | None:
-            """OAuth authorization endpoint URL."""
-            ...
-
-        @property
-        def token_endpoint(self) -> str | None:
-            """OAuth token endpoint URL."""
-            ...
-
-        @property
-        def redirect_uri(self) -> str | None:
-            """OAuth redirect URI."""
-            ...
-
-        @property
-        def scope(self) -> str | None:
-            """OAuth scope."""
-            ...
-
-        @property
-        def audience(self) -> str | None:
-            """Token audience claim."""
-            ...
-
-        @property
-        def issuer(self) -> str | None:
-            """Token issuer claim."""
-            ...
-
-        @property
-        def realm(self) -> str | None:
-            """Kerberos realm."""
-            ...
-
-        @property
-        def kdc_host(self) -> str | None:
-            """Kerberos KDC hostname."""
-            ...
-
-        @property
-        def kdc_port(self) -> t.PortNumber | None:
-            """Kerberos KDC port."""
-            ...
-
-        @property
-        def service_principal(self) -> str | None:
-            """Kerberos service principal."""
-            ...
-
-        @property
-        def keytab_path(self) -> str | None:
-            """Kerberos keytab file path."""
-            ...
-
-        @property
-        def entity_id(self) -> str | None:
-            """SAML entity identifier."""
-            ...
-
-        @property
-        def sso_url(self) -> str | None:
-            """SAML SSO endpoint URL."""
-            ...
-
-        @property
-        def slo_url(self) -> str | None:
-            """SAML SLO endpoint URL."""
-            ...
-
-        @property
-        def x509_cert(self) -> str | None:
-            """SAML X.509 certificate."""
-            ...
-
-        @property
-        def ldap_url(self) -> str | None:
-            """LDAP server URL."""
-            ...
-
-        @property
-        def bind_dn(self) -> str | None:
-            """LDAP bind distinguished name."""
-            ...
-
-        @property
-        def base_dn(self) -> str | None:
-            """LDAP base distinguished name."""
-            ...
-
-        @property
-        def search_filter(self) -> str | None:
-            """LDAP search filter."""
-            ...
-
-        @property
-        def flow(self) -> str | None:
-            """OAuth flow type."""
-            ...
-
-        @property
-        def use_pkce(self) -> bool | None:
-            """Enable PKCE for OAuth."""
-            ...
-
-        @property
-        def token_endpoint_auth_method(self) -> str | None:
-            """Token endpoint authentication method."""
-            ...
+        name: str
+        type: str
+        enabled: bool
+        provider_type: str | None
 
         def __contains__(self, key: str) -> bool:
             """Report whether a configuration field is declared."""
@@ -250,6 +94,71 @@ class FlextAuthProtocolsAuthProviderConfig:
         def configured(self) -> bool:
             """Whether the provider declares its required name and type."""
             ...
+
+    @runtime_checkable
+    class ProviderTokenConfig(FlextApiProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        secret_key: str | None
+        algorithm: str | None
+        token_expiry_minutes: t.PositiveInt | None
+        refresh_expiry_days: int | None
+        audience: str | None
+        issuer: str | None
+
+    @runtime_checkable
+    class ProviderOAuthConfig(FlextApiProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        client_id: str | None
+        client_secret: str | None
+        authorization_endpoint: str | None
+        token_endpoint: str | None
+        redirect_uri: str | None
+        scope: str | None
+        flow: str | None
+        use_pkce: bool | None
+        token_endpoint_auth_method: str | None
+
+    @runtime_checkable
+    class ProviderKerberosConfig(FlextApiProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        realm: str | None
+        kdc_host: str | None
+        kdc_port: t.PortNumber | None
+        service_principal: str | None
+        keytab_path: str | None
+
+    @runtime_checkable
+    class ProviderSamlConfig(FlextApiProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        entity_id: str | None
+        sso_url: str | None
+        slo_url: str | None
+        x509_cert: str | None
+
+    @runtime_checkable
+    class ProviderLdapConfig(FlextApiProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        ldap_url: str | None
+        bind_dn: str | None
+        base_dn: str | None
+        search_filter: str | None
+
+    @runtime_checkable
+    class ProviderConfig(
+        ProviderLdapConfig,
+        ProviderSamlConfig,
+        ProviderKerberosConfig,
+        ProviderOAuthConfig,
+        ProviderTokenConfig,
+        ProviderIdentityConfig,
+        Protocol,
+    ):
+        """Structural data contract projected from the owning model."""
 
 
 __all__: list[str] = [

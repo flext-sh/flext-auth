@@ -132,40 +132,13 @@ class FlextAuthProtocolsAuthSession:
             """List of uncommitted domain events for event sourcing."""
             ...
 
-        @property
-        def identity_id(self) -> str:
-            """Identity ID."""
-            ...
-
-        @property
-        def token(self) -> str:
-            """Token value."""
-            ...
-
-        @property
-        def expires_at(self) -> datetime:
-            """Expiration time."""
-            ...
-
-        @property
-        def token_type(self) -> str:
-            """Token type."""
-            ...
-
-        @property
-        def session_id(self) -> str:
-            """Session ID."""
-            ...
-
-        @property
-        def is_revoked(self) -> bool:
-            """Revoked status."""
-            ...
-
-        @property
-        def refresh_token(self) -> str:
-            """Refresh token."""
-            ...
+        identity_id: str
+        token: str
+        expires_at: datetime
+        token_type: str
+        session_id: str
+        is_revoked: bool
+        refresh_token: str
 
         @property
         def user_id(self) -> str:
