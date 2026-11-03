@@ -9,9 +9,11 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_api import p
+from flext_api import FlextApiProtocols, p
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from flext_auth import t
 
 
@@ -120,6 +122,60 @@ class FlextAuthProtocolsAuthSession:
         "Authentication status."
         success: bool
         "Operation success status."
+
+    @runtime_checkable
+    class AuthSession(FlextApiProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        @property
+        def domain_events(self) -> Sequence[p.DomainEvent]:
+            """List of uncommitted domain events for event sourcing."""
+            ...
+
+        @property
+        def identity_id(self) -> str:
+            """Identity ID."""
+            ...
+
+        @property
+        def token(self) -> str:
+            """Token value."""
+            ...
+
+        @property
+        def expires_at(self) -> datetime:
+            """Expiration time."""
+            ...
+
+        @property
+        def token_type(self) -> str:
+            """Token type."""
+            ...
+
+        @property
+        def session_id(self) -> str:
+            """Session ID."""
+            ...
+
+        @property
+        def is_revoked(self) -> bool:
+            """Revoked status."""
+            ...
+
+        @property
+        def refresh_token(self) -> str:
+            """Refresh token."""
+            ...
+
+        @property
+        def user_id(self) -> str:
+            """User ID property for protocol compatibility."""
+            ...
+
+        @property
+        def expired(self) -> bool:
+            """Whether token is expired."""
+            ...
 
 
 __all__: list[str] = ["FlextAuthProtocolsAuthSession"]

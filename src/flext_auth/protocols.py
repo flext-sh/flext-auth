@@ -9,13 +9,27 @@ from __future__ import annotations
 
 from flext_api import p
 
-from flext_auth._protocols import FlextAuthProtocolsAuth, FlextAuthProtocolsBase
+from flext_auth._protocols import (
+    FlextAuthProtocolsAuth,
+    FlextAuthProtocolsAuthIdentityRequest,
+    FlextAuthProtocolsAuthProviderConfig,
+    FlextAuthProtocolsAuthResponse,
+    FlextAuthProtocolsAuthUserIdentityExtras,
+    FlextAuthProtocolsBase,
+)
 
 
 class FlextAuthProtocols(p):
     """Unified authentication protocols following FLEXT domain extension pattern."""
 
-    class Auth(FlextAuthProtocolsBase, FlextAuthProtocolsAuth):
+    class Auth(
+        FlextAuthProtocolsAuth,
+        FlextAuthProtocolsAuthIdentityRequest,
+        FlextAuthProtocolsAuthProviderConfig,
+        FlextAuthProtocolsAuthResponse,
+        FlextAuthProtocolsAuthUserIdentityExtras,
+        FlextAuthProtocolsBase,
+    ):
         """Authentication domain-specific protocols."""
 
 
