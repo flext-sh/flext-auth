@@ -19,7 +19,7 @@ class FlextAuthProtocolsAuthUserIdentityExtras:
     """Own the structural contracts declared by its model source."""
 
     @runtime_checkable
-    class UserIdentityExtras(FlextApiProtocols.Model, Protocol):
+    class UserIdentityExtras(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         full_name: str | None

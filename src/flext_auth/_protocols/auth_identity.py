@@ -7,15 +7,15 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Sequence
+from datetime import datetime
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import FlextApiProtocols, p
 
-if TYPE_CHECKING:
-    from datetime import datetime
-    from typing import Self
+from flext_auth import t
 
-    from flext_auth import t
+if TYPE_CHECKING:
+    from typing import Self
 
 
 class FlextAuthProtocolsAuthIdentity:
@@ -144,7 +144,7 @@ class FlextAuthProtocolsAuthIdentity:
             ...
 
     @runtime_checkable
-    class AuthIdentity(FlextApiProtocols.Model, Protocol):
+    class AuthIdentity(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property

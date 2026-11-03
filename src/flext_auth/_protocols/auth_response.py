@@ -21,7 +21,7 @@ class FlextAuthProtocolsAuthResponse:
     """Own the structural contracts declared by its model source."""
 
     @runtime_checkable
-    class CredentialValidation(FlextApiProtocols.Model, Protocol):
+    class CredentialValidation(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -40,7 +40,7 @@ class FlextAuthProtocolsAuthResponse:
             ...
 
     @runtime_checkable
-    class AuthResponse(FlextApiProtocols.Model, Protocol):
+    class AuthResponse(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -69,7 +69,7 @@ class FlextAuthProtocolsAuthResponse:
             ...
 
     @runtime_checkable
-    class OAuth2TokenResponse(FlextApiProtocols.Model, Protocol):
+    class OAuth2TokenResponse(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -98,7 +98,7 @@ class FlextAuthProtocolsAuthResponse:
             ...
 
     @runtime_checkable
-    class KerberosTicketData(FlextApiProtocols.Model, Protocol):
+    class KerberosTicketData(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -117,7 +117,7 @@ class FlextAuthProtocolsAuthResponse:
             ...
 
     @runtime_checkable
-    class ProviderWrapper(FlextApiProtocols.Model, Protocol):
+    class ProviderWrapper(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -141,7 +141,7 @@ class FlextAuthProtocolsAuthResponse:
             ...
 
     @runtime_checkable
-    class Metadata(FlextApiProtocols.Model, Protocol):
+    class Metadata(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property

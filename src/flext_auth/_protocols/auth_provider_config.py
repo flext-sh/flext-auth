@@ -27,7 +27,7 @@ class FlextAuthProtocolsAuthProviderConfig:
     """Own the structural contracts declared by its model source."""
 
     @runtime_checkable
-    class RegistryPortOptions(FlextApiProtocols.Model, Protocol):
+    class RegistryPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -36,7 +36,7 @@ class FlextAuthProtocolsAuthProviderConfig:
             ...
 
     @runtime_checkable
-    class ApplicationPortOptions(FlextApiProtocols.Model, Protocol):
+    class ApplicationPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -50,7 +50,7 @@ class FlextAuthProtocolsAuthProviderConfig:
             ...
 
     @runtime_checkable
-    class IdentityPortOptions(FlextApiProtocols.Model, Protocol):
+    class IdentityPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -59,7 +59,7 @@ class FlextAuthProtocolsAuthProviderConfig:
             ...
 
     @runtime_checkable
-    class SessionPortOptions(FlextApiProtocols.Model, Protocol):
+    class SessionPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         @property
@@ -78,7 +78,7 @@ class FlextAuthProtocolsAuthProviderConfig:
             ...
 
     @runtime_checkable
-    class ProviderIdentityConfig(FlextApiProtocols.Model, Protocol):
+    class ProviderIdentityConfig(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         name: str
@@ -96,7 +96,7 @@ class FlextAuthProtocolsAuthProviderConfig:
             ...
 
     @runtime_checkable
-    class ProviderTokenConfig(FlextApiProtocols.Model, Protocol):
+    class ProviderTokenConfig(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         secret_key: str | None
@@ -107,7 +107,7 @@ class FlextAuthProtocolsAuthProviderConfig:
         issuer: str | None
 
     @runtime_checkable
-    class ProviderOAuthConfig(FlextApiProtocols.Model, Protocol):
+    class ProviderOAuthConfig(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         client_id: str | None
@@ -121,7 +121,7 @@ class FlextAuthProtocolsAuthProviderConfig:
         token_endpoint_auth_method: str | None
 
     @runtime_checkable
-    class ProviderKerberosConfig(FlextApiProtocols.Model, Protocol):
+    class ProviderKerberosConfig(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         realm: str | None
@@ -131,7 +131,7 @@ class FlextAuthProtocolsAuthProviderConfig:
         keytab_path: str | None
 
     @runtime_checkable
-    class ProviderSamlConfig(FlextApiProtocols.Model, Protocol):
+    class ProviderSamlConfig(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         entity_id: str | None
@@ -140,7 +140,7 @@ class FlextAuthProtocolsAuthProviderConfig:
         x509_cert: str | None
 
     @runtime_checkable
-    class ProviderLdapConfig(FlextApiProtocols.Model, Protocol):
+    class ProviderLdapConfig(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
         ldap_url: str | None
