@@ -9,10 +9,11 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_api import p
+from flext_api import FlextApiProtocols, p
 
 if TYPE_CHECKING:
     from datetime import datetime
+    from typing import Self
 
     from flext_auth import t
 
@@ -140,6 +141,77 @@ class FlextAuthProtocolsAuthIdentity:
                 The refreshed identity entity.
 
             """
+            ...
+
+    @runtime_checkable
+    class AuthIdentity(FlextApiProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        @property
+        def domain_events(self) -> Sequence[p.DomainEvent]:
+            """List of uncommitted domain events for event sourcing."""
+            ...
+
+        @property
+        def name(self) -> str:
+            """Unique identity name."""
+            ...
+
+        @property
+        def contact(self) -> str:
+            """Contact info."""
+            ...
+
+        @property
+        def credential_hash(self) -> str:
+            """Hashed credential."""
+            ...
+
+        @property
+        def full_name(self) -> str:
+            """Full name."""
+            ...
+
+        @property
+        def is_active(self) -> bool:
+            """Active status."""
+            ...
+
+        roles: Sequence[str]
+        permissions: Sequence[str]
+
+        @property
+        def failed_attempts(self) -> t.NonNegativeInt:
+            """Failed attempts."""
+            ...
+
+        locked_until: datetime
+        last_access: datetime
+
+        @property
+        def token(self) -> str:
+            """Associated token."""
+            ...
+
+        @property
+        def session_id(self) -> str:
+            """Session ID."""
+            ...
+
+        def locked(self) -> bool:
+            """Check if identity is locked."""
+            ...
+
+        def update_credential(self, credential: str) -> p.Result[bool]:
+            """Update credential with bcrypt hashing via domain verb."""
+            ...
+
+        def verify_credential(self, credential: str) -> p.Result[bool]:
+            """Verify a credential against stored hash using bcrypt."""
+            ...
+
+        def with_successful_access(self) -> Self:
+            """Record a successful access and reset the failure counters."""
             ...
 
 
