@@ -20,7 +20,7 @@ class FlextAuthUtilitiesAuthSession:
     @staticmethod
     def decode_token(
         token: str,
-        config: p.Auth.ProviderConfig | Mapping[str, t.Scalar],
+        config: m.Auth.ProviderConfig | Mapping[str, t.Scalar],
         *,
         verify: bool = True,
     ) -> p.Result[t.Auth.TokensClaimMap]:

@@ -16,16 +16,13 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping
 from enum import StrEnum
 
-import pytest
-
-from flext_auth import t
-from tests import c, tm
+from tests import c, t, tm, u
 
 
 class TestsFlextAuthConstants:
     """Public-contract behavior of the FlextAuthConstants facade."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     # ----- Composition reachability (observable, not structural) -----
 
@@ -34,13 +31,13 @@ class TestsFlextAuthConstants:
         """Test auth default timeout is derived from core timeout."""
         tm.that(
             float(c.DEFAULT_TIMEOUT_SECONDS),
-            eq=pytest.approx(c.Auth.DEFAULT_TIMEOUT),
+            eq=u.Tests.approx(c.Auth.DEFAULT_TIMEOUT),
         )
 
     # ----- Published scalar values (the public contract) -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("value", "expected"),
         [
             (c.Auth.JWT_DEFAULT_ALGORITHM, c.Auth.Algorithms.HS256),
@@ -93,7 +90,7 @@ class TestsFlextAuthConstants:
         tm.that(value, eq=expected)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("code", "expected"),
         [
             (c.Auth.ERROR_INVALID_CREDENTIALS, "INVALID_CREDENTIALS"),
@@ -111,7 +108,7 @@ class TestsFlextAuthConstants:
     # ----- StrEnum behavior: string identity + membership -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("member", "expected"),
         [
             (c.Auth.TokenTypes.ACCESS, "access"),
@@ -150,7 +147,7 @@ class TestsFlextAuthConstants:
         tm.that(member.value, eq=expected)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "enum_cls",
         [
             c.Auth.TokenTypes,
@@ -170,7 +167,7 @@ class TestsFlextAuthConstants:
     # ----- Derivation invariants: frozensets mirror their StrEnum -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("valid_set", "enum_cls"),
         [
             (c.Auth.VALID_TOKEN_TYPES, c.Auth.TokenTypes),
@@ -199,7 +196,7 @@ class TestsFlextAuthConstants:
     # ----- Ordering invariants between related bounds -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("low", "high"),
         [
             (
@@ -224,7 +221,7 @@ class TestsFlextAuthConstants:
     # ----- Immutability guarantees of exposed collections -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "valid_set",
         [
             c.Auth.VALID_TOKEN_TYPES,
@@ -242,7 +239,7 @@ class TestsFlextAuthConstants:
         tm.fail(hasattr(valid_set, "add"))
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "mapping",
         [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE],
     )
@@ -255,7 +252,7 @@ class TestsFlextAuthConstants:
     # ----- Mapping contract: required keys and payload shape -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "key",
         ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"],
     )

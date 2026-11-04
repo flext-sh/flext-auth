@@ -7,13 +7,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Final
+from typing import Final
 
 from flext_auth import FlextAuth
-from tests import TestsFlextAuthUtilities, c
-
-if TYPE_CHECKING:
-    from flext_auth import p, t
+from tests import c, p, t, tm
 
 
 class TestsFlextAuthApiTestDataHelper:
@@ -36,12 +33,12 @@ class TestsFlextAuthApiTestDataHelper:
             email=test_data["email"],
             password=test_data["password"],
         )
-        TestsFlextAuthUtilities.that(register_result.success, eq=True)
+        tm.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             test_data["username"],
             test_data["password"],
         )
-        TestsFlextAuthUtilities.that(auth_result.success, eq=True)
+        tm.that(auth_result.success, eq=True)
         identity = auth_result.value
         return auth, identity, test_data
 

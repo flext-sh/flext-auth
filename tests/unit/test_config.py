@@ -13,18 +13,17 @@ from __future__ import annotations
 
 from collections.abc import MutableMapping
 
-import pytest
-
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings, m, t
-from tests import TestsFlextAuthUtilities, c, tm
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings
+from tests import TestsFlextAuthUtilities, c, m, t, tm, u
 
 
 class TestsFlextAuthConfig:
     """Behavioral contract for FlextAuthSettings and its consumers."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
-    @pytest.fixture
+    @u.Tests.fixture
+    @staticmethod
     def settings() -> FlextAuthSettings:
         """Provide the current global settings instance.
 
@@ -52,7 +51,7 @@ class TestsFlextAuthConfig:
         tm.that(settings.Auth.algorithm, is_=str)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("field_name", "expected"),
         [
             ("algorithm", c.Auth.DEFAULT_JWT_ALGORITHM),
@@ -110,7 +109,7 @@ class TestsFlextAuthConfig:
         tm.that(updated.Auth.hash_rounds, eq=12)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "overrides",
         [
             {"hash_rounds": c.Auth.HASH_ROUNDS_MIN - 1},
@@ -124,7 +123,7 @@ class TestsFlextAuthConfig:
         overrides: t.JsonMapping,
     ) -> None:
         """Values outside the declared bounds fail model validation."""
-        with pytest.raises(m.ValidationError):
+        with u.Tests.raises(m.ValidationError):
             FlextAuthSettings.model_validate({"Auth": overrides})
 
     @staticmethod
@@ -195,7 +194,7 @@ class TestsFlextAuthConfig:
         )
 
     @staticmethod
-    @pytest.mark.parametrize("identity_id", ["", "   "])
+    @c.Tests.MARK.parametrize("identity_id", ["", "   "])
     def test_create_token_rejects_blank_identity(
         settings: FlextAuthSettings,
         identity_id: str,
@@ -246,7 +245,7 @@ class TestsFlextAuthConfig:
         tm.ok(config.Auth is policy)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "invalid_policy",
         [
             {"unexpected_policy": True},
@@ -258,7 +257,7 @@ class TestsFlextAuthConfig:
         invalid_policy: t.JsonMapping,
     ) -> None:
         """Malformed policy fails at the public config boundary without coercion."""
-        with FlextAuthConfig.singleton_disabled(), pytest.raises(m.ValidationError):
+        with FlextAuthConfig.singleton_disabled(), u.Tests.raises(m.ValidationError):
             FlextAuthConfig.model_validate({"Auth": invalid_policy})
 
     @staticmethod
@@ -285,7 +284,7 @@ class TestsFlextAuthConfig:
         tm.that(config.Auth.oauth2.flows, eq=original.oauth2.flows)
 
     @staticmethod
-    @pytest.mark.parametrize("nested_environment", [False, True])
+    @c.Tests.MARK.parametrize("nested_environment", [False, True])
     def test_yaml_policy_keeps_environment_and_parameter_precedence(
         *,
         nested_environment: bool,

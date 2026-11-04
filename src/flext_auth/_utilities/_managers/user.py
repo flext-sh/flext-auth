@@ -12,7 +12,7 @@ from typing import ClassVar
 
 from flext_api import u
 
-from flext_auth import FlextAuthSettings, m, p, t
+from flext_auth import FlextAuthSettings, p, t
 from flext_auth._utilities._managers import FlextAuthUserManagerCreate
 
 
@@ -27,9 +27,6 @@ class FlextAuthUserManagers:
         _users: MutableMapping[str, t.Auth.ManagersUserData]
         _DATETIME_ADAPTER: ClassVar[u.type_adapter[datetime]] = u.type_adapter(datetime)
         _MIN_DATETIME: ClassVar[datetime] = datetime.min.replace(tzinfo=UTC)
-        IdentityExtras: ClassVar[type[p.Auth.UserIdentityExtras]] = (
-            m.Auth.UserIdentityExtras
-        )
 
         def __init__(self) -> None:
             """Initialize user manager with configuration."""
