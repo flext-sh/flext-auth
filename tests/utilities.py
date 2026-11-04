@@ -6,12 +6,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsUtilities
+from flext_tests import u as flext_tests_u
 
-from flext_auth import FlextAuthUtilities
+from flext_auth import u as flext_auth_u
 
 
-class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
+class TestsFlextAuthUtilities(flext_auth_u):
     """Test utilities for flext-auth — extends flext_auth.u and flext_tests.u."""
 
     # Utilities namespace, not a test class: pytest must not collect the
@@ -19,7 +19,7 @@ class TestsFlextAuthUtilities(FlextTestsUtilities, FlextAuthUtilities):
     # (flext-ldap settings facade precedent).
     __test__: bool = False
 
-    class Tests(FlextTestsUtilities.Tests):
+    class Tests(flext_tests_u.Tests):
         """Test-specific utilities."""
 
 

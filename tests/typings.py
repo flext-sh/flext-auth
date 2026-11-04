@@ -8,18 +8,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
-from flext_tests import FlextTestsTypes
+from flext_tests import t as flext_tests_t
 
-from flext_auth import FlextAuthTypes
+from flext_auth import t as flext_auth_t
 
 if TYPE_CHECKING:
     import pytest
 
 
-class TestsFlextAuthTypes(FlextTestsTypes, FlextAuthTypes):
+class TestsFlextAuthTypes(flext_auth_t):
     """Test typings for flext-auth — extends flext_auth.t."""
 
-    class Tests(FlextTestsTypes.Tests):
+    class Tests(flext_tests_t.Tests):
         """Test-scoped literal aliases."""
 
         type LogCapture = pytest.LogCaptureFixture
