@@ -6,12 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
 from flext_core import FlextRegistry
 
 from flext_auth import FlextAuth, FlextAuthRegistry
 from flext_auth.providers import FlextAuthBasicProvider, FlextAuthJwtTokenValidator
-from tests import c, m, p, r, tm
+from tests import c, m, p, r, tm, u
 from tests.fixtures.auth import TestsFlextAuthFixtures
 
 
@@ -112,7 +111,7 @@ class TestsFlextAuthRegistryComposition:
             auth_api.register_provider("custom", provider, configuration=configuration)
         )
         original = tm.ok(auth_api.fetch_registration("custom"))
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             m.Auth.ProviderWrapper.model_validate({
                 "category": c.Auth.REGISTRY_PROVIDERS_CATEGORY,
                 "provider": provider,
@@ -200,17 +199,17 @@ class TestsFlextAuthRegistryComposition:
     @staticmethod
     def test_required_registry_port_is_validated_and_excluded() -> None:
         """Standalone domain services cannot create or hide their own registry."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({})
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({"registry": "invalid"})
         registry = FlextRegistry.create()
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({
                 "registry": registry,
                 "runtime_settings": "invalid",
             })
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextAuthRegistry.model_validate({
                 "registry": registry,
                 "unexpected": True,

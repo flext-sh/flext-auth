@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth import FlextAuth
-from tests import TestsFlextAuthUtilities, c, tm
+from tests import c, tm
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 
@@ -25,12 +25,12 @@ class TestsFlextAuthApiCase07:
             email="getuser@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(user_result.success, eq=True)
+        tm.that(user_result.success, eq=True)
         user = user_result.value
         get_result = auth.identity_service.identity_manager.fetch_user(user.unique_id)
-        TestsFlextAuthUtilities.that(get_result.success, eq=True)
+        tm.that(get_result.success, eq=True)
         retrieved_user = get_result.value
-        TestsFlextAuthUtilities.that(retrieved_user.unique_id, eq=user.unique_id)
+        tm.that(retrieved_user.unique_id, eq=user.unique_id)
 
     @staticmethod
     def test_fetch_user_by_username_method() -> None:
@@ -41,11 +41,11 @@ class TestsFlextAuthApiCase07:
             email="lookup@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(user_result.success, eq=True)
+        tm.that(user_result.success, eq=True)
         get_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "test_username_lookup",
         )
-        TestsFlextAuthUtilities.that(get_result.success, is_=bool)
+        tm.that(get_result.success, is_=bool)
 
     @staticmethod
     def test_get_user_by_token_direct_api_method() -> None:
@@ -56,12 +56,12 @@ class TestsFlextAuthApiCase07:
             email="tokenuser@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(user_result.success, eq=True)
+        tm.that(user_result.success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        TestsFlextAuthUtilities.that(token_result.success, eq=True)
+        tm.that(token_result.success, eq=True)
         get_result = auth.identity_service.identity_manager.fetch_user(user.unique_id)
-        TestsFlextAuthUtilities.that(get_result.success, eq=True)
+        tm.that(get_result.success, eq=True)
 
     @staticmethod
     def test_logout_user_method() -> None:
@@ -72,7 +72,7 @@ class TestsFlextAuthApiCase07:
             email="logout@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(user_result.success, eq=True)
+        tm.that(user_result.success, eq=True)
         user = user_result.value
         sessions_result = auth.session_service.session_manager.get_active_sessions(
             user.unique_id,
@@ -84,7 +84,7 @@ class TestsFlextAuthApiCase07:
                 logout_result = auth.session_service.session_manager.end_session_by_id(
                     session_id,
                 )
-                TestsFlextAuthUtilities.that(logout_result.success, is_=bool)
+                tm.that(logout_result.success, is_=bool)
 
     @staticmethod
     def test_revoke_session_method() -> None:
@@ -93,7 +93,7 @@ class TestsFlextAuthApiCase07:
         revoke_result = auth.session_service.session_manager.end_session_by_id(
             "test_session_id",
         )
-        TestsFlextAuthUtilities.that(revoke_result.success, is_=bool)
+        tm.that(revoke_result.success, is_=bool)
 
     @staticmethod
     def test_get_user_sessions_method() -> None:
@@ -102,28 +102,28 @@ class TestsFlextAuthApiCase07:
         sessions_result = auth.session_service.session_manager.get_active_sessions(
             "test_user_id",
         )
-        TestsFlextAuthUtilities.that(sessions_result.success, is_=bool)
+        tm.that(sessions_result.success, is_=bool)
 
     @staticmethod
     def test_cleanup_expired_sessions_method() -> None:
         """Test cleanup_expired_sessions method functionality."""
         auth = FlextAuth()
         cleanup_result = auth.session_service.cleanup_expired_sessions()
-        TestsFlextAuthUtilities.that(cleanup_result.success, is_=bool)
+        tm.that(cleanup_result.success, is_=bool)
 
     @staticmethod
     def test_quick_start_without_admin_creation() -> None:
         """Test quick_start class method without admin creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         tm.that(auth, is_=FlextAuth)
-        TestsFlextAuthUtilities.that(auth.settings, none=False)
+        tm.that(auth.settings, none=False)
 
     @staticmethod
     def test_get_config_method() -> None:
         """Test settings property functionality."""
         auth = FlextAuth()
         settings = auth.settings
-        TestsFlextAuthUtilities.that(settings, none=False)
+        tm.that(settings, none=False)
 
     @staticmethod
     def test_authenticate_with_locked_account() -> None:
@@ -134,10 +134,10 @@ class TestsFlextAuthApiCase07:
             email="lockable@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(user_result.success, eq=True)
+        tm.that(user_result.success, eq=True)
         for _ in range(6):
             failed_result = auth.authenticate_user(
                 username="lockable_user",
                 password=c.TEST_CREDENTIAL + "_wrong",
             )
-            TestsFlextAuthUtilities.that(not failed_result.success, eq=True)
+            tm.that(not failed_result.success, eq=True)

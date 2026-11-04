@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class FlextAuthUserManagerCreate(FlextAuthUserManagerWrite):
     """User manager extension adding identity creation."""
 
-    IdentityExtras: ClassVar[type[p.Auth.UserIdentityExtras]] = (
+    IdentityExtras: ClassVar[type[m.Auth.UserIdentityExtras]] = (
         m.Auth.UserIdentityExtras
     )
     _users: MutableMapping[str, t.Auth.ManagersUserData]

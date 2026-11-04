@@ -16,17 +16,16 @@ from __future__ import annotations
 import typing
 from datetime import datetime
 
-import pytest
 from flext_api import FlextApiTypes
 
 from flext_auth import FlextAuthTypes
-from tests import TestsFlextAuthTypes, tm
+from tests import TestsFlextAuthTypes, c, tm
 
 
 class TestsFlextAuthTypings:
     """Observable contract of the composed FlextAuthTypes facade."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     @staticmethod
     def test_composes_flext_api_types_via_mro() -> None:
@@ -61,7 +60,7 @@ class TestsFlextAuthTypings:
         )
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "alias_name",
         [
             "DateTimeValue",
@@ -87,12 +86,12 @@ class TestsFlextAuthTypings:
         tm.that(alias.__value__, none=False)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "inherited_type",
         [
             "JsonValue",
             "Scalar",
-            "Sequence[str]",
+            "StrSequence",
             "MutableJsonMapping",
             "MutableMetadataMapping",
         ],
@@ -109,7 +108,7 @@ class TestsFlextAuthTypings:
         tm.that(TestsFlextAuthTypes, where=exposes_inherited_type)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("literal_name", "expected_values"),
         [
             ("TokenTypeLiteral", ("access", "refresh", "api", "bearer")),

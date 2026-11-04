@@ -15,7 +15,10 @@ from flext_auth import c, t
 
 if TYPE_CHECKING:
     from flext_auth import m
-    from flext_auth._protocols import FlextAuthProtocolsAuthSession
+    from flext_auth._protocols import (
+        FlextAuthProtocolsAuthIdentity,
+        FlextAuthProtocolsAuthSession,
+    )
 
 
 class FlextAuthProtocolsAuthProvider:
@@ -28,7 +31,11 @@ class FlextAuthProtocolsAuthProvider:
         def __call__(
             self,
             ticket: str,
-        ) -> p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+        ) -> (
+            FlextAuthProtocolsAuthIdentity.AuthIdentity
+            | t.JsonMapping
+            | m.Auth.KerberosTicketData
+        ):
             """Validate one Kerberos ticket into its authenticated identity.
 
             Args:

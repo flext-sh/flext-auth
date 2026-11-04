@@ -6,14 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from flext_tests import t as flext_tests_t
 
 from flext_auth import t as flext_auth_t
-
-if TYPE_CHECKING:
-    import pytest
 
 
 class TestsFlextAuthTypes(flext_auth_t):
@@ -21,8 +18,6 @@ class TestsFlextAuthTypes(flext_auth_t):
 
     class Tests(flext_tests_t.Tests):
         """Test-scoped literal aliases."""
-
-        type LogCapture = pytest.LogCaptureFixture
 
         type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
         type ProviderTypeLiteral = Literal[

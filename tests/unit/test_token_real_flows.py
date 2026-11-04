@@ -9,17 +9,15 @@ from __future__ import annotations
 import io
 from datetime import UTC, datetime, timedelta
 
-import pytest
-
-from flext_auth import FlextAuth, FlextAuthSettings, m, t
+from flext_auth import FlextAuth, FlextAuthSettings
 from flext_auth.providers import FlextAuthJwtTokenValidator
-from tests import c, p, tm, u
+from tests import c, m, p, t, tm, u
 
 
 class TestsFlextAuthSessionRealFlows:
     """Token flow tests using only FlextAuth public API."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     @staticmethod
     def test_settings_and_bootstrap_use_existing_runtime_contracts() -> None:
@@ -157,7 +155,7 @@ class TestsFlextAuthSessionRealFlows:
         tm.ok(token_result)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("expiry_minutes", "session_expiry_minutes", "clone_settings"),
         [(3, 7, False), (11, 17, True)],
     )

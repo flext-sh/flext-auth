@@ -13,8 +13,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-import pytest
-
 from flext_auth import FlextAuth, FlextAuthSettings
 from tests import c, p, tm
 
@@ -22,7 +20,7 @@ from tests import c, p, tm
 class TestsFlextAuthApi:
     """Public-contract behavior of the FlextAuth API facade."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     @staticmethod
     def test_quick_start_exposes_public_service_properties() -> None:
@@ -91,7 +89,7 @@ class TestsFlextAuthApi:
         tm.that(result.value.contact, eq="mixed@example.com")
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("roles", "role"),
         [(None, c.ContextScope.USER), (["admin"], None), (None, None)],
     )
@@ -178,7 +176,7 @@ class TestsFlextAuthApi:
         tm.that(result.error, truth=True)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "credentials",
         [
             {"username": "", "password": ""},
