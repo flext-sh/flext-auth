@@ -18,6 +18,8 @@ from tests import p, t
 class TestsFlextAuthFixtures:
     """Typed real API fixtures, without singleton resets or replacement adapters."""
 
+    __test__: bool = False
+
     class PolicyLockedJwtProvider(FlextAuthJwtProvider):
         """Real JWT provider whose explicit domain policy rejects reconfiguration."""
 

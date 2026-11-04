@@ -10,7 +10,7 @@ import threading
 from threading import Thread
 
 from flext_auth import FlextAuth
-from tests import TestsFlextAuthUtilities, c
+from tests import c, tm
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 
@@ -58,11 +58,11 @@ class TestsFlextAuthApiCase11:
             email="public-api-token-user@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.ok(registered)
+        tm.ok(registered)
 
         token_result = auth.create_token(identity_id=registered.value.unique_id)
-        TestsFlextAuthUtilities.ok(token_result)
-        TestsFlextAuthUtilities.that(token_result.value.count("."), eq=2)
+        tm.ok(token_result)
+        tm.that(token_result.value.count("."), eq=2)
 
     @staticmethod
     def test_public_api_validate_token_success() -> None:
@@ -73,17 +73,17 @@ class TestsFlextAuthApiCase11:
             email="public-api-validate-user@example.com",
             password=c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.ok(registered)
+        tm.ok(registered)
 
         token_result = auth.create_token(identity_id=registered.value.unique_id)
-        TestsFlextAuthUtilities.ok(token_result)
+        tm.ok(token_result)
 
         validation_result = auth.session_service.validate_token(token_result.value)
-        TestsFlextAuthUtilities.ok(validation_result, eq=True, is_=bool)
+        tm.ok(validation_result, eq=True, is_=bool)
 
     @staticmethod
     def test_public_api_validate_token_failure() -> None:
         """Test public api validate token failure."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         validation_result = auth.session_service.validate_token("invalid.jwt.token")
-        TestsFlextAuthUtilities.fail(validation_result)
+        tm.fail(validation_result)

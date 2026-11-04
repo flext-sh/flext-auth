@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import secrets
 
-from flext_auth import FlextAuth, FlextAuthSettings, m
-from tests import TestsFlextAuthUtilities, c
+from flext_auth import FlextAuth, FlextAuthSettings
+from tests import c, m, tm
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 
@@ -23,15 +23,13 @@ class TestsFlextAuthApiCase03:
         """Test FlextAuth initialization with different parameters."""
         default_config = FlextAuthSettings()
         auth = FlextAuth(runtime_settings=default_config)
-        TestsFlextAuthUtilities.that(auth.config is default_config.Auth, eq=True)
-        TestsFlextAuthUtilities.that(
+        tm.that(auth.config is default_config.Auth, eq=True)
+        tm.that(
             len(default_config.Auth.auth_secret.get_secret_value())
             >= c.Auth.SECRET_MIN_LENGTH,
             eq=True,
         )
-        TestsFlextAuthUtilities.that(
-            auth.config.expiry_minutes, eq=default_config.Auth.expiry_minutes
-        )
+        tm.that(auth.config.expiry_minutes, eq=default_config.Auth.expiry_minutes)
         custom_secret = secrets.token_urlsafe(c.Auth.SECRET_MIN_LENGTH)
         custom_rounds = 10
         custom_expiry = 60
@@ -44,15 +42,13 @@ class TestsFlextAuthApiCase03:
             ),
         )
         auth_custom = FlextAuth(runtime_settings=custom_config)
-        TestsFlextAuthUtilities.that(auth_custom.config is custom_config.Auth, eq=True)
-        TestsFlextAuthUtilities.that(
+        tm.that(auth_custom.config is custom_config.Auth, eq=True)
+        tm.that(
             custom_config.Auth.auth_secret.get_secret_value(),
             eq=custom_secret,
         )
-        TestsFlextAuthUtilities.that(custom_config.Auth.hash_rounds, eq=custom_rounds)
-        TestsFlextAuthUtilities.that(
-            auth_custom.config.expiry_minutes, eq=custom_expiry
-        )
+        tm.that(custom_config.Auth.hash_rounds, eq=custom_rounds)
+        tm.that(auth_custom.config.expiry_minutes, eq=custom_expiry)
 
     @staticmethod
     def test_user_registration_success() -> None:
@@ -64,12 +60,12 @@ class TestsFlextAuthApiCase03:
             password=c.TEST_CREDENTIAL,
             roles=[c.ContextScope.USER],
         )
-        TestsFlextAuthUtilities.that(result.success, eq=True)
+        tm.that(result.success, eq=True)
         user = result.value
-        TestsFlextAuthUtilities.that(user.name, eq="testuser")
-        TestsFlextAuthUtilities.that(user.contact, eq="test@example.com")
-        TestsFlextAuthUtilities.that(user.roles, has=c.ContextScope.USER)
-        TestsFlextAuthUtilities.that(user.is_active, eq=True)
+        tm.that(user.name, eq="testuser")
+        tm.that(user.contact, eq="test@example.com")
+        tm.that(user.roles, has=c.ContextScope.USER)
+        tm.that(user.is_active, eq=True)
 
     @staticmethod
     def test_user_registration_duplicate_username() -> None:
@@ -81,10 +77,8 @@ class TestsFlextAuthApiCase03:
             "test2@example.com",
             c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(duplicate_result.failure, eq=True)
-        TestsFlextAuthUtilities.that(
-            (duplicate_result.error or ""), has="already exists"
-        )
+        tm.that(duplicate_result.failure, eq=True)
+        tm.that((duplicate_result.error or ""), has="already exists")
 
     @staticmethod
     def test_user_registration_duplicate_email() -> None:
@@ -95,16 +89,14 @@ class TestsFlextAuthApiCase03:
             "test@example.com",
             c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(first_result.success, eq=True)
+        tm.that(first_result.success, eq=True)
         duplicate_result = auth.register_user(
             "user2",
             "test@example.com",
             c.TEST_CREDENTIAL,
         )
-        TestsFlextAuthUtilities.that(duplicate_result.failure, eq=True)
-        TestsFlextAuthUtilities.that(
-            (duplicate_result.error or ""), has="already exists"
-        )
+        tm.that(duplicate_result.failure, eq=True)
+        tm.that((duplicate_result.error or ""), has="already exists")
 
     @staticmethod
     def test_user_authentication_success() -> None:
@@ -113,13 +105,13 @@ class TestsFlextAuthApiCase03:
         username = "authtest"
         password = c.TEST_CREDENTIAL
         reg_result = auth.register_user(username, "auth@example.com", password)
-        TestsFlextAuthUtilities.that(reg_result.success, eq=True)
+        tm.that(reg_result.success, eq=True)
         auth_result = auth.authenticate_user(username, password)
-        TestsFlextAuthUtilities.that(auth_result.success, eq=True)
+        tm.that(auth_result.success, eq=True)
         identity = auth_result.value
-        TestsFlextAuthUtilities.that(identity, is_=m.Auth.AuthIdentity)
-        TestsFlextAuthUtilities.that(identity.name, eq=username)
-        TestsFlextAuthUtilities.that(identity.contact, eq="auth@example.com")
+        tm.that(identity, is_=m.Auth.AuthIdentity)
+        tm.that(identity.name, eq=username)
+        tm.that(identity.contact, eq="auth@example.com")
 
     @staticmethod
     def test_user_authentication_invalid_credentials() -> None:
@@ -128,11 +120,9 @@ class TestsFlextAuthApiCase03:
         username = "testuser"
         auth.register_user(username, "test@example.com", c.TEST_CREDENTIAL)
         failed_auth = auth.authenticate_user(username, c.TEST_CREDENTIAL + "_wrong")
-        TestsFlextAuthUtilities.that(not failed_auth.success, eq=True)
-        TestsFlextAuthUtilities.that(not failed_auth.success, eq=True)
-        TestsFlextAuthUtilities.that(
-            (failed_auth.error or ""), has="Invalid credentials"
-        )
+        tm.that(not failed_auth.success, eq=True)
+        tm.that(not failed_auth.success, eq=True)
+        tm.that((failed_auth.error or ""), has="Invalid credentials")
 
     @staticmethod
     def test_token_validation_valid_token() -> None:
@@ -141,20 +131,20 @@ class TestsFlextAuthApiCase03:
         username = "tokenuser"
         password = c.TEST_CREDENTIAL
         register_result = auth.register_user(username, "token@example.com", password)
-        TestsFlextAuthUtilities.that(register_result.success, eq=True)
+        tm.that(register_result.success, eq=True)
         identity = register_result.value
         auth_result = auth.authenticate_user(username, password)
-        TestsFlextAuthUtilities.that(auth_result.success, eq=True)
+        tm.that(auth_result.success, eq=True)
         authenticated_identity = auth_result.value
-        TestsFlextAuthUtilities.that(authenticated_identity, is_=m.Auth.AuthIdentity)
+        tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=identity.unique_id)
-        TestsFlextAuthUtilities.that(token_result.success, eq=True)
-        TestsFlextAuthUtilities.that(token_result.error, none=True)
+        tm.that(token_result.success, eq=True)
+        tm.that(token_result.error, none=True)
 
     @staticmethod
     def test_token_validation_invalid_token() -> None:
         """Test validation of invalid token — fails with 'not implemented'."""
         auth: FlextAuth = FlextAuth()
         invalid_result = auth.session_service.validate_token("invalid.token.here")
-        TestsFlextAuthUtilities.that(not invalid_result.success, eq=True)
-        TestsFlextAuthUtilities.that(invalid_result.error, none=False)
+        tm.that(not invalid_result.success, eq=True)
+        tm.that(invalid_result.error, none=False)

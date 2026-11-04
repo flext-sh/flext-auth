@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import time
 
-from flext_auth import FlextAuth, m
-from tests import TestsFlextAuthUtilities, c, r
+from flext_auth import FlextAuth
+from tests import c, m, r, tm
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 
@@ -23,18 +23,18 @@ class TestsFlextAuthApiCase10:
         """Test auth module error handling patterns."""
         auth = FlextAuth()
         result = auth.register_user(username="", email="invalid_email", password="")
-        TestsFlextAuthUtilities.that(result, is_=r)
-        TestsFlextAuthUtilities.that(not result.success, eq=True)
+        tm.that(result, is_=r)
+        tm.that(not result.success, eq=True)
         result = auth.authenticate_user("invalid_user", "invalid_password")
-        TestsFlextAuthUtilities.that(result, is_=r)
-        TestsFlextAuthUtilities.that(not result.success, eq=True)
+        tm.that(result, is_=r)
+        tm.that(not result.success, eq=True)
         result = auth.identity_service.identity_manager.fetch_user_by_username(
             "non_existent_user",
         )
-        TestsFlextAuthUtilities.that(result, is_=r)
-        TestsFlextAuthUtilities.that(not result.success, eq=True)
-        TestsFlextAuthUtilities.that(result.error, none=False)
-        TestsFlextAuthUtilities.that((result.error or "").lower(), has="not found")
+        tm.that(result, is_=r)
+        tm.that(not result.success, eq=True)
+        tm.that(result.error, none=False)
+        tm.that((result.error or "").lower(), has="not found")
 
     @staticmethod
     def test_flext_auth_with_flext_tests() -> None:
@@ -55,22 +55,20 @@ class TestsFlextAuthApiCase10:
             email=test_user_data["email"],
             password=test_user_data["password"],
         )
-        TestsFlextAuthUtilities.that(result, is_=r)
-        TestsFlextAuthUtilities.that(result.success, eq=True)
+        tm.that(result, is_=r)
+        tm.that(result.success, eq=True)
         result = auth.authenticate_user(
             test_auth_data["username"],
             test_auth_data["password"],
         )
-        TestsFlextAuthUtilities.that(result, is_=r)
-        TestsFlextAuthUtilities.that(result.success, eq=True)
+        tm.that(result, is_=r)
+        tm.that(result.success, eq=True)
 
     @staticmethod
     def test_flext_auth_docstring() -> None:
         """Test that FlextAuth has proper docstring."""
-        TestsFlextAuthUtilities.that(FlextAuth.__doc__, none=False)
-        TestsFlextAuthUtilities.that(
-            len((FlextAuth.__doc__ or "").strip()) > 0, eq=True
-        )
+        tm.that(FlextAuth.__doc__, none=False)
+        tm.that(len((FlextAuth.__doc__ or "").strip()) > 0, eq=True)
 
     @staticmethod
     def test_flext_auth_with_real_data() -> None:
@@ -104,15 +102,15 @@ class TestsFlextAuthApiCase10:
                 password=user_data["password"],
                 roles=[user_data["role"]] if "role" in user_data else None,
             )
-            TestsFlextAuthUtilities.that(result, is_=r)
-            TestsFlextAuthUtilities.that(result.success, eq=True)
+            tm.that(result, is_=r)
+            tm.that(result.success, eq=True)
         for user_data in realistic_users:
             result = auth.authenticate_user(
                 user_data["username"],
                 user_data["password"],
             )
-            TestsFlextAuthUtilities.that(result, is_=r)
-            TestsFlextAuthUtilities.that(result.success, eq=True)
+            tm.that(result, is_=r)
+            tm.that(result.success, eq=True)
 
     def test_flext_auth_integration_patterns(self) -> None:
         """Test auth integration patterns — token ops succeed as expected."""
@@ -124,16 +122,16 @@ class TestsFlextAuthApiCase10:
             email=test_user_data["email"],
             password=test_user_data["password"],
         )
-        TestsFlextAuthUtilities.that(register_result, is_=r, ok=True)
+        tm.that(register_result, is_=r, ok=True)
         auth_result = auth.authenticate_user(
             test_auth_data["username"],
             test_auth_data["password"],
         )
-        TestsFlextAuthUtilities.that(auth_result, is_=r, ok=True)
+        tm.that(auth_result, is_=r, ok=True)
         authenticated_identity = auth_result.value
-        TestsFlextAuthUtilities.that(authenticated_identity, is_=m.Auth.AuthIdentity)
+        tm.that(authenticated_identity, is_=m.Auth.AuthIdentity)
         token_result = auth.create_token(identity_id=authenticated_identity.unique_id)
-        TestsFlextAuthUtilities.that(token_result, is_=r, ok=True)
+        tm.that(token_result, is_=r, ok=True)
 
     def test_flext_auth_performance_patterns(self) -> None:
         """Test auth performance patterns."""
@@ -146,7 +144,7 @@ class TestsFlextAuthApiCase10:
                 email=f"user_{i}@example.com",
                 password=test_user_data["password"],
             )
-            TestsFlextAuthUtilities.that(result, is_=r)
-            TestsFlextAuthUtilities.that(result.success, eq=True)
+            tm.that(result, is_=r)
+            tm.that(result.success, eq=True)
         end_time = time.time()
-        TestsFlextAuthUtilities.that(end_time - start_time, lt=30.0)
+        tm.that(end_time - start_time, lt=30.0)
