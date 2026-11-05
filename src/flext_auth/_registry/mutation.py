@@ -6,12 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_auth import c, m, p, r, t
 from flext_auth._registry import FlextAuthRegistryLookup
-from flext_auth.constants import c
-from flext_auth.models import m
-from flext_auth.protocols import p
-from flext_auth.result import r
-from flext_auth.typings import t
 
 
 class FlextAuthRegistryMutation(FlextAuthRegistryLookup):

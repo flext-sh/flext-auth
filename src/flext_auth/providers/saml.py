@@ -12,10 +12,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth.protocols import p
+from flext_auth import p, r, t
 from flext_auth.providers import FlextAuthProvider
-from flext_auth.result import r
-from flext_auth.typings import t
 
 
 class FlextAuthSamlProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):

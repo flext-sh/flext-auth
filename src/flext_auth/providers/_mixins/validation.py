@@ -8,10 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from flext_auth.protocols import p
-from flext_auth.result import r
-from flext_auth.typings import t
-from flext_auth.utilities import u
+from flext_auth import p, r, t, u
 
 
 class FlextAuthProviderValidation:

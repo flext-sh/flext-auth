@@ -11,12 +11,13 @@ from typing import TYPE_CHECKING
 
 from flext_api import r, u
 
+from flext_auth import p
 from flext_auth._utilities._managers import FlextAuthUserManagerRead
 
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from flext_auth import p, t
+    from flext_auth import t
 
 
 class FlextAuthUserManagerWrite(FlextAuthUserManagerRead):

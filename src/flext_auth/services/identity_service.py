@@ -9,12 +9,7 @@ from __future__ import annotations
 from collections.abc import MutableSequence, Sequence
 from datetime import timedelta
 
-from flext_auth.constants import c
-from flext_auth.models import m
-from flext_auth.protocols import p
-from flext_auth.result import r
-from flext_auth.service import s
-from flext_auth.utilities import u
+from flext_auth import c, m, p, r, s, u
 
 
 class FlextAuthIdentityService(s, m.Auth.IdentityPortOptions):

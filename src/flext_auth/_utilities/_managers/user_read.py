@@ -10,9 +10,7 @@ from collections.abc import MutableMapping
 
 from flext_api import e, r
 
-from flext_auth.models import m
-from flext_auth.protocols import p
-from flext_auth.typings import t
+from flext_auth import m, p, t
 
 
 class FlextAuthUserManagerRead:

@@ -8,11 +8,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from flext_auth import c, p, r, t
 from flext_auth._registry import FlextAuthRegistryBase
-from flext_auth.constants import c
-from flext_auth.protocols import p
-from flext_auth.result import r
-from flext_auth.typings import t
 
 
 class FlextAuthRegistryLookup(FlextAuthRegistryBase):

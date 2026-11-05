@@ -9,12 +9,8 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import TYPE_CHECKING, override
 
-from flext_auth.exceptions import e
-from flext_auth.models import m
-from flext_auth.protocols import p
+from flext_auth import e, m, p, t, u
 from flext_auth.providers import FlextAuthOAuth2Tokens
-from flext_auth.typings import t
-from flext_auth.utilities import u
 
 if TYPE_CHECKING:
     import http.client

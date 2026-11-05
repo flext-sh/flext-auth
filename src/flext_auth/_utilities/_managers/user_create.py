@@ -12,10 +12,8 @@ from uuid import uuid4
 
 from flext_api import r, u
 
+from flext_auth import m, p, t
 from flext_auth._utilities._managers import FlextAuthUserManagerWrite
-from flext_auth.models import m
-from flext_auth.protocols import p
-from flext_auth.typings import t
 
 if TYPE_CHECKING:
     from datetime import datetime

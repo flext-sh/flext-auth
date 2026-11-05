@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import bcrypt
 
-from flext_auth.constants import c
+from flext_auth import c
 
 
 class FlextAuthModelsAuthCredential:

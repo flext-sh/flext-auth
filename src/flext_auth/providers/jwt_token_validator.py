@@ -12,11 +12,7 @@ from __future__ import annotations
 
 from collections.abc import MutableSequence
 
-from flext_auth.constants import c
-from flext_auth.protocols import p
-from flext_auth.result import r
-from flext_auth.typings import t
-from flext_auth.utilities import u
+from flext_auth import c, p, r, t, u
 
 
 class FlextAuthJwtTokenValidator:
