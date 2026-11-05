@@ -11,8 +11,8 @@ from typing import Annotated
 
 from flext_api import m as api_models, t
 
-from flext_auth import c
 from flext_auth._typings import FlextAuthTypesBase
+from flext_auth.constants import c
 
 
 class FlextAuthTypesAuth:

@@ -12,7 +12,8 @@ from datetime import datetime, timedelta
 import bcrypt
 from flext_api import r, u
 
-from flext_auth import c, p
+from flext_auth.constants import c
+from flext_auth.protocols import p
 
 
 class FlextAuthUtilitiesAuthValidation:

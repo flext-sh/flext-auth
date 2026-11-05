@@ -11,8 +11,10 @@ from __future__ import annotations
 from collections.abc import MutableSequence
 from typing import override
 
-from flext_auth import p, r, t
+from flext_auth.protocols import p
 from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthProvider
+from flext_auth.result import r
+from flext_auth.typings import t
 
 
 class FlextAuthJwtProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):

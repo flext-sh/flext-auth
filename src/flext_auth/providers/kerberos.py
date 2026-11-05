@@ -9,8 +9,13 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import override
 
-from flext_auth import c, m, p, r, t, u
+from flext_auth.constants import c
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers import FlextAuthKerberosSupport, FlextAuthRfcProvider
+from flext_auth.result import r
+from flext_auth.typings import t
+from flext_auth.utilities import u
 
 
 class FlextAuthKerberosProvider(FlextAuthKerberosSupport, FlextAuthRfcProvider):

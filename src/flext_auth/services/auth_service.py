@@ -8,7 +8,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping, MutableSequence, Sequence
 
-from flext_auth import c, m, p, r
+from flext_auth.constants import c
+from flext_auth.models import m
+from flext_auth.protocols import p
+from flext_auth.result import r
 from flext_auth.services import FlextAuthProviderService
 
 

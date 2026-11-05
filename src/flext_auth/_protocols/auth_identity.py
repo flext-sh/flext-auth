@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_api import FlextApiProtocols, p
 
-from flext_auth import t
+from flext_auth.typings import t
 
 if TYPE_CHECKING:
     from typing import Self

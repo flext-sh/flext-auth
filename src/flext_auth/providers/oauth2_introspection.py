@@ -12,7 +12,11 @@ from collections.abc import Mapping
 from http import HTTPStatus
 from urllib.parse import urlencode, urlparse
 
-from flext_auth import c, p, r, t, u
+from flext_auth.constants import c
+from flext_auth.protocols import p
+from flext_auth.result import r
+from flext_auth.typings import t
+from flext_auth.utilities import u
 
 
 class FlextAuthOAuth2Introspection:

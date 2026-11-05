@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth import c, p, r
+from flext_auth.constants import c
+from flext_auth.protocols import p
+from flext_auth.result import r
 
 if TYPE_CHECKING:
     from collections.abc import Collection

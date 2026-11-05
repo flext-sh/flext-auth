@@ -12,8 +12,10 @@ from typing import Annotated, Self, cast
 
 from flext_api import m, r, u
 
-from flext_auth import c, p, t
 from flext_auth._models import FlextAuthModelsAuthCredential
+from flext_auth.constants import c
+from flext_auth.protocols import p
+from flext_auth.typings import t
 
 
 class FlextAuthModelsAuthIdentity:

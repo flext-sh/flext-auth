@@ -12,7 +12,7 @@ from flext_auth import u as flext_auth_u
 
 
 class TestsFlextAuthUtilities(flext_auth_u):
-    """Test utilities for flext-auth — extends flext_auth.u and flext_tests.u."""
+    """Test utilities for flext-auth — extends flext_auth.u and flext_u."""
 
     # Utilities namespace, not a test class: pytest must not collect the
     # ``Tests*``-named facade when test modules import it by its full name

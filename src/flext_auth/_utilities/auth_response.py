@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING
 
 from flext_api import u
 
-from flext_auth import c, t
+from flext_auth.constants import c
+from flext_auth.typings import t
 
 if TYPE_CHECKING:
     from datetime import datetime

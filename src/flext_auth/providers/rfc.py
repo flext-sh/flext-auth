@@ -15,8 +15,10 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import override
 
-from flext_auth import p, r, t
+from flext_auth.protocols import p
 from flext_auth.providers import FlextAuthProvider
+from flext_auth.result import r
+from flext_auth.typings import t
 
 
 class FlextAuthRfcProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
