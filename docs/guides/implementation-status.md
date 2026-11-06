@@ -336,41 +336,41 @@ documentation updates **Status**: Documentation updates required
 
 1. **Fix Critical Test Failures**
 
-   - Resolve API layer test failures
-   - Fix provider integration issues
-   - Restore backward compatibility
+    - Resolve API layer test failures
+    - Fix provider integration issues
+    - Restore backward compatibility
 
 1. **Update Documentation**
 
-   - Update ARCHITECTURE.md phase status
-   - Create implementation status documentation
-   - Update README.md with current capabilities
+    - Update ARCHITECTURE.md phase status
+    - Create implementation status documentation
+    - Update README.md with current capabilities
 
 1. **Stabilize Core Functionality**
 
-   - Ensure registry system works reliably
-   - Fix provider registration/detection
-   - Validate core authentication flows
+    - Ensure registry system works reliably
+    - Fix provider registration/detection
+    - Validate core authentication flows
 
 ### Medium-term Goals (Week 3-4)
 
 1. **Complete Provider Ecosystem**
 
-   - Fix remaining provider implementations
-   - Add comprehensive provider tests
-   - Validate provider interoperability
+    - Fix remaining provider implementations
+    - Add comprehensive provider tests
+    - Validate provider interoperability
 
 1. **Transport Layer Completion**
 
-   - Complete gRPC transport implementation
-   - Add protocol handlers (REST, SOAP, GraphQL)
-   - Integrate with flext-api and flext-grpc
+    - Complete gRPC transport implementation
+    - Add protocol handlers (REST, SOAP, GraphQL)
+    - Integrate with flext-api and flext-grpc
 
 1. **Quality Assurance**
 
-   - Achieve 80%+ test coverage
-   - Complete security audit
-   - Performance benchmarking
+    - Achieve 80%+ test coverage
+    - Complete security audit
+    - Performance benchmarking
 
 ---
 

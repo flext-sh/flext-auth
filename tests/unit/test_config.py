@@ -11,19 +11,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
+from collections.abc import MutableMapping
 
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings, c, m, t
-from tests import TestsFlextAuthUtilities, tm
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthSettings
+from tests import TestsFlextAuthUtilities, c, m, t, tm, u
 
 
 class TestsFlextAuthConfig:
     """Behavioral contract for FlextAuthSettings and its consumers."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
+    @u.Tests.fixture
     @staticmethod
-    @pytest.fixture
     def settings() -> FlextAuthSettings:
         """Provide the current global settings instance.
 
@@ -51,7 +51,7 @@ class TestsFlextAuthConfig:
         tm.that(settings.Auth.algorithm, is_=str)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("field_name", "expected"),
         [
             ("algorithm", c.Auth.DEFAULT_JWT_ALGORITHM),
@@ -83,7 +83,7 @@ class TestsFlextAuthConfig:
 
         clone = settings.clone(Auth={"expiry_minutes": original_expiry + 5})
 
-        tm.that(clone is settings, eq=False)
+        tm.fail(clone is settings)
         tm.that(
             clone.Auth.expiry_minutes,
             eq=original_expiry + 5,
@@ -109,7 +109,7 @@ class TestsFlextAuthConfig:
         tm.that(updated.Auth.hash_rounds, eq=12)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "overrides",
         [
             {"hash_rounds": c.Auth.HASH_ROUNDS_MIN - 1},
@@ -123,7 +123,7 @@ class TestsFlextAuthConfig:
         overrides: t.JsonMapping,
     ) -> None:
         """Values outside the declared bounds fail model validation."""
-        with pytest.raises(m.ValidationError):
+        with u.Tests.raises(m.ValidationError):
             FlextAuthSettings.model_validate({"Auth": overrides})
 
     @staticmethod
@@ -186,15 +186,15 @@ class TestsFlextAuthConfig:
 
         result = auth.create_token(identity_id="missing-user")
 
-        tm.that(result.success, eq=False)
+        tm.fail(result.success)
         tm.that(result.error, none=False)
         tm.that(
-            "user" in (result.error or "").lower(),
+            c.ContextScope.USER in (result.error or "").lower(),
             eq=True,
         )
 
     @staticmethod
-    @pytest.mark.parametrize("identity_id", ["", "   "])
+    @c.Tests.MARK.parametrize("identity_id", ["", "   "])
     def test_create_token_rejects_blank_identity(
         settings: FlextAuthSettings,
         identity_id: str,
@@ -204,7 +204,7 @@ class TestsFlextAuthConfig:
 
         result = auth.create_token(identity_id=identity_id)
 
-        tm.that(result.success, eq=False)
+        tm.fail(result.success)
         tm.that(result.error, none=False)
 
     @staticmethod
@@ -219,11 +219,11 @@ class TestsFlextAuthConfig:
             "config-token-user@example.com",
             "ConfigTokenPass123!",
         )
-        tm.that(register_result.success, eq=True)
+        tm.ok(register_result.success)
 
         token_result = auth.create_token(identity_id=register_result.value.unique_id)
 
-        tm.that(token_result.success, eq=True)
+        tm.ok(token_result.success)
         tm.that(token_result.value, is_=str)
         token_text: str = token_result.value
         tm.that(len(token_text), gt=0)
@@ -242,14 +242,14 @@ class TestsFlextAuthConfig:
         )
         with FlextAuthConfig.singleton_disabled():
             config = FlextAuthConfig.model_validate({"Auth": policy})
-        tm.that(config.Auth is policy, eq=True)
+        tm.ok(config.Auth is policy)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "invalid_policy",
         [
             {"unexpected_policy": True},
-            {"jwt": {"min_secret_key_length": "1"}},
+            {"jwt": {"min_secret_key_length": c.ParserBooleanToken.ONE}},
             {"oauth2": {"flows": [False]}},
         ],
     )
@@ -257,7 +257,7 @@ class TestsFlextAuthConfig:
         invalid_policy: t.JsonMapping,
     ) -> None:
         """Malformed policy fails at the public config boundary without coercion."""
-        with FlextAuthConfig.singleton_disabled(), pytest.raises(m.ValidationError):
+        with FlextAuthConfig.singleton_disabled(), u.Tests.raises(m.ValidationError):
             FlextAuthConfig.model_validate({"Auth": invalid_policy})
 
     @staticmethod
@@ -284,8 +284,9 @@ class TestsFlextAuthConfig:
         tm.that(config.Auth.oauth2.flows, eq=original.oauth2.flows)
 
     @staticmethod
-    @pytest.mark.parametrize("nested_environment", [False, True])
+    @c.Tests.MARK.parametrize("nested_environment", [False, True])
     def test_yaml_policy_keeps_environment_and_parameter_precedence(
+        *,
         nested_environment: bool,
     ) -> None:
         """Native environment capabilities preserve YAML and parameter precedence."""
@@ -295,7 +296,7 @@ class TestsFlextAuthConfig:
         source = m.EnvSettingsSource(FlextAuthConfig)
         prefix = source.env_prefix
         delimiter = source.env_nested_delimiter
-        environment: t.MutableMappingKV[str, str] = {}
+        environment: MutableMapping[str, str] = {}
         expected_minimum = minimum
         if not nested_environment:
             environment[f"{prefix}Auth"] = TestsFlextAuthUtilities.Cli.json_dumps({

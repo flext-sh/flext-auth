@@ -10,7 +10,7 @@ import os
 
 from flext_cli import cli
 
-from examples import p, r
+from examples import c, p, r
 from flext_auth import FlextAuth, FlextAuthSettings
 
 
@@ -36,7 +36,7 @@ class FlextAuthBasicAuthExample:
             username="demouser",
             email="demo@example.com",
             password=password,
-            roles=["user"],
+            roles=[c.Auth.RoleTypes.USER],
         )
         if registration.failure:
             FlextAuthBasicAuthExample._emit(

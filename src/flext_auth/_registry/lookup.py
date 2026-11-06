@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from flext_auth import c, p, r, t
 from flext_auth._registry import FlextAuthRegistryBase
 
@@ -29,7 +31,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         """
         return self.has_provider(name)
 
-    def find_by_capability(self, capability: str) -> p.Result[t.StrSequence]:
+    def find_by_capability(self, capability: str) -> p.Result[Sequence[str]]:
         """Find providers with specific capability.
 
         Args:
@@ -43,10 +45,10 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         for name in self.list_providers():
             result = self.has_capability(name, capability)
             if result.failure:
-                return r[t.StrSequence].from_failure(result)
+                return r[Sequence[str]].from_failure(result)
             if result.value:
                 matching.append(name)
-        return r[t.StrSequence].ok(matching)
+        return r[Sequence[str]].ok(matching)
 
     def fetch_config(self, name: str) -> p.Result[t.ConfigurationMapping]:
         """Fetch provider configuration.
@@ -118,7 +120,7 @@ class FlextAuthRegistryLookup(FlextAuthRegistryBase):
         """
         return name in self.list_providers()
 
-    def list_providers(self) -> t.StrSequence:
+    def list_providers(self) -> Sequence[str]:
         """List registered provider names.
 
         Returns:

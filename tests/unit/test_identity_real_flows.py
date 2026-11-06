@@ -6,8 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from flext_auth import FlextAuth
 from tests import c, tm
 
@@ -15,10 +13,10 @@ from tests import c, tm
 class TestsFlextAuthIdentityRealFlows:
     """Credential mutations and access state survive a fresh public read."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     @staticmethod
-    @pytest.mark.parametrize("operation", ["change", "reset", "access"])
+    @c.Tests.MARK.parametrize(c.ContextScope.OPERATION, ["change", "reset", "access"])
     def test_persisted_credential_and_access_state(operation: str) -> None:
         """Credentials and successful access remain visible after fresh reads."""
         auth = FlextAuth.quick_start(create_admin_user=False)
@@ -56,7 +54,7 @@ class TestsFlextAuthIdentityRealFlows:
         after_success = tm.ok(manager.fetch_user(identity.unique_id))
         tm.that(after_success.failed_attempts, eq=0)
         tm.that(after_success.last_access, eq=authenticated.last_access)
-        tm.that(after_success.last_access > identity.last_access, eq=True)
+        tm.ok(after_success.last_access > identity.last_access)
         tm.that(after_success.locked_until, eq=identity.locked_until)
         tm.that(authenticated.unique_id, eq=identity.unique_id)
         tm.fail(
@@ -68,8 +66,8 @@ class TestsFlextAuthIdentityRealFlows:
         tm.that(tm.ok(manager.fetch_user(identity.unique_id)).failed_attempts, eq=1)
 
     @staticmethod
-    @pytest.mark.parametrize(
-        ("operation", "failure"),
+    @c.Tests.MARK.parametrize(
+        (c.ContextScope.OPERATION, "failure"),
         [
             ("change", "incorrect"),
             ("change", "short"),

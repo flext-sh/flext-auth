@@ -7,17 +7,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-from flext_auth.__version__ import __version__
-
 if TYPE_CHECKING:
     from flext_api import d, e, h, r, x
 
-    from flext_auth import providers as providers, services as services
     from flext_auth.__version__ import (
         FlextAuthVersion,
         __author__,
@@ -26,6 +22,7 @@ if TYPE_CHECKING:
         __license__,
         __title__,
         __url__,
+        __version__,
         __version_info__,
     )
     from flext_auth._config import FlextAuthConfig, config
@@ -70,10 +67,8 @@ __all__: tuple[str, ...] = (
     "m",
     "main",
     "p",
-    "providers",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "u",
@@ -83,7 +78,7 @@ __all__: tuple[str, ...] = (
 install_lazy_exports(
     __name__,
     globals(),
-    MappingProxyType({
+    {
         "FlextAuth": ".api",
         "FlextAuthConfig": "._config",
         "FlextAuthConstants": ".constants",
@@ -111,14 +106,15 @@ install_lazy_exports(
         "m": ".models",
         "main": ".cli",
         "p": ".protocols",
-        "providers": ".providers",
         "r": "flext_api",
         "s": ".base",
-        "services": ".services",
         "settings": "._settings",
         "t": ".typings",
         "u": ".utilities",
         "x": "flext_api",
-    }),
+    },
     public_exports=__all__,
 )
+
+if not TYPE_CHECKING:
+    from flext_auth.__version__ import __version__

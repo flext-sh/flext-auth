@@ -57,7 +57,7 @@ class FlextAuthSessionManagers:
             expires_in_minutes: int = 60,
             ip_address: str | None = None,
             user_agent: str | None = None,
-        ) -> p.Result[m.Auth.AuthSession]:
+        ) -> p.Result[p.Auth.AuthSession]:
             """Create and track a new session for a user.
 
             Args:
@@ -95,7 +95,7 @@ class FlextAuthSessionManagers:
                 else datetime.fromisoformat(str(session_data["expires_at"])),
                 session_id=session_id,
             )
-            result: p.Result[m.Auth.AuthSession] = r[m.Auth.AuthSession].ok(session)
+            result: p.Result[p.Auth.AuthSession] = r[p.Auth.AuthSession].ok(session)
             return result
 
         def end_session(self, user_id: str) -> p.Result[bool]:
@@ -150,7 +150,7 @@ class FlextAuthSessionManagers:
         def get_active_sessions(
             self,
             user_id: str,
-        ) -> p.Result[Sequence[m.Auth.AuthSession]]:
+        ) -> p.Result[Sequence[p.Auth.AuthSession]]:
             """List the currently active sessions of a user.
 
             Args:
@@ -160,7 +160,7 @@ class FlextAuthSessionManagers:
                 Active, unexpired session entities for the identity.
 
             """
-            sessions: MutableSequence[m.Auth.AuthSession] = []
+            sessions: MutableSequence[p.Auth.AuthSession] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 match identity_id_value:
@@ -183,8 +183,8 @@ class FlextAuthSessionManagers:
                         sessions.append(session)
                     case _:
                         continue
-            result: p.Result[Sequence[m.Auth.AuthSession]] = r[
-                Sequence[m.Auth.AuthSession]
+            result: p.Result[Sequence[p.Auth.AuthSession]] = r[
+                Sequence[p.Auth.AuthSession]
             ].ok(sessions)
             return result
 

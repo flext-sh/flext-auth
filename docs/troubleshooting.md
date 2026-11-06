@@ -48,7 +48,7 @@ documentation.
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.register_user("user", "invalid-email", "weak")
+result = auth.register_user(c.ContextScope.USER, "invalid-email", "weak")
 # Returns failure result
 ```
 
@@ -63,7 +63,7 @@ result = auth.register_user("user", "invalid-email", "weak")
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.register_user("user", "<user@example.com>", "password123")
+result = auth.register_user(c.ContextScope.USER, "<user@example.com>", "password123")
 
 1. **Password Requirements**:
 
@@ -71,7 +71,9 @@ result = auth.register_user("user", "<user@example.com>", "password123")
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.register_user("user", "user@example.com", "SecurePassword123!")
+result = auth.register_user(
+    c.ContextScope.USER, "user@example.com", "SecurePassword123!"
+)
 ```
 
 1. **Username Uniqueness**:
@@ -93,12 +95,12 @@ if existing_user.success:
 
 **Problem**: User authentication fails unexpectedly
 
-```{.python .notest}
+```python
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-auth.register_user("user", "user@example.com", "password123")
-auth_result = auth.authenticate_user("user", "password123")
+auth.register_user(c.ContextScope.USER, "user@example.com", "password123")
+auth_result = auth.authenticate_user(c.ContextScope.USER, "password123")
 # Returns failure even with correct credentials
 ```
 
@@ -110,10 +112,12 @@ from flext_cli import u
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-auth.register_user("user", "user@example.com", "password123")
+auth.register_user(c.ContextScope.USER, "user@example.com", "password123")
 
 # Check if user exists
-user_result = auth.identity_service.identity_manager.fetch_user_by_username("user")
+user_result = auth.identity_service.identity_manager.fetch_user_by_username(
+    c.ContextScope.USER
+)
 if user_result.failure:
     u.Cli.info("User not found")
 else:
@@ -137,7 +141,7 @@ else:
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-registered = auth.register_user("user", "user@example.com", "password123")
+registered = auth.register_user(c.ContextScope.USER, "user@example.com", "password123")
 if registered.success:
     token_result = auth.create_token(registered.unwrap().unique_id)
     if token_result.success:
@@ -159,7 +163,7 @@ bearer_value = "<jwt-header>.<jwt-payload>.<jwt-signature>"
 
 1. **Token Expiration**:
 
-```{.python .notest}
+```python
 import jwt
 
 # Check token expiration without validation
@@ -191,7 +195,7 @@ u.Cli.info(f"JWT Secret: {settings.Auth.secret_key}")
 
 **Problem**: Configuration not loading correctly
 
-```{.python .notest}
+```python
 from flext_auth import FlextAuthSettings
 
 settings = FlextAuthSettings()
@@ -210,7 +214,7 @@ u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")
 
 1. **Valid Environment Names**:
 
-```{.python .notest}
+```python
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
    settings = FlextAuthSettings()
@@ -391,6 +395,15 @@ u.Cli.info(f"Expired sessions removed: {session_count}")
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 # Implement session cleanup
 def cleanup_expired_sessions() -> None:
@@ -422,7 +435,7 @@ make check
 
 1. **Type Annotations**:
 
-```{.python .notest}
+```python
    from flext_auth import User, p
 
 
@@ -432,12 +445,14 @@ make check
 
 1. **r Types**:
 
-```{.python .notest}
+```python
    from flext_auth import FlextAuth, User, p
 
    auth = FlextAuth.quick_start(create_admin_user=False)
    # Specify generic type for r
-   result: p.Result[User] = auth.register_user("user", "user@example.com", "password123")
+    result: p.Result[User] = auth.register_user(
+        c.ContextScope.USER, "user@example.com", "password123"
+    )
 ```
 
 ### Import Issues
@@ -448,10 +463,10 @@ make check
 
 ```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
-from flext_auth import m
+from flext_auth import m, p
 
 # Access models via namespace
-user = m.Auth.AuthIdentity(name="user", contact="user@example.com")
+user = m.Auth.AuthIdentity(name=c.ContextScope.USER, contact="user@example.com")
 ```
 
 ---
@@ -490,7 +505,7 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 
 1. **Session timeout management**:
 
-```{.python .notest}
+```python
    # Implement session cleanup
    def cleanup_sessions():
        """Clean expired sessions."""
@@ -500,7 +515,7 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 
 1. **External session storage** (future):
 
-```{.python .notest}
+```python
    # Future Redis integration
    class RedisSessionStorage:
        def store_session(self, session):
@@ -539,7 +554,7 @@ from flext_cli import u
 from flext_auth import FlextAuth
 
 auth = FlextAuth.quick_start(create_admin_user=False)
-result = auth.authenticate_user("user", "wrong_password")
+result = auth.authenticate_user(c.ContextScope.USER, "wrong_password")
 if result.failure:
     u.Cli.info(f"Error: {result.error}")
     u.Cli.info(f"Error type: {type(result.error)}")

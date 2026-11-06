@@ -9,17 +9,15 @@ from __future__ import annotations
 import io
 from datetime import UTC, datetime, timedelta
 
-import pytest
-
-from flext_auth import FlextAuth, FlextAuthSettings, m
+from flext_auth import FlextAuth, FlextAuthSettings
 from flext_auth.providers import FlextAuthJwtTokenValidator
-from tests import c, p, tm, u
+from tests import c, m, p, t, tm, u
 
 
 class TestsFlextAuthSessionRealFlows:
     """Token flow tests using only FlextAuth public API."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     @staticmethod
     def test_settings_and_bootstrap_use_existing_runtime_contracts() -> None:
@@ -69,7 +67,7 @@ class TestsFlextAuthSessionRealFlows:
             tm.that(audit, has="Token validation")
             tm.that(audit, has=identity.unique_id)
             for material in (token, refreshed.token, marker, "sensitive", token[:9]):
-                tm.that(material not in audit, eq=True)
+                tm.ok(material not in audit)
             tm.that(refreshed.user_id, eq=identity.unique_id)
             tm.that(refreshed, is_=p.Auth.Session)
         finally:
@@ -86,7 +84,7 @@ class TestsFlextAuthSessionRealFlows:
         extras = m.Auth.UserIdentityExtras.model_validate({
             "roles": [role],
             "permissions": ["profile.read"],
-            "failed_attempts": "1",
+            "failed_attempts": c.ParserBooleanToken.ONE,
             "locked_until": instant,
             "last_access": instant.isoformat(),
         })
@@ -135,7 +133,7 @@ class TestsFlextAuthSessionRealFlows:
         """Test validate token rejects invalid token."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         invalid_result = auth.session_service.validate_token("invalid.jwt.token")
-        tm.that(invalid_result.success, eq=False)
+        tm.fail(invalid_result.success)
 
     @staticmethod
     def test_authenticate_user_and_create_token_sequence() -> None:
@@ -157,13 +155,14 @@ class TestsFlextAuthSessionRealFlows:
         tm.ok(token_result)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("expiry_minutes", "session_expiry_minutes", "clone_settings"),
         [(3, 7, False), (11, 17, True)],
     )
     def test_injected_settings_own_token_and_session_lifetimes(
         expiry_minutes: int,
         session_expiry_minutes: int,
+        *,
         clone_settings: bool,
     ) -> None:
         """Both token entrypoints and stored sessions honor the injected settings."""
@@ -196,27 +195,29 @@ class TestsFlextAuthSessionRealFlows:
         ).unwrap()
         finished = datetime.now(UTC)
         validator = FlextAuthJwtTokenValidator(auth.fetch_provider("jwt").unwrap())
+
+        def claims_have_configured_lifetime(value: t.JsonMapping) -> bool:
+            return (
+                isinstance(value["iat"], int)
+                and isinstance(value["exp"], int)
+                and value["exp"] - value["iat"]
+                == timedelta(minutes=expiry_minutes).total_seconds()
+            )
+
         for token in (created, authenticated.token):
             claims = validator.validate_token(token).unwrap()
-            tm.that(
-                claims,
-                where=lambda value: (
-                    isinstance(value["iat"], int)
-                    and isinstance(value["exp"], int)
-                    and value["exp"] - value["iat"]
-                    == timedelta(minutes=expiry_minutes).total_seconds()
-                ),
-            )
+            tm.that(claims, where=claims_have_configured_lifetime)
 
         sessions = auth.session_service.session_manager.get_active_sessions(
             registered.unique_id,
         ).unwrap()
         tm.that(len(sessions), eq=1)
         lifetime = timedelta(minutes=session_expiry_minutes)
-        tm.that(
-            sessions[0].expires_at,
-            where=lambda value: started + lifetime <= value <= finished + lifetime,
-        )
+
+        def expires_within_bounds(value: datetime) -> bool:
+            return started + lifetime <= value <= finished + lifetime
+
+        tm.that(sessions[0].expires_at, where=expires_within_bounds)
         tm.that(sessions[0].unique_id, eq=authenticated.session_id)
         tm.that(sessions[0].session_id, eq=authenticated.session_id)
         tm.ok(

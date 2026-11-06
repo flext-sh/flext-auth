@@ -94,7 +94,7 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
         name: str,
         record: p.Auth.ProviderRegistration,
         settings: t.ConfigurationMapping,
-    ) -> p.Result[m.Auth.ProviderWrapper]:
+    ) -> p.Result[p.Auth.ProviderWrapper]:
         """Validate the complete replacement wrapper before any registry mutation.
 
         Args:
@@ -116,20 +116,20 @@ class FlextAuthRegistryMutation(FlextAuthRegistryLookup):
                 metadata=record.metadata,
             )
         except c.ValidationError as exc:
-            return r[m.Auth.ProviderWrapper].fail_op("Provider configuration", exc)
+            return r[p.Auth.ProviderWrapper].fail_op("Provider configuration", exc)
         if not isinstance(record.provider, p.Auth.ConfigurableProvider):
-            return r[m.Auth.ProviderWrapper].fail(
+            return r[p.Auth.ProviderWrapper].fail(
                 f"Provider '{name}' does not support explicit reconfiguration",
             )
         configuration = candidate.configuration
         if configuration is None:
-            return r[m.Auth.ProviderWrapper].fail(
+            return r[p.Auth.ProviderWrapper].fail(
                 f"Provider '{name}' requires a configuration",
             )
         configured = record.provider.with_configuration(configuration)
         if configured.failure:
-            return r[m.Auth.ProviderWrapper].from_failure(configured)
-        return r[m.Auth.ProviderWrapper].ok(
+            return r[p.Auth.ProviderWrapper].from_failure(configured)
+        return r[p.Auth.ProviderWrapper].ok(
             m.Auth.ProviderWrapper(
                 category=candidate.category,
                 provider=configured.value,

@@ -6,7 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import c, m, p, r, t
+from collections.abc import Mapping, MutableSequence, Sequence
+
+from flext_auth import c, m, p, r
 from flext_auth.services import FlextAuthProviderService
 
 
@@ -20,7 +22,7 @@ class FlextAuthApplicationService(
         """The namespaced auth configuration (``settings.Auth``)."""
         return self.settings.Auth
 
-    def authenticate(self, credentials: t.StrMapping) -> p.Result[p.Auth.Identity]:
+    def authenticate(self, credentials: Mapping[str, str]) -> p.Result[p.Auth.Identity]:
         """Validate credentials mapping and dispatch to the identity service.
 
         Args:
@@ -86,7 +88,7 @@ class FlextAuthApplicationService(
         username: str,
         email: str,
         password: str,
-        roles: t.StrSequence | None = None,
+        roles: Sequence[str] | None = None,
         role: str | None = None,
     ) -> p.Result[p.Auth.Identity]:
         """Register user with default USER role if none provided.
@@ -133,4 +135,4 @@ class FlextAuthApplicationService(
         return self.session_service.generate_jwt_token(user_id=identity_id)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthApplicationService"]
+__all__: MutableSequence[str] = ["FlextAuthApplicationService"]

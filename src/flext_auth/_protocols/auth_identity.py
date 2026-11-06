@@ -6,14 +6,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+from datetime import datetime
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_api import p
+from flext_api import FlextApiProtocols, p
+
+from flext_auth import t
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
-    from flext_auth import t
+    from typing import Self
 
 
 class FlextAuthProtocolsAuthIdentity:
@@ -35,7 +37,7 @@ class FlextAuthProtocolsAuthIdentity:
         "Contact information (e.g., email)."
         is_active: bool
         "Active status."
-        roles: t.StrSequence
+        roles: Sequence[str]
         "Identity roles."
         failed_attempts: int
         "Failed login attempts count."
@@ -45,7 +47,7 @@ class FlextAuthProtocolsAuthIdentity:
         credential_hash: str
         token: str
         session_id: str
-        permissions: t.StrSequence
+        permissions: Sequence[str]
 
         def with_successful_access(self) -> FlextAuthProtocolsAuthIdentity.Identity: ...
 
@@ -120,13 +122,13 @@ class FlextAuthProtocolsAuthIdentity:
             username: str,
             email: str,
             password_hash: str,
-            roles: t.StrSequence | None = None,
+            roles: Sequence[str] | None = None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]: ...
 
         def update_user(
             self,
             user_id: str,
-            **updates: t.Scalar | t.StrSequence | datetime | None,
+            **updates: t.Scalar | Sequence[str] | datetime | None,
         ) -> p.Result[FlextAuthProtocolsAuthIdentity.Identity]:
             """Update an identity and return the resulting identity.
 
@@ -139,6 +141,44 @@ class FlextAuthProtocolsAuthIdentity:
                 The refreshed identity entity.
 
             """
+            ...
+
+    @runtime_checkable
+    class AuthIdentity(FlextApiProtocols.BaseModel, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        @property
+        def domain_events(self) -> Sequence[p.DomainEvent]:
+            """List of uncommitted domain events for event sourcing."""
+            ...
+
+        name: str
+        contact: str
+        credential_hash: str
+        full_name: str
+        is_active: bool
+        roles: Sequence[str]
+        permissions: Sequence[str]
+        failed_attempts: t.NonNegativeInt
+        locked_until: datetime
+        last_access: datetime
+        token: str
+        session_id: str
+
+        def locked(self) -> bool:
+            """Check if identity is locked."""
+            ...
+
+        def update_credential(self, credential: str) -> p.Result[bool]:
+            """Update credential with bcrypt hashing via domain verb."""
+            ...
+
+        def verify_credential(self, credential: str) -> p.Result[bool]:
+            """Verify a credential against stored hash using bcrypt."""
+            ...
+
+        def with_successful_access(self) -> Self:
+            """Record a successful access and reset the failure counters."""
             ...
 
 

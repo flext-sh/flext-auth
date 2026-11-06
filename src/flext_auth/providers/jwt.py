@@ -8,13 +8,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
 from flext_auth import p, r, t
-from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthProviderMixin
+from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthProvider
 
 
-class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider):
+class FlextAuthJwtProvider(FlextAuthProvider, p.Auth.FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
     @staticmethod
@@ -60,8 +61,7 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
             Whether the token is accepted.
 
         """
-        token_value = token if isinstance(token, str) else token.token
-        return self.validate_token(token_value)
+        return self.validate_token(self._extract_token_string(token))
 
     def validate_token(self, token: str) -> p.Result[bool]:
         """Validate JWT token.
@@ -77,4 +77,4 @@ class FlextAuthJwtProvider(FlextAuthProviderMixin, p.Auth.FlextAuthBaseProvider)
         return validator.validate_token(token).map(lambda _payload: True)
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthJwtProvider"]
+__all__: MutableSequence[str] = ["FlextAuthJwtProvider"]

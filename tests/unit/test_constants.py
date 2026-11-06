@@ -16,16 +16,13 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping
 from enum import StrEnum
 
-import pytest
-
-from flext_auth import c, t
-from tests import tm
+from tests import c, t, tm, u
 
 
 class TestsFlextAuthConstants:
     """Public-contract behavior of the FlextAuthConstants facade."""
 
-    pytestmark = pytest.mark.usefixtures("reset_auth_singleton")
+    pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     # ----- Composition reachability (observable, not structural) -----
 
@@ -34,13 +31,13 @@ class TestsFlextAuthConstants:
         """Test auth default timeout is derived from core timeout."""
         tm.that(
             float(c.DEFAULT_TIMEOUT_SECONDS),
-            eq=pytest.approx(c.Auth.DEFAULT_TIMEOUT),
+            eq=u.Tests.approx(c.Auth.DEFAULT_TIMEOUT),
         )
 
     # ----- Published scalar values (the public contract) -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("value", "expected"),
         [
             (c.Auth.JWT_DEFAULT_ALGORITHM, c.Auth.Algorithms.HS256),
@@ -93,7 +90,7 @@ class TestsFlextAuthConstants:
         tm.that(value, eq=expected)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("code", "expected"),
         [
             (c.Auth.ERROR_INVALID_CREDENTIALS, "INVALID_CREDENTIALS"),
@@ -111,7 +108,7 @@ class TestsFlextAuthConstants:
     # ----- StrEnum behavior: string identity + membership -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("member", "expected"),
         [
             (c.Auth.TokenTypes.ACCESS, "access"),
@@ -127,7 +124,7 @@ class TestsFlextAuthConstants:
             (c.Auth.ProviderTypes.KERBEROS, "kerberos"),
             (c.Auth.ProviderTypes.APIKEY, "apikey"),
             (c.Auth.RoleTypes.ADMIN, "admin"),
-            (c.Auth.RoleTypes.USER, "user"),
+            (c.Auth.RoleTypes.USER, c.ContextScope.USER),
             (c.Auth.RoleTypes.MODERATOR, "moderator"),
             (c.Auth.RoleTypes.GUEST, "guest"),
             (c.Auth.PermissionTypes.READ, "read"),
@@ -150,7 +147,7 @@ class TestsFlextAuthConstants:
         tm.that(member.value, eq=expected)
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "enum_cls",
         [
             c.Auth.TokenTypes,
@@ -165,12 +162,12 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test enum construction round trips from wire value."""
         for member in enum_cls:
-            assert enum_cls(member.value) is member
+            tm.that(enum_cls(member.value) is member, eq=True)
 
     # ----- Derivation invariants: frozensets mirror their StrEnum -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("valid_set", "enum_cls"),
         [
             (c.Auth.VALID_TOKEN_TYPES, c.Auth.TokenTypes),
@@ -199,7 +196,7 @@ class TestsFlextAuthConstants:
     # ----- Ordering invariants between related bounds -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         ("low", "high"),
         [
             (
@@ -219,12 +216,12 @@ class TestsFlextAuthConstants:
         high: int,
     ) -> None:
         """Test lower bound never exceeds its paired upper bound."""
-        assert low <= high
+        tm.that(low <= high, truth=True)
 
     # ----- Immutability guarantees of exposed collections -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "valid_set",
         [
             c.Auth.VALID_TOKEN_TYPES,
@@ -239,10 +236,10 @@ class TestsFlextAuthConstants:
     ) -> None:
         """Test exposed membership sets are immutable."""
         tm.that(valid_set, is_=frozenset)
-        tm.that(hasattr(valid_set, "add"), eq=False)
+        tm.fail(hasattr(valid_set, "add"))
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "mapping",
         [c.Auth.VALIDATION_LIMITS, c.Auth.SUCCESS_AUTH_RESPONSE],
     )
@@ -250,12 +247,12 @@ class TestsFlextAuthConstants:
         mapping: Mapping[str, t.JsonValue],
     ) -> None:
         """Published mappings do not advertise a mutable interface."""
-        tm.that(isinstance(mapping, MutableMapping), eq=False)
+        tm.fail(isinstance(mapping, MutableMapping))
 
     # ----- Mapping contract: required keys and payload shape -----
 
     @staticmethod
-    @pytest.mark.parametrize(
+    @c.Tests.MARK.parametrize(
         "key",
         ["MAX_USERNAME_LENGTH", "MIN_PASSWORD_LENGTH", "DEFAULT_TIMEOUT"],
     )

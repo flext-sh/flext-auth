@@ -6,10 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import r
-
-from flext_auth import FlextAuth, m
-from tests import TestsFlextAuthUtilities
+from flext_auth import FlextAuth
+from tests import m, r, tm
 from tests.unit.api_cases.support import TestsFlextAuthApiTestDataHelper
 
 
@@ -27,11 +25,11 @@ class TestsFlextAuthApiCase08:
             "test@example.com",
             "TestPassword123!",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(user_result.success, eq=True)
+        tm.that(user_result.success, eq=True)
         user = user_result.value
         token_result = auth.create_token(identity_id=user.unique_id)
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(token_result.error, none=True)
+        tm.that(token_result.success, eq=True)
+        tm.that(token_result.error, none=True)
 
     @staticmethod
     def test_invalid_user_operations() -> None:
@@ -39,25 +37,19 @@ class TestsFlextAuthApiCase08:
         auth = FlextAuth()
         invalid_user_id = "nonexistent_user_id"
         get_result = auth.identity_service.identity_manager.fetch_user(invalid_user_id)
-        TestsFlextAuthUtilities.Tests.Matchers.that(not get_result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(get_result.error, none=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            (get_result.error or "").lower(), has="not found"
-        )
+        tm.that(not get_result.success, eq=True)
+        tm.that(get_result.error, none=False)
+        tm.that((get_result.error or "").lower(), has="not found")
         username_result = auth.identity_service.identity_manager.fetch_user_by_username(
             "nonexistent_username",
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            not username_result.success, eq=True
-        )
-        TestsFlextAuthUtilities.Tests.Matchers.that(username_result.error, none=False)
-        TestsFlextAuthUtilities.Tests.Matchers.that(
-            (username_result.error or "").lower(), has="not found"
-        )
+        tm.that(not username_result.success, eq=True)
+        tm.that(username_result.error, none=False)
+        tm.that((username_result.error or "").lower(), has="not found")
         logout_result = auth.session_service.session_manager.end_session_by_id(
             invalid_user_id,
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(not logout_result.success, eq=True)
+        tm.that(not logout_result.success, eq=True)
 
     @staticmethod
     def test_cleanup_expired_sessions_with_user_sessions_index() -> None:
@@ -65,25 +57,25 @@ class TestsFlextAuthApiCase08:
         auth = FlextAuth()
         auth.register_user("testuser", "test@example.com", "Password123!")
         auth_result = auth.authenticate_user("testuser", "Password123!")
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
+        tm.that(auth_result.success, eq=True)
         identity = auth_result.value
-        TestsFlextAuthUtilities.Tests.Matchers.that(identity, is_=m.Auth.AuthIdentity)
+        tm.that(identity, is_=m.Auth.AuthIdentity)
         sessions_result = auth.session_service.session_manager.get_active_sessions(
             identity.unique_id,
         )
         if sessions_result.success:
             sessions = sessions_result.value
-            TestsFlextAuthUtilities.Tests.Matchers.that(sessions, is_=list)
+            tm.that(sessions, is_=list)
         cleanup_result = auth.session_service.cleanup_expired_sessions()
-        TestsFlextAuthUtilities.Tests.Matchers.that(cleanup_result.success, eq=True)
+        tm.that(cleanup_result.success, eq=True)
 
     @staticmethod
     def test_get_user_by_token_invalid_token_error_direct_api() -> None:
         """Test validate_token with invalid token — fails with 'not implemented'."""
         auth = FlextAuth()
         result = auth.session_service.validate_token("invalid_token")
-        TestsFlextAuthUtilities.Tests.Matchers.that(not result.success, eq=True)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result.error, none=False)
+        tm.that(not result.success, eq=True)
+        tm.that(result.error, none=False)
 
     def test_flext_auth_register_user(self) -> None:
         """Test FlextAuth register_user functionality."""
@@ -94,7 +86,7 @@ class TestsFlextAuthApiCase08:
             email=test_data["email"],
             password=test_data["password"],
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(result, is_=r)
+        tm.that(result, is_=r)
 
     def test_flext_auth_authenticate_user(self) -> None:
         """Test FlextAuth authenticate_user functionality."""
@@ -105,7 +97,7 @@ class TestsFlextAuthApiCase08:
                 test_data["username"],
                 test_data["password"],
             )
-            TestsFlextAuthUtilities.Tests.Matchers.that(result, is_=r)
+            tm.that(result, is_=r)
 
     def test_flext_auth_fetch_user_by_username(self) -> None:
         """Test FlextAuth fetch_user_by_username functionality."""
@@ -116,11 +108,11 @@ class TestsFlextAuthApiCase08:
             email=test_data["email"],
             password=test_data["password"],
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
+        tm.that(register_result.success, eq=True)
         result = auth.identity_service.identity_manager.fetch_user_by_username(
             test_data["username"],
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(result, is_=r)
+        tm.that(result, is_=r)
 
     def test_flext_auth_fetch_user(self) -> None:
         """Test FlextAuth fetch_user functionality."""
@@ -131,8 +123,8 @@ class TestsFlextAuthApiCase08:
             email=test_data["email"],
             password=test_data["password"],
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
+        tm.that(register_result.success, eq=True)
         user = register_result.value
         user_id = user.unique_id
         result = auth.identity_service.identity_manager.fetch_user(user_id)
-        TestsFlextAuthUtilities.Tests.Matchers.that(result, is_=r)
+        tm.that(result, is_=r)

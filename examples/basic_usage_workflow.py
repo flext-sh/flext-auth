@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import secrets
 
-from examples import p, r, u
+from examples import c, p, r, u
 from flext_auth import FlextAuth
 
 
@@ -44,7 +44,7 @@ class FlextAuthBasicUsageWorkflow:
             username="admin",
             email="admin@company.com",
             password=password,
-            roles=["admin", "user"],
+            roles=["admin", c.Auth.RoleTypes.USER],
         )
         if admin_result.failure:
             return r[bool].from_failure(admin_result)
@@ -52,7 +52,7 @@ class FlextAuthBasicUsageWorkflow:
             username="regularuser",
             email="user@company.com",
             password=password,
-            roles=["user"],
+            roles=[c.Auth.RoleTypes.USER],
         )
         if user_result.failure:
             return r[bool].from_failure(user_result)

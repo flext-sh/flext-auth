@@ -6,13 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final
+from collections.abc import Mapping
+from typing import Final
 
 from flext_auth import FlextAuth
-from tests import TestsFlextAuthUtilities
-
-if TYPE_CHECKING:
-    from flext_auth import p, t
+from tests import c, p, t, tm
 
 
 class TestsFlextAuthApiTestDataHelper:
@@ -21,7 +19,7 @@ class TestsFlextAuthApiTestDataHelper:
     UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "flext-auth-unit-" + "9f2k"
 
     @staticmethod
-    def registered_session() -> tuple[FlextAuth, p.Auth.Identity, t.StrMapping]:
+    def registered_session() -> tuple[FlextAuth, p.Auth.Identity, Mapping[str, str]]:
         """Register and authenticate one identity through the public facade.
 
         Returns:
@@ -35,17 +33,17 @@ class TestsFlextAuthApiTestDataHelper:
             email=test_data["email"],
             password=test_data["password"],
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(register_result.success, eq=True)
+        tm.that(register_result.success, eq=True)
         auth_result = auth.authenticate_user(
             test_data["username"],
             test_data["password"],
         )
-        TestsFlextAuthUtilities.Tests.Matchers.that(auth_result.success, eq=True)
+        tm.that(auth_result.success, eq=True)
         identity = auth_result.value
         return auth, identity, test_data
 
     @staticmethod
-    def create_test_user_data() -> t.StrMapping:
+    def create_test_user_data() -> Mapping[str, str]:
         """Create test user data.
 
         Returns:
@@ -56,11 +54,11 @@ class TestsFlextAuthApiTestDataHelper:
             "username": "test_user",
             "email": "test@example.com",
             "password": TestsFlextAuthApiTestDataHelper.UNIT_TEST_CREDENTIAL_TOKEN,
-            "role": "user",
+            "role": c.ContextScope.USER,
         }
 
     @staticmethod
-    def create_test_auth_data() -> t.StrMapping:
+    def create_test_auth_data() -> Mapping[str, str]:
         """Create test authentication data.
 
         Returns:
@@ -82,7 +80,7 @@ class TestsFlextAuthApiTestDataHelper:
 
         """
         return {
-            "user_id": "user_123",
+            c.ContextKey.USER_ID: "user_123",
             "session_id": "session_123",
             "expires_at": "2025-12-31T23:59:59Z",
         }

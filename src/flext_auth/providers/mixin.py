@@ -6,26 +6,27 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, MutableSequence
 from typing import TYPE_CHECKING
 
 from flext_auth.providers._mixins import (
-    FlextAuthProviderTokenMixin,
-    FlextAuthProviderValidationMixin,
+    FlextAuthProviderToken,
+    FlextAuthProviderValidation,
 )
 
 if TYPE_CHECKING:
     from flext_auth import t
 
 
-class FlextAuthProviderMixin(
-    FlextAuthProviderTokenMixin,
-    FlextAuthProviderValidationMixin,
+class FlextAuthProvider(
+    FlextAuthProviderToken,
+    FlextAuthProviderValidation,
 ):
     """Common functionality for authentication providers."""
 
-    _provider_config: t.ScalarMapping | None
+    _provider_config: Mapping[str, t.Scalar] | None
 
-    def __init__(self, settings: t.ScalarMapping | None = None) -> None:
+    def __init__(self, settings: Mapping[str, t.Scalar] | None = None) -> None:
         """Initialize provider mixin with optional configuration.
 
         Args:
@@ -36,9 +37,9 @@ class FlextAuthProviderMixin(
         self._provider_config = settings
 
     @property
-    def settings(self) -> t.ScalarMapping | None:
+    def settings(self) -> Mapping[str, t.Scalar] | None:
         """Provider configuration mapping."""
         return self._provider_config
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthProviderMixin"]
+__all__: MutableSequence[str] = ["FlextAuthProvider"]

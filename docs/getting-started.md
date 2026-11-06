@@ -207,6 +207,15 @@ flext-auth manage-settings show
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_cli import u
 
 from flext_auth import FlextAuth
@@ -215,20 +224,20 @@ from flext_core import m, p, r
 auth = FlextAuth.quick_start(create_admin_user=False)
 
 
-def process_authentication_workflow(username: str, password: str) -> p.Result[m.Dict]:
+def process_authentication_workflow(username: str, password: str) -> p.Result[p.Dict]:
     """Authentication workflow using r error handling."""
     result = auth.authenticate_user(username, password)
     if result.failure:
-        return r[m.Dict].fail(result.error)
+        return r[p.Dict].fail(result.error)
 
     identity = result.unwrap()
     token_result = auth.create_token(identity.unique_id)
     if token_result.failure:
-        return r[m.Dict].fail(token_result.error)
+        return r[p.Dict].fail(token_result.error)
 
-    return r[m.Dict].ok({
+    return r[p.Dict].ok({
         "authenticated": True,
-        "user": identity.name,
+        c.ContextScope.USER: identity.name,
         "token": token_result.unwrap(),
     })
 
@@ -242,7 +251,7 @@ if result.success:
 
 ### Container Integration
 
-```{.python .notest}
+```python
 from flext_cli import u
 from flext_auth import FlextAuth, FlextAuthSettings
 
@@ -281,7 +290,7 @@ result = auth.register_user(
     username="charlie",
     email="charlie@example.com",
     password=os.environ["FLEXT_DEMO_PASSWORD"],
-    roles=["user"],
+    roles=[c.ContextScope.USER],
 )
 
 if result.success:
@@ -297,10 +306,10 @@ from datetime import UTC, datetime
 
 from flext_cli import u
 
-from flext_auth import m as auth_m
+from flext_auth import m, p
 
 # Create session; the token is issued by the auth service, never inlined
-session = auth_m.Auth.Session(
+session = m.Auth.Session(
     identity_id="user-id",
     session_token=os.environ["FLEXT_DEMO_SESSION_TOKEN"],
     expires_at=datetime.now(UTC),
@@ -319,6 +328,15 @@ if session.is_active:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 import os
 

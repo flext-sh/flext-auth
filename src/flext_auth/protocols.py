@@ -7,18 +7,31 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiProtocols
+from flext_api import p
 
-from flext_auth._protocols import FlextAuthProtocolsAuth, FlextAuthProtocolsBase
+from flext_auth._protocols import (
+    FlextAuthProtocolsAuth,
+    FlextAuthProtocolsAuthIdentityRequest,
+    FlextAuthProtocolsAuthProviderConfig,
+    FlextAuthProtocolsAuthResponse,
+    FlextAuthProtocolsAuthUserIdentityExtras,
+    FlextAuthProtocolsBase,
+)
 
 
-class FlextAuthProtocols(FlextApiProtocols):
+class FlextAuthProtocols(p):
     """Unified authentication protocols following FLEXT domain extension pattern."""
 
-    class Auth(FlextAuthProtocolsBase, FlextAuthProtocolsAuth):
+    class Auth(
+        FlextAuthProtocolsAuth,
+        FlextAuthProtocolsAuthIdentityRequest,
+        FlextAuthProtocolsAuthProviderConfig,
+        FlextAuthProtocolsAuthResponse,
+        FlextAuthProtocolsAuthUserIdentityExtras,
+        FlextAuthProtocolsBase,
+    ):
         """Authentication domain-specific protocols."""
 
 
 p = FlextAuthProtocols
-
 __all__: list[str] = ["FlextAuthProtocols", "p"]

@@ -74,8 +74,17 @@ else:
 
 Use `FlextContainer` for dependency injection:
 
-```{.python .notest}
+```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service
@@ -126,6 +135,15 @@ Authentication middleware for REST APIs:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -153,7 +171,7 @@ def authenticate_request(
 @app.get("/protected")
 def protected_endpoint(
     token: Annotated[str, Depends(authenticate_request)],
-) -> t.StrDict:
+) -> dict[str, str]:
     return {"message": "Hello authenticated user", "token": token}
 ```
 
@@ -163,6 +181,15 @@ Web application authentication flows:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from collections.abc import Callable
 
@@ -184,7 +211,7 @@ def login() -> Response:
     if auth_result.success:
         identity = auth_result.unwrap()
         session["token"] = identity.token
-        session["user"] = identity.name
+        session[c.ContextScope.USER] = identity.name
         return redirect(url_for("dashboard"))
     flash(f"Login failed: {auth_result.error}")
     return redirect(url_for("login_page"))
@@ -211,7 +238,7 @@ CLI authentication patterns:
 ```python
 from __future__ import annotations
 
-from flext_cli import FlextCliCli, FlextCliSettings, m, t
+from flext_cli import FlextCliCli, FlextCliSettings, m, p, t
 
 from flext_auth import FlextAuth
 
@@ -236,7 +263,7 @@ def login_handler(model: LoginInput) -> t.JsonValue:
     identity = result.unwrap()
     return {
         "authenticated": True,
-        "user": identity.name,
+        c.ContextScope.USER: identity.name,
         "token": identity.token,
     }
 
@@ -270,6 +297,15 @@ flext-auth acts as an authentication service provider for the ecosystem:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth
 from flext_core import FlextContainer, m, p
 
@@ -281,7 +317,7 @@ class AuthenticationProvider:
         self._auth = FlextAuth.quick_start(create_admin_user=False)
         self._container = FlextContainer()
 
-    def authenticate_service_request(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
+    def authenticate_service_request(self, token: str) -> p.Result[p.Auth.AuthIdentity]:
         """Authenticate requests from other FLEXT services."""
         # Decode token via the token service to resolve the identity id
         return self._auth.token_service.decode_token(token)
@@ -297,6 +333,15 @@ Pattern for service-to-service authentication:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_api import FlextApi
 
@@ -314,7 +359,7 @@ class ServiceA:
         result = self._auth.create_token("service-a")
         return result.unwrap() if result.success else ""
 
-    def call_service_b(self, data: dict) -> p.Result[m.Dict]:
+    def call_service_b(self, data: dict) -> p.Result[p.Dict]:
         """Call Service B with authentication."""
         headers = {
             "Authorization": f"Bearer {self._get_service_token()}",
@@ -340,7 +385,16 @@ Integration with flext-db-oracle for user storage:
 ```python
 from __future__ import annotations
 
-from flext_auth import m as auth_m
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
+from flext_auth import m, p
 from flext_core import p
 
 
@@ -353,7 +407,7 @@ class UserRepository:
 
     def create_user(
         self,
-        user: auth_m.Auth.AuthIdentity,
+        user: p.Auth.AuthIdentity,
     ) -> p.Result[auth_m.Auth.AuthIdentity]:
         """Create user in database."""
         # Oracle-specific implementation
@@ -366,9 +420,18 @@ Integration with Redis for session management:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from typing import Protocol
 
-from flext_auth import m as auth_m
+from flext_auth import m, p
 from flext_core import p, r
 
 
@@ -384,7 +447,7 @@ class RedisSessionStorage:
     def __init__(self, redis_client: RedisClient) -> None:
         self._redis = redis_client
 
-    def store_session(self, session: auth_m.Auth.Session) -> p.Result[bool]:
+    def store_session(self, session: p.Auth.Session) -> p.Result[bool]:
         """Store session in Redis."""
         try:
             session_data = session.model_dump_json()
@@ -429,6 +492,15 @@ Integration with FLEXT workspace configuration:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import FlextSettings, p, r
 
@@ -453,6 +525,15 @@ Test authentication with other FLEXT services:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_auth import FlextAuth
 
@@ -485,6 +566,15 @@ Plans for OAuth2 provider integration:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_auth import FlextAuth
 from flext_core import m, p
 
@@ -500,7 +590,7 @@ class OAuth2Provider:
         """OAuth2 authorization endpoint."""
         # Implementation using flext-auth
 
-    def token(self, code: str, client_id: str) -> p.Result[m.Dict]:
+    def token(self, code: str, client_id: str) -> p.Result[p.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
 ```
@@ -512,7 +602,16 @@ Plans for SAML integration:
 ```python
 from __future__ import annotations
 
-from flext_auth import FlextAuth, m as auth_m
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
+from flext_auth import FlextAuth, m
 from flext_core import p
 
 

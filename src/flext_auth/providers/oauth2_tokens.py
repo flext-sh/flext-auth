@@ -54,7 +54,7 @@ class FlextAuthOAuth2Tokens(
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | t.JsonMapping,
+        user: p.Auth.AuthIdentity | t.JsonMapping,
         token_kind: str = c.Auth.TokenTypes.ACCESS.value,
         token_type: str | None = None,
         expiry_minutes: int | None = None,
@@ -162,7 +162,7 @@ class FlextAuthOAuth2Tokens(
             on_success=lambda _: r[bool].ok(value=True),
         )
 
-    def validate_token(self, token: str) -> p.Result[m.Auth.AuthIdentity]:
+    def validate_token(self, token: str) -> p.Result[p.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user.
 
         Args:
@@ -177,12 +177,12 @@ class FlextAuthOAuth2Tokens(
         if introspection_endpoint_result.success:
             introspection_result = self._introspect_token(token)
             if introspection_result.failure:
-                return r[m.Auth.AuthIdentity].from_failure(introspection_result)
+                return r[p.Auth.AuthIdentity].from_failure(introspection_result)
             active_value = introspection_result.value.get("active")
             is_active = active_value if isinstance(active_value, bool) else False
             if not is_active:
-                return r[m.Auth.AuthIdentity].fail("OAuth2 token is inactive")
-            return r[m.Auth.AuthIdentity].from_validation(
+                return r[p.Auth.AuthIdentity].fail("OAuth2 token is inactive")
+            return r[p.Auth.AuthIdentity].from_validation(
                 {
                     **introspection_result.value,
                     c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN,
@@ -191,8 +191,8 @@ class FlextAuthOAuth2Tokens(
             )
         claims_result = self._decode_token_claims(token)
         if claims_result.failure:
-            return r[m.Auth.AuthIdentity].from_failure(claims_result)
-        return r[m.Auth.AuthIdentity].from_validation(
+            return r[p.Auth.AuthIdentity].from_failure(claims_result)
+        return r[p.Auth.AuthIdentity].from_validation(
             {
                 **claims_result.value,
                 c.Auth.KEY_CONTACT_DOMAIN: c.Auth.DEFAULT_OAUTH_CONTACT_DOMAIN,

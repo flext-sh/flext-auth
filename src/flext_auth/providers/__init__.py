@@ -7,18 +7,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_auth.providers import _mixins as _mixins
-    from flext_auth.providers._mixins import (
-        FlextAuthProviderCodecMixin,
-        FlextAuthProviderTokenMixin,
-        FlextAuthProviderValidationMixin,
-    )
     from flext_auth.providers.apikey import FlextAuthApiKeyProvider
     from flext_auth.providers.basic import FlextAuthBasicProvider
     from flext_auth.providers.certificate import FlextAuthCertificateProvider
@@ -27,7 +20,7 @@ if TYPE_CHECKING:
     from flext_auth.providers.kerberos import FlextAuthKerberosProvider
     from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
     from flext_auth.providers.ldap import FlextAuthLdapProvider
-    from flext_auth.providers.mixin import FlextAuthProviderMixin
+    from flext_auth.providers.mixin import FlextAuthProvider
     from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
     from flext_auth.providers.oauth2_config import FlextAuthOAuth2Config
     from flext_auth.providers.oauth2_introspection import FlextAuthOAuth2Introspection
@@ -51,19 +44,15 @@ __all__: tuple[str, ...] = (
     "FlextAuthOAuth2Provider",
     "FlextAuthOAuth2Tokens",
     "FlextAuthOidcProvider",
-    "FlextAuthProviderCodecMixin",
-    "FlextAuthProviderMixin",
-    "FlextAuthProviderTokenMixin",
-    "FlextAuthProviderValidationMixin",
+    "FlextAuthProvider",
     "FlextAuthRfcProvider",
     "FlextAuthSamlProvider",
-    "_mixins",
 )
 
 install_lazy_exports(
     __name__,
     globals(),
-    MappingProxyType({
+    {
         "FlextAuthApiKeyProvider": ".apikey",
         "FlextAuthBasicProvider": ".basic",
         "FlextAuthCertificateProvider": ".certificate",
@@ -77,13 +66,9 @@ install_lazy_exports(
         "FlextAuthOAuth2Provider": ".oauth2",
         "FlextAuthOAuth2Tokens": ".oauth2_tokens",
         "FlextAuthOidcProvider": ".oidc",
-        "FlextAuthProviderCodecMixin": "._mixins.codec",
-        "FlextAuthProviderMixin": ".mixin",
-        "FlextAuthProviderTokenMixin": "._mixins.tokens",
-        "FlextAuthProviderValidationMixin": "._mixins.validation",
+        "FlextAuthProvider": ".mixin",
         "FlextAuthRfcProvider": ".rfc",
         "FlextAuthSamlProvider": ".saml",
-        "_mixins": "._mixins",
-    }),
+    },
     public_exports=__all__,
 )

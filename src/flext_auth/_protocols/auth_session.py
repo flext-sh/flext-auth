@@ -6,9 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+from datetime import datetime
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_api import p
+from flext_api import FlextApiProtocols, p
 
 if TYPE_CHECKING:
     from flext_auth import t
@@ -35,7 +37,7 @@ class FlextAuthProtocolsAuthSession:
         def get_active_sessions(
             self,
             user_id: str,
-        ) -> p.Result[t.SequenceOf[FlextAuthProtocolsAuthSession.Session]]: ...
+        ) -> p.Result[Sequence[FlextAuthProtocolsAuthSession.Session]]: ...
 
         def end_session(self, user_id: str) -> p.Result[bool]: ...
 
@@ -119,6 +121,33 @@ class FlextAuthProtocolsAuthSession:
         "Authentication status."
         success: bool
         "Operation success status."
+
+    @runtime_checkable
+    class AuthSession(FlextApiProtocols.BaseModel, Protocol):
+        """Structural data contract projected from the owning model."""
+
+        @property
+        def domain_events(self) -> Sequence[p.DomainEvent]:
+            """List of uncommitted domain events for event sourcing."""
+            ...
+
+        identity_id: str
+        token: str
+        expires_at: datetime
+        token_type: str
+        session_id: str
+        is_revoked: bool
+        refresh_token: str
+
+        @property
+        def user_id(self) -> str:
+            """User ID property for protocol compatibility."""
+            ...
+
+        @property
+        def expired(self) -> bool:
+            """Whether token is expired."""
+            ...
 
 
 __all__: list[str] = ["FlextAuthProtocolsAuthSession"]

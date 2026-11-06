@@ -10,7 +10,7 @@ from typing import override
 
 from flext_tests import FlextTestsServiceBase
 
-from flext_auth import m
+from flext_auth import m, p
 from tests.settings import TestsFlextAuthSettings
 
 
@@ -19,7 +19,7 @@ class TestsFlextAuthServiceBase(FlextTestsServiceBase):
 
     @classmethod
     @override
-    def runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
+    def runtime_bootstrap_options(cls) -> p.RuntimeBootstrapOptions:
         return m.RuntimeBootstrapOptions(settings_type=TestsFlextAuthSettings)
 
 

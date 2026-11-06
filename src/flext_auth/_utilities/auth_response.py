@@ -66,7 +66,7 @@ class FlextAuthUtilitiesAuthResponse:
         if token:
             response["token"] = token
         if user_id:
-            response["user_id"] = user_id
+            response[c.ContextKey.USER_ID] = user_id
         if expires_at:
             response["expires_at"] = expires_at.isoformat()
         return response

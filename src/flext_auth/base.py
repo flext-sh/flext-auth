@@ -6,11 +6,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import MutableSequence
 from typing import override
 
 from flext_core import FlextService
 
-from flext_auth import FlextAuthSettings, m, p, r, t
+from flext_auth import FlextAuthSettings, m, p, r
 
 
 class FlextAuthServiceBase(FlextService[bool]):
@@ -54,4 +55,4 @@ class FlextAuthServiceBase(FlextService[bool]):
 
 s = FlextAuthServiceBase
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthServiceBase", "s"]
+__all__: MutableSequence[str] = ["FlextAuthServiceBase", "s"]

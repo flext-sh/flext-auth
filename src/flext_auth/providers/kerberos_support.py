@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import ClassVar
 
 from flext_auth import m, p, r, settings, t, u
@@ -15,9 +15,9 @@ from flext_auth import m, p, r, settings, t, u
 class FlextAuthKerberosSupport:
     """Kerberos validation and ticket helper owner."""
 
-    _KERBEROS_REQUIRED: ClassVar[t.StrSequence] = ("realm", "kdc", "service_principal")
+    _KERBEROS_REQUIRED: ClassVar[Sequence[str]] = ("realm", "kdc", "service_principal")
 
-    _external_ticket_validator: t.Auth.KerberosTicketValidator | None = None
+    _external_ticket_validator: p.Auth.KerberosTicketValidator | None = None
 
     def _validate_kerberos_configuration(self) -> p.Result[bool]:
         """Railway-oriented validation of the typed Kerberos settings namespace.
@@ -52,13 +52,8 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
         @staticmethod
-        def validate_ticket(
-            _ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
+        def validate_ticket() -> p.Result[p.Auth.KerberosTicketData]:
             """Validate Kerberos ticket.
-
-            Args:
-                _ticket_data: Ticket data to validate.
 
             Returns:
                 A validated ticket record placeholder.
@@ -68,7 +63,7 @@ class FlextAuthKerberosSupport:
                 ticket="validated_ticket",
                 principal="kerberos_user",
             )
-            return r[m.Auth.KerberosTicketData].ok(result)
+            return r[p.Auth.KerberosTicketData].ok(result)
 
     ticket_validator: _KerberosTicketValidator
 
@@ -88,7 +83,7 @@ class FlextAuthKerberosSupport:
             self.provider = provider
 
     @staticmethod
-    def handle_service_ticket(ticket: str) -> p.Result[m.Auth.KerberosTicketData]:
+    def handle_service_ticket(ticket: str) -> p.Result[p.Auth.KerberosTicketData]:
         """Handle Kerberos service ticket.
 
         Args:
@@ -99,7 +94,7 @@ class FlextAuthKerberosSupport:
 
         """
         result = m.Auth.KerberosTicketData(ticket=ticket, principal="service_principal")
-        return r[m.Auth.KerberosTicketData].ok(result)
+        return r[p.Auth.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
@@ -118,8 +113,8 @@ class FlextAuthKerberosSupport:
 
         def authenticate_ticket(
             self,
-            ticket_data: m.Auth.KerberosTicketData,
-        ) -> p.Result[m.Auth.KerberosTicketData]:
+            ticket_data: p.Auth.KerberosTicketData,
+        ) -> p.Result[p.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket.
 
             Args:
@@ -129,7 +124,8 @@ class FlextAuthKerberosSupport:
                 The validated ticket record.
 
             """
-            return self.provider.ticket_validator.validate_ticket(ticket_data)
+            _ = ticket_data
+            return self.provider.ticket_validator.validate_ticket()
 
     def _ticket_validator_callable(
         self,
@@ -143,7 +139,7 @@ class FlextAuthKerberosSupport:
 
         def validated(
             ticket: str,
-        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+        ) -> p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             """Validate a raw ticket through the external validator.
 
             Args:

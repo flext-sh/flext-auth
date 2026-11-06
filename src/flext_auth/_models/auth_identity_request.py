@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Annotated
 
 from flext_api import m
@@ -46,7 +47,7 @@ class FlextAuthModelsAuthIdentityRequest:
             ),
         ]
         full_name: Annotated[str, m.Field(description="Full name")] = ""
-        roles: t.StrSequence = m.Field(
+        roles: Sequence[str] = m.Field(
             default_factory=lambda: [c.Auth.RoleTypes.USER.value],
             description="Roles",
         )

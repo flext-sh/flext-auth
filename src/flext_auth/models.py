@@ -7,39 +7,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiModels
+from flext_api import m
 
-from flext_auth import t
-from flext_auth._models import (
-    FlextAuthModelsAuth,
-    FlextAuthModelsAuthCredential,
-    FlextAuthModelsAuthIdentity,
-    FlextAuthModelsAuthIdentityRequest,
-    FlextAuthModelsAuthProviderConfig,
-    FlextAuthModelsAuthResponse,
-    FlextAuthModelsAuthSession,
-    FlextAuthModelsAuthUserIdentityExtras,
-    FlextAuthModelsBase,
-)
+from flext_auth._models import FlextAuthModelsAuth, FlextAuthModelsBase
 
 
-class FlextAuthModels(FlextApiModels):
+class FlextAuthModels(m):
     """Authentication models extending the API model namespace."""
 
     class Auth(
         FlextAuthModelsAuth,
-        FlextAuthModelsAuthCredential,
-        FlextAuthModelsAuthSession,
-        FlextAuthModelsAuthIdentityRequest,
-        FlextAuthModelsAuthIdentity,
-        FlextAuthModelsAuthProviderConfig,
-        FlextAuthModelsAuthResponse,
-        FlextAuthModelsAuthUserIdentityExtras,
         FlextAuthModelsBase,
     ):
         """Authentication model namespace."""
 
 
 m = FlextAuthModels
-
-__all__: t.MutableSequenceOf[str] = ["FlextAuthModels", "m"]
+__all__: list[str] = ["FlextAuthModels", "m"]

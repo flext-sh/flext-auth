@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import MutableSequence
 
 from flext_auth._utilities import FlextAuthUtilitiesBase
 from flext_auth._utilities._managers import (
@@ -14,9 +14,6 @@ from flext_auth._utilities._managers import (
     FlextAuthSessionManagers,
     FlextAuthUserManagers,
 )
-
-if TYPE_CHECKING:
-    from flext_auth import t
 
 
 class FlextAuthUtilitiesManagers(
@@ -28,4 +25,4 @@ class FlextAuthUtilitiesManagers(
     """Namespace class for all authentication managers following FLEXT patterns."""
 
 
-__all__: t.MutableSequenceOf[str] = ["FlextAuthUtilitiesManagers"]
+__all__: MutableSequence[str] = ["FlextAuthUtilitiesManagers"]

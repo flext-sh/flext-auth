@@ -6,10 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import c, m, p, r, s
+from flext_auth import FlextAuthServiceBase, c, m, p, r
 
 
-class FlextAuthRegistryBase(s, m.Auth.RegistryPortOptions):
+# Pydantic's model-synthesis hook recognizes the class owner, not its type alias.
+class FlextAuthRegistryBase(FlextAuthServiceBase, m.Auth.RegistryPortOptions):
     """Auth provider registry backed by `p.Registry`."""
 
     def fetch_registration(self, name: str) -> p.Result[p.Auth.ProviderRegistration]:
