@@ -114,7 +114,7 @@ authentication providers, data storage, and monitoring.
 
 ### Single Container Deployment
 
-```
+```text
 ┌─────────────────┐
 │   flext-auth    │
 │   (Python)      │
@@ -128,7 +128,7 @@ authentication providers, data storage, and monitoring.
 
 ### Microservices Deployment
 
-```
+```text
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   flext-auth    │    │   Database      │    │   Identity      │
 │   (Auth Service)│◄──►│   (PostgreSQL)  │    │   Providers     │
@@ -153,7 +153,7 @@ authentication providers, data storage, and monitoring.
 
 ### Kubernetes Deployment
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Kubernetes Cluster                       │
 ├─────────────────────────────────────────────────────────────┤

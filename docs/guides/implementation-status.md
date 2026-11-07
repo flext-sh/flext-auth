@@ -158,7 +158,7 @@ extensive provider ecosystem, but with significant test failures requiring resol
 
 ### Test Results Summary
 
-```
+```text
 Total Tests: 558
 Passed: 228 (40.9%)
 Failed: 319 (57.2%)
@@ -248,7 +248,7 @@ Duration: 85.27s
 
 ### Phase 1: Foundation & Registry ✅ COMPLETE
 
-```
+```text
 Progress: 100%
 Status: ✅ All deliverables implemented
 - Registry system operational
@@ -260,7 +260,7 @@ Status: ✅ All deliverables implemented
 
 ### Phase 2: Core Providers ✅ COMPLETE
 
-```
+```text
 Progress: 100%
 Status: ✅ All Phase 2 providers implemented
 - JWT Provider: Production-ready ✅
@@ -272,7 +272,7 @@ Status: ✅ All Phase 2 providers implemented
 
 ### Phase 3: Advanced Providers ✅ MOSTLY COMPLETE
 
-```
+```text
 Progress: 85%
 Status: ⚠️ Most providers implemented, some with issues
 - Certificate Provider: Implemented ⚠️
@@ -283,7 +283,7 @@ Status: ⚠️ Most providers implemented, some with issues
 
 ### Phase 4: Transport & Protocol ⚠️ PARTIALLY COMPLETE
 
-```
+```text
 Progress: 30%
 Status: ⚠️ Basic HTTP transport implemented
 - HTTP Transport: Implemented ✅
@@ -294,7 +294,7 @@ Status: ⚠️ Basic HTTP transport implemented
 
 ### Phase 5-7: Advanced Features ❌ PENDING
 
-```
+```text
 Progress: 0%
 Status: ❌ Not started
 - Token caching: Not implemented
