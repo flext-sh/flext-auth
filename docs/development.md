@@ -298,7 +298,7 @@ make fmt
 
 ### Current Test Structure
 
-```
+```text
 tests/
 ├── unit/                   # Unit tests for individual components
 │   ├── test_auth.py       # Authentication service tests
@@ -471,6 +471,6 @@ This development guide reflects the current implementation state as of April 14,
 For additional FLEXT patterns, see
 [flext-core documentation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/development.md).
 
-```
+```text
 
 ```

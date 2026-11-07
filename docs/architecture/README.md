@@ -47,7 +47,7 @@ Architecture Decision Records (ADRs), and automated diagram generation.
 
 ## 📚 Documentation Structure
 
-```
+```text
 docs/architecture/
 ├── README.md                    # This overview document
 ├── c4-model/                    # C4 model documentation

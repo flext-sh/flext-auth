@@ -269,6 +269,6 @@ settings = FlextAuthSettings()
 This configuration guide covers the current implementation as of April 14, 2026. For
 usage examples, see Getting Started.
 
-```
+```text
 
 ```

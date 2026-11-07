@@ -198,7 +198,7 @@ different aspects of authentication.
 
 ### Data Flow Architecture
 
-```
+```text
 HTTP Request
     ↓
 FlextWebTransportAdapter
@@ -285,7 +285,7 @@ Response ← FlextWebTransportAdapter
 
 ### Dependency Direction
 
-```
+```text
 Transport Layer ← API Layer ← Service Layer ← Provider Layer
 Infrastructure ↑ ↑ ↑ ↑
 ```
