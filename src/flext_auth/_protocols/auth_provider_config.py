@@ -30,52 +30,28 @@ class FlextAuthProtocolsAuthProviderConfig:
     class RegistryPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
-        @property
-        def registry(self) -> p.Registry:
-            """Instance-scoped registry supplied by the API composition."""
-            ...
+        registry: p.Registry
 
     @runtime_checkable
     class ApplicationPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
-        @property
-        def identity_service(self) -> FlextAuthProtocolsAuthService.IdentityService:
-            """Identity operations using the composed user manager."""
-            ...
-
-        @property
-        def session_service(self) -> FlextAuthProtocolsAuthService.SessionService:
-            """Token and session operations using the same identity store."""
-            ...
+        identity_service: FlextAuthProtocolsAuthService.IdentityService
+        session_service: FlextAuthProtocolsAuthService.SessionService
 
     @runtime_checkable
     class IdentityPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
-        @property
-        def identity_manager(self) -> FlextAuthProtocolsAuthIdentity.IdentityManager:
-            """Identity manager explicitly supplied by the API."""
-            ...
+        identity_manager: FlextAuthProtocolsAuthIdentity.IdentityManager
 
     @runtime_checkable
     class SessionPortOptions(FlextApiProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
-        @property
-        def provider_service(self) -> FlextAuthProtocolsAuthService.ProviderService:
-            """Provider resolver bound to the composed registry."""
-            ...
-
-        @property
-        def user_manager(self) -> FlextAuthProtocolsAuthIdentity.IdentityManager:
-            """The same identity manager used by identity operations."""
-            ...
-
-        @property
-        def session_manager(self) -> FlextAuthProtocolsAuthSession.SessionManager:
-            """Session manager supplied by the API composition."""
-            ...
+        provider_service: FlextAuthProtocolsAuthService.ProviderService
+        user_manager: FlextAuthProtocolsAuthIdentity.IdentityManager
+        session_manager: FlextAuthProtocolsAuthSession.SessionManager
 
     @runtime_checkable
     class ProviderIdentityConfig(FlextApiProtocols.BaseModel, Protocol):
