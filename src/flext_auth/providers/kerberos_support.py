@@ -139,7 +139,7 @@ class FlextAuthKerberosSupport:
 
         def validated(
             ticket: str,
-        ) -> p.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
+        ) -> m.Auth.AuthIdentity | t.JsonMapping | m.Auth.KerberosTicketData:
             """Validate a raw ticket through the external validator.
 
             Args:
