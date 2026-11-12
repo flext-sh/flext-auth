@@ -179,9 +179,12 @@ class TestsFlextAuthApi:
     @c.Tests.MARK.parametrize(
         "credentials",
         [
-            {"username": "", "password": ""},
-            {"username": "someone", "password": ""},
-            {"username": "", "password": c.TEST_CREDENTIAL},
+            {
+                "username": c.DEFAULT_EMPTY_STRING,
+                "password": c.DEFAULT_EMPTY_STRING,
+            },
+            {"username": "someone", "password": c.DEFAULT_EMPTY_STRING},
+            {"username": c.DEFAULT_EMPTY_STRING, "password": c.TEST_CREDENTIAL},
         ],
     )
     def test_authenticate_rejects_missing_credentials(

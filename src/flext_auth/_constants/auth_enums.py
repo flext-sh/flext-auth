@@ -115,5 +115,12 @@ class FlextAuthConstantsAuthEnums:
         CLIENT_SECRET_POST = auto()
         NONE = auto()
 
+    @unique
+    class IntrospectionTokenTypeHints(StrEnum):
+        """OAuth2 introspection token_type_hint values (RFC 7662)."""
+
+        ACCESS_TOKEN = auto()
+        REFRESH_TOKEN = auto()
+
 
 __all__: list[str] = ["FlextAuthConstantsAuthEnums"]

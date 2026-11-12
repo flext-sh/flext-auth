@@ -22,7 +22,11 @@ class TestsFlextAuthApiCase10:
     def test_flext_auth_error_handling() -> None:
         """Test auth module error handling patterns."""
         auth = FlextAuth()
-        result = auth.register_user(username="", email="invalid_email", password="")
+        result = auth.register_user(
+            username=c.DEFAULT_EMPTY_STRING,
+            email="invalid_email",
+            password=c.DEFAULT_EMPTY_STRING,
+        )
         tm.that(result, is_=r)
         tm.that(not result.success, eq=True)
         result = auth.authenticate_user("invalid_user", "invalid_password")
