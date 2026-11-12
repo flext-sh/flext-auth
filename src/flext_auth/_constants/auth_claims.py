@@ -148,9 +148,6 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     MAX_ATTEMPTS_DEFAULT: Final[int] = 5
     "Default max authentication attempts."
     LOCKOUT_DURATION_MINUTES: Final[int] = 30
-    # RFC 7662 wire literal, not a credential; bandit name-heuristic false positive.
-    OAUTH2_INTROSPECTION_TYPE_HINT_ACCESS: Final[str] = "access_token"
-    "RFC 7662 introspection token_type_hint wire value for access tokens."
     "Lockout duration in minutes."
     VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
         "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
@@ -162,10 +159,9 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
         "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
     })
     "Validation limits mapping."
-    SUCCESS_AUTH_RESPONSE: Final[t.OptionalStrMapping] = MappingProxyType({
+    SUCCESS_AUTH_RESPONSE: Final[t.StrMapping] = MappingProxyType({
         "status": c.Status.SUCCESS.value,
         "message": "Authentication successful",
-        "token_type": None,
     })
     "Template for successful authentication responses."
 

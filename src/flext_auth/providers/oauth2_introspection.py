@@ -27,8 +27,7 @@ class FlextAuthOAuth2Introspection:
             return r[str].fail("OAuth2 token must be a non-empty string")
         form_payload: t.MutableStrMapping = {
             "token": token,
-            # RFC 7662 wire literal, not a credential.
-            "token_type_hint": "access_token",
+            "token_type_hint": c.Auth.IntrospectionTokenTypeHints.ACCESS_TOKEN,
         }
         auth_method = self._token_endpoint_auth_method
         client_id = self.provider_config.client_id or ""

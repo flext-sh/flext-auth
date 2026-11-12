@@ -116,7 +116,7 @@ class TestsFlextAuthConfig:
             {"hash_rounds": c.Auth.HASH_ROUNDS_MAX + 1},
             {"expiry_minutes": 0},
             {"session_expiry_minutes": -1},
-            {"secret_key": "short"},
+            {"secret_key": "x" * (c.Auth.SECRET_MIN_LENGTH - 1)},
         ],
     )
     def test_construction_rejects_out_of_contract_values(

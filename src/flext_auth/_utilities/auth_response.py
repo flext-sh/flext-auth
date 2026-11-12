@@ -60,7 +60,7 @@ class FlextAuthUtilitiesAuthResponse:
         """
         response: t.MutableConfigurationMapping = {
             "success": True,
-            "message": str(c.Auth.SUCCESS_AUTH_RESPONSE["message"]),
+            "message": c.Auth.SUCCESS_AUTH_RESPONSE["message"],
             "timestamp": u.now().isoformat(),
         }
         if token:
