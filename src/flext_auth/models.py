@@ -7,12 +7,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import m
+from flext_api import FlextApiModels
 
 from flext_auth._models import FlextAuthModelsAuth, FlextAuthModelsBase
 
 
-class FlextAuthModels(m):
+class FlextAuthModels(FlextApiModels):
     """Authentication models extending the API model namespace."""
 
     class Auth(
