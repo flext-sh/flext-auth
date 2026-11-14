@@ -496,7 +496,7 @@ wheels = [
 [[package]]
 name = "flext-api"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-api.git?rev=0.12.0-dev#426d4a737d21df6fb32b3de13b720aea205ccf1f" }
+source = { git = "https://github.com/flext-sh/flext-api.git?rev=0.12.0-dev#b5829095849fb76e1c71f5c15ab9dd442aa19b03" }
 dependencies = [
     { name = "flext-cli" },
     { name = "flext-core" },
@@ -700,7 +700,7 @@ dependencies = [
 [[package]]
 name = "flext-infra"
 version = "0.12.1"
-source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#273569a2829c167a32b759f6d6002d5008d5cfc6" }
+source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#7464cfd528949f5518d494064aa2598aa3ae02dc" }
 dependencies = [
     { name = "defusedxml" },
     { name = "flext-cli" },
