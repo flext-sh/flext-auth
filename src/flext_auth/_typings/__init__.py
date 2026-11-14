@@ -23,4 +23,20 @@ install_lazy_exports(
     globals(),
     {"FlextAuthTypesAuth": ".auth", "FlextAuthTypesBase": ".base"},
     public_exports=__all__,
+    deferred_members={
+        "FlextAuthTypesAuth": (
+            "TokenRequestType",
+            "ProvidersKey",
+            "ManagersManagerValue",
+            "ManagersUserData",
+            "ManagersLogEntry",
+            "ManagersSessionData",
+            "ManagersAttemptEvents",
+            "ManagersAttemptData",
+        ),
+        "FlextAuthTypesBase": (
+            "DateTimeValue",
+            "TokensClaimMap",
+        ),
+    },
 )
