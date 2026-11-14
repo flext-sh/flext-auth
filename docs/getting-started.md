@@ -207,19 +207,10 @@ flext-auth manage-settings show
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_cli import u
+from flext_core import p, r
 
-from flext_auth import FlextAuth
-from flext_core import m, p, r
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -253,6 +244,8 @@ if result.success:
 
 ```python
 from flext_cli import u
+from flext_core import FlextContainer
+
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service in container
@@ -281,7 +274,7 @@ import os
 
 from flext_cli import u
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -306,7 +299,7 @@ from datetime import UTC, datetime
 
 from flext_cli import u
 
-from flext_auth import m, p
+from flext_auth import m
 
 # Create session; the token is issued by the auth service, never inlined
 session = m.Auth.Session(
@@ -329,16 +322,9 @@ if session.is_active:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 import os
+
+from flext_tests import tm
 
 from flext_auth import FlextAuth
 
