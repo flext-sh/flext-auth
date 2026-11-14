@@ -16,6 +16,8 @@
 - [Configuration Validation](#configuration-validation)
   - [Validate Configuration](#validate-configuration)
   - [CLI Validation](#cli-validation)
+- [Global Configuration](#global-configuration)
+  - [Singleton Pattern](#singleton-pattern)
   - [Global Instance Access](#global-instance-access)
 - [Security Recommendations](#security-recommendations)
   - [Production Settings](#production-settings)
@@ -154,16 +156,18 @@ prod_config = FlextAuthSettings(
 
 ### Validate Configuration
 
-````python
-from flext_auth import FlextAuthSettings
+```python
 from flext_cli import u
+
+from flext_auth import FlextAuthSettings
 
 try:
     settings = FlextAuthSettings()
     u.Cli.info("Configuration valid")
-except Exception as e:
-    u.Cli.info(f"Configuration error: {e}")
-    ```
+except ValueError as error:
+    u.Cli.info(f"Configuration error: {error}")
+```
+
 ### CLI Validation
 
 ```bash
@@ -172,7 +176,7 @@ flext-auth validate-settings
 
 # Show configuration summary
 flext-auth manage-settings show
-````
+```
 
 ---
 

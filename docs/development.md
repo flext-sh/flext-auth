@@ -132,15 +132,6 @@ All code must follow FLEXT patterns:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_auth import m, p, r
 
 
@@ -321,14 +312,7 @@ tests/
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from flext_tests import tm
 
 from flext_auth import FlextAuth
 
@@ -358,19 +342,12 @@ Follow FLEXT service patterns:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Mapping
 
 from flext_cli import u
-
-from flext_auth import p, r, t
 from flext_core import FlextContainer
+
+from flext_auth import c, p, r
 
 
 class AuthenticationService:
@@ -392,15 +369,6 @@ Use r exclusively:
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 
 from flext_auth import FlextAuth, m, p, r
 
