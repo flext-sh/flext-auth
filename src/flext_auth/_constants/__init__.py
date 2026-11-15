@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from flext_auth._constants.auth_security import FlextAuthConstantsAuthSecurity
     from flext_auth._constants.auth_values import FlextAuthConstantsAuthValues
     from flext_auth._constants.base import FlextAuthConstantsBase
+    from flext_auth._constants.security_values import FlextAuthConstantsAuthSecurityValues
 
 
 __all__: tuple[str, ...] = (
@@ -25,6 +26,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthConstantsAuthClaims",
     "FlextAuthConstantsAuthEnums",
     "FlextAuthConstantsAuthSecurity",
+    "FlextAuthConstantsAuthSecurityValues",
     "FlextAuthConstantsAuthValues",
     "FlextAuthConstantsBase",
 )
@@ -37,6 +39,7 @@ install_lazy_exports(
         "FlextAuthConstantsAuthClaims": ".auth_claims",
         "FlextAuthConstantsAuthEnums": ".auth_enums",
         "FlextAuthConstantsAuthSecurity": ".auth_security",
+        "FlextAuthConstantsAuthSecurityValues": ".security_values",
         "FlextAuthConstantsAuthValues": ".auth_values",
         "FlextAuthConstantsBase": ".base",
     },
@@ -107,7 +110,7 @@ install_lazy_exports(
             "TokenEndpointAuthMethods",
             "IntrospectionTokenTypeHints",
         ),
-        "FlextAuthConstantsAuthSecurity": (
+        "FlextAuthConstantsAuthSecurityValues": (
             "JWT_DEFAULT_ALGORITHM",
             "JWT_DEFAULT_EXPIRY_MINUTES",
             "JWT_MAX_EXPIRY_MINUTES",
@@ -147,6 +150,7 @@ install_lazy_exports(
             "VALIDATION_MAX_PERMISSION_NAME_LENGTH",
             "VALIDATION_MAX_PERMISSION_DESCRIPTION_LENGTH",
         ),
+        "FlextAuthConstantsAuthSecurity": (),
         "FlextAuthConstantsAuthValues": (
             "REGISTRY_PROVIDERS_CATEGORY",
             "REGISTRY_CONFIG_CATEGORY",
@@ -162,7 +166,10 @@ defer_lazy_bases(
     {
         "FlextAuthConstantsAuth": ((".", "FlextAuthConstantsAuthValues"),),
         "FlextAuthConstantsAuthClaims": ((".", "FlextAuthConstantsAuthEnums"),),
-        "FlextAuthConstantsAuthSecurity": ((".", "FlextAuthConstantsAuthClaims"),),
+        "FlextAuthConstantsAuthSecurity": (
+            (".", "FlextAuthConstantsAuthClaims"),
+            (".", "FlextAuthConstantsAuthSecurityValues"),
+        ),
         "FlextAuthConstantsAuthValues": ((".", "FlextAuthConstantsAuthSecurity"),),
     },
 )
