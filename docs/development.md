@@ -193,7 +193,7 @@ class User(m.Auth.AuthIdentity):
 
     def verify_password(self, password: str) -> p.Result[bool]:
         # Business logic returning r
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 # ❌ Incorrect - Don't create plain classes

@@ -456,7 +456,7 @@ class RedisSessionStorage:
                 int(session.expires_at.timestamp()),
                 session_data,
             )
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         except (ConnectionError, TimeoutError) as e:
             return r[bool].fail(f"Session storage failed: {e}")
 ```

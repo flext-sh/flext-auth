@@ -1078,7 +1078,7 @@ class SecurityValidator:
         """Validate token has not expired."""
         if token.expires_at < datetime.now(UTC):
             return r[bool].fail("Token expired")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @staticmethod
     def validate_token_signature(token: str, secret: str) -> p.Result[bool]:
