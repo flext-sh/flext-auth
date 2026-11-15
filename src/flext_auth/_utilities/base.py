@@ -10,9 +10,9 @@ import secrets
 from datetime import datetime, timedelta
 
 import bcrypt
-from flext_api import r, u
+from flext_api import p, r, u
 
-from flext_auth import c, p
+from flext_auth.constants import FlextAuthConstants
 
 
 class FlextAuthUtilitiesAuthValidation:
@@ -32,8 +32,9 @@ class FlextAuthUtilitiesAuthValidation:
         if not email or not email.strip():
             return r[str].fail("Email cannot be empty")
         email = email.strip()
-        if len(email) > c.Auth.MAX_EMAIL_LENGTH:
-            return r[str].fail(f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)")
+        max_length = FlextAuthConstants.Auth.MAX_EMAIL_LENGTH
+        if len(email) > max_length:
+            return r[str].fail(f"Email too long (max {max_length} chars)")
         if "@" not in email or "." not in email.split("@")[1]:
             return r[str].fail("Invalid email format")
         return r[str].ok(email)
@@ -52,8 +53,8 @@ class FlextAuthUtilitiesAuthValidation:
         """
         if not password:
             return r[str].fail("Password cannot be empty")
-        min_length = c.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH
-        max_length = c.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH
+        min_length = FlextAuthConstants.Auth.CREDENTIALS_PASSWORD_MIN_LENGTH
+        max_length = FlextAuthConstants.Auth.CREDENTIALS_PASSWORD_MAX_LENGTH
         if len(password) < min_length:
             return r[str].fail(f"Password too short (min {min_length} chars)")
         if len(password) > max_length:
@@ -75,8 +76,8 @@ class FlextAuthUtilitiesAuthValidation:
         if not username or not username.strip():
             return r[str].fail("Username cannot be empty")
         username = username.strip()
-        min_length = c.Auth.CREDENTIALS_USERNAME_MIN_LENGTH
-        max_length = c.Auth.CREDENTIALS_USERNAME_MAX_LENGTH
+        min_length = FlextAuthConstants.Auth.CREDENTIALS_USERNAME_MIN_LENGTH
+        max_length = FlextAuthConstants.Auth.CREDENTIALS_USERNAME_MAX_LENGTH
         if len(username) < min_length:
             return r[str].fail(f"Username too short (min {min_length} chars)")
         if len(username) > max_length:
@@ -133,9 +134,9 @@ class FlextAuthUtilitiesAuthValidation:
             Salted bcrypt hash of the credential.
 
         """
-        salt = bcrypt.gensalt(
-            rounds=c.Auth.DEFAULT_HASH_ROUNDS if rounds is None else rounds,
-        )
+        if rounds is None:
+            rounds = FlextAuthConstants.Auth.DEFAULT_HASH_ROUNDS
+        salt = bcrypt.gensalt(rounds=rounds)
         return bcrypt.hashpw(password.encode(), salt).decode()
 
     @staticmethod

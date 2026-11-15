@@ -2,7 +2,7 @@
 """Source-derived structural model contracts.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
-src/flext_auth/_protocols/auth_user_identity_extras
+src/flext_auth/_protocols/base
 SPDX-License-Identifier: MIT
 """
 
@@ -15,7 +15,7 @@ from typing import Protocol, runtime_checkable
 from flext_api import FlextApiProtocols
 
 
-class FlextAuthProtocolsAuthUserIdentityExtras:
+class FlextAuthProtocolsBase:
     """Own the structural contracts declared by its model source."""
 
     @runtime_checkable
@@ -34,5 +34,5 @@ class FlextAuthProtocolsAuthUserIdentityExtras:
 
 
 __all__: list[str] = [
-    "FlextAuthProtocolsAuthUserIdentityExtras",
+    "FlextAuthProtocolsBase",
 ]

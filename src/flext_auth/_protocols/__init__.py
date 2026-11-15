@@ -25,9 +25,7 @@ if TYPE_CHECKING:
     from flext_auth._protocols.auth_service import FlextAuthProtocolsAuthService
     from flext_auth._protocols.auth_session import FlextAuthProtocolsAuthSession
     from flext_auth._protocols.auth_transport import FlextAuthProtocolsAuthTransport
-    from flext_auth._protocols.auth_user_identity_extras import (
-        FlextAuthProtocolsAuthUserIdentityExtras,
-    )
+    from flext_auth._protocols.base import FlextAuthProtocolsBase
 
 
 __all__: tuple[str, ...] = (
@@ -40,7 +38,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthProtocolsAuthService",
     "FlextAuthProtocolsAuthSession",
     "FlextAuthProtocolsAuthTransport",
-    "FlextAuthProtocolsAuthUserIdentityExtras",
+    "FlextAuthProtocolsBase",
 )
 
 install_lazy_exports(
@@ -56,7 +54,7 @@ install_lazy_exports(
         "FlextAuthProtocolsAuthService": ".auth_service",
         "FlextAuthProtocolsAuthSession": ".auth_session",
         "FlextAuthProtocolsAuthTransport": ".auth_transport",
-        "FlextAuthProtocolsAuthUserIdentityExtras": ".auth_user_identity_extras",
+        "FlextAuthProtocolsBase": ".base",
     },
     public_exports=__all__,
     deferred_members={
@@ -114,7 +112,7 @@ install_lazy_exports(
             "AuthSession",
         ),
         "FlextAuthProtocolsAuthTransport": ("BaseTransportAdapter",),
-        "FlextAuthProtocolsAuthUserIdentityExtras": ("UserIdentityExtras",),
+        "FlextAuthProtocolsBase": ("UserIdentityExtras",),
     },
 )
 

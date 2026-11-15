@@ -51,7 +51,7 @@ rules:
     u: from flext_auth import u
     c: from flext_auth import c
   bindings:
-    u.Auth.hash_password: flext_auth._utilities.auth_validation.FlextAuthUtilitiesAuthValidation.hash_password
+    u.Auth.hash_password: flext_auth._utilities.base.FlextAuthUtilitiesAuthValidation.hash_password
     c.Auth.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS: flext_auth._constants.auth_security.FlextAuthConstantsAuthSecurity.CREDENTIALS_PASSWORD_BCRYPT_ROUNDS
 - id: auth-api-registry-provider-lookup
   phase: contract-normalization

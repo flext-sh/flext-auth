@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
     from flext_auth._utilities.auth_response import FlextAuthUtilitiesAuthResponse
     from flext_auth._utilities.auth_session import FlextAuthUtilitiesAuthSession
-    from flext_auth._utilities.auth_validation import FlextAuthUtilitiesAuthValidation
+    from flext_auth._utilities.base import FlextAuthUtilitiesAuthValidation
     from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
 
 
@@ -34,7 +34,7 @@ install_lazy_exports(
         "FlextAuthUtilitiesAuth": ".auth",
         "FlextAuthUtilitiesAuthResponse": ".auth_response",
         "FlextAuthUtilitiesAuthSession": ".auth_session",
-        "FlextAuthUtilitiesAuthValidation": ".auth_validation",
+        "FlextAuthUtilitiesAuthValidation": ".base",
         "FlextAuthUtilitiesManagers": ".managers",
     },
     public_exports=__all__,
