@@ -23,9 +23,7 @@ if TYPE_CHECKING:
     )
     from flext_auth._models.auth_response import FlextAuthModelsAuthResponse
     from flext_auth._models.auth_session import FlextAuthModelsAuthSession
-    from flext_auth._models.auth_user_identity_extras import (
-        FlextAuthModelsAuthUserIdentityExtras,
-    )
+    from flext_auth._models.base import FlextAuthModelsAuthUserIdentityExtras
 
 
 __all__: tuple[str, ...] = (
@@ -50,7 +48,7 @@ install_lazy_exports(
         "FlextAuthModelsAuthProviderConfig": ".auth_provider_config",
         "FlextAuthModelsAuthResponse": ".auth_response",
         "FlextAuthModelsAuthSession": ".auth_session",
-        "FlextAuthModelsAuthUserIdentityExtras": ".auth_user_identity_extras",
+        "FlextAuthModelsAuthUserIdentityExtras": ".base",
     },
     public_exports=__all__,
     deferred_members={

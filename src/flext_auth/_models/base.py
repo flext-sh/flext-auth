@@ -10,9 +10,7 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import ClassVar
 
-from flext_api import m, u
-
-from flext_auth import t
+from flext_api import m, t, u
 
 
 class FlextAuthModelsAuthUserIdentityExtras:
