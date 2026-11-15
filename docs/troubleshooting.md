@@ -45,7 +45,7 @@ documentation.
 **Problem**: User registration fails with validation errors
 
 ```python
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user(c.ContextScope.USER, "invalid-email", "weak")
@@ -68,7 +68,7 @@ result = auth.register_user(c.ContextScope.USER, "<user@example.com>", "password
 1. **Password Requirements**:
 
 ```python
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.register_user(
@@ -96,7 +96,7 @@ if existing_user.success:
 **Problem**: User authentication fails unexpectedly
 
 ```python
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user(c.ContextScope.USER, "user@example.com", "password123")
@@ -109,7 +109,7 @@ auth_result = auth.authenticate_user(c.ContextScope.USER, "password123")
 ```python
 from flext_cli import u
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 auth.register_user(c.ContextScope.USER, "user@example.com", "password123")
@@ -138,7 +138,7 @@ else:
 **Problem**: JWT token validation fails
 
 ```python
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 registered = auth.register_user(c.ContextScope.USER, "user@example.com", "password123")
@@ -164,10 +164,14 @@ bearer_value = "<jwt-header>.<jwt-payload>.<jwt-signature>"
 1. **Token Expiration**:
 
 ```python
+import os
+
 import jwt
 
-# Check token expiration without validation
-token = "<jwt-header>.<jwt-payload>.<jwt-signature>"
+from flext_auth import u
+
+# Check token expiration without validation; the token arrives via the environment
+token = os.environ["FLEXT_AUTH_TOKEN"]
 try:
     payload = jwt.decode(token, options={"verify_signature": False})
     u.Cli.info(f"Token expires at: {payload.get('exp')}")
@@ -196,7 +200,7 @@ u.Cli.info(f"JWT Secret: {settings.Auth.secret_key}")
 **Problem**: Configuration not loading correctly
 
 ```python
-from flext_auth import FlextAuthSettings
+from flext_auth import FlextAuthSettings, u
 
 settings = FlextAuthSettings()
 # Access namespaced auth settings via settings.Auth
@@ -215,9 +219,11 @@ u.Cli.info(f"JWT secret configured: {bool(settings.Auth.secret_key)}")
 1. **Valid Environment Names**:
 
 ```python
-   # Use valid environment names
-   valid_envs = ["development", "testing", "staging", "production"]
-   settings = FlextAuthSettings()
+from flext_auth import FlextAuthSettings
+
+# Use valid environment names
+valid_envs = ["development", "testing", "staging", "production"]
+settings = FlextAuthSettings()
 ```
 
 1. **Manual Configuration**:
@@ -395,15 +401,6 @@ u.Cli.info(f"Expired sessions removed: {session_count}")
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 
 # Implement session cleanup
 def cleanup_expired_sessions() -> None:
@@ -436,23 +433,23 @@ make check
 1. **Type Annotations**:
 
 ```python
-   from flext_auth import User, p
+from flext_auth import p
 
 
-   def find_user(username: str) -> p.Result[User | None]:
-       pass
+def find_user(username: str) -> p.Result[p.Auth.Identity | None]:
+    pass
 ```
 
 1. **r Types**:
 
 ```python
-   from flext_auth import FlextAuth, User, p
+from flext_auth import FlextAuth, c, p
 
-   auth = FlextAuth.quick_start(create_admin_user=False)
-   # Specify generic type for r
-    result: p.Result[User] = auth.register_user(
-        c.ContextScope.USER, "user@example.com", "password123"
-    )
+auth = FlextAuth.quick_start(create_admin_user=False)
+# Specify generic type for r
+result: p.Result[p.Auth.Identity] = auth.register_user(
+    c.ContextScope.USER, "user@example.com", "password123"
+)
 ```
 
 ### Import Issues
@@ -463,7 +460,7 @@ make check
 
 ```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
-from flext_auth import m, p
+from flext_auth import c, m
 
 # Access models via namespace
 user = m.Auth.AuthIdentity(name=c.ContextScope.USER, contact="user@example.com")
@@ -506,21 +503,23 @@ u.Cli.info(f'Max sessions per user: {settings.Auth.max_sessions_per_user}')
 1. **Session timeout management**:
 
 ```python
-   # Implement session cleanup
-   def cleanup_sessions():
-       """Clean expired sessions."""
-       # Implementation needed
-       pass
+# Implement session cleanup
+def cleanup_sessions() -> None:
+    """Clean expired sessions."""
+    # Implementation needed
 ```
 
 1. **External session storage** (future):
 
 ```python
-   # Future Redis integration
-   class RedisSessionStorage:
-       def store_session(self, session):
-           # Redis implementation
-           pass
+from flext_auth import p
+
+
+# Future Redis integration
+class RedisSessionStorage:
+    def store_session(self, session: p.Auth.Session) -> None:
+        # Redis implementation
+        pass
 ```
 
 ---
@@ -551,7 +550,7 @@ Extract detailed error information:
 ```python
 from flext_cli import u
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 auth = FlextAuth.quick_start(create_admin_user=False)
 result = auth.authenticate_user(c.ContextScope.USER, "wrong_password")

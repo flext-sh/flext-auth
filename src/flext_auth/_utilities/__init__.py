@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import install_lazy_exports
+from flext_core.lazy import defer_lazy_bases, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
@@ -41,4 +41,44 @@ install_lazy_exports(
         "FlextAuthUtilitiesManagers": ".managers",
     },
     public_exports=__all__,
+    deferred_members={
+        "FlextAuthUtilitiesAuth": (),
+        "FlextAuthUtilitiesAuthResponse": (
+            "build_auth_error_response",
+            "build_auth_success_response",
+        ),
+        "FlextAuthUtilitiesAuthSession": (
+            "decode_token",
+            "encode_token",
+        ),
+        "FlextAuthUtilitiesAuthValidation": (
+            "validate_email",
+            "validate_password",
+            "validate_username",
+            "calculate_expiry_time",
+            "generate_session_id",
+            "expired",
+            "hash_password",
+            "verify_password",
+        ),
+        "FlextAuthUtilitiesBase": (),
+        "FlextAuthUtilitiesManagers": (),
+    },
+)
+
+defer_lazy_bases(
+    __name__,
+    {
+        "FlextAuthUtilitiesAuth": (
+            (".", "FlextAuthUtilitiesAuthValidation"),
+            (".", "FlextAuthUtilitiesAuthResponse"),
+            (".", "FlextAuthUtilitiesAuthSession"),
+        ),
+        "FlextAuthUtilitiesManagers": (
+            (".", "FlextAuthUtilitiesBase"),
+            ("flext_auth._utilities._managers", "FlextAuthSessionManagers"),
+            ("flext_auth._utilities._managers", "FlextAuthRateLimiterManagers"),
+            ("flext_auth._utilities._managers", "FlextAuthUserManagers"),
+        ),
+    },
 )

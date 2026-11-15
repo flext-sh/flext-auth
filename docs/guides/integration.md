@@ -77,15 +77,9 @@ Use `FlextContainer` for dependency injection:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-from flext_auth import FlextAuth, FlextAuthSettings
+from flext_core import FlextContainer
+
+from flext_auth import FlextAuth, FlextAuthSettings, p
 
 # Register authentication service
 container = FlextContainer()
@@ -97,13 +91,15 @@ container.bind("auth_service", auth_service)
 
 # Use from container in other services
 class UserService:
-    def __init__(self):
+    def __init__(self) -> None:
         self._container = FlextContainer()
         self._auth = self._container.resolve("auth_service").unwrap()
 
-    def create_authenticated_user(self, user_data: dict):
+    def create_authenticated_user(
+        self, username: str, email: str, password: str
+    ) -> p.Result[p.Auth.Identity]:
         # Use injected auth service
-        return self._auth.register_user(**user_data)
+        return self._auth.register_user(username, email, password)
 ```
 
 ### Domain Modeling
@@ -134,15 +130,6 @@ Authentication middleware for REST APIs:
 
 ```python
 from __future__ import annotations
-
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
 
 from typing import Annotated
 
@@ -182,20 +169,11 @@ Web application authentication flows:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from collections.abc import Callable
 
 from flask import Flask, Response, flash, redirect, request, session, url_for
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 app = Flask(__name__)
 auth = FlextAuth.quick_start(create_admin_user=False)
@@ -238,9 +216,9 @@ CLI authentication patterns:
 ```python
 from __future__ import annotations
 
-from flext_cli import FlextCliCli, FlextCliSettings, m, p, t
+from flext_cli import FlextCliCli, FlextCliSettings, m, t
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, c
 
 settings = FlextCliSettings.fetch_global()
 
@@ -297,17 +275,9 @@ flext-auth acts as an authentication service provider for the ecosystem:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from flext_core import FlextContainer, p
 
 from flext_auth import FlextAuth
-from flext_core import FlextContainer, m, p
 
 
 class AuthenticationProvider:
@@ -334,19 +304,10 @@ Pattern for service-to-service authentication:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from flext_api import FlextApi
+from flext_core import p
 
 from flext_auth import FlextAuth
-from flext_core import m, p
 
 
 # Service A calling Service B
@@ -385,30 +346,20 @@ Integration with flext-db-oracle for user storage:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-from flext_auth import m, p
-from flext_core import p
+from flext_auth import p
 
 
 class UserRepository:
     """User storage using Oracle database."""
 
-    def find_by_username(self, username: str) -> p.Result[auth_m.Auth.AuthIdentity]:
+    def find_by_username(self, username: str) -> p.Result[p.Auth.AuthIdentity]:
         """Find user by username."""
         # Oracle-specific implementation
 
     def create_user(
         self,
         user: p.Auth.AuthIdentity,
-    ) -> p.Result[auth_m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Create user in database."""
         # Oracle-specific implementation
 ```
@@ -420,19 +371,9 @@ Integration with Redis for session management:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
 from typing import Protocol
 
-from flext_auth import m, p
-from flext_core import p, r
+from flext_auth import p, r
 
 
 class RedisClient(Protocol):
@@ -492,17 +433,9 @@ Integration with FLEXT workspace configuration:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from flext_core import FlextSettings, p, r
 
 from flext_auth import FlextAuth, FlextAuthSettings
-from flext_core import FlextSettings, p, r
 
 
 class FlextAuthWorkspaceSettings(FlextSettings):
@@ -526,14 +459,7 @@ Test authentication with other FLEXT services:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from flext_tests import tm
 
 from flext_auth import FlextAuth
 
@@ -566,17 +492,9 @@ Plans for OAuth2 provider integration:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from flext_core import p
 
 from flext_auth import FlextAuth
-from flext_core import m, p
 
 
 # Future OAuth2 provider implementation
@@ -602,17 +520,9 @@ Plans for SAML integration:
 ```python
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
-
-from flext_auth import FlextAuth, m
 from flext_core import p
+
+from flext_auth import FlextAuth
 
 
 # Future SAML integration
@@ -625,7 +535,7 @@ class SAMLProvider:
     def process_saml_response(
         self,
         saml_response: str,
-    ) -> p.Result[auth_m.Auth.AuthIdentity]:
+    ) -> p.Result[p.Auth.AuthIdentity]:
         """Process SAML authentication response."""
         # Implementation using flext-auth
 ```
