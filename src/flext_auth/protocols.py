@@ -15,7 +15,6 @@ from flext_auth._protocols import (
     FlextAuthProtocolsAuthProviderConfig,
     FlextAuthProtocolsAuthResponse,
     FlextAuthProtocolsAuthUserIdentityExtras,
-    FlextAuthProtocolsBase,
 )
 
 
@@ -28,7 +27,6 @@ class FlextAuthProtocols(FlextApiProtocols):
         FlextAuthProtocolsAuthProviderConfig,
         FlextAuthProtocolsAuthResponse,
         FlextAuthProtocolsAuthUserIdentityExtras,
-        FlextAuthProtocolsBase,
     ):
         """Authentication domain-specific protocols."""
 

@@ -28,7 +28,6 @@ if TYPE_CHECKING:
     from flext_auth._protocols.auth_user_identity_extras import (
         FlextAuthProtocolsAuthUserIdentityExtras,
     )
-    from flext_auth._protocols.base import FlextAuthProtocolsBase
 
 
 __all__: tuple[str, ...] = (
@@ -42,7 +41,6 @@ __all__: tuple[str, ...] = (
     "FlextAuthProtocolsAuthSession",
     "FlextAuthProtocolsAuthTransport",
     "FlextAuthProtocolsAuthUserIdentityExtras",
-    "FlextAuthProtocolsBase",
 )
 
 install_lazy_exports(
@@ -59,7 +57,6 @@ install_lazy_exports(
         "FlextAuthProtocolsAuthSession": ".auth_session",
         "FlextAuthProtocolsAuthTransport": ".auth_transport",
         "FlextAuthProtocolsAuthUserIdentityExtras": ".auth_user_identity_extras",
-        "FlextAuthProtocolsBase": ".base",
     },
     public_exports=__all__,
     deferred_members={
