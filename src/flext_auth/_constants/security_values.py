@@ -1,4 +1,4 @@
-"""Authentication security and validation constants — real class for stand-in composition.
+"""Authentication security and validation constants.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT

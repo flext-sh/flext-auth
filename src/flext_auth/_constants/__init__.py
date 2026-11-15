@@ -18,7 +18,9 @@ if TYPE_CHECKING:
     from flext_auth._constants.auth_security import FlextAuthConstantsAuthSecurity
     from flext_auth._constants.auth_values import FlextAuthConstantsAuthValues
     from flext_auth._constants.base import FlextAuthConstantsBase
-    from flext_auth._constants.security_values import FlextAuthConstantsAuthSecurityValues
+    from flext_auth._constants.security_values import (
+        FlextAuthConstantsAuthSecurityValues,
+    )
 
 
 __all__: tuple[str, ...] = (
