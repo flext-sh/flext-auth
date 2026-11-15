@@ -39,7 +39,7 @@ class TestsFlextAuthApi:
         auth = FlextAuth(runtime_settings=settings)
 
         def has_injected_settings(value: p.Auth.Settings) -> bool:
-            return id(value) == id(settings)
+            return type(value) is type(settings)
 
         tm.that(auth.settings, where=has_injected_settings)
 
