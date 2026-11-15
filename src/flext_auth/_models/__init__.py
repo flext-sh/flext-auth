@@ -84,7 +84,6 @@ install_lazy_exports(
         ),
         "FlextAuthModelsAuthSession": ("AuthSession",),
         "FlextAuthModelsAuthUserIdentityExtras": ("UserIdentityExtras",),
-        "FlextAuthModelsBase": (),
     },
 )
 

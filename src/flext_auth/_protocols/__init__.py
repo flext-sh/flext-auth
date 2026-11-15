@@ -118,7 +118,6 @@ install_lazy_exports(
         ),
         "FlextAuthProtocolsAuthTransport": ("BaseTransportAdapter",),
         "FlextAuthProtocolsAuthUserIdentityExtras": ("UserIdentityExtras",),
-        "FlextAuthProtocolsBase": (),
     },
 )
 

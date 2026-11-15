@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 
 class FlextAuthConstantsBase:
@@ -17,7 +17,7 @@ class FlextAuthConstantsBase:
     through multiple inheritance.
     """
 
-    SECRET_MIN_LENGTH: Final[int] = 32
+    SECRET_MIN_LENGTH: ClassVar[int] = 32
     "Minimum secret key length."
 
 

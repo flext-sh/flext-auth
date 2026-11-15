@@ -114,15 +114,6 @@
   "githubPullRequests.ignoreSubmodules": false,
   "markdownlint.appliesTo": "noFiles",
   "markdownlint.configFile": ".markdownlint.json",
-  "mypy-type-checker.cwd": "${nearestConfig}",
-  "mypy-type-checker.interpreter": [
-    "${workspaceFolder}/.venv/bin/python"
-  ],
-  "mypy-type-checker.path": [
-    "${interpreter}",
-    "-m",
-    "mypy"
-  ],
   "pyrefly.lspPath": "${workspaceFolder}/.venv/bin/pyrefly",
   "python-envs.workspaceSearchPaths": [
     "./.venv"
@@ -132,7 +123,7 @@
   "python.analysis.autoImportCompletions": true,
   "python.analysis.completeFunctionParens": true,
   "python.analysis.diagnosticMode": "workspace",
-  "python.analysis.diagnosticsSource": "Pylance + Pyright",
+  "python.analysis.diagnosticsSource": "Pylance + Pyrefly",
   "python.analysis.displayEnglishDiagnostics": true,
   "python.analysis.enableAsyncProgram": false,
   "python.analysis.enableExternalTypeServer": false,
@@ -156,7 +147,6 @@
   "python.analysis.languageServerBackend": "default",
   "python.analysis.languageServerMode": "default",
   "python.analysis.logLevel": "Information",
-  "python.analysis.pyrightVersion": "fromEnvironment",
   "python.analysis.referencesCodeLens": true,
   "python.analysis.renameInDocstrings": true,
   "python.analysis.showOnlyDirectDependenciesInAutoImport": false,

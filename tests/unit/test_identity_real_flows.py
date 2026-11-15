@@ -15,7 +15,10 @@ class TestsFlextAuthIdentityRealFlows:
 
     pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
+    # Each case runs six real bcrypt operations at the production cost:
+    # measured 1.65-2.09 s per case, above the 2 s limit of an unmarked test.
     @staticmethod
+    @c.Tests.MARK.slow
     @c.Tests.MARK.parametrize(c.ContextScope.OPERATION, ["change", "reset", "access"])
     def test_persisted_credential_and_access_state(operation: str) -> None:
         """Credentials and successful access remain visible after fresh reads."""

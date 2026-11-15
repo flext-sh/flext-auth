@@ -61,7 +61,6 @@ install_lazy_exports(
             "hash_password",
             "verify_password",
         ),
-        "FlextAuthUtilitiesBase": (),
         "FlextAuthUtilitiesManagers": (),
     },
 )
@@ -75,7 +74,6 @@ defer_lazy_bases(
             (".", "FlextAuthUtilitiesAuthSession"),
         ),
         "FlextAuthUtilitiesManagers": (
-            (".", "FlextAuthUtilitiesBase"),
             ("flext_auth._utilities._managers", "FlextAuthSessionManagers"),
             ("flext_auth._utilities._managers", "FlextAuthRateLimiterManagers"),
             ("flext_auth._utilities._managers", "FlextAuthUserManagers"),
