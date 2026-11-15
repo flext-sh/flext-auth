@@ -1,4 +1,4 @@
-"""Authentication constants namespace values.
+"""Authentication constants namespace values — stand-in for facade MRO composition.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,18 +6,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final
-
 from flext_auth._constants import FlextAuthConstantsAuthSecurity
+from flext_auth._constants.values import FlextAuthValues
 
 
-class FlextAuthConstantsAuthValues(FlextAuthConstantsAuthSecurity):
-    """Complete authentication constants namespace."""
-
-    REGISTRY_PROVIDERS_CATEGORY: Final[str] = "auth_providers"
-    REGISTRY_CONFIG_CATEGORY: Final[str] = f"{REGISTRY_PROVIDERS_CATEGORY}config"
-    REGISTRY_METADATA_CATEGORY: Final[str] = f"{REGISTRY_PROVIDERS_CATEGORY}_metadata"
-    PROVIDER_VERSION: Final[str] = "1.0.0"
+class FlextAuthConstantsAuthValues(FlextAuthConstantsAuthSecurity, FlextAuthValues):
+    """Complete authentication constants namespace via stand-in composition."""
 
 
 __all__: list[str] = ["FlextAuthConstantsAuthValues"]
