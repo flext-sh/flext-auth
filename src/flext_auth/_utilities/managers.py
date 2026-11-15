@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from collections.abc import MutableSequence
 
-from flext_auth._utilities import FlextAuthUtilitiesBase
 from flext_auth._utilities._managers import (
     FlextAuthRateLimiterManagers,
     FlextAuthSessionManagers,
@@ -17,7 +16,6 @@ from flext_auth._utilities._managers import (
 
 
 class FlextAuthUtilitiesManagers(
-    FlextAuthUtilitiesBase,
     FlextAuthSessionManagers,
     FlextAuthRateLimiterManagers,
     FlextAuthUserManagers,
