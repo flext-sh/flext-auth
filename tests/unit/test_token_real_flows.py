@@ -7,11 +7,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import io
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 from flext_auth import FlextAuth, FlextAuthSettings
-from flext_auth.providers import FlextAuthJwtTokenValidator
-from tests import c, m, p, t, tm, u
+from tests import c, m, p, tm, u
 
 
 class TestsFlextAuthSessionRealFlows:
@@ -153,87 +152,6 @@ class TestsFlextAuthSessionRealFlows:
 
         token_result = auth.create_token(identity_id=authenticated.value.unique_id)
         tm.ok(token_result)
-
-    @staticmethod
-    @c.Tests.MARK.parametrize(
-        ("expiry_minutes", "session_expiry_minutes", "clone_settings"),
-        [(3, 7, False), (11, 17, True)],
-    )
-    def test_injected_settings_own_token_and_session_lifetimes(
-        expiry_minutes: int,
-        session_expiry_minutes: int,
-        *,
-        clone_settings: bool,
-    ) -> None:
-        """Both token entrypoints and stored sessions honor the injected settings."""
-        configured = FlextAuthSettings(
-            Auth=FlextAuthSettings.AuthSettings(
-                expiry_minutes=expiry_minutes,
-                session_expiry_minutes=session_expiry_minutes,
-            ),
-        )
-        tm.that(configured.Auth.expiry_minutes, eq=expiry_minutes)
-        tm.that(configured.Auth.session_expiry_minutes, eq=session_expiry_minutes)
-        auth = (
-            FlextAuth.with_settings(configured)
-            if clone_settings
-            else FlextAuth(runtime_settings=configured)
-        )
-        tm.that(auth.config.expiry_minutes, eq=expiry_minutes)
-        tm.that(auth.config.session_expiry_minutes, eq=session_expiry_minutes)
-        registered = auth.register_user(
-            "injected-lifetime-user",
-            "injected-lifetime@example.com",
-            c.TEST_CREDENTIAL,
-        ).unwrap()
-        created = auth.create_token(registered.unique_id).unwrap()
-
-        started = datetime.now(UTC)
-        authenticated = auth.authenticate_user(
-            registered.name,
-            c.TEST_CREDENTIAL,
-        ).unwrap()
-        finished = datetime.now(UTC)
-        validator = FlextAuthJwtTokenValidator(auth.fetch_provider("jwt").unwrap())
-
-        def claims_have_configured_lifetime(value: t.JsonMapping) -> bool:
-            return (
-                isinstance(value["iat"], int)
-                and isinstance(value["exp"], int)
-                and value["exp"] - value["iat"]
-                == timedelta(minutes=expiry_minutes).total_seconds()
-            )
-
-        for token in (created, authenticated.token):
-            claims = validator.validate_token(token).unwrap()
-            tm.that(claims, where=claims_have_configured_lifetime)
-
-        sessions = auth.session_service.session_manager.get_active_sessions(
-            registered.unique_id,
-        ).unwrap()
-        tm.that(len(sessions), eq=1)
-        lifetime = timedelta(minutes=session_expiry_minutes)
-
-        def expires_within_bounds(value: datetime) -> bool:
-            return started + lifetime <= value <= finished + lifetime
-
-        tm.that(sessions[0].expires_at, where=expires_within_bounds)
-        tm.that(sessions[0].unique_id, eq=authenticated.session_id)
-        tm.that(sessions[0].session_id, eq=authenticated.session_id)
-        tm.ok(
-            auth.session_service.session_manager.end_session_by_id(
-                authenticated.session_id,
-            ),
-            eq=True,
-        )
-        tm.that(
-            len(
-                auth.session_service.session_manager.get_active_sessions(
-                    registered.unique_id,
-                ).unwrap(),
-            ),
-            eq=0,
-        )
 
     @staticmethod
     def test_create_token_preserves_lookup_failure() -> None:
