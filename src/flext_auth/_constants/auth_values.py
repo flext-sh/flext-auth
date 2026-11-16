@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from flext_auth._constants import FlextAuthConstantsAuthSecurity
 
@@ -14,10 +14,12 @@ from flext_auth._constants import FlextAuthConstantsAuthSecurity
 class FlextAuthConstantsAuthValues(FlextAuthConstantsAuthSecurity):
     """Complete authentication constants namespace."""
 
-    REGISTRY_PROVIDERS_CATEGORY: Final[str] = "auth_providers"
-    REGISTRY_CONFIG_CATEGORY: Final[str] = f"{REGISTRY_PROVIDERS_CATEGORY}config"
-    REGISTRY_METADATA_CATEGORY: Final[str] = f"{REGISTRY_PROVIDERS_CATEGORY}_metadata"
-    PROVIDER_VERSION: Final[str] = "1.0.0"
+    REGISTRY_PROVIDERS_CATEGORY: ClassVar[str] = "auth_providers"
+    REGISTRY_CONFIG_CATEGORY: ClassVar[str] = f"{REGISTRY_PROVIDERS_CATEGORY}config"
+    REGISTRY_METADATA_CATEGORY: ClassVar[str] = (
+        f"{REGISTRY_PROVIDERS_CATEGORY}_metadata"
+    )
+    PROVIDER_VERSION: ClassVar[str] = "1.0.0"
 
 
 __all__: list[str] = ["FlextAuthConstantsAuthValues"]
