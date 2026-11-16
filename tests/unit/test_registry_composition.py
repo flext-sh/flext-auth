@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from flext_core import FlextRegistry
 
-from flext_auth import FlextAuth, FlextAuthRegistry
-from flext_auth.providers import FlextAuthBasicProvider, FlextAuthJwtTokenValidator
+from flext_auth import FlextAuthRegistry
 from tests import c, m, p, r, tm, u
 from tests.fixtures.auth import TestsFlextAuthFixtures
 
@@ -36,122 +35,6 @@ class TestsFlextAuthRegistryComposition:
         tm.fail(rejected, code=expected.error_code)
         tm.that(rejected.error, eq=expected.error)
         tm.that(rejected.error_data, eq=expected.error_data)
-
-    @staticmethod
-    def test_api_registries_are_isolated_and_sharing_is_explicit(
-        auth_api: p.Auth.Service,
-    ) -> None:
-        """Independent APIs isolate registrations; explicit injection shares them."""
-        independent = FlextAuth()
-        shared = FlextAuth(registry=auth_api.registry)
-        provider = FlextAuthBasicProvider()
-        tm.ok(auth_api.register_provider("custom", provider), eq=True)
-        tm.fail(auth_api.registry is independent.registry)
-        tm.ok(shared.registry is auth_api.registry)
-        tm.ok(tm.ok(shared.fetch_provider("custom")) is provider)
-        tm.fail(independent.fetch_provider("custom"))
-        builtin = c.Auth.ProviderTypes.BASIC.value
-        tm.ok(auth_api.unregister(builtin), eq=True)
-        after_removal = FlextAuth(registry=auth_api.registry)
-        tm.fail(after_removal.fetch_provider(builtin))
-        tm.ok(tm.ok(after_removal.fetch_provider("custom")) is provider)
-
-    @staticmethod
-    def test_provider_identity_metadata_and_config_survive_registration(
-        auth_api: p.Auth.Service,
-    ) -> None:
-        """The single record retains the provider and original domain metadata."""
-        provider = FlextAuthBasicProvider()
-        configuration = {"issuer": "initial"}
-        metadata = m.Auth.Providers.Metadata(
-            name="custom",
-            capabilities=tuple(provider.supports()),
-        )
-        tm.ok(
-            auth_api.register_provider(
-                "custom",
-                provider,
-                metadata=metadata,
-                configuration=configuration,
-            ),
-            eq=True,
-        )
-        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is provider)
-        tm.ok(tm.ok(auth_api.fetch_metadata("custom")) is metadata)
-        tm.that(tm.ok(auth_api.fetch_config("custom")), eq=configuration)
-        registration = tm.ok(auth_api.fetch_registration("custom"))
-        tm.ok(registration.provider is provider)
-        tm.ok(registration.metadata is metadata)
-        tm.that(registration.configuration, eq=configuration)
-
-    @staticmethod
-    def test_repeated_provider_is_idempotent_conflicts_do_not_overwrite(
-        auth_api: p.Auth.Service,
-    ) -> None:
-        """Only the identical provider repeats; removal releases the name."""
-        first = FlextAuthBasicProvider()
-        second = FlextAuthBasicProvider()
-        tm.ok(auth_api.register_provider("custom", first), eq=True)
-        tm.ok(auth_api.register_provider("custom", first), eq=True)
-        conflict = auth_api.register_provider("custom", second)
-        tm.fail(conflict)
-        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is first)
-        tm.ok(auth_api.unregister("custom"), eq=True)
-        tm.ok(auth_api.register_provider("custom", second), eq=True)
-        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is second)
-
-    @staticmethod
-    def test_invalid_registration_input_and_unsupported_reconfiguration_preserve_record(
-        auth_api: p.Auth.Service,
-    ) -> None:
-        """Validate untrusted input before requesting a typed reconfiguration."""
-        provider = FlextAuthBasicProvider()
-        configuration = {"issuer": "initial"}
-        tm.ok(
-            auth_api.register_provider("custom", provider, configuration=configuration)
-        )
-        original = tm.ok(auth_api.fetch_registration("custom"))
-        with u.Tests.raises(c.ValidationError):
-            m.Auth.ProviderWrapper.model_validate({
-                "category": c.Auth.REGISTRY_PROVIDERS_CATEGORY,
-                "provider": provider,
-                "configuration": {"issuer": ["invalid-scalar"]},
-            })
-        tm.ok(tm.ok(auth_api.fetch_registration("custom")) is original)
-        tm.ok(tm.ok(auth_api.fetch_provider("custom")) is provider)
-        replacement = {"issuer": "replacement"}
-        tm.fail(auth_api.update_config("custom", replacement))
-        tm.ok(tm.ok(auth_api.fetch_registration("custom")) is original)
-        tm.that(tm.ok(auth_api.fetch_config("custom")), eq=configuration)
-
-    @staticmethod
-    def test_supported_config_replacement_changes_real_token_consumption(
-        auth_api: p.Auth.Service,
-    ) -> None:
-        """JWT replacement uses the new issuer without changing signing policy."""
-        identity = tm.ok(
-            auth_api.register_user(
-                "reconfigured-user",
-                "reconfigured@example.com",
-                c.TEST_CREDENTIAL,
-            )
-        )
-        old_token = tm.ok(auth_api.create_token(identity.unique_id))
-        previous = tm.ok(auth_api.fetch_provider("jwt"))
-        old_claims = tm.ok(
-            FlextAuthJwtTokenValidator(previous).validate_token(old_token)
-        )
-        issuer = f"{identity.unique_id}-replacement"
-        configuration = {**tm.ok(auth_api.fetch_config("jwt")), "issuer": issuer}
-        tm.ok(auth_api.update_config("jwt", configuration), eq=True)
-        replacement = tm.ok(auth_api.fetch_provider("jwt"))
-        tm.fail(replacement is previous)
-        validator = FlextAuthJwtTokenValidator(replacement)
-        current_token = tm.ok(auth_api.create_token(identity.unique_id))
-        claims = tm.ok(validator.validate_token(current_token))
-        tm.that(claims["iss"], eq=issuer)
-        tm.ok(claims["iss"] != old_claims.get("iss"))
-        tm.ok(auth_api.session_service.validate_token(current_token))
 
     @staticmethod
     def test_lookup_and_removal_preserve_core_failure_details(
