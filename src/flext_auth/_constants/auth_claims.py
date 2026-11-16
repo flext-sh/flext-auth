@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, ClassVar
 
 from flext_api import c
 
@@ -24,70 +24,70 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
     """Claim keys, validation patterns, and shared scalar constants."""
 
     # ===== Regex Patterns for Validation =====
-    PATTERN_EMAIL: Final[str] = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    PATTERN_EMAIL: ClassVar[str] = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     "Standard email address validation pattern."
 
-    PATTERN_IDENTIFIER_LOWERCASE: Final[str] = r"^[a-z][a-z0-9_-]*$"
+    PATTERN_IDENTIFIER_LOWERCASE: ClassVar[str] = r"^[a-z][a-z0-9_-]*$"
     "Lowercase identifier pattern for registry keys and provider names."
 
-    VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
+    VALID_TOKEN_TYPES: ClassVar[AbstractSet[str]] = frozenset(
         member.value
         for member in FlextAuthConstantsAuthEnums.TokenTypes.__members__.values()
     )
     "Immutable set of all valid token types for O(1) validation."
-    VALID_PROVIDER_TYPES: Final[AbstractSet[str]] = frozenset(
+    VALID_PROVIDER_TYPES: ClassVar[AbstractSet[str]] = frozenset(
         member.value
         for member in FlextAuthConstantsAuthEnums.ProviderTypes.__members__.values()
     )
     "Immutable set of all valid provider types."
-    VALID_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
+    VALID_ROLE_TYPES: ClassVar[AbstractSet[str]] = frozenset(
         member.value
         for member in FlextAuthConstantsAuthEnums.RoleTypes.__members__.values()
     )
     "Immutable set of all valid role types."
-    VALID_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
+    VALID_PERMISSION_TYPES: ClassVar[AbstractSet[str]] = frozenset(
         member.value
         for member in FlextAuthConstantsAuthEnums.PermissionTypes.__members__.values()
     )
     "Immutable set of all valid permission types."
-    KEY_SUBJECT: Final[str] = "sub"
+    KEY_SUBJECT: ClassVar[str] = "sub"
     "Subject claim key."
-    KEY_IDENTITY_ID: Final[str] = "identity_id"
+    KEY_IDENTITY_ID: ClassVar[str] = "identity_id"
     "Identity identifier claim key."
-    KEY_USER_ID: Final[str] = c.ContextKey.USER_ID
+    KEY_USER_ID: ClassVar[str] = c.ContextKey.USER_ID
     "User identifier payload key."
-    KEY_USERNAME: Final[str] = "username"
+    KEY_USERNAME: ClassVar[str] = "username"
     "Username claim key."
-    KEY_NAME: Final[str] = "name"
+    KEY_NAME: ClassVar[str] = "name"
     "Display-name claim key."
-    KEY_PREFERRED_USERNAME: Final[str] = "preferred_username"
+    KEY_PREFERRED_USERNAME: ClassVar[str] = "preferred_username"
     "Preferred username claim key."
-    KEY_CONTACT: Final[str] = "contact"
+    KEY_CONTACT: ClassVar[str] = "contact"
     "Contact claim key."
-    KEY_EMAIL: Final[str] = "email"
+    KEY_EMAIL: ClassVar[str] = "email"
     "Email claim key."
-    KEY_ROLES: Final[str] = "roles"
+    KEY_ROLES: ClassVar[str] = "roles"
     "Roles claim key."
-    KEY_SCOPE: Final[str] = "scope"
+    KEY_SCOPE: ClassVar[str] = "scope"
     "OAuth scope claim key."
-    KEY_CONTACT_DOMAIN: Final[str] = "contact_domain"
+    KEY_CONTACT_DOMAIN: ClassVar[str] = "contact_domain"
     "Local contact-domain override key for identity claim normalization."
-    TOKEN_IDENTITY_KEYS: Final[tuple[str, ...]] = (
+    TOKEN_IDENTITY_KEYS: ClassVar[tuple[str, ...]] = (
         KEY_SUBJECT,
         KEY_IDENTITY_ID,
         KEY_USER_ID,
         KEY_USERNAME,
     )
     "Identity claim keys in priority order."
-    TOKEN_NAME_KEYS: Final[tuple[str, ...]] = (
+    TOKEN_NAME_KEYS: ClassVar[tuple[str, ...]] = (
         KEY_NAME,
         KEY_PREFERRED_USERNAME,
         KEY_USERNAME,
     )
     "Display-name claim keys in priority order."
-    TOKEN_CONTACT_KEYS: Final[tuple[str, ...]] = (KEY_CONTACT, KEY_EMAIL)
+    TOKEN_CONTACT_KEYS: ClassVar[tuple[str, ...]] = (KEY_CONTACT, KEY_EMAIL)
     "Contact claim keys in priority order."
-    TOKEN_IDENTITY_PASSTHROUGH_FIELDS: Final[tuple[str, ...]] = (
+    TOKEN_IDENTITY_PASSTHROUGH_FIELDS: ClassVar[tuple[str, ...]] = (
         "credential_hash",
         "failed_attempts",
         "full_name",
@@ -99,57 +99,57 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
         "token",
     )
     "AuthIdentity fields preserved when normalizing external token claims."
-    DEFAULT_OAUTH_CONTACT_DOMAIN: Final[str] = "oauth.local"
+    DEFAULT_OAUTH_CONTACT_DOMAIN: ClassVar[str] = "oauth.local"
     "Fallback local contact domain for OAuth identities."
-    DEFAULT_KERBEROS_CONTACT_DOMAIN: Final[str] = "kerberos.local"
+    DEFAULT_KERBEROS_CONTACT_DOMAIN: ClassVar[str] = "kerberos.local"
     "Fallback local contact domain for Kerberos identities."
-    DEFAULT_KERBEROS_USERNAME: Final[str] = "kerberos-user"
+    DEFAULT_KERBEROS_USERNAME: ClassVar[str] = "kerberos-user"
     "Fallback principal name for Kerberos ticket data without a principal."
-    SCOPE_SEPARATOR: Final[str] = " "
+    SCOPE_SEPARATOR: ClassVar[str] = " "
     "OAuth scope separator."
-    DEFAULT_TIMEOUT: Final[int] = c.DEFAULT_TIMEOUT_SECONDS
+    DEFAULT_TIMEOUT: ClassVar[int] = c.DEFAULT_TIMEOUT_SECONDS
     "Default request timeout in seconds."
-    DEFAULT_MAX_RETRIES: Final[int] = 3
+    DEFAULT_MAX_RETRIES: ClassVar[int] = 3
     "Default maximum retry attempts."
-    DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440
+    DEFAULT_JWT_EXPIRY_MINUTES: ClassVar[int] = 1440
     "Default JWT token expiry in minutes."
-    DEFAULT_SESSION_EXPIRY_MINUTES: Final[int] = 1440
+    DEFAULT_SESSION_EXPIRY_MINUTES: ClassVar[int] = 1440
     "Default session expiry in minutes."
-    DEFAULT_MAX_SESSIONS_PER_USER: Final[int] = 5
+    DEFAULT_MAX_SESSIONS_PER_USER: ClassVar[int] = 5
     "Default maximum sessions per user."
-    DEFAULT_HASH_ROUNDS: Final[int] = 12
+    DEFAULT_HASH_ROUNDS: ClassVar[int] = 12
     "Default bcrypt hash rounds."
-    DEFAULT_JWT_ALGORITHM: Final[str] = FlextAuthConstantsAuthEnums.Algorithms.HS256
+    DEFAULT_JWT_ALGORITHM: ClassVar[str] = FlextAuthConstantsAuthEnums.Algorithms.HS256
     "Default JWT algorithm."
-    MAX_USERNAME_LENGTH: Final[int] = 255
+    MAX_USERNAME_LENGTH: ClassVar[int] = 255
     "Maximum username length."
-    MAX_EMAIL_LENGTH: Final[int] = 254
+    MAX_EMAIL_LENGTH: ClassVar[int] = 254
     "Maximum email length."
-    MIN_PASSWORD_LENGTH: Final[int] = 8
+    MIN_PASSWORD_LENGTH: ClassVar[int] = 8
     "Minimum password length."
-    MAX_PASSWORD_LENGTH: Final[int] = 128
+    MAX_PASSWORD_LENGTH: ClassVar[int] = 128
     "Maximum password length."
-    MAX_TOKEN_LENGTH: Final[int] = 4096
+    MAX_TOKEN_LENGTH: ClassVar[int] = 4096
     "Maximum token length."
-    MAX_SECRET_KEY_LENGTH: Final[int] = 4096
+    MAX_SECRET_KEY_LENGTH: ClassVar[int] = 4096
     "Maximum secret key length."
-    DEFAULT_ISSUER: Final[str] = "flext-auth"
+    DEFAULT_ISSUER: ClassVar[str] = "flext-auth"
     "Default JWT issuer."
-    DEFAULT_AUDIENCE: Final[str] = "flext-auth-users"
+    DEFAULT_AUDIENCE: ClassVar[str] = "flext-auth-users"
     "Default JWT audience."
-    HASH_ROUNDS_MIN: Final[int] = 4
+    HASH_ROUNDS_MIN: ClassVar[int] = 4
     "Minimum hash rounds."
-    HASH_ROUNDS_MAX: Final[int] = 31
+    HASH_ROUNDS_MAX: ClassVar[int] = 31
     "Maximum hash rounds."
-    CREDENTIAL_MIN_LENGTH: Final[int] = 8
+    CREDENTIAL_MIN_LENGTH: ClassVar[int] = 8
     "Minimum credential length."
-    CREDENTIAL_MAX_LENGTH: Final[int] = 128
+    CREDENTIAL_MAX_LENGTH: ClassVar[int] = 128
     "Maximum credential length."
-    MAX_ATTEMPTS_DEFAULT: Final[int] = 5
+    MAX_ATTEMPTS_DEFAULT: ClassVar[int] = 5
     "Default max authentication attempts."
-    LOCKOUT_DURATION_MINUTES: Final[int] = 30
+    LOCKOUT_DURATION_MINUTES: ClassVar[int] = 30
     "Lockout duration in minutes."
-    VALIDATION_LIMITS: Final[Mapping[str, t.Numeric]] = MappingProxyType({
+    VALIDATION_LIMITS: ClassVar[Mapping[str, t.Numeric]] = MappingProxyType({
         "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
         "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
         "MIN_PASSWORD_LENGTH": MIN_PASSWORD_LENGTH,
@@ -159,7 +159,7 @@ class FlextAuthConstantsAuthClaims(FlextAuthConstantsAuthEnums):
         "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
     })
     "Validation limits mapping."
-    SUCCESS_AUTH_RESPONSE: Final[t.StrMapping] = MappingProxyType({
+    SUCCESS_AUTH_RESPONSE: ClassVar[t.StrMapping] = MappingProxyType({
         "status": c.Status.SUCCESS.value,
         "message": "Authentication successful",
     })
