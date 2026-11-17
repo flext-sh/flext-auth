@@ -29,6 +29,7 @@ override ADMISSION_MEMORY_LIMIT_BYTES := 5368709120
 override ADMISSION_MAX_PROCESSES := 2
 ifeq ($(ADMISSION_VERB),setup)
 override ADMISSION_MAX_LOAD5 := 160.0
+override ADMISSION_MAX_LOAD5 := 160.0
 override ADMISSION_MEMORY_LIMIT_BYTES := 5368709120
 override ADMISSION_MAX_PROCESSES := 2
 endif
@@ -38,6 +39,7 @@ override ADMISSION_MEMORY_LIMIT_BYTES := 5368709120
 override ADMISSION_MAX_PROCESSES := 2
 endif
 ifeq ($(ADMISSION_VERB),gen)
+override ADMISSION_MAX_LOAD5 := 160.0
 override ADMISSION_MAX_LOAD5 := 160.0
 override ADMISSION_MEMORY_LIMIT_BYTES := 5368709120
 override ADMISSION_MAX_PROCESSES := 2
@@ -58,6 +60,7 @@ override ADMISSION_MEMORY_LIMIT_BYTES := 5368709120
 override ADMISSION_MAX_PROCESSES := 2
 endif
 ifeq ($(ADMISSION_VERB),check)
+override ADMISSION_MAX_LOAD5 := 160.0
 override ADMISSION_MAX_LOAD5 := 160.0
 override ADMISSION_MEMORY_LIMIT_BYTES := 5368709120
 override ADMISSION_MAX_PROCESSES := 2
@@ -92,6 +95,7 @@ $(info Prefer make tests (incremental Testmon) over make tests-full; run tests-f
 $(info Prefer a narrow make mod RULES=<rule ids> over a full make mod, and make check CHECK_PHASE=primary over the full check.)
 $(info Use at most 2 workers and never run heavy verbs in parallel across lanes.)
 $(info A verb exception is a declared make.admission.overrides entry in the config SSOT, never a local edit or an environment bypass.)
+$(error Refused: 5-minute load average $(ADMISSION_LOAD5) exceeds the admission limit $(ADMISSION_MAX_LOAD5) of '$(or $(ADMISSION_VERB),$(MAKECMDGOALS))'; run its lighter form now, or declare make.admission.overrides.<verb>.max_load5 in config/codegen.yaml (flext-infra for canonical verbs, the project for its own extra_verbs))
 $(error Refused: 5-minute load average $(ADMISSION_LOAD5) exceeds the admission limit $(ADMISSION_MAX_LOAD5) of '$(or $(ADMISSION_VERB),$(MAKECMDGOALS))'; run its lighter form now, or declare make.admission.overrides.<verb>.max_load5 in config/codegen.yaml (flext-infra for canonical verbs, the project for its own extra_verbs))
 endif
 override ADMISSION_SYSTEMD_RUN := $(shell command -v systemd-run)
@@ -197,6 +201,7 @@ export GIT_CONFIG_COUNT GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0
 # Source: config:dist / config:make_profile / config:repository_root_rel / config:uv_link_mode
 PROJECT_NAME := flext-auth
 MAKE_PROFILE := workspace
+MAKE_PROFILE := workspace
 REPOSITORY_ROOT_REL := .
 # === SECTION: workspace subprojects (managed) ===
 # Source: config:workspace_subprojects (list), config:workspace_repositories (list)
@@ -215,6 +220,9 @@ PYTEST_CACHE_HOME = $(if $(strip $(XDG_CACHE_HOME)),$(XDG_CACHE_HOME),$(if $(str
 # worktree of it: testmon tracks each checkout's source by file checksum, so a
 # new lane starts from the project's measured selection instead of a cold full
 # inventory.
+# worktree of it: testmon tracks each checkout's source by file checksum, so a
+# new lane starts from the project's measured selection instead of a cold full
+# inventory.
 override FLEXT_PYTEST_TESTMON_DATABASE = $(if $(strip $(PYTEST_CACHE_HOME)),$(PYTEST_CACHE_HOME)/flext/infra/testmon/$(PROJECT_NAME)/.testmondata)
 override PYTEST_RUN_TIMEOUT_SECONDS := 240
 override PYTEST_TERMINATION_GRACE_SECONDS := 2
@@ -222,8 +230,10 @@ override PYTEST_TIMEOUT_EXIT_CODE := 124
 override PYTEST_ENFORCEMENT_PLUGIN := flext_tests.enforcement_plugin
 override PYTEST_PROGRESS_ARGS := --verbose --failed-first
 override PYTEST_REPORT_ARGS := -ra --durations=25 --durations-min=2.0 --tb=short
+override PYTEST_REPORT_ARGS := -ra --durations=25 --durations-min=2.0 --tb=short
 override PYTEST_DIAG_ARGS := -rA --durations=0 --tb=long --showlocals
 override PYTEST_PARALLEL_WORKERS := 1
+override PYTEST_PARALLEL_WORKER_MEMORY_GB := 4
 override PYTEST_PARALLEL_WORKER_MEMORY_GB := 4
 override PYTEST_PARALLEL_DISTRIBUTION := load
 override PYTEST_LOADSCOPE_REORDER := true
@@ -526,6 +536,7 @@ override UV_PROJECT_ENVIRONMENT := $(RUNTIME_VENV)
 override VIRTUAL_ENV := $(RUNTIME_VENV)
 override PATH := $(RUNTIME_BIN):$(SANITIZED_CALLER_PATH)
 unexport UV MISE_PYTHON_UV_VENV_AUTO UV_PROJECT UV_WORKING_DIR UV_CONFIG_FILE UV_PROJECT_ENVIRONMENT UV_PYTHON UV_PYTHON_DOWNLOADS UV_NO_CONFIG UV_NO_SOURCES UV_FROZEN UV_LOCKED VIRTUAL_ENV PYTHONHOME PYTHONPATH
+unexport UV MISE_PYTHON_UV_VENV_AUTO UV_PROJECT UV_WORKING_DIR UV_CONFIG_FILE UV_PROJECT_ENVIRONMENT UV_PYTHON UV_PYTHON_DOWNLOADS UV_NO_CONFIG UV_NO_SOURCES UV_FROZEN UV_LOCKED VIRTUAL_ENV PYTHONHOME PYTHONPATH
 export FLEXT_INFRA_PYTHON UV_PROJECT_ENVIRONMENT VIRTUAL_ENV PATH RUNTIME_ROOT
 
 # Tool provisioning belongs to setup and upgrade, never to generation: upgrade
@@ -603,6 +614,7 @@ _bootstrap_setup_tools:
 	export MISE_LOCKED=0; \
 	bootstrap_stage=tool-install; \
 	"$(BOOTSTRAP_MISE)" -C "$(PROJECT_ROOT)" install --yes "python" "github:jdx/mise" "uv" "github:direnv/direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza" "aqua:j178/prek"; \
+	"$(BOOTSTRAP_MISE)" -C "$(PROJECT_ROOT)" install --yes "python" "github:jdx/mise" "uv" "github:direnv/direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza" "aqua:j178/prek"; \
 	mise_active="$$("$(BOOTSTRAP_MISE)" -C "$(PROJECT_ROOT)" tool "github:jdx/mise" --active)"; \
 	mise_binary="$$("$(BOOTSTRAP_MISE)" -C "$(PROJECT_ROOT)" which mise)"; \
 	if [ "$${OS:-}" = Windows_NT ]; then mise_binary="$$(cygpath --unix "$${mise_binary}")"; fi; \
@@ -619,6 +631,7 @@ _bootstrap_setup_tools: _builtin_require_workspace
 # process the root and every governed member together in one checker run
 # (operator ruling 2026-10-25: never member by member); each multi-root tool
 # runs once over their union.
+GATE_SCOPE := $(if $(filter Y,$(CI)),self,all)
 GATE_SCOPE := $(if $(filter Y,$(CI)),self,all)
 # Local and CI consume the same native project/workspace declarations and lock.
 # Setup always bootstraps: `uv sync --frozen` installs exactly the committed
@@ -658,6 +671,7 @@ INSTALL_RUNTIME_RECIPE = set -eu; \
 		(cd "$(FLEXT)"; $(UV) pip install --no-config --python "$$install_python" --no-deps --requirement "requirements-infra.txt"); \
 		$(UV) pip install --python "$$install_python" --no-deps --editable "$(RUNTIME_ROOT)"; \
 	fi; \
+	env -u MISE_PYTHON_UV_VENV_AUTO -u UV_PROJECT -u UV_WORKING_DIR -u UV_CONFIG_FILE -u UV_PROJECT_ENVIRONMENT -u UV_PYTHON -u UV_PYTHON_DOWNLOADS -u UV_NO_CONFIG -u UV_NO_SOURCES -u UV_FROZEN -u UV_LOCKED -u VIRTUAL_ENV -u PYTHONHOME -u PYTHONPATH $(INSTALL_FLEXT_INFRA) workspace flext-editable --repository-root "$(RUNTIME_ROOT)" --candidate-environment "$$install_environment"$(if $(strip $(FLEXT)), --flext-root "$(FLEXT)"); \
 	env -u MISE_PYTHON_UV_VENV_AUTO -u UV_PROJECT -u UV_WORKING_DIR -u UV_CONFIG_FILE -u UV_PROJECT_ENVIRONMENT -u UV_PYTHON -u UV_PYTHON_DOWNLOADS -u UV_NO_CONFIG -u UV_NO_SOURCES -u UV_FROZEN -u UV_LOCKED -u VIRTUAL_ENV -u PYTHONHOME -u PYTHONPATH $(INSTALL_FLEXT_INFRA) workspace flext-editable --repository-root "$(RUNTIME_ROOT)" --candidate-environment "$$install_environment"$(if $(strip $(FLEXT)), --flext-root "$(FLEXT)"); \
 	$(VERIFY_ENVIRONMENT); \
 	printf 'setup: %s synchronized with uv.lock\n' "$$install_target"
@@ -710,6 +724,7 @@ GOVERNED_CHECKOUTS = root="$(PROJECT_ROOT)"; \
 # removed when no other owner's content remains in it.
 INSTALL_GIT_HOOKS_RECIPE = set -eu; \
 	prek_binary="$$($(MISE) -C "$(RUNTIME_ROOT)" exec -- which prek)"; \
+	prek_binary="$$($(MISE) -C "$(RUNTIME_ROOT)" exec -- which prek)"; \
 	if [ "$${OS:-}" = Windows_NT ]; then prek_binary="$$(cygpath --unix "$$prek_binary")"; fi; \
 	if [ ! -x "$$prek_binary" ]; then \
 		printf 'ERROR[setup] Mise-resolved prek is not executable: %s\n' "$$prek_binary" >&2; \
@@ -719,8 +734,20 @@ INSTALL_GIT_HOOKS_RECIPE = set -eu; \
 	retire_managed_hook() { \
 		stage="$$1"; hook="$$2"; \
 		if [ -e "$$hook" ] && grep -q 'Generated by make setup (flext-infra)' "$$hook"; then \
+	retire_managed_hook() { \
+		stage="$$1"; hook="$$2"; \
+		if [ -e "$$hook" ] && grep -q 'Generated by make setup (flext-infra)' "$$hook"; then \
 				others="$$(sed -e '/^\# BEGIN FLEXT-INFRA SETUP/,/^\# END FLEXT-INFRA SETUP/d' -e '1{/^\#!/d;}' "$$hook")"; \
 				if printf '%s\n' "$$others" | grep -q 'Generated by make setup (flext-infra)'; then others=""; fi; \
+			if [ -n "$$(printf '%s' "$$others" | tr -d '[:space:]')" ]; then \
+				printf '%s\n' '\#!/bin/sh' "$$others" > "$$hook.pending"; \
+				chmod 0755 "$$hook.pending"; \
+				mv "$$hook.pending" "$$hook"; \
+			else \
+				rm -f "$$hook"; \
+			fi; \
+			printf 'setup: retired %s hook section at %s\n' "$$stage" "$$hook"; \
+		fi; \
 			if [ -n "$$(printf '%s' "$$others" | tr -d '[:space:]')" ]; then \
 				printf '%s\n' '\#!/bin/sh' "$$others" > "$$hook.pending"; \
 				chmod 0755 "$$hook.pending"; \
@@ -739,8 +766,19 @@ INSTALL_GIT_HOOKS_RECIPE = set -eu; \
 		for stage in pre-push; do \
 			retire_managed_hook "$$stage" "$$hooks_dir/$$stage"; \
 			done; \
+	}; \
+	$(GOVERNED_CHECKOUTS); \
+	for checkout in $$checkouts; do \
+		hooks_dir="$$(git -C "$$root/$$checkout" rev-parse --path-format=absolute --git-path hooks)"; \
+		mkdir -p "$$hooks_dir"; \
+		for stage in pre-push; do \
+			retire_managed_hook "$$stage" "$$hooks_dir/$$stage"; \
+			done; \
 		validator_path="$$(git -C "$$root/$$checkout" rev-parse --show-toplevel)/.github/scripts/validate-git-hook.sh"; \
 		if [ ! -x "$$validator_path" ]; then \
+			for stage in pre-commit; do \
+				retire_managed_hook "$$stage" "$$hooks_dir/$$stage"; \
+			done; \
 			for stage in pre-commit; do \
 				retire_managed_hook "$$stage" "$$hooks_dir/$$stage"; \
 			done; \
@@ -798,7 +836,9 @@ _builtin_require_workspace:
 # Execute the interpreter provisioned by setup without discovering a project
 # workspace or creating a dependency-resolution file during a runtime command.
 override UV_RUN = env -u VIRTUAL_ENV -u UV_PROJECT -u PROJECT_ROOT PATH="$(RUNTIME_BIN):$$PATH" PYTHONPATH="$(PROJECT_ROOT)/src" $(UV) run --directory "$(PROJECT_ROOT)" --no-project --python "$(RUNTIME_PYTHON)"
+override UV_RUN = env -u VIRTUAL_ENV -u UV_PROJECT -u PROJECT_ROOT PATH="$(RUNTIME_BIN):$$PATH" PYTHONPATH="$(PROJECT_ROOT)/src" $(UV) run --directory "$(PROJECT_ROOT)" --no-project --python "$(RUNTIME_PYTHON)"
 # Native locked workspace membership owns control imports, never caller overlays.
+override PROJECT_INFRA_RUN = env -u MISE_PYTHON_UV_VENV_AUTO -u UV_PROJECT -u UV_WORKING_DIR -u UV_CONFIG_FILE -u UV_PROJECT_ENVIRONMENT -u UV_PYTHON -u UV_PYTHON_DOWNLOADS -u UV_NO_CONFIG -u UV_NO_SOURCES -u UV_FROZEN -u UV_LOCKED -u VIRTUAL_ENV -u PYTHONHOME -u PYTHONPATH "$(FLEXT_INFRA_PYTHON)"
 override PROJECT_INFRA_RUN = env -u MISE_PYTHON_UV_VENV_AUTO -u UV_PROJECT -u UV_WORKING_DIR -u UV_CONFIG_FILE -u UV_PROJECT_ENVIRONMENT -u UV_PYTHON -u UV_PYTHON_DOWNLOADS -u UV_NO_CONFIG -u UV_NO_SOURCES -u UV_FROZEN -u UV_LOCKED -u VIRTUAL_ENV -u PYTHONHOME -u PYTHONPATH "$(FLEXT_INFRA_PYTHON)"
 override PROJECT_FLEXT_INFRA := $(PROJECT_INFRA_RUN) -m flext_infra
 # The upgrade executor (make.executor_environment) runs isolated (-I: no working
@@ -825,8 +865,10 @@ SYNC_UPGRADE_EXECUTOR_RECIPE = $(call TARGET_ENVIRONMENT,$(FLEXT_INFRA_EXECUTOR_
 
 
 override SETUP_SYNC_ARGS := --all-extras --all-groups --link-mode clone --all-packages
+override SETUP_SYNC_ARGS := --all-extras --all-groups --link-mode clone --all-packages
 
 ifeq ($(CI),Y)
+override SETUP_SYNC_ARGS := --all-extras --all-groups --link-mode clone --all-packages --no-editable
 override SETUP_SYNC_ARGS := --all-extras --all-groups --link-mode clone --all-packages --no-editable
 endif
 
@@ -918,6 +960,7 @@ PROFILE_VERBS_ROUTED := $(PROFILE_VERBS_HOOKED) $(PROFILE_VERBS_INTERPRETER)
 
 $(PROFILE_VERBS_PLAIN): %: _builtin_require_workspace _builtin_require_interpreter
 	@printf '==> %s | project=%s | profile=%s\n' '$@' "$(PROJECT_ROOT)" 'workspace'
+	@printf '==> %s | project=%s | profile=%s\n' '$@' "$(PROJECT_ROOT)" 'workspace'
 	$(call RUN_PUBLIC,$@)
 
 
@@ -926,6 +969,7 @@ $(PROFILE_VERBS_DISPATCH):
 
 
 $(PROFILE_VERBS_ACTIVATED): %: _builtin_require_workspace
+	@printf '==> %s | project=%s | profile=%s\n' '$@' "$(PROJECT_ROOT)" 'workspace'
 	@printf '==> %s | project=%s | profile=%s\n' '$@' "$(PROJECT_ROOT)" 'workspace'
 	+@$(if $(filter Y,$(CI)),$(MISE) -C "$(RUNTIME_ROOT)" exec -- $(SELF_MAKE) _activated-$@,$(DIRENV) exec "$(PROJECT_ROOT)" $(SELF_MAKE) _activated-$@)
 .PHONY: $(addprefix _activated-,$(PROFILE_VERBS_ACTIVATED))
@@ -1012,6 +1056,13 @@ _setup_lifecycle: _builtin_require_workspace
 		[ ! -f "$$allow_root/.envrc" ] || $(DIRENV) allow "$$allow_root"; \
 	done; \
 	set +f;) \
+	$(if $(filter Y,$(CI)),,set -f; \
+	$(GOVERNED_CHECKOUTS); \
+	for checkout in $$checkouts; do \
+		if [ "$$checkout" = . ]; then allow_root="$$root"; else allow_root="$$root/$$checkout"; fi; \
+		[ ! -f "$$allow_root/.envrc" ] || $(DIRENV) allow "$$allow_root"; \
+	done; \
+	set +f;) \
 	$(if $(filter Y,$(CI)),$(SELF_MAKE) _setup_activated,$(DIRENV) exec "$(PROJECT_ROOT)" $(SELF_MAKE) _setup_activated)
 
 # Setup installs UV's frozen resolution; Mise completes missing native tool
@@ -1030,6 +1081,7 @@ ifneq ($(CI),Y)
 endif
 
 _builtin-help:
+	@printf '%s\n' 'flext-auth [workspace]' ''
 	@printf '%s\n' 'flext-auth [workspace]' ''
 	@$(foreach verb,$(PUBLIC_VERBS),$(call VERB_HELP_LINE,$(verb));)
 
@@ -1273,6 +1325,7 @@ _upg_toolchain: _builtin_require_workspace _builtin_require_github_credential
 	else \
 		changed_tools=""; \
 		for tool in "python" "github:jdx/mise" "uv" "github:direnv/direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza" "aqua:j178/prek"; do \
+		for tool in "python" "github:jdx/mise" "uv" "github:direnv/direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza" "aqua:j178/prek"; do \
 			if [ "$$("$(BOOTSTRAP_MISE)" -C "$$lock_root" lock --bump --dry-run --json "$$tool")" != "[]" ]; then changed_tools="$$changed_tools $$tool"; fi; \
 		done; \
 		if [ -z "$$changed_tools" ]; then \
@@ -1293,6 +1346,7 @@ _upg_toolchain: _builtin_require_workspace _builtin_require_github_credential
 	export MISE_LOCKED=1; \
 	bootstrap_stage=tool-install; \
 	"$(BOOTSTRAP_MISE)" -C "$(PROJECT_ROOT)" install --yes "python" "github:jdx/mise" "uv" "github:direnv/direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza" "aqua:j178/prek"; \
+	"$(BOOTSTRAP_MISE)" -C "$(PROJECT_ROOT)" install --yes "python" "github:jdx/mise" "uv" "github:direnv/direnv" "taplo" "aqua:ast-grep/ast-grep" "gitleaks" "aqua:boyter/scc" "github:qltysh/qlty" "github:kucherenko/jscpd" "github:microsoft/waza" "aqua:j178/prek"; \
 	printf 'upg: locks classified, Mise locks current, locked toolchain provisioned\n'
 
 _upg_lifecycle:
@@ -1311,7 +1365,7 @@ _upg_lifecycle:
 	mise_bin="$(MISE)"; \
 	$(RESOLVE_DESIRED_PYTHON); \
 	[ -f "$(RUNTIME_ROOT)/uv.lock" ] || $(UV) lock --project "$(RUNTIME_ROOT)" --python "$$desired_python" --no-python-downloads; \
-	$(SYNC_UPGRADE_EXECUTOR_RECIPE); \
+	$(SYNC_UPGRADE_EXECUTOR_PRE_RESOLUTION_RECIPE); \
 	PATH="$$(dirname "$$mise_bin"):$$PATH" $(EXECUTOR_FLEXT_INFRA) deps cooldown-admission --repository-root "$(RUNTIME_ROOT)"; \
 	bootstrap_stage=network-auth; \
 	if git config --global --get-regexp '^url\.https?://[^ /]+:[^ /]+@.*\.insteadof$$' >/dev/null; then \
@@ -1329,14 +1383,19 @@ _upg_lifecycle:
 	upg_pkg_flags=""; \
 	for pkg in $(UPG_PACKAGES); do upg_pkg_flags="$$upg_pkg_flags --upgrade-package $$pkg"; done; \
 	if [ -z "$$upg_pkg_flags" ]; then upg_pkg_flags=" --upgrade"; fi; \
+	upg_pkg_flags=""; \
+	for pkg in $(UPG_PACKAGES); do upg_pkg_flags="$$upg_pkg_flags --upgrade-package $$pkg"; done; \
+	if [ -z "$$upg_pkg_flags" ]; then upg_pkg_flags=" --upgrade"; fi; \
 	set -f; \
 	$(GOVERNED_CHECKOUTS); \
 	for checkout in $$checkouts; do \
 		case "$$checkout" in .) continue ;; esac; \
 		[ ! -f "$$root/$$checkout/pyproject.toml" ] || \
 			$(UV) lock$$upg_pkg_flags --project "$$root/$$checkout" --python "$$desired_python" --no-python-downloads; \
+			$(UV) lock$$upg_pkg_flags --project "$$root/$$checkout" --python "$$desired_python" --no-python-downloads; \
 	done; \
 	set +f; \
+	$(UV) lock$$upg_pkg_flags --project "$(PROJECT_ROOT)" --python "$$desired_python" --no-python-downloads; \
 	$(UV) lock$$upg_pkg_flags --project "$(PROJECT_ROOT)" --python "$$desired_python" --no-python-downloads; \
 	PATH="$$(dirname "$$mise_bin"):$$PATH" $(EXECUTOR_FLEXT_INFRA) deps upg-bounds --repository-root "$(RUNTIME_ROOT)"; \
 	bootstrap_stage=network-auth; \
@@ -1365,9 +1424,17 @@ _upg_lifecycle:
 	$(SYNC_UPGRADE_EXECUTOR_RECIPE); \
 	PATH="$$(dirname "$$mise_bin"):$$PATH" $(EXECUTOR_FLEXT_INFRA) deps repair-mise-platforms --repository-root "$(RUNTIME_ROOT)"; \
 	PATH="$$(dirname "$$mise_bin"):$$PATH" $(EXECUTOR_FLEXT_INFRA) deps verify-pin-convergence --repository-root "$(RUNTIME_ROOT)"; \
+	PATH="$$(dirname "$$mise_bin"):$$PATH" $(EXECUTOR_FLEXT_INFRA) deps verify-pin-convergence --repository-root "$(RUNTIME_ROOT)"; \
 	case " $(CUSTOM_DECLARED_TARGETS) " in \
 		*" post-upg "*) $(SELF_MAKE) post-upg ;; \
 	esac; \
+	$(if $(filter Y,$(CI)),:,set -f; \
+	$(GOVERNED_CHECKOUTS); \
+	for checkout in $$checkouts; do \
+		if [ "$$checkout" = . ]; then allow_root="$$root"; else allow_root="$$root/$$checkout"; fi; \
+		[ ! -f "$$allow_root/.envrc" ] || $(DIRENV) allow "$$allow_root"; \
+	done; \
+	set +f)
 	$(if $(filter Y,$(CI)),:,set -f; \
 	$(GOVERNED_CHECKOUTS); \
 	for checkout in $$checkouts; do \
@@ -1455,9 +1522,17 @@ CHECK_PROFILE ?=
 _builtin_gen_all: _builtin_require_interpreter
 	@set -eu; \
 	root="$(abspath $(or $(strip $(ROOT)),$(PROJECT_ROOT)))"; \
-	scope=all; \
-	if [ "$$root" != "$(PROJECT_ROOT)" ] || [ "$(strip $(CI))" = "Y" ]; then scope=self; fi; \
-	$(if $(GEN_PROFILE),FLEXT_INFRA_PROFILE=$(GEN_PROFILE) ,)FLEXT_INFRA_PROFILE_OUTPUT="$$root/.reports/codegen/gen.pstats" $(PROJECT_FLEXT_INFRA) codegen generate --root "$$root" --scope "$$scope"
+	what="$(strip $(WHAT))"; \
+	if [ -n "$$what" ] && [ "$$what" != "ALL" ]; then \
+		scope="$(or $(strip $(SCOPE)),self)"; \
+		module_args=""; \
+		if [ -n "$(strip $(MODULE))" ]; then module_args=" --module $(strip $(MODULE))"; fi; \
+		$(if $(GEN_PROFILE),FLEXT_INFRA_PROFILE=$(GEN_PROFILE) ,)FLEXT_INFRA_PROFILE_OUTPUT="$$root/.reports/codegen/gen-scope.pstats" $(PROJECT_FLEXT_INFRA) codegen generate --root "$$root" --what "$$what" --scope "$$scope"$$module_args; \
+	else \
+		scope=all; \
+		if [ "$$root" != "$(PROJECT_ROOT)" ] || [ "$(strip $(CI))" = "Y" ]; then scope=self; fi; \
+		$(if $(GEN_PROFILE),FLEXT_INFRA_PROFILE=$(GEN_PROFILE) ,)FLEXT_INFRA_PROFILE_OUTPUT="$$root/.reports/codegen/gen.pstats" $(PROJECT_FLEXT_INFRA) codegen generate --root "$$root" --scope "$$scope"; \
+	fi
 
 # Focal generation is the bounded diagnosis vehicle: one surface (and, for
 # facades, one module) through the identical engine, lock and budget.

@@ -45,9 +45,9 @@ install_lazy_exports(
         "FlextAuthUserManagers": ".user",
     },
     public_exports=__all__,
-    deferred_members={
-        "FlextAuthRateLimiterManagers": ("FlextAuthRateLimiter",),
-        "FlextAuthSessionManagers": ("FlextAuthSessionManager",),
-        "FlextAuthUserManagers": ("FlextAuthUserManager",),
-    },
+    deferred_members=(
+        "FlextAuthRateLimiterManagers",
+        "FlextAuthSessionManagers",
+        "FlextAuthUserManagers",
+    ),
 )
