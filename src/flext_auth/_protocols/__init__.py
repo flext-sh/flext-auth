@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import defer_lazy_bases, install_lazy_exports
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth._protocols.auth import FlextAuthProtocolsAuth
@@ -59,74 +59,16 @@ install_lazy_exports(
         "FlextAuthProtocolsAuthUserIdentityExtras": ".auth_user_identity_extras",
     },
     public_exports=__all__,
-    deferred_members={
-        "FlextAuthProtocolsAuth": (),
-        "FlextAuthProtocolsAuthIdentity": (
-            "Identity",
-            "User",
-            "IdentityManager",
-            "AuthIdentity",
-        ),
-        "FlextAuthProtocolsAuthIdentityRequest": ("AuthIdentityRequest",),
-        "FlextAuthProtocolsAuthProvider": (
-            "KerberosTicketValidator",
-            "ConfigurableProvider",
-            "ProviderMetadata",
-            "ProviderRegistration",
-            "ProviderRegistry",
-            "FlextAuthBaseProvider",
-        ),
-        "FlextAuthProtocolsAuthProviderConfig": (
-            "RegistryPortOptions",
-            "ApplicationPortOptions",
-            "IdentityPortOptions",
-            "SessionPortOptions",
-            "ProviderIdentityConfig",
-            "ProviderTokenConfig",
-            "ProviderOAuthConfig",
-            "ProviderKerberosConfig",
-            "ProviderSamlConfig",
-            "ProviderLdapConfig",
-            "ProviderConfig",
-        ),
-        "FlextAuthProtocolsAuthResponse": (
-            "CredentialValidation",
-            "AuthResponse",
-            "OAuth2TokenResponse",
-            "KerberosTicketData",
-            "ProviderWrapper",
-            "Metadata",
-        ),
-        "FlextAuthProtocolsAuthService": (
-            "ApplicationConfig",
-            "Settings",
-            "ProviderService",
-            "Service",
-            "IdentityService",
-            "SessionService",
-            "RequestWithHeaders",
-        ),
-        "FlextAuthProtocolsAuthSession": (
-            "SessionManager",
-            "Token",
-            "Session",
-            "AuthenticationResponse",
-            "AuthSession",
-        ),
-        "FlextAuthProtocolsAuthTransport": ("BaseTransportAdapter",),
-        "FlextAuthProtocolsAuthUserIdentityExtras": ("UserIdentityExtras",),
-    },
-)
-
-defer_lazy_bases(
-    __name__,
-    {
-        "FlextAuthProtocolsAuth": (
-            (".", "FlextAuthProtocolsAuthIdentity"),
-            (".", "FlextAuthProtocolsAuthSession"),
-            (".", "FlextAuthProtocolsAuthService"),
-            (".", "FlextAuthProtocolsAuthProvider"),
-            (".", "FlextAuthProtocolsAuthTransport"),
-        ),
-    },
+    deferred_members=(
+        "FlextAuthProtocolsAuth",
+        "FlextAuthProtocolsAuthIdentity",
+        "FlextAuthProtocolsAuthIdentityRequest",
+        "FlextAuthProtocolsAuthProvider",
+        "FlextAuthProtocolsAuthProviderConfig",
+        "FlextAuthProtocolsAuthResponse",
+        "FlextAuthProtocolsAuthService",
+        "FlextAuthProtocolsAuthSession",
+        "FlextAuthProtocolsAuthTransport",
+        "FlextAuthProtocolsAuthUserIdentityExtras",
+    ),
 )
