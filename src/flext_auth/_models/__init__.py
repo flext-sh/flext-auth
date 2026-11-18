@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import defer_lazy_bases, install_lazy_exports
+from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_auth._models.auth import FlextAuthModelsAuth
@@ -53,48 +53,14 @@ install_lazy_exports(
         "FlextAuthModelsAuthUserIdentityExtras": ".auth_user_identity_extras",
     },
     public_exports=__all__,
-    deferred_members={
-        "FlextAuthModelsAuth": (),
-        "FlextAuthModelsAuthCredential": ("PasswordUtil",),
-        "FlextAuthModelsAuthIdentity": ("AuthIdentity",),
-        "FlextAuthModelsAuthIdentityRequest": ("AuthIdentityRequest",),
-        "FlextAuthModelsAuthProviderConfig": (
-            "RegistryPortOptions",
-            "ApplicationPortOptions",
-            "IdentityPortOptions",
-            "SessionPortOptions",
-            "ProviderIdentityConfig",
-            "ProviderTokenConfig",
-            "ProviderOAuthConfig",
-            "ProviderKerberosConfig",
-            "ProviderSamlConfig",
-            "ProviderLdapConfig",
-            "ProviderConfig",
-        ),
-        "FlextAuthModelsAuthResponse": (
-            "CredentialValidation",
-            "AuthResponse",
-            "OAuth2TokenResponse",
-            "KerberosTicketData",
-            "ProviderWrapper",
-            "Providers",
-        ),
-        "FlextAuthModelsAuthSession": ("AuthSession",),
-        "FlextAuthModelsAuthUserIdentityExtras": ("UserIdentityExtras",),
-    },
-)
-
-defer_lazy_bases(
-    __name__,
-    {
-        "FlextAuthModelsAuth": (
-            (".", "FlextAuthModelsAuthCredential"),
-            (".", "FlextAuthModelsAuthSession"),
-            (".", "FlextAuthModelsAuthIdentityRequest"),
-            (".", "FlextAuthModelsAuthIdentity"),
-            (".", "FlextAuthModelsAuthProviderConfig"),
-            (".", "FlextAuthModelsAuthResponse"),
-            (".", "FlextAuthModelsAuthUserIdentityExtras"),
-        ),
-    },
+    deferred_members=(
+        "FlextAuthModelsAuth",
+        "FlextAuthModelsAuthCredential",
+        "FlextAuthModelsAuthIdentity",
+        "FlextAuthModelsAuthIdentityRequest",
+        "FlextAuthModelsAuthProviderConfig",
+        "FlextAuthModelsAuthResponse",
+        "FlextAuthModelsAuthSession",
+        "FlextAuthModelsAuthUserIdentityExtras",
+    ),
 )
