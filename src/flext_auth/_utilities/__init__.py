@@ -14,6 +14,7 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_auth._utilities.auth import FlextAuthUtilitiesAuth
     from flext_auth._utilities.auth_response import FlextAuthUtilitiesAuthResponse
+    from flext_auth._utilities.auth_scopes import FlextAuthUtilitiesAuthScopes
     from flext_auth._utilities.auth_session import FlextAuthUtilitiesAuthSession
     from flext_auth._utilities.auth_validation import FlextAuthUtilitiesAuthValidation
     from flext_auth._utilities.managers import FlextAuthUtilitiesManagers
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 __all__: tuple[str, ...] = (
     "FlextAuthUtilitiesAuth",
     "FlextAuthUtilitiesAuthResponse",
+    "FlextAuthUtilitiesAuthScopes",
     "FlextAuthUtilitiesAuthSession",
     "FlextAuthUtilitiesAuthValidation",
     "FlextAuthUtilitiesManagers",
@@ -33,6 +35,7 @@ install_lazy_exports(
     {
         "FlextAuthUtilitiesAuth": ".auth",
         "FlextAuthUtilitiesAuthResponse": ".auth_response",
+        "FlextAuthUtilitiesAuthScopes": ".auth_scopes",
         "FlextAuthUtilitiesAuthSession": ".auth_session",
         "FlextAuthUtilitiesAuthValidation": ".auth_validation",
         "FlextAuthUtilitiesManagers": ".managers",
@@ -41,6 +44,7 @@ install_lazy_exports(
     deferred_members=(
         "FlextAuthUtilitiesAuth",
         "FlextAuthUtilitiesAuthResponse",
+        "FlextAuthUtilitiesAuthScopes",
         "FlextAuthUtilitiesAuthSession",
         "FlextAuthUtilitiesAuthValidation",
         "FlextAuthUtilitiesManagers",

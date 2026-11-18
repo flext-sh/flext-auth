@@ -54,6 +54,11 @@ The main authentication orchestrator handles all authentication operations:
 - **Provider Registry**: Dynamic provider registration and discovery
 - **Production Providers**: JWT complete
 - **Advanced Providers**: OAuth2, OIDC, SAML, LDAP, Certificate, Kerberos (planned)
+- **Keycloak Provider**: OIDC bearer validation through the JWT owner; realm
+  `groups` and `realm_access.roles` grant canonical scopes through the ordered
+  `Auth.keycloak.scope_rules` in `config/auth.yaml`, and `authorize()` (protocol
+  `p.Auth.ScopedTokenAuthorizer`) enforces one required scope, where the
+  configured `superuser_scope` satisfies any
 - **Transport Layer**: HTTP transport with flext-api integration
 - **Security**: bcrypt (12 rounds), JWT (HS256), provider-specific security
 

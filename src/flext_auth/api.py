@@ -19,6 +19,7 @@ from flext_auth.providers import (
     FlextAuthBasicProvider,
     FlextAuthCertificateProvider,
     FlextAuthJwtProvider,
+    FlextAuthKeycloakProvider,
     FlextAuthLdapProvider,
     FlextAuthOAuth2Provider,
     FlextAuthOidcProvider,
@@ -99,6 +100,11 @@ class FlextAuth(FlextAuthApplicationService):
                 c.Auth.ProviderTypes.OIDC.value,
                 FlextAuthOidcProvider,
                 bool(provider_config.get("issuer")),
+            ),
+            (
+                c.Auth.ProviderTypes.KEYCLOAK.value,
+                FlextAuthKeycloakProvider,
+                bool(provider_config.get("secret_key")),
             ),
             (
                 c.Auth.ProviderTypes.SAML.value,

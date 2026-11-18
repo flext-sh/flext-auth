@@ -54,6 +54,7 @@ class FlextAuthConstantsAuthEnums:
         JWT = "jwt"
         OAUTH2 = "oauth2"
         OIDC = "oidc"
+        KEYCLOAK = "keycloak"
         SAML = "saml"
         LDAP = "ldap"
         CERTIFICATE = "certificate"

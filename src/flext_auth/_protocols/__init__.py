@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from flext_auth._protocols.auth_identity_request import (
         FlextAuthProtocolsAuthIdentityRequest,
     )
+    from flext_auth._protocols.auth_keycloak import FlextAuthProtocolsAuthKeycloak
     from flext_auth._protocols.auth_provider import FlextAuthProtocolsAuthProvider
     from flext_auth._protocols.auth_provider_config import (
         FlextAuthProtocolsAuthProviderConfig,
@@ -34,6 +35,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthProtocolsAuth",
     "FlextAuthProtocolsAuthIdentity",
     "FlextAuthProtocolsAuthIdentityRequest",
+    "FlextAuthProtocolsAuthKeycloak",
     "FlextAuthProtocolsAuthProvider",
     "FlextAuthProtocolsAuthProviderConfig",
     "FlextAuthProtocolsAuthResponse",
@@ -50,6 +52,7 @@ install_lazy_exports(
         "FlextAuthProtocolsAuth": ".auth",
         "FlextAuthProtocolsAuthIdentity": ".auth_identity",
         "FlextAuthProtocolsAuthIdentityRequest": ".auth_identity_request",
+        "FlextAuthProtocolsAuthKeycloak": ".auth_keycloak",
         "FlextAuthProtocolsAuthProvider": ".auth_provider",
         "FlextAuthProtocolsAuthProviderConfig": ".auth_provider_config",
         "FlextAuthProtocolsAuthResponse": ".auth_response",
@@ -63,6 +66,7 @@ install_lazy_exports(
         "FlextAuthProtocolsAuth",
         "FlextAuthProtocolsAuthIdentity",
         "FlextAuthProtocolsAuthIdentityRequest",
+        "FlextAuthProtocolsAuthKeycloak",
         "FlextAuthProtocolsAuthProvider",
         "FlextAuthProtocolsAuthProviderConfig",
         "FlextAuthProtocolsAuthResponse",

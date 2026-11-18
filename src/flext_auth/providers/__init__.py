@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from flext_auth.providers.jwt_token_validator import FlextAuthJwtTokenValidator
     from flext_auth.providers.kerberos import FlextAuthKerberosProvider
     from flext_auth.providers.kerberos_support import FlextAuthKerberosSupport
+    from flext_auth.providers.keycloak import FlextAuthKeycloakProvider
     from flext_auth.providers.ldap import FlextAuthLdapProvider
     from flext_auth.providers.mixin import FlextAuthProvider
     from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
@@ -38,6 +39,7 @@ __all__: tuple[str, ...] = (
     "FlextAuthJwtTokenValidator",
     "FlextAuthKerberosProvider",
     "FlextAuthKerberosSupport",
+    "FlextAuthKeycloakProvider",
     "FlextAuthLdapProvider",
     "FlextAuthOAuth2Config",
     "FlextAuthOAuth2Introspection",
@@ -60,6 +62,7 @@ install_lazy_exports(
         "FlextAuthJwtTokenValidator": ".jwt_token_validator",
         "FlextAuthKerberosProvider": ".kerberos",
         "FlextAuthKerberosSupport": ".kerberos_support",
+        "FlextAuthKeycloakProvider": ".keycloak",
         "FlextAuthLdapProvider": ".ldap",
         "FlextAuthOAuth2Config": ".oauth2_config",
         "FlextAuthOAuth2Introspection": ".oauth2_introspection",

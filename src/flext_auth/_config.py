@@ -226,6 +226,54 @@ class FlextAuthConfig(FlextSettings, FlextConfig, strict=True):
                 description="Maximum length for permission descriptions.",
             )
 
+        class Keycloak(
+            BaseModel,
+            extra="forbid",
+            defer_build=True,
+            validate_assignment=True,
+            use_enum_values=True,
+            str_strip_whitespace=True,
+            strict=True,
+            validate_default=True,
+            frozen=True,
+        ):
+            """Keycloak group and realm-role to canonical scope policy."""
+
+            class ScopeRule(
+                BaseModel,
+                extra="forbid",
+                defer_build=True,
+                validate_assignment=True,
+                use_enum_values=True,
+                str_strip_whitespace=True,
+                strict=True,
+                validate_default=True,
+                frozen=True,
+            ):
+                """One canonical scope granted to names containing a marker."""
+
+                scope: str = Field(
+                    min_length=1,
+                    description="Canonical scope granted by the rule.",
+                )
+                markers: tuple[str, ...] = Field(
+                    min_length=1,
+                    description="Case-insensitive name fragments granting the scope.",
+                )
+
+            scope_rules: tuple[ScopeRule, ...] = Field(
+                min_length=1,
+                description="Ordered rules; the first rule a name matches wins.",
+            )
+            superuser_scope: str = Field(
+                min_length=1,
+                description="Scope that satisfies every required scope.",
+            )
+            default_required_scope: str = Field(
+                min_length=1,
+                description="Scope required when the caller names none.",
+            )
+
         name: str = Field(description="Package identity name metadata.")
         version: str = Field(description="Package identity version metadata.")
         jwt: Jwt = Field(description="JWT policy defaults.")
@@ -243,6 +291,9 @@ class FlextAuthConfig(FlextSettings, FlextConfig, strict=True):
         )
         validation: Validation = Field(
             description="Generic validation length defaults.",
+        )
+        keycloak: Keycloak = Field(
+            description="Keycloak claim to canonical scope policy.",
         )
 
     Auth: AuthPolicy

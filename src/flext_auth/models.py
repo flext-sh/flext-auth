@@ -9,13 +9,16 @@ from __future__ import annotations
 
 from flext_api import FlextApiModels
 
-from flext_auth._models import FlextAuthModelsAuth
+from flext_auth._models import FlextAuthModelsAuth, FlextAuthModelsAuthKeycloak
 
 
 class FlextAuthModels(FlextApiModels):
     """Authentication models extending the API model namespace."""
 
-    class Auth(FlextAuthModelsAuth):
+    class Auth(
+        FlextAuthModelsAuth,
+        FlextAuthModelsAuthKeycloak,
+    ):
         """Authentication model namespace."""
 
 

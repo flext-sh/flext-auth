@@ -48,3 +48,18 @@ Auth:
     max_role_description_length: 500
     max_permission_name_length: 100
     max_permission_description_length: 500
+  keycloak:
+    scope_rules:
+      - scope: "admin"
+        markers:
+          - "admin"
+      - scope: "write"
+        markers:
+          - "editor"
+          - "write"
+      - scope: "read"
+        markers:
+          - "viewer"
+          - "read"
+    superuser_scope: "admin"
+    default_required_scope: "read"
