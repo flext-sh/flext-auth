@@ -1,130 +1,227 @@
 """Keycloak provider behavior through the composed FlextAuth runtime.
 
+Every token is RS256-signed by a real realm whose signing keys are served over
+HTTP, so verification runs the production key-fetch and signature path.
+
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from tests import FlextAuth, FlextAuthSettings, c, config, p, t, tm, u
+from tests import (
+    FlextAuth,
+    FlextAuthSettings,
+    TestsFlextAuthFixtures,
+    c,
+    config,
+    p,
+    t,
+    tm,
+    u,
+)
 
 
 class TestsFlextAuthKeycloakProvider:
-    """Keycloak token validation and scope enforcement via the composition root."""
+    """Keycloak realm verification and scope enforcement via the composition root."""
 
     pytestmark = c.Tests.MARK.usefixtures("reset_auth_singleton")
 
     @staticmethod
-    def composed() -> tuple[FlextAuthSettings, p.Auth.ScopedTokenAuthorizer]:
-        """Compose FlextAuth and resolve its Keycloak provider capability.
+    def authorizer(
+        realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> p.Auth.ScopedTokenAuthorizer:
+        """Compose FlextAuth for the realm and resolve its Keycloak provider.
 
         Returns:
-            The runtime settings and the resolved scope authorizer.
+            The Keycloak provider resolved through the composition root.
 
         """
-        configured = FlextAuthSettings()
-        auth = FlextAuth(runtime_settings=configured)
+        auth = FlextAuth(runtime_settings=realm.settings())
         provider = tm.ok(auth.fetch_provider(c.Auth.ProviderTypes.KEYCLOAK.value))
-        assert isinstance(provider, p.Auth.ScopedTokenAuthorizer)
-        return configured, provider
+        if not isinstance(provider, p.Auth.ScopedTokenAuthorizer):
+            tm.reject()
+        return provider
 
     @staticmethod
-    def bearer(configured: FlextAuthSettings, claims: t.Auth.TokensClaimMap) -> str:
-        """Sign claims with the composed JWT settings as a Bearer header value.
+    def test_unconfigured_realm_is_not_composed() -> None:
+        """Without a realm issuer the composition root registers no Keycloak."""
+        tm.fail(FlextAuth().fetch_provider(c.Auth.ProviderTypes.KEYCLOAK.value))
 
-        Returns:
-            The ``Authorization`` header value carrying the signed token.
+    @staticmethod
+    def test_issuer_without_audience_is_rejected() -> None:
+        """A realm issuer configured without its audience fails at the boundary."""
+        with u.Tests.raises(c.ValidationError):
+            FlextAuthSettings.AuthSettings.KeycloakSettings(
+                issuer="https://realm.invalid/realms/flext"
+            )
 
-        """
-        auth_settings = configured.Auth
-        token = tm.ok(
-            u.Auth.encode_token(
-                {"sub": "realm-user", "aud": auth_settings.audience, **claims},
-                auth_settings.secret_key,
-                auth_settings.algorithm,
+    @staticmethod
+    def test_configured_realm_registers_keycloak(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
+        """A configured realm composes the provider with its capabilities."""
+        provider = tm.ok(
+            FlextAuth(runtime_settings=keycloak_realm.settings()).fetch_provider(
+                c.Auth.ProviderTypes.KEYCLOAK.value
             )
         )
-        return f"{c.Auth.AuthorizationSchemes.BEARER} {token}"
-
-    @staticmethod
-    def test_composition_root_registers_keycloak() -> None:
-        """FlextAuth registers the Keycloak provider with its capabilities."""
-        provider = tm.ok(
-            FlextAuth().fetch_provider(c.Auth.ProviderTypes.KEYCLOAK.value)
-        )
-        tm.that(provider, is_=p.Auth.ScopedTokenAuthorizer)
         tm.that(provider.supports(), contains=c.Auth.ProviderTypes.KEYCLOAK.value)
         tm.that(provider.supports(), contains=c.Auth.ProviderTypes.OIDC.value)
 
     @staticmethod
-    def test_group_claim_grants_the_first_rule_scope() -> None:
-        """A group containing the first rule's marker grants that rule's scope."""
-        configured, provider = TestsFlextAuthKeycloakProvider.composed()
-        rule = config.Auth.keycloak.scope_rules[0]
-        bearer = TestsFlextAuthKeycloakProvider.bearer(
-            configured, {"groups": [f"/team-{rule.markers[0]}"]}
+    @c.Tests.MARK.parametrize(
+        ("scope", "marker"),
+        [
+            (rule.scope, marker)
+            for rule in config.Auth.keycloak.scope_rules
+            for marker in rule.markers
+        ],
+        ids=str,
+    )
+    def test_each_rule_marker_grants_its_scope(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+        scope: str,
+        marker: str,
+    ) -> None:
+        """A group containing a rule's marker grants that rule's scope."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        bearer = keycloak_realm.bearer({"groups": [f"/team-{marker}"]})
+        tm.that(
+            tm.ok(provider.authorize(bearer, required_scope=scope)),
+            contains=scope,
         )
-        granted = tm.ok(provider.authorize(bearer, required_scope=rule.scope))
-        tm.that(granted, eq=frozenset({rule.scope}))
 
     @staticmethod
-    def test_realm_role_claim_grants_scope() -> None:
-        """A realm role containing a rule marker grants that rule's scope."""
-        configured, provider = TestsFlextAuthKeycloakProvider.composed()
-        rule = config.Auth.keycloak.scope_rules[0]
-        bearer = TestsFlextAuthKeycloakProvider.bearer(
-            configured, {"realm_access": {"roles": [rule.markers[0].upper()]}}
-        )
+    def test_realm_role_claim_grants_scope(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
+        """A realm role matches its rule marker case-insensitively."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        rule = config.Auth.keycloak.scope_rules[-1]
+        bearer = keycloak_realm.bearer({
+            "realm_access": {"roles": [rule.markers[0].upper()]}
+        })
         tm.that(
             tm.ok(provider.authorize(bearer, required_scope=rule.scope)),
             contains=rule.scope,
         )
 
     @staticmethod
-    def test_superuser_scope_satisfies_any_required_scope() -> None:
+    @c.Tests.MARK.parametrize(
+        "required_scope",
+        [rule.scope for rule in config.Auth.keycloak.scope_rules],
+        ids=str,
+    )
+    def test_superuser_scope_satisfies_any_required_scope(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+        required_scope: str,
+    ) -> None:
         """The configured superuser scope satisfies every rule's scope."""
-        configured, provider = TestsFlextAuthKeycloakProvider.composed()
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
         policy = config.Auth.keycloak
         superuser_rule = next(
             rule for rule in policy.scope_rules if rule.scope == policy.superuser_scope
         )
-        bearer = TestsFlextAuthKeycloakProvider.bearer(
-            configured, {"groups": [superuser_rule.markers[0]]}
-        )
-        for rule in policy.scope_rules:
-            tm.ok(provider.authorize(bearer, required_scope=rule.scope))
+        bearer = keycloak_realm.bearer({"groups": [superuser_rule.markers[0]]})
+        tm.ok(provider.authorize(bearer, required_scope=required_scope))
 
     @staticmethod
-    def test_unmatched_names_grant_nothing_and_are_rejected() -> None:
+    def test_insufficient_scope_is_rejected(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
+        """A name granting only a later rule's scope fails an earlier rule's scope."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        policy = config.Auth.keycloak
+        granting, required = policy.scope_rules[-1], policy.scope_rules[0]
+        bearer = keycloak_realm.bearer({"groups": [granting.markers[0]]})
+        tm.fail(provider.authorize(bearer, required_scope=required.scope))
+
+    @staticmethod
+    def test_unmatched_names_are_rejected(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
         """Names matching no rule grant no scope and fail the default scope."""
-        configured, provider = TestsFlextAuthKeycloakProvider.composed()
-        bearer = TestsFlextAuthKeycloakProvider.bearer(
-            configured, {"groups": ["/unrelated-team"]}
-        )
-        tm.fail(provider.authorize(bearer))
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        tm.fail(provider.authorize(keycloak_realm.bearer({"groups": ["/unrelated"]})))
 
     @staticmethod
-    def test_malformed_claims_fail_validation() -> None:
+    def test_malformed_claims_fail_validation(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
         """A groups claim violating the Keycloak contract fails loud."""
-        configured, provider = TestsFlextAuthKeycloakProvider.composed()
-        bearer = TestsFlextAuthKeycloakProvider.bearer(
-            configured, {"groups": "not-a-list"}
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        tm.fail(provider.authorize(keycloak_realm.bearer({"groups": "not-a-list"})))
+
+    @staticmethod
+    def test_expired_token_is_rejected(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
+        """An expired realm token fails verification."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        rule = config.Auth.keycloak.scope_rules[0]
+        bearer = keycloak_realm.bearer(
+            {"groups": [rule.markers[0]]}, lifetime_seconds=-60
         )
-        tm.fail(provider.authorize(bearer))
+        tm.fail(provider.authorize(bearer, required_scope=rule.scope))
 
     @staticmethod
-    def test_missing_or_foreign_scheme_is_rejected() -> None:
-        """Only a Bearer credential is accepted."""
-        _configured, provider = TestsFlextAuthKeycloakProvider.composed()
-        tm.fail(provider.authorize(""))
-        tm.fail(provider.authorize("Basic opaque-credential"))
-
-    @staticmethod
-    def test_invalid_signature_is_rejected() -> None:
-        """A token not signed by the configured secret is rejected."""
-        _configured, provider = TestsFlextAuthKeycloakProvider.composed()
+    def test_foreign_audience_and_issuer_are_rejected(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
+        """Tokens minted for another client or realm fail verification."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        rule = config.Auth.keycloak.scope_rules[0]
+        marker = rule.markers[0]
         tm.fail(
             provider.authorize(
-                f"{c.Auth.AuthorizationSchemes.BEARER} invalid.jwt.token"
+                keycloak_realm.bearer({"groups": [marker], "aud": "another-client"}),
+                required_scope=rule.scope,
             )
         )
+        tm.fail(
+            provider.authorize(
+                keycloak_realm.bearer({
+                    "groups": [marker],
+                    "iss": f"{keycloak_realm.issuer}-other",
+                }),
+                required_scope=rule.scope,
+            )
+        )
+
+    @staticmethod
+    def test_unpublished_signing_key_is_rejected(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+        foreign_realm_key: t.Tests.RealmSigningKey,
+    ) -> None:
+        """A token signed by a key the realm does not publish is rejected."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        rule = config.Auth.keycloak.scope_rules[0]
+        bearer = keycloak_realm.bearer(
+            {"groups": [rule.markers[0]]}, signing_key=foreign_realm_key
+        )
+        tm.fail(provider.authorize(bearer, required_scope=rule.scope))
+
+    @staticmethod
+    def test_shared_secret_token_is_rejected(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
+        """An HS256 token is outside the configured realm algorithms."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        configured = keycloak_realm.settings().Auth
+        token = tm.ok(
+            u.Auth.encode_token(
+                {"iss": keycloak_realm.issuer, "aud": keycloak_realm.audience},
+                configured.secret_key,
+            )
+        )
+        tm.fail(provider.authorize(f"{c.Auth.AuthorizationSchemes.BEARER} {token}"))
+
+    @staticmethod
+    def test_missing_or_foreign_scheme_is_rejected(
+        keycloak_realm: TestsFlextAuthFixtures.KeycloakRealm,
+    ) -> None:
+        """Only a Bearer credential is accepted."""
+        provider = TestsFlextAuthKeycloakProvider.authorizer(keycloak_realm)
+        tm.fail(provider.authorize(""))
+        tm.fail(provider.authorize("Basic opaque-credential"))

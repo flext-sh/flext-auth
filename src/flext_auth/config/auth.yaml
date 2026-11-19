@@ -49,6 +49,9 @@ Auth:
     max_permission_name_length: 100
     max_permission_description_length: 500
   keycloak:
+    algorithms:
+      - "RS256"
+    jwks_path: "/protocol/openid-connect/certs"
     scope_rules:
       - scope: "admin"
         markers:

@@ -6,13 +6,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import threading
+import time
+from collections.abc import Iterator
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import ClassVar, override
 
 import pytest
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, FlextAuthSettings, config
 from flext_auth.providers import FlextAuthJwtProvider
-from tests import p, t
+from tests import c, p, t, u
 
 
 class TestsFlextAuthFixtures:
@@ -51,6 +55,7 @@ class TestsFlextAuthFixtures:
             return TestsFlextAuthFixtures.PolicyLockedJwtProvider.configuration_failure
 
     @pytest.fixture
+    @staticmethod
     def auth_api() -> p.Auth.Service:
         """Compose a fresh registry and real domain services for each test.
 
@@ -59,6 +64,114 @@ class TestsFlextAuthFixtures:
 
         """
         return FlextAuth()
+
+    class KeycloakRealm:
+        """A real RS256 realm whose signing keys are served over HTTP."""
+
+        audience: ClassVar[str] = "flext-test-client"
+        key_id: ClassVar[str] = "flext-test-realm-key"
+
+        def __init__(self, issuer: str, signing_key: t.Tests.RealmSigningKey) -> None:
+            """Bind the realm issuer URL to its private signing key."""
+            self.issuer = issuer
+            self._signing_key = signing_key
+
+        def settings(self) -> FlextAuthSettings:
+            """Return Auth settings naming this realm's issuer and audience.
+
+            Returns:
+                Runtime settings that compose the Keycloak provider.
+
+            """
+            return FlextAuthSettings(
+                Auth=FlextAuthSettings.AuthSettings(
+                    Keycloak=FlextAuthSettings.AuthSettings.KeycloakSettings(
+                        issuer=self.issuer,
+                        audience=self.audience,
+                    ),
+                ),
+            )
+
+        def bearer(
+            self,
+            claims: t.Auth.TokensClaimMap,
+            *,
+            signing_key: t.Tests.RealmSigningKey | None = None,
+            lifetime_seconds: int = 300,
+        ) -> str:
+            """Sign realm access-token claims as a ``Bearer`` header value.
+
+            Returns:
+                The ``Authorization`` header value carrying the signed token.
+
+            """
+            now = int(time.time())
+            token = u.Tests.sign_realm_token(
+                {
+                    "iss": self.issuer,
+                    "aud": self.audience,
+                    "sub": "realm-user",
+                    "iat": now,
+                    "exp": now + lifetime_seconds,
+                    **claims,
+                },
+                signing_key or self._signing_key,
+                self.key_id,
+            )
+            return f"{c.Auth.AuthorizationSchemes.BEARER} {token}"
+
+    @pytest.fixture(scope="session")
+    @staticmethod
+    def foreign_realm_key() -> t.Tests.RealmSigningKey:
+        """Return a signing key that the served realm does not publish.
+
+        Returns:
+            An RSA private key unknown to the realm.
+
+        """
+        return u.Tests.realm_signing_key()
+
+    @pytest.fixture(scope="session")
+    @staticmethod
+    def keycloak_realm() -> Iterator[TestsFlextAuthFixtures.KeycloakRealm]:
+        """Serve one immutable realm signing-key set over HTTP for the session.
+
+        Yields:
+            The realm issuing RS256 tokens verifiable through its served keys.
+
+        """
+        signing_key = u.Tests.realm_signing_key()
+        key_set = u.Tests.realm_key_set(
+            signing_key, TestsFlextAuthFixtures.KeycloakRealm.key_id
+        ).encode()
+        realm_path = "/realms/flext-test"
+        key_set_path = f"{realm_path}{config.Auth.keycloak.jwks_path}"
+
+        class KeySetHandler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:
+                found = self.path == key_set_path
+                self.send_response(200 if found else 404)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(key_set if found else b"{}")
+
+            @override
+            def log_message(self, format: str, *args: t.Scalar) -> None:
+                return
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), KeySetHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            host, port = server.server_address[:2]
+            yield TestsFlextAuthFixtures.KeycloakRealm(
+                f"http://{host!s}:{port}{realm_path}",
+                signing_key,
+            )
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
 
 
 __all__: list[str] = ["TestsFlextAuthFixtures"]

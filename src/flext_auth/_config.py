@@ -226,6 +226,28 @@ class FlextAuthConfig(FlextSettings, FlextConfig, strict=True):
                 description="Maximum length for permission descriptions.",
             )
 
+        class KeycloakScopeRule(
+            BaseModel,
+            extra="forbid",
+            defer_build=True,
+            validate_assignment=True,
+            use_enum_values=True,
+            str_strip_whitespace=True,
+            strict=True,
+            validate_default=True,
+            frozen=True,
+        ):
+            """One canonical scope granted to names containing a marker."""
+
+            scope: str = Field(
+                min_length=1,
+                description="Canonical scope granted by the rule.",
+            )
+            markers: tuple[str, ...] = Field(
+                min_length=1,
+                description="Case-insensitive name fragments granting the scope.",
+            )
+
         class Keycloak(
             BaseModel,
             extra="forbid",
@@ -239,31 +261,19 @@ class FlextAuthConfig(FlextSettings, FlextConfig, strict=True):
         ):
             """Keycloak group and realm-role to canonical scope policy."""
 
-            class ScopeRule(
-                BaseModel,
-                extra="forbid",
-                defer_build=True,
-                validate_assignment=True,
-                use_enum_values=True,
-                str_strip_whitespace=True,
-                strict=True,
-                validate_default=True,
-                frozen=True,
-            ):
-                """One canonical scope granted to names containing a marker."""
-
-                scope: str = Field(
-                    min_length=1,
-                    description="Canonical scope granted by the rule.",
-                )
-                markers: tuple[str, ...] = Field(
-                    min_length=1,
-                    description="Case-insensitive name fragments granting the scope.",
-                )
-
-            scope_rules: tuple[ScopeRule, ...] = Field(
+            algorithms: tuple[str, ...] = Field(
                 min_length=1,
-                description="Ordered rules; the first rule a name matches wins.",
+                description="Accepted realm signing algorithms.",
+            )
+            jwks_path: str = Field(
+                min_length=1,
+                description="Realm signing-key set path relative to the issuer.",
+            )
+            scope_rules: tuple[FlextAuthConfig.AuthPolicy.KeycloakScopeRule, ...] = (
+                Field(
+                    min_length=1,
+                    description="Ordered rules; the first rule a name matches wins.",
+                )
             )
             superuser_scope: str = Field(
                 min_length=1,

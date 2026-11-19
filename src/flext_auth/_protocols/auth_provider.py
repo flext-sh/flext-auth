@@ -48,6 +48,16 @@ class FlextAuthProtocolsAuthProvider:
             ...
 
     @runtime_checkable
+    class KeycloakRealm(Protocol):
+        """Keycloak realm issuer and audience settings."""
+
+        @property
+        def issuer(self) -> str: ...
+
+        @property
+        def audience(self) -> str: ...
+
+    @runtime_checkable
     class ScopedTokenAuthorizer(Protocol):
         """Bearer-credential authorization against canonical access scopes."""
 

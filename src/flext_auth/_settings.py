@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from typing import Annotated
+from typing import Annotated, Self
 
 from flext_core import FlextSettings, m, t
 
@@ -79,6 +79,34 @@ class FlextAuthSettings(FlextSettings):
                 bool | None,
                 m.Field(description="Whether tickets are proxiable"),
             ] = None
+
+        class KeycloakSettings(m.BaseModel):
+            """Keycloak realm settings; an empty issuer leaves Keycloak uncomposed."""
+
+            issuer: Annotated[
+                str,
+                m.Field(description="Realm issuer URL (iss claim)"),
+            ] = ""
+            audience: Annotated[
+                str,
+                m.Field(description="Expected access-token audience (aud claim)"),
+            ] = ""
+
+            @m.model_validator(mode="after")
+            def _require_audience_with_issuer(self) -> Self:
+                """Reject a realm issuer configured without its audience.
+
+                Returns:
+                    The validated settings.
+
+                Raises:
+                    ValueError: If the issuer is set and the audience is empty.
+
+                """
+                if self.issuer and not self.audience:
+                    msg = "Keycloak audience is required when issuer is set"
+                    raise ValueError(msg)
+                return self
 
         secret_key: str = m.Field(
             default_factory=lambda: secrets.token_urlsafe(
@@ -145,6 +173,10 @@ class FlextAuthSettings(FlextSettings):
         Kerberos: KerberosSettings = m.Field(
             default_factory=KerberosSettings,
             description="Kerberos realm/KDC settings.",
+        )
+        Keycloak: KeycloakSettings = m.Field(
+            default_factory=KeycloakSettings,
+            description="Keycloak realm issuer/audience settings.",
         )
 
     Auth: AuthSettings = m.Field(

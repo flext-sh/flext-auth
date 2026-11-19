@@ -6,8 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Literal
-
+from cryptography.hazmat.primitives.asymmetric import rsa
 from flext_tests import t as flext_tests_t
 
 from flext_auth import t as flext_auth_t
@@ -17,19 +16,9 @@ class TestsFlextAuthTypes(flext_auth_t):
     """Test typings for flext-auth — extends flext_auth.t."""
 
     class Tests(flext_tests_t.Tests):
-        """Test-scoped literal aliases."""
+        """Test-scoped aliases."""
 
-        type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
-        type ProviderTypeLiteral = Literal[
-            "basic",
-            "jwt",
-            "oauth2",
-            "saml",
-            "ldap",
-            "certificate",
-            "kerberos",
-            "apikey",
-        ]
+        type RealmSigningKey = rsa.RSAPrivateKey
 
 
 # Published short name (ldap family shape): the tests package exposes the
