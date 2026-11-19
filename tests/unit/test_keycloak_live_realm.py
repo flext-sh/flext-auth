@@ -61,7 +61,7 @@ class TestsFlextAuthKeycloakLiveRealm:
             rule for rule in policy.scope_rules if rule.scope == policy.superuser_scope
         )
         forged = u.Tests.forge_realm_claims(
-            u.Tests.live_realm_bearer(), {"groups": [superuser_rule.markers[0]]}
+            u.Tests.live_realm_bearer(), {"groups": [superuser_rule.groups[0]]}
         )
         tm.fail(
             TestsFlextAuthKeycloakLiveRealm.authorizer().authorize(

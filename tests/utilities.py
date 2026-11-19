@@ -105,6 +105,23 @@ class TestsFlextAuthUtilities(flext_auth_u):
             return f"{scheme} {header}.{forged_payload}.{signature}"
 
         @staticmethod
+        def sign_shared_secret_token(
+            claims: t.Auth.TokensClaimMap, secret: str, key_id: str
+        ) -> str:
+            """Sign claims with HS256 under a realm key id (algorithm confusion).
+
+            Returns:
+                The compact JWS token signed with the shared secret.
+
+            """
+            return jwt.encode(
+                dict(claims),
+                secret,
+                algorithm=c.Auth.Algorithms.HS256.value,
+                headers={"kid": key_id},
+            )
+
+        @staticmethod
         def sign_realm_token(
             claims: t.Auth.TokensClaimMap,
             signing_key: t.Tests.RealmSigningKey,

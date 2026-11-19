@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableSequence
 from typing import override
 
-from flext_auth import c, m, p, r, t, u
+from flext_auth import c, m, p, t, u
 from flext_auth.providers import FlextAuthOidcProvider
 
 
@@ -47,15 +47,18 @@ class FlextAuthKeycloakProvider(FlextAuthOidcProvider):
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 
+        Realm tokens are refreshed by the realm, never by this provider, so the
+        inherited ``refresh`` capability is not advertised.
+
         Returns:
-            Set of supported methods (Keycloak, OIDC, validate and refresh).
+            Set of supported methods (Keycloak, OIDC and validate).
 
         """
-        return {c.Auth.ProviderTypes.KEYCLOAK.value, *super().supports()}
+        return {c.Auth.ProviderTypes.KEYCLOAK.value, *super().supports()} - {"refresh"}
 
     @override
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate a Keycloak bearer token through the shared JWT owner.
+        """Validate a Keycloak access token against the realm signing keys.
 
         Args:
             token: Token string or token entity to validate.
@@ -101,12 +104,10 @@ class FlextAuthKeycloakProvider(FlextAuthOidcProvider):
             credential or an insufficient scope.
 
         """
-        scheme, _, token = authorization.partition(" ")
-        if scheme.lower() != c.Auth.AuthorizationSchemes.BEARER.lower() or not token:
-            return r[frozenset[str]].fail("missing bearer credential")
         return (
-            self
-            .claims(token)
+            u.Auth
+            .bearer_token(authorization)
+            .flat_map(self.claims)
             .flat_map(u.Auth.keycloak_scopes)
             .flat_map(lambda granted: u.Auth.require_scope(granted, required_scope))
         )

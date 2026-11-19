@@ -16,8 +16,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import ipaddress
 import secrets
 from typing import Annotated, Self
+from urllib.parse import urlsplit
 
 from flext_core import FlextSettings, m, t
 
@@ -80,7 +82,7 @@ class FlextAuthSettings(FlextSettings):
                 m.Field(description="Whether tickets are proxiable"),
             ] = None
 
-        class KeycloakSettings(m.BaseModel):
+        class KeycloakSettings(m.BaseModel, extra="forbid"):
             """Keycloak realm settings; an empty issuer leaves Keycloak uncomposed."""
 
             issuer: Annotated[
@@ -91,6 +93,35 @@ class FlextAuthSettings(FlextSettings):
                 str,
                 m.Field(description="Expected access-token audience (aud claim)"),
             ] = ""
+
+            @m.field_validator("issuer", mode="after")
+            @classmethod
+            def _normalize_issuer(cls, value: str) -> str:
+                """Normalize the realm issuer and require a trusted transport.
+
+                Returns:
+                    The issuer without a trailing slash, as Keycloak emits ``iss``.
+
+                Raises:
+                    ValueError: If the issuer is not https, or plain http on a
+                        loopback host.
+
+                """
+                issuer = value.rstrip("/")
+                if not issuer:
+                    return issuer
+                parts = urlsplit(issuer)
+                host = parts.hostname or ""
+                try:
+                    loopback = ipaddress.ip_address(host).is_loopback
+                except ValueError:
+                    loopback = host == "localhost"
+                if parts.scheme != "https" and not (
+                    parts.scheme == "http" and loopback
+                ):
+                    msg = "Keycloak issuer must use https (plain http only on loopback)"
+                    raise ValueError(msg)
+                return issuer
 
             @m.model_validator(mode="after")
             def _require_audience_with_issuer(self) -> Self:

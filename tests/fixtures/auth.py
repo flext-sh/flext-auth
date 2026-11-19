@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import socket
 import threading
 import time
 from collections.abc import Iterator
@@ -92,12 +93,40 @@ class TestsFlextAuthFixtures:
                 ),
             )
 
+        def access_claims(
+            self,
+            claims: t.Auth.TokensClaimMap,
+            *,
+            lifetime_seconds: int = 300,
+            omit: tuple[str, ...] = (),
+        ) -> t.Auth.TokensClaimMap:
+            """Build realm access-token claims the way Keycloak issues them.
+
+            Returns:
+                The issuer, audience, access ``typ`` and lifetime claims merged
+                with ``claims``, without the ``omit`` names.
+
+            """
+            now = int(time.time())
+            issued: t.Auth.TokensClaimMap = {
+                "iss": self.issuer,
+                "aud": self.audience,
+                "typ": config.Auth.keycloak.access_token_type,
+                "sub": "realm-user",
+                "iat": now,
+                "exp": now + lifetime_seconds,
+                **claims,
+            }
+            return {name: value for name, value in issued.items() if name not in omit}
+
         def bearer(
             self,
             claims: t.Auth.TokensClaimMap,
             *,
             signing_key: t.Tests.RealmSigningKey | None = None,
+            key_id: str | None = None,
             lifetime_seconds: int = 300,
+            omit: tuple[str, ...] = (),
         ) -> str:
             """Sign realm access-token claims as a ``Bearer`` header value.
 
@@ -105,20 +134,28 @@ class TestsFlextAuthFixtures:
                 The ``Authorization`` header value carrying the signed token.
 
             """
-            now = int(time.time())
             token = u.Tests.sign_realm_token(
-                {
-                    "iss": self.issuer,
-                    "aud": self.audience,
-                    "sub": "realm-user",
-                    "iat": now,
-                    "exp": now + lifetime_seconds,
-                    **claims,
-                },
+                self.access_claims(
+                    claims, lifetime_seconds=lifetime_seconds, omit=omit
+                ),
                 signing_key or self._signing_key,
-                self.key_id,
+                key_id or self.key_id,
             )
             return f"{c.Auth.AuthorizationSchemes.BEARER} {token}"
+
+    @pytest.fixture
+    @staticmethod
+    def unreachable_realm_issuer() -> str:
+        """Return a loopback realm issuer whose port accepts no connection.
+
+        Returns:
+            An issuer URL on a port that was bound and released.
+
+        """
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            probe.bind(("127.0.0.1", 0))
+            port = probe.getsockname()[1]
+        return f"http://127.0.0.1:{port}/realms/unreachable"
 
     @pytest.fixture(scope="session")
     @staticmethod
