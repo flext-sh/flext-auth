@@ -6,13 +6,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import base64
+
 import jwt
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flext_tests import u as flext_tests_u
 from jwt.algorithms import RSAAlgorithm
 
 from flext_auth import config, u as flext_auth_u
-from tests import t
+from tests import c, m, t
 
 
 class TestsFlextAuthUtilities(flext_auth_u):
@@ -55,6 +57,52 @@ class TestsFlextAuthUtilities(flext_auth_u):
                     }
                 ]
             }).unwrap()
+
+        @staticmethod
+        def live_realm_bearer() -> str:
+            """Obtain a real access token from the configured live realm.
+
+            Uses the password grant of the realm token endpoint with the test
+            user that the untracked ``.env`` declares.
+
+            Returns:
+                The ``Authorization`` header value carrying the realm token.
+
+            """
+            env = flext_auth_u.Cli.process_env()
+            issuer = env[c.Tests.KEYCLOAK_ISSUER_VAR].rstrip("/")
+            with flext_auth_u.Api.HttpxClient(timeout=30) as client:
+                response = client.post(
+                    f"{issuer}{c.Tests.KEYCLOAK_GRANT_ENDPOINT_PATH}",
+                    data={
+                        "grant_type": "password",
+                        "client_id": env[c.Tests.KEYCLOAK_CLIENT_ID_VAR],
+                        "username": env[c.Tests.KEYCLOAK_USERNAME_VAR],
+                        "password": env[c.Tests.KEYCLOAK_USER_CREDENTIAL_VAR],
+                    },
+                )
+                response.raise_for_status()
+            token = m.Tests.RealmTokenResponse.model_validate_json(response.content)
+            return f"{c.Auth.AuthorizationSchemes.BEARER} {token.access_token}"
+
+        @staticmethod
+        def forge_realm_claims(bearer: str, claims: t.Auth.TokensClaimMap) -> str:
+            """Rewrite a signed token's claims while keeping its original signature.
+
+            Returns:
+                The ``Authorization`` header value carrying the forged token.
+
+            """
+            scheme, _, token = bearer.partition(" ")
+            header, payload, signature = token.split(".")
+            original = flext_auth_u.json_dict_adapter().validate_json(
+                base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4))
+            )
+            forged = flext_auth_u.Cli.json_dumps({**original, **claims}).unwrap()
+            forged_payload = (
+                base64.urlsafe_b64encode(forged.encode()).rstrip(b"=").decode()
+            )
+            return f"{scheme} {header}.{forged_payload}.{signature}"
 
         @staticmethod
         def sign_realm_token(

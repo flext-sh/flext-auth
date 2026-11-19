@@ -46,7 +46,16 @@ class TestsFlextAuthKeycloakProvider:
     @staticmethod
     def test_unconfigured_realm_is_not_composed() -> None:
         """Without a realm issuer the composition root registers no Keycloak."""
-        tm.fail(FlextAuth().fetch_provider(c.Auth.ProviderTypes.KEYCLOAK.value))
+        unconfigured = FlextAuthSettings(
+            Auth=FlextAuthSettings.AuthSettings(
+                Keycloak=FlextAuthSettings.AuthSettings.KeycloakSettings()
+            )
+        )
+        tm.fail(
+            FlextAuth(runtime_settings=unconfigured).fetch_provider(
+                c.Auth.ProviderTypes.KEYCLOAK.value
+            )
+        )
 
     @staticmethod
     def test_issuer_without_audience_is_rejected() -> None:

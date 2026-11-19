@@ -54,11 +54,19 @@ The main authentication orchestrator handles all authentication operations:
 - **Provider Registry**: Dynamic provider registration and discovery
 - **Production Providers**: JWT complete
 - **Advanced Providers**: OAuth2, OIDC, SAML, LDAP, Certificate, Kerberos (planned)
-- **Keycloak Provider**: OIDC bearer validation through the JWT owner; realm
-  `groups` and `realm_access.roles` grant canonical scopes through the ordered
-  `Auth.keycloak.scope_rules` in `config/auth.yaml`, and `authorize()` (protocol
-  `p.Auth.ScopedTokenAuthorizer`) enforces one required scope, where the
-  configured `superuser_scope` satisfies any
+- **Keycloak Provider**: composed by `FlextAuth` only when a realm is configured
+  (`FLEXT_AUTH_AUTH__KEYCLOAK__ISSUER` and `FLEXT_AUTH_AUTH__KEYCLOAK__AUDIENCE`,
+  i.e. `settings.Auth.Keycloak`; an issuer without an audience is rejected).
+  Access tokens are verified against the realm signing keys served at
+  `config.Auth.keycloak.jwks_path` with the configured `algorithms` (RS256),
+  checking signature, `exp`, `iss` and `aud`. Realm `groups` and
+  `realm_access.roles` grant canonical scopes through the ordered
+  `Auth.keycloak.scope_rules` in `config/auth.yaml`; `authorize()` (protocol
+  `p.Auth.ScopedTokenAuthorizer`) enforces one required scope, and the configured
+  `superuser_scope` satisfies any. The live-realm test runs when the process
+  environment also declares `FLEXT_AUTH_TEST_KEYCLOAK_CLIENT_ID`,
+  `FLEXT_AUTH_TEST_KEYCLOAK_USERNAME`, `FLEXT_AUTH_TEST_KEYCLOAK_PASSWORD` and
+  `FLEXT_AUTH_TEST_KEYCLOAK_GRANTED_SCOPE`; otherwise the connectivity owner skips it
 - **Transport Layer**: HTTP transport with flext-api integration
 - **Security**: bcrypt (12 rounds), JWT (HS256), provider-specific security
 
