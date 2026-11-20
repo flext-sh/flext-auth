@@ -13,18 +13,18 @@ from __future__ import annotations
 
 from tests import FlextAuth, c, config, p, tm, u
 
+pytestmark = [
+    c.Tests.MARK.integration,
+    c.Tests.MARK.connectivity(
+        required_vars=c.Tests.KEYCLOAK_REQUIRED_VARS,
+        url_var=c.Tests.KEYCLOAK_ISSUER_VAR,
+    ),
+    c.Tests.MARK.usefixtures("reset_auth_singleton"),
+]
+
 
 class TestsFlextAuthKeycloakLiveRealm:
     """Real realm tokens resolved and authorized through the composition root."""
-
-    pytestmark = (
-        c.Tests.MARK.integration,
-        c.Tests.MARK.connectivity(
-            required_vars=c.Tests.KEYCLOAK_REQUIRED_VARS,
-            url_var=c.Tests.KEYCLOAK_ISSUER_VAR,
-        ),
-        c.Tests.MARK.usefixtures("reset_auth_singleton"),
-    )
 
     @staticmethod
     def authorizer() -> p.Auth.ScopedTokenAuthorizer:
