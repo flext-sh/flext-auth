@@ -156,6 +156,7 @@ class TestsFlextAuthFixtures:
         return f"http://127.0.0.1:{port}/realms/unreachable"
 
     @pytest.fixture(scope="session")
+    @staticmethod
     def foreign_realm_key() -> t.Tests.RealmSigningKey:
         """Return a signing key that the served realm does not publish.
 
@@ -166,6 +167,7 @@ class TestsFlextAuthFixtures:
         return u.Tests.realm_signing_key()
 
     @pytest.fixture(scope="session")
+    @staticmethod
     def keycloak_realm(
         request: pytest.FixtureRequest,
     ) -> TestsFlextAuthFixtures.KeycloakRealm:
