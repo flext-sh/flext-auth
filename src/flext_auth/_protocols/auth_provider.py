@@ -48,6 +48,39 @@ class FlextAuthProtocolsAuthProvider:
             ...
 
     @runtime_checkable
+    class KeycloakRealm(Protocol):
+        """Keycloak realm issuer and audience settings."""
+
+        @property
+        def issuer(self) -> str: ...
+
+        @property
+        def audience(self) -> str: ...
+
+    @runtime_checkable
+    class ScopedTokenAuthorizer(Protocol):
+        """Bearer-credential authorization against canonical access scopes."""
+
+        def authorize(
+            self,
+            authorization: str,
+            *,
+            required_scope: str | None = None,
+        ) -> p.Result[frozenset[str]]:
+            """Validate a ``Bearer`` header value and enforce one scope.
+
+            Args:
+                authorization: ``Authorization`` header value.
+                required_scope: Required canonical scope; the configured
+                    default when omitted.
+
+            Returns:
+                The granted scopes, or the authorization failure.
+
+            """
+            ...
+
+    @runtime_checkable
     class ConfigurableProvider(Protocol):
         """Explicit lifecycle capability for providers owning their dependencies."""
 

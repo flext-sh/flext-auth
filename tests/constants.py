@@ -21,6 +21,25 @@ class TestsFlextAuthConstants(FlextAuthConstants):
     class Tests(flext_tests_c.Tests):
         """Test-scoped constants (flext-tests facade composition)."""
 
+        KEYCLOAK_ISSUER_VAR: Final[str] = "FLEXT_AUTH_AUTH__KEYCLOAK__ISSUER"
+        KEYCLOAK_AUDIENCE_VAR: Final[str] = "FLEXT_AUTH_AUTH__KEYCLOAK__AUDIENCE"
+        KEYCLOAK_CLIENT_ID_VAR: Final[str] = "FLEXT_AUTH_TEST_KEYCLOAK_CLIENT_ID"
+        KEYCLOAK_USERNAME_VAR: Final[str] = "FLEXT_AUTH_TEST_KEYCLOAK_USERNAME"
+        KEYCLOAK_USER_CREDENTIAL_VAR: Final[str] = "FLEXT_AUTH_TEST_KEYCLOAK_PASSWORD"
+        KEYCLOAK_GRANTED_SCOPE_VAR: Final[str] = (
+            "FLEXT_AUTH_TEST_KEYCLOAK_GRANTED_SCOPE"
+        )
+        KEYCLOAK_REQUIRED_VARS: Final[tuple[str, ...]] = (
+            KEYCLOAK_ISSUER_VAR,
+            KEYCLOAK_AUDIENCE_VAR,
+            KEYCLOAK_CLIENT_ID_VAR,
+            KEYCLOAK_USERNAME_VAR,
+            KEYCLOAK_USER_CREDENTIAL_VAR,
+            KEYCLOAK_GRANTED_SCOPE_VAR,
+        )
+        KEYCLOAK_GRANT_ENDPOINT_PATH: Final[str] = "/protocol/openid-connect/token"
+        """Keycloak's documented realm token endpoint (external protocol)."""
+
 
 c = TestsFlextAuthConstants
 

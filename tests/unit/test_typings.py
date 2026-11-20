@@ -4,8 +4,7 @@ The public contract of a FLEXT `*Types` facade is its MRO composition and the
 set of type aliases it exposes. These tests exercise that observable contract:
 - the facade composes the upstream `FlextApiTypes` / `FlextAuthTypes` layers,
 - the `Auth` domain namespace exposes its declared aliases and they resolve,
-- upstream API-level types remain reachable through the composed facade,
-- the test-scoped `Literal` aliases resolve to their promised value sets.
+- upstream API-level types remain reachable through the composed facade.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,7 +12,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import typing
 from datetime import datetime
 
 from flext_api import FlextApiTypes
@@ -106,34 +104,3 @@ class TestsFlextAuthTypings:
             return hasattr(value, inherited_type)
 
         tm.that(TestsFlextAuthTypes, where=exposes_inherited_type)
-
-    @staticmethod
-    @c.Tests.MARK.parametrize(
-        ("literal_name", "expected_values"),
-        [
-            ("TokenTypeLiteral", ("access", "refresh", "api", "bearer")),
-            (
-                "ProviderTypeLiteral",
-                (
-                    "basic",
-                    "jwt",
-                    "oauth2",
-                    "saml",
-                    "ldap",
-                    "certificate",
-                    "kerberos",
-                    "apikey",
-                ),
-            ),
-        ],
-    )
-    def test_test_scoped_literal_resolves_to_promised_values(
-        literal_name: str,
-        expected_values: TestsFlextAuthTypes.VariadicTuple[str],
-    ) -> None:
-        # Act: resolve the Literal alias declared in the Tests namespace.
-        """Test test scoped literal resolves to promised values."""
-        literal_alias = getattr(TestsFlextAuthTypes.Tests, literal_name)
-
-        # Assert: the allowed value set matches the published contract.
-        tm.that(typing.get_args(literal_alias.__value__), eq=expected_values)

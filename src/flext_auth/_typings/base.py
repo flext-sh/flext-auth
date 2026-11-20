@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+import jwt
 from flext_api import t
 
 
@@ -21,6 +22,7 @@ class FlextAuthTypesBase:
 
     type DateTimeValue = datetime
     type TokensClaimMap = t.MutableJsonMapping
+    type SigningKeySource = jwt.PyJWKClient
 
 
 __all__: list[str] = ["FlextAuthTypesBase"]

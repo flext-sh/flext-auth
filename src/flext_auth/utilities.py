@@ -9,7 +9,11 @@ from __future__ import annotations
 
 from flext_api import FlextApiUtilities
 
-from flext_auth._utilities import FlextAuthUtilitiesAuth, FlextAuthUtilitiesManagers
+from flext_auth._utilities import (
+    FlextAuthUtilitiesAuth,
+    FlextAuthUtilitiesAuthScopes,
+    FlextAuthUtilitiesManagers,
+)
 
 
 class FlextAuthUtilities(FlextApiUtilities):
@@ -17,6 +21,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
     class Auth(
         FlextAuthUtilitiesAuth,
+        FlextAuthUtilitiesAuthScopes,
         FlextAuthUtilitiesManagers,
     ):
         """Auth-specific utility namespace."""

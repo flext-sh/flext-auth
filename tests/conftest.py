@@ -15,6 +15,9 @@ from flext_auth import FlextAuth, FlextAuthSettings
 from tests.fixtures.auth import TestsFlextAuthFixtures
 
 auth_api = TestsFlextAuthFixtures.auth_api
+keycloak_realm = TestsFlextAuthFixtures.keycloak_realm
+foreign_realm_key = TestsFlextAuthFixtures.foreign_realm_key
+unreachable_realm_issuer = TestsFlextAuthFixtures.unreachable_realm_issuer
 
 
 @pytest.fixture

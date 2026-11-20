@@ -17,6 +17,14 @@ class TestsFlextAuthModels(flext_auth_m):
     class Tests(flext_tests_m.Tests):
         """Test-specific models."""
 
+        class RealmTokenResponse(flext_auth_m.FlexibleInternalModel):
+            """The access token a Keycloak realm token endpoint returns."""
+
+            access_token: str = flext_auth_m.Field(
+                min_length=1,
+                description="Compact JWS access token issued by the realm.",
+            )
+
 
 m = TestsFlextAuthModels
 

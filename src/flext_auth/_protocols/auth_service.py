@@ -27,6 +27,8 @@ class FlextAuthProtocolsAuthService:
     class ApplicationConfig(p.HasModelDump, Protocol):
         """Settings capability used by application session orchestration."""
 
+        Keycloak: FlextAuthProtocolsAuthProvider.KeycloakRealm
+
         @property
         def session_expiry_minutes(self) -> int: ...
 

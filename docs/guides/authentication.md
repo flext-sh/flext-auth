@@ -54,6 +54,28 @@ The main authentication orchestrator handles all authentication operations:
 - **Provider Registry**: Dynamic provider registration and discovery
 - **Production Providers**: JWT complete
 - **Advanced Providers**: OAuth2, OIDC, SAML, LDAP, Certificate, Kerberos (planned)
+- **Keycloak Provider**: composed by `FlextAuth` only when a realm is configured
+  through `settings.Auth.Keycloak` (`FLEXT_AUTH_AUTH__KEYCLOAK__ISSUER`,
+  `FLEXT_AUTH_AUTH__KEYCLOAK__AUDIENCE`). The issuer is normalized without a
+  trailing slash and must use https (plain http only on loopback); an issuer
+  without an audience is rejected. Keycloak puts only `account` in `aud` by
+  default, so the client needs an audience mapper that adds the configured
+  audience. Access tokens are verified against the realm signing keys at
+  `config.Auth.keycloak.jwks_path` (timeout, cache lifespan and refresh cooldown
+  under `signing_keys`) with the configured asymmetric `algorithms`, checking the
+  signature, `exp`, `nbf`, `iat`, `iss`, `aud` (with `leeway_seconds`) and the
+  access-token `typ` (`access_token_type`); ID tokens are refused. An unreachable
+  key set fails as unavailable, not as an invalid token. Each
+  `Auth.keycloak.scope_rules` entry grants its scope to exact full group paths
+  (`groups` claim, group-membership mapper with full path) or exact realm roles
+  (`realm_access.roles`); names are never matched by substring, so nested groups
+  and default realm roles grant nothing. `authorize()` (protocol
+  `p.Auth.ScopedTokenAuthorizer`) enforces one required scope (default
+  `default_required_scope`); only `superuser_scope` satisfies any other scope.
+  The live-realm test runs when the process environment also declares
+  `FLEXT_AUTH_TEST_KEYCLOAK_CLIENT_ID`, `FLEXT_AUTH_TEST_KEYCLOAK_USERNAME`,
+  `FLEXT_AUTH_TEST_KEYCLOAK_PASSWORD` and `FLEXT_AUTH_TEST_KEYCLOAK_GRANTED_SCOPE`;
+  otherwise the connectivity owner skips it
 - **Transport Layer**: HTTP transport with flext-api integration
 - **Security**: bcrypt (12 rounds), JWT (HS256), provider-specific security
 

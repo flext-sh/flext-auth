@@ -12,6 +12,7 @@ from flext_api import FlextApiProtocols
 from flext_auth._protocols import (
     FlextAuthProtocolsAuth,
     FlextAuthProtocolsAuthIdentityRequest,
+    FlextAuthProtocolsAuthKeycloak,
     FlextAuthProtocolsAuthProviderConfig,
     FlextAuthProtocolsAuthResponse,
     FlextAuthProtocolsAuthUserIdentityExtras,
@@ -24,6 +25,7 @@ class FlextAuthProtocols(FlextApiProtocols):
     class Auth(
         FlextAuthProtocolsAuth,
         FlextAuthProtocolsAuthIdentityRequest,
+        FlextAuthProtocolsAuthKeycloak,
         FlextAuthProtocolsAuthProviderConfig,
         FlextAuthProtocolsAuthResponse,
         FlextAuthProtocolsAuthUserIdentityExtras,
