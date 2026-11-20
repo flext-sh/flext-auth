@@ -56,7 +56,6 @@ class TestsFlextAuthFixtures:
             return TestsFlextAuthFixtures.PolicyLockedJwtProvider.configuration_failure
 
     @pytest.fixture
-    @staticmethod
     def auth_api() -> p.Auth.Service:
         """Compose a fresh registry and real domain services for each test.
 
@@ -144,7 +143,6 @@ class TestsFlextAuthFixtures:
             return f"{c.Auth.AuthorizationSchemes.BEARER} {token}"
 
     @pytest.fixture
-    @staticmethod
     def unreachable_realm_issuer() -> str:
         """Return a loopback realm issuer whose port accepts no connection.
 
@@ -158,7 +156,6 @@ class TestsFlextAuthFixtures:
         return f"http://127.0.0.1:{port}/realms/unreachable"
 
     @pytest.fixture(scope="session")
-    @staticmethod
     def foreign_realm_key() -> t.Tests.RealmSigningKey:
         """Return a signing key that the served realm does not publish.
 
@@ -169,7 +166,6 @@ class TestsFlextAuthFixtures:
         return u.Tests.realm_signing_key()
 
     @pytest.fixture(scope="session")
-    @staticmethod
     def keycloak_realm(
         request: pytest.FixtureRequest,
     ) -> TestsFlextAuthFixtures.KeycloakRealm:
