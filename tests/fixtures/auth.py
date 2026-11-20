@@ -170,10 +170,14 @@ class TestsFlextAuthFixtures:
 
     @pytest.fixture(scope="session")
     @staticmethod
-    def keycloak_realm() -> Iterator[TestsFlextAuthFixtures.KeycloakRealm]:
+    def keycloak_realm(
+        request: pytest.FixtureRequest,
+    ) -> TestsFlextAuthFixtures.KeycloakRealm:
         """Serve one immutable realm signing-key set over HTTP for the session.
 
-        Yields:
+        The server is shut down by the session finalizer this fixture registers.
+
+        Returns:
             The realm issuing RS256 tokens verifiable through its served keys.
 
         """
@@ -199,16 +203,18 @@ class TestsFlextAuthFixtures:
         server = ThreadingHTTPServer(("127.0.0.1", 0), KeySetHandler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
-        try:
-            host, port = server.server_address[:2]
-            yield TestsFlextAuthFixtures.KeycloakRealm(
-                f"http://{host!s}:{port}{realm_path}",
-                signing_key,
-            )
-        finally:
+
+        def stop_server() -> None:
             server.shutdown()
             server.server_close()
             thread.join()
+
+        request.addfinalizer(stop_server)
+        host, port = server.server_address[:2]
+        return TestsFlextAuthFixtures.KeycloakRealm(
+            f"http://{host!s}:{port}{realm_path}",
+            signing_key,
+        )
 
 
 __all__: list[str] = ["TestsFlextAuthFixtures"]
