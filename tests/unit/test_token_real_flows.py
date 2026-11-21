@@ -187,8 +187,7 @@ class TestsFlextAuthKeycloakProvider:
         """Realm groups and roles map to the canonical access scopes."""
         claims: t.Auth.TokensClaimMap = {
             "sub": "user-1",
-            "groups": ["cosmos-qas-viewer"],
-            "realm_access": {"roles": ["cosmos-editor"]},
+            "groups": ["cosmos-qas-viewer", "cosmos-editor"],
         }
 
         scopes = tm.ok(FlextAuthKeycloakProvider.scopes_from_claims(claims))
