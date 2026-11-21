@@ -48,3 +48,31 @@ Auth:
     max_role_description_length: 500
     max_permission_name_length: 100
     max_permission_description_length: 500
+  keycloak:
+    algorithms:
+      - "RS256"
+    access_token_type: "Bearer"
+    leeway_seconds: 30
+    jwks_path: "/protocol/openid-connect/certs"
+    signing_keys:
+      timeout_seconds: 5
+      lifespan_seconds: 300
+      cooldown_seconds: 30
+    scope_rules:
+      - scope: "admin"
+        groups:
+          - "/admins"
+        roles:
+          - "admin"
+      - scope: "write"
+        groups:
+          - "/editors"
+        roles:
+          - "editor"
+      - scope: "read"
+        groups:
+          - "/viewers"
+        roles:
+          - "viewer"
+    superuser_scope: "admin"
+    default_required_scope: "read"

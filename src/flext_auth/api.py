@@ -19,6 +19,7 @@ from flext_auth.providers import (
     FlextAuthBasicProvider,
     FlextAuthCertificateProvider,
     FlextAuthJwtProvider,
+    FlextAuthKeycloakProvider,
     FlextAuthLdapProvider,
     FlextAuthOAuth2Provider,
     FlextAuthOidcProvider,
@@ -73,19 +74,36 @@ class FlextAuth(FlextAuthApplicationService):
             for key, value in self.settings.Auth.model_dump().items()
             if isinstance(value, (str, int, bool))
         }
+        realm = self.settings.Auth.Keycloak
+        realm_config: t.ConfigurationMapping = {
+            "issuer": realm.issuer,
+            "audience": realm.audience,
+        }
         providers: Sequence[
-            tuple[t.Auth.ProvidersKey, type[p.Auth.FlextAuthBaseProvider], bool]
+            tuple[
+                t.Auth.ProvidersKey,
+                type[p.Auth.FlextAuthBaseProvider],
+                bool,
+                t.ConfigurationMapping,
+            ]
         ] = (
-            (c.Auth.ProviderTypes.BASIC.value, FlextAuthBasicProvider, True),
+            (
+                c.Auth.ProviderTypes.BASIC.value,
+                FlextAuthBasicProvider,
+                True,
+                provider_config,
+            ),
             (
                 c.Auth.ProviderTypes.JWT.value,
                 FlextAuthJwtProvider,
                 bool(provider_config.get("secret_key")),
+                provider_config,
             ),
             (
                 c.Auth.ProviderTypes.LDAP.value,
                 FlextAuthLdapProvider,
                 bool(provider_config.get("server") and provider_config.get("base_dn")),
+                provider_config,
             ),
             (
                 c.Auth.ProviderTypes.OAUTH2.value,
@@ -94,11 +112,19 @@ class FlextAuth(FlextAuthApplicationService):
                     provider_config.get("client_id")
                     and provider_config.get("token_endpoint")
                 ),
+                provider_config,
             ),
             (
                 c.Auth.ProviderTypes.OIDC.value,
                 FlextAuthOidcProvider,
                 bool(provider_config.get("issuer")),
+                provider_config,
+            ),
+            (
+                c.Auth.ProviderTypes.KEYCLOAK.value,
+                FlextAuthKeycloakProvider,
+                bool(realm.issuer),
+                realm_config,
             ),
             (
                 c.Auth.ProviderTypes.SAML.value,
@@ -106,22 +132,29 @@ class FlextAuth(FlextAuthApplicationService):
                 bool(
                     provider_config.get("entity_id") and provider_config.get("sso_url")
                 ),
+                provider_config,
             ),
             (
                 c.Auth.ProviderTypes.CERTIFICATE.value,
                 FlextAuthCertificateProvider,
                 True,
+                provider_config,
             ),
-            (c.Auth.ProviderTypes.APIKEY.value, FlextAuthApiKeyProvider, True),
+            (
+                c.Auth.ProviderTypes.APIKEY.value,
+                FlextAuthApiKeyProvider,
+                True,
+                provider_config,
+            ),
         )
-        for name, provider_type, enabled in providers:
+        for name, provider_type, enabled, configuration in providers:
             if self.has_provider(name):
                 self.fetch_provider(name).unwrap()
             elif enabled:
                 self.register_provider(
                     name,
-                    provider_type(provider_config),
-                    configuration=provider_config,
+                    provider_type(configuration),
+                    configuration=configuration,
                 ).unwrap()
 
     @classmethod

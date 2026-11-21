@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Literal
+
 from flext_core import FlextConfig, FlextSettings
 from pydantic import BaseModel, Field, JsonValue, TypeAdapter, field_validator
 
@@ -226,6 +228,116 @@ class FlextAuthConfig(FlextSettings, FlextConfig, strict=True):
                 description="Maximum length for permission descriptions.",
             )
 
+        class KeycloakScopeRule(
+            BaseModel,
+            extra="forbid",
+            defer_build=True,
+            validate_assignment=True,
+            use_enum_values=True,
+            str_strip_whitespace=True,
+            strict=True,
+            validate_default=True,
+            frozen=True,
+        ):
+            """One canonical scope granted to exact realm group paths or roles."""
+
+            scope: str = Field(
+                min_length=1,
+                description="Canonical scope granted by the rule.",
+            )
+            groups: tuple[str, ...] = Field(
+                description="Exact full group paths granting the scope.",
+            )
+            roles: tuple[str, ...] = Field(
+                description="Exact realm role names granting the scope.",
+            )
+
+        class KeycloakSigningKeys(
+            BaseModel,
+            extra="forbid",
+            defer_build=True,
+            validate_assignment=True,
+            use_enum_values=True,
+            str_strip_whitespace=True,
+            strict=True,
+            validate_default=True,
+            frozen=True,
+        ):
+            """Realm signing-key client limits."""
+
+            timeout_seconds: float = Field(
+                gt=0,
+                description="Key-set fetch timeout in seconds.",
+            )
+            lifespan_seconds: float = Field(
+                gt=0,
+                description="Cached key-set lifetime in seconds.",
+            )
+            cooldown_seconds: float = Field(
+                ge=0,
+                description="Minimum interval between forced key-set refreshes.",
+            )
+
+        class Keycloak(
+            BaseModel,
+            extra="forbid",
+            defer_build=True,
+            validate_assignment=True,
+            use_enum_values=True,
+            str_strip_whitespace=True,
+            strict=True,
+            validate_default=True,
+            frozen=True,
+        ):
+            """Keycloak realm token verification and scope policy."""
+
+            algorithms: tuple[
+                Literal[
+                    "RS256",
+                    "RS384",
+                    "RS512",
+                    "PS256",
+                    "PS384",
+                    "PS512",
+                    "ES256",
+                    "ES384",
+                    "ES512",
+                ],
+                ...,
+            ] = Field(
+                min_length=1,
+                description="Accepted asymmetric realm signing algorithms.",
+            )
+            access_token_type: str = Field(
+                min_length=1,
+                description="Required Keycloak typ claim of an access token.",
+            )
+            leeway_seconds: float = Field(
+                ge=0,
+                description="Clock-skew tolerance for exp, nbf and iat.",
+            )
+            jwks_path: str = Field(
+                min_length=1,
+                description="Realm signing-key set path relative to the issuer.",
+            )
+            signing_keys: FlextAuthConfig.AuthPolicy.KeycloakSigningKeys = Field(
+                description="Realm signing-key client limits.",
+            )
+            scope_rules: tuple[FlextAuthConfig.AuthPolicy.KeycloakScopeRule, ...] = (
+                Field(
+                    min_length=1,
+                    description="Rules mapping exact groups and roles to scopes.",
+                )
+            )
+            superuser_scope: str = Field(
+                min_length=1,
+                description="Scope that satisfies every required scope.",
+            )
+            default_required_scope: str = Field(
+                min_length=1,
+                description="Scope required when the caller names none.",
+            )
+
         name: str = Field(description="Package identity name metadata.")
         version: str = Field(description="Package identity version metadata.")
         jwt: Jwt = Field(description="JWT policy defaults.")
@@ -243,6 +355,9 @@ class FlextAuthConfig(FlextSettings, FlextConfig, strict=True):
         )
         validation: Validation = Field(
             description="Generic validation length defaults.",
+        )
+        keycloak: Keycloak = Field(
+            description="Keycloak claim to canonical scope policy.",
         )
 
     Auth: AuthPolicy
