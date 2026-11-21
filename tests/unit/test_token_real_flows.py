@@ -5,14 +5,13 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-from typing import cast
 
 import io
 from datetime import UTC, datetime
 
 from flext_auth import FlextAuth, FlextAuthSettings, u as auth_u
 from flext_auth.providers import FlextAuthKeycloakProvider
-from tests import c, m, p, tm, u
+from tests import c, m, p, t, tm, u
 
 
 class TestsFlextAuthSessionRealFlows:
@@ -186,7 +185,7 @@ class TestsFlextAuthKeycloakProvider:
     @staticmethod
     def test_keycloak_derives_canonical_scopes_from_groups_and_roles() -> None:
         """Realm groups and roles map to the canonical access scopes."""
-        claims = cast("t.Auth.TokensClaimMap", {
+        claims: t.Auth.TokensClaimMap = {
             "sub": "user-1",
             "groups": ["cosmos-qas-viewer"],
             "realm_access": {"roles": ["cosmos-editor"]},
@@ -200,7 +199,7 @@ class TestsFlextAuthKeycloakProvider:
     def test_keycloak_validates_a_real_signed_token() -> None:
         """A signed Keycloak token is accepted and its claims are readable."""
         secret = c.TEST_CREDENTIAL * 3
-        payload = cast("t.Auth.TokensClaimMap", {"sub": "user-1", "groups": ["cosmos-admin"]})
+        payload: t.Auth.TokensClaimMap = {"sub": "user-1", "groups": ["cosmos-admin"]}
         token = tm.ok(auth_u.Auth.encode_token(payload, secret))
         provider = FlextAuthKeycloakProvider(
             settings={"secret_key": secret, "algorithm": "HS256"}
