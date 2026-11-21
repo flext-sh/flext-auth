@@ -185,7 +185,7 @@ class TestsFlextAuthKeycloakProvider:
     @staticmethod
     def test_keycloak_derives_canonical_scopes_from_groups_and_roles() -> None:
         """Realm groups and roles map to the canonical access scopes."""
-        claims = {
+        claims = {  # type: ignore[arg-type]
             "sub": "user-1",
             "groups": ["cosmos-qas-viewer"],
             "realm_access": {"roles": ["cosmos-editor"]},
@@ -199,7 +199,7 @@ class TestsFlextAuthKeycloakProvider:
     def test_keycloak_validates_a_real_signed_token() -> None:
         """A signed Keycloak token is accepted and its claims are readable."""
         secret = c.TEST_CREDENTIAL * 3
-        payload = {"sub": "user-1", "groups": ["cosmos-admin"]}
+        payload = {"sub": "user-1", "groups": ["cosmos-admin"]}  # type: ignore[arg-type]
         token = tm.ok(auth_u.Auth.encode_token(payload, secret))
         provider = FlextAuthKeycloakProvider(
             settings={"secret_key": secret, "algorithm": "HS256"}
