@@ -9,8 +9,9 @@ from __future__ import annotations
 import io
 from datetime import UTC, datetime
 
-from flext_auth import FlextAuth, FlextAuthSettings
-from tests import c, m, p, tm, u
+from flext_auth import FlextAuth, FlextAuthSettings, u as auth_u
+from flext_auth.providers import FlextAuthKeycloakProvider
+from tests import c, m, p, t, tm, u
 
 
 class TestsFlextAuthSessionRealFlows:
@@ -167,3 +168,106 @@ class TestsFlextAuthSessionRealFlows:
         tm.that(rejected.error, eq=lookup.error)
         tm.that(rejected.error_data, eq=lookup.error_data)
         tm.that(rejected.exception, is_=type(lookup.exception))
+
+
+class TestsFlextAuthKeycloakProvider:
+    """Keycloak provider behavior through its public contract."""
+
+    @staticmethod
+    def test_keycloak_declares_oidc_and_keycloak_support() -> None:
+        """The provider advertises its Keycloak/OIDC capabilities."""
+        provider = FlextAuthKeycloakProvider()
+
+        tm.that(provider.supports(), contains="keycloak")
+        tm.that(provider.supports(), contains="oidc")
+        tm.that(provider.rfc_version, eq="OpenID Connect Core 1.0")
+
+    @staticmethod
+    def test_keycloak_derives_canonical_scopes_from_groups_and_roles() -> None:
+        """Realm groups and roles map to the canonical access scopes."""
+        claims: t.Auth.TokensClaimMap = {
+            "sub": "user-1",
+            "groups": ["cosmos-qas-viewer"],
+            "realm_access": {"roles": ["cosmos-editor"]},
+        }
+
+        scopes = tm.ok(FlextAuthKeycloakProvider.scopes_from_claims(claims))
+
+        tm.that(scopes, eq=frozenset({"read", "write"}))
+
+    @staticmethod
+    def test_keycloak_validates_a_real_signed_token() -> None:
+        """A signed Keycloak token is accepted and its claims are readable."""
+        secret = c.TEST_CREDENTIAL * 3
+        payload: t.Auth.TokensClaimMap = {"sub": "user-1", "groups": ["cosmos-admin"]}
+        token = tm.ok(auth_u.Auth.encode_token(payload, secret))
+        provider = FlextAuthKeycloakProvider(
+            settings={"secret_key": secret, "algorithm": "HS256"}
+        )
+
+        tm.ok(provider.validate(token))
+        claims = tm.ok(provider.claims(token))
+
+        tm.that(claims.get("sub"), eq="user-1")
+        tm.that(
+            tm.ok(FlextAuthKeycloakProvider.scopes_from_claims(claims)),
+            eq=frozenset({"admin"}),
+        )
+
+    @staticmethod
+    def test_keycloak_rejects_an_invalid_token() -> None:
+        """An invalid bearer token is rejected by the shared JWT owner."""
+        provider = FlextAuthKeycloakProvider(
+            settings={"secret_key": c.TEST_CREDENTIAL * 3, "algorithm": "HS256"}
+        )
+
+        tm.fail(provider.validate("invalid.jwt.token"))
+
+    @staticmethod
+    def test_keycloak_authorize_accepts_a_sufficient_scope() -> None:
+        """A bearer credential with the required scope is authorized."""
+        secret = c.TEST_CREDENTIAL * 3
+        token = tm.ok(
+            auth_u.Auth.encode_token(
+                {"sub": "user-1", "groups": ["cosmos-editor"]}, secret
+            )
+        )
+        provider = FlextAuthKeycloakProvider(
+            settings={"secret_key": secret, "algorithm": "HS256"}
+        )
+
+        granted = tm.ok(
+            provider.authorize(
+                {"authorization": f"Bearer {token}"}, required_scope="write"
+            )
+        )
+
+        tm.that(granted, contains="write")
+
+    @staticmethod
+    def test_keycloak_authorize_rejects_a_missing_bearer() -> None:
+        """Absent bearer metadata is rejected before any token work."""
+        provider = FlextAuthKeycloakProvider(
+            settings={"secret_key": c.TEST_CREDENTIAL * 3, "algorithm": "HS256"}
+        )
+
+        tm.fail(provider.authorize({}, required_scope="read"))
+
+    @staticmethod
+    def test_keycloak_authorize_rejects_an_insufficient_scope() -> None:
+        """A reader cannot perform a write operation."""
+        secret = c.TEST_CREDENTIAL * 3
+        token = tm.ok(
+            auth_u.Auth.encode_token(
+                {"sub": "user-1", "groups": ["cosmos-viewer"]}, secret
+            )
+        )
+        provider = FlextAuthKeycloakProvider(
+            settings={"secret_key": secret, "algorithm": "HS256"}
+        )
+
+        tm.fail(
+            provider.authorize(
+                {"authorization": f"Bearer {token}"}, required_scope="write"
+            )
+        )
