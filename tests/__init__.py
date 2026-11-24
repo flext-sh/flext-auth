@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from examples import FlextAuthBasicUsageFlows, FlextAuthBasicUsageWorkflow
     from flext_tests import td, tf, tk, tm
 
     from flext_auth import (
@@ -37,36 +36,76 @@ if TYPE_CHECKING:
         settings,
         x,
     )
+    from flext_auth.providers import (
+        FlextAuthApiKeyProvider,
+        FlextAuthBasicProvider,
+        FlextAuthCertificateProvider,
+        FlextAuthJwtProvider,
+        FlextAuthJwtTokenValidator,
+        FlextAuthKerberosProvider,
+        FlextAuthKerberosSupport,
+        FlextAuthKeycloakProvider,
+        FlextAuthLdapProvider,
+        FlextAuthOAuth2Config,
+        FlextAuthOAuth2Introspection,
+        FlextAuthOAuth2Provider,
+        FlextAuthOAuth2Tokens,
+        FlextAuthOidcProvider,
+        FlextAuthProvider,
+        FlextAuthRfcProvider,
+        FlextAuthSamlProvider,
+    )
+    from flext_auth.services import (
+        FlextAuthApplicationService,
+        FlextAuthIdentityService,
+        FlextAuthProviderService,
+        FlextAuthSessionService,
+    )
     from tests.base import TestsFlextAuthServiceBase, s
     from tests.constants import TestsFlextAuthConstants, c
-    from tests.fixtures import TestsFlextAuthFixtures
     from tests.models import TestsFlextAuthModels, m
     from tests.protocols import TestsFlextAuthProtocols, p
     from tests.settings import TestsFlextAuthSettings
     from tests.typings import TestsFlextAuthTypes, t
-    from tests.unit import TestsFlextAuthRegistryComposition
     from tests.utilities import TestsFlextAuthUtilities, u
 
 
 __all__: tuple[str, ...] = (
     "FlextAuth",
-    "FlextAuthBasicUsageFlows",
-    "FlextAuthBasicUsageWorkflow",
+    "FlextAuthApiKeyProvider",
+    "FlextAuthApplicationService",
+    "FlextAuthBasicProvider",
+    "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
+    "FlextAuthIdentityService",
+    "FlextAuthJwtProvider",
+    "FlextAuthJwtTokenValidator",
+    "FlextAuthKerberosProvider",
+    "FlextAuthKerberosSupport",
+    "FlextAuthKeycloakProvider",
+    "FlextAuthLdapProvider",
     "FlextAuthModels",
+    "FlextAuthOAuth2Config",
+    "FlextAuthOAuth2Introspection",
+    "FlextAuthOAuth2Provider",
+    "FlextAuthOAuth2Tokens",
+    "FlextAuthOidcProvider",
     "FlextAuthProtocols",
+    "FlextAuthProvider",
+    "FlextAuthProviderService",
     "FlextAuthRegistry",
+    "FlextAuthRfcProvider",
+    "FlextAuthSamlProvider",
     "FlextAuthServiceBase",
+    "FlextAuthSessionService",
     "FlextAuthSettings",
     "FlextAuthTypes",
     "FlextAuthUtilities",
     "FlextAuthVersion",
     "TestsFlextAuthConstants",
-    "TestsFlextAuthFixtures",
     "TestsFlextAuthModels",
     "TestsFlextAuthProtocols",
-    "TestsFlextAuthRegistryComposition",
     "TestsFlextAuthServiceBase",
     "TestsFlextAuthSettings",
     "TestsFlextAuthTypes",
@@ -97,23 +136,40 @@ install_lazy_exports(
     globals(),
     {
         "FlextAuth": "flext_auth",
-        "FlextAuthBasicUsageFlows": "examples",
-        "FlextAuthBasicUsageWorkflow": "examples",
+        "FlextAuthApiKeyProvider": "flext_auth.providers",
+        "FlextAuthApplicationService": "flext_auth.services",
+        "FlextAuthBasicProvider": "flext_auth.providers",
+        "FlextAuthCertificateProvider": "flext_auth.providers",
         "FlextAuthConfig": "flext_auth",
         "FlextAuthConstants": "flext_auth",
+        "FlextAuthIdentityService": "flext_auth.services",
+        "FlextAuthJwtProvider": "flext_auth.providers",
+        "FlextAuthJwtTokenValidator": "flext_auth.providers",
+        "FlextAuthKerberosProvider": "flext_auth.providers",
+        "FlextAuthKerberosSupport": "flext_auth.providers",
+        "FlextAuthKeycloakProvider": "flext_auth.providers",
+        "FlextAuthLdapProvider": "flext_auth.providers",
         "FlextAuthModels": "flext_auth",
+        "FlextAuthOAuth2Config": "flext_auth.providers",
+        "FlextAuthOAuth2Introspection": "flext_auth.providers",
+        "FlextAuthOAuth2Provider": "flext_auth.providers",
+        "FlextAuthOAuth2Tokens": "flext_auth.providers",
+        "FlextAuthOidcProvider": "flext_auth.providers",
         "FlextAuthProtocols": "flext_auth",
+        "FlextAuthProvider": "flext_auth.providers",
+        "FlextAuthProviderService": "flext_auth.services",
         "FlextAuthRegistry": "flext_auth",
+        "FlextAuthRfcProvider": "flext_auth.providers",
+        "FlextAuthSamlProvider": "flext_auth.providers",
         "FlextAuthServiceBase": "flext_auth",
+        "FlextAuthSessionService": "flext_auth.services",
         "FlextAuthSettings": "flext_auth",
         "FlextAuthTypes": "flext_auth",
         "FlextAuthUtilities": "flext_auth",
         "FlextAuthVersion": "flext_auth",
         "TestsFlextAuthConstants": ".constants",
-        "TestsFlextAuthFixtures": ".fixtures",
         "TestsFlextAuthModels": ".models",
         "TestsFlextAuthProtocols": ".protocols",
-        "TestsFlextAuthRegistryComposition": ".unit",
         "TestsFlextAuthServiceBase": ".base",
         "TestsFlextAuthSettings": ".settings",
         "TestsFlextAuthTypes": ".typings",
