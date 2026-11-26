@@ -1,9 +1,8 @@
 """Keycloak OpenID Connect provider with claim-derived canonical scopes.
 
-Validates Keycloak access tokens through the shared JWT owner and maps realm
-groups and roles to the canonical ``read``/``write``/``admin`` scopes the
-transports enforce. Claim parsing is defensive: only string entries count and
-an absent or malformed claim yields no scope.
+Verifies realm access tokens against the realm signing keys (signature,
+``exp``, ``iss``, ``aud``) and grants the canonical scopes that
+``config.Auth.keycloak`` derives from realm groups and roles.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,35 +10,55 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableSequence, Sequence
+from collections.abc import Mapping, MutableSequence
 from typing import override
 
-from flext_auth import p, r, t
-from flext_auth.providers import FlextAuthJwtTokenValidator, FlextAuthOidcProvider
+from flext_auth import c, m, p, t, u
+from flext_auth.providers import FlextAuthOidcProvider
 
 
 class FlextAuthKeycloakProvider(FlextAuthOidcProvider):
     """Keycloak realm provider: OIDC validation plus canonical scope derivation."""
 
-    @property
-    @override
-    def rfc_version(self) -> str:
-        """RFC version this provider implements (OpenID Connect Core 1.0)."""
-        return "OpenID Connect Core 1.0"
+    def __init__(self, settings: Mapping[str, t.Primitives] | None = None) -> None:
+        """Bind the provider to one realm issuer and audience.
+
+        Args:
+            settings: Provider settings carrying ``issuer`` and ``audience``.
+
+        Raises:
+            ValueError: If the realm issuer or audience is missing.
+
+        """
+        super().__init__(settings)
+        realm = m.Auth.ProviderConfig.model_validate({
+            c.Auth.KEY_NAME: c.Auth.ProviderTypes.KEYCLOAK.value,
+            "type": c.Auth.ProviderTypes.KEYCLOAK.value,
+            **(settings or {}),
+        })
+        if not realm.issuer or not realm.audience:
+            msg = "Keycloak provider requires the realm issuer and audience"
+            raise ValueError(msg)
+        self._issuer = realm.issuer
+        self._audience = realm.audience
+        self._signing_keys = u.Auth.keycloak_signing_keys(realm.issuer)
 
     @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 
+        Realm tokens are refreshed by the realm, never by this provider, so the
+        inherited ``refresh`` capability is not advertised.
+
         Returns:
-            Set of supported methods (Keycloak, OIDC, validate and refresh).
+            Set of supported methods (Keycloak, OIDC and validate).
 
         """
-        return {"keycloak", "oidc", "validate", "refresh"}
+        return {c.Auth.ProviderTypes.KEYCLOAK.value, *super().supports()} - {"refresh"}
 
     @override
     def validate(self, token: str | p.Auth.Token) -> p.Result[bool]:
-        """Validate a Keycloak bearer token through the shared JWT owner.
+        """Validate a Keycloak access token against the realm signing keys.
 
         Args:
             token: Token string or token entity to validate.
@@ -51,109 +70,47 @@ class FlextAuthKeycloakProvider(FlextAuthOidcProvider):
         return self.claims(token).map(lambda _claims: True)
 
     def claims(self, token: str | p.Auth.Token) -> p.Result[t.Auth.TokensClaimMap]:
-        """Return the validated Keycloak claims for a bearer token.
+        """Return the claims of a Keycloak access token verified by the realm keys.
 
         Args:
             token: Token string or token entity to decode.
 
         Returns:
-            The validated claim mapping, or a failure when validation rejects it.
+            The validated claim mapping, or the validation failure.
 
         """
-        return FlextAuthJwtTokenValidator(self).validate_token(
-            self._extract_token_string(token)
+        return u.Auth.decode_keycloak_token(
+            self._extract_token_string(token),
+            self._signing_keys,
+            issuer=self._issuer,
+            audience=self._audience,
         )
 
     def authorize(
         self,
-        metadata: Mapping[str, str],
+        authorization: str,
         *,
-        required_scope: str = "read",
+        required_scope: str | None = None,
     ) -> p.Result[frozenset[str]]:
-        """Validate the bearer credential and enforce one required scope.
-
-        The transport supplies the invocation metadata; this owner decides,
-        because it owns the token and scope semantics. ``admin`` satisfies any
-        required scope.
+        """Validate an ``Authorization`` header value and enforce one scope.
 
         Args:
-            metadata: Transport metadata carrying ``authorization``.
-            required_scope: Canonical scope the operation requires.
+            authorization: ``Bearer <token>`` header value from the transport.
+            required_scope: Canonical scope the operation requires; the
+                configured default when omitted.
 
         Returns:
-            The granted scopes, or a failure for a missing/invalid credential or
-            an insufficient scope.
+            The granted scopes, or a failure for a missing or invalid bearer
+            credential or an insufficient scope.
 
         """
-        scheme, _, token = metadata.get("authorization", "").partition(" ")
-        if scheme.lower() != "bearer" or not token:
-            return r[frozenset[str]].fail("missing bearer credential")
-        claims = self.claims(token)
-        if claims.failure:
-            return r[frozenset[str]].fail(
-                claims.error,
-                exception=claims.exception,
-            )
-        scopes = self.scopes_from_claims(claims.value)
-        if scopes.failure:
-            return r[frozenset[str]].fail(
-                scopes.error,
-                exception=scopes.exception,
-            )
-        granted = scopes.value
-        if required_scope not in granted and "admin" not in granted:
-            return r[frozenset[str]].fail(f"missing required scope {required_scope!r}")
-        return r[frozenset[str]].ok(granted)
-
-    @staticmethod
-    def scopes_from_claims(
-        claims: t.Auth.TokensClaimMap,
-    ) -> p.Result[frozenset[str]]:
-        """Derive canonical access scopes from Keycloak groups and realm roles.
-
-        Args:
-            claims: Validated Keycloak claim mapping.
-
-        Returns:
-            The canonical scopes granted by the claim's group and role names.
-
-        """
-        granted = FlextAuthKeycloakProvider._claim_names(claims, "groups")
-        granted |= FlextAuthKeycloakProvider._claim_names(
-            claims,
-            "realm_access",
-            nested="roles",
+        return (
+            u.Auth
+            .bearer_token(authorization)
+            .flat_map(self.claims)
+            .flat_map(u.Auth.keycloak_scopes)
+            .flat_map(lambda granted: u.Auth.require_scope(granted, required_scope))
         )
-        scopes: set[str] = set()
-        for name in granted:
-            lowered = name.lower()
-            if "admin" in lowered:
-                scopes.add("admin")
-            elif "editor" in lowered or "write" in lowered:
-                scopes.add("write")
-            elif "viewer" in lowered or "read" in lowered:
-                scopes.add("read")
-        return r[frozenset[str]].ok(frozenset(scopes))
-
-    @staticmethod
-    def _claim_names(
-        claims: t.Auth.TokensClaimMap,
-        key: str,
-        *,
-        nested: str | None = None,
-    ) -> frozenset[str]:
-        """Read one string sequence claim, optionally nested, without coercion.
-
-        Returns:
-            The string entries of the claim, empty when absent or malformed.
-
-        """
-        value: object = claims.get(key)
-        if nested is not None:
-            value = value.get(nested) if isinstance(value, Mapping) else None
-        if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
-            return frozenset()
-        return frozenset(item for item in value if isinstance(item, str))
 
 
 __all__: MutableSequence[str] = ["FlextAuthKeycloakProvider"]
