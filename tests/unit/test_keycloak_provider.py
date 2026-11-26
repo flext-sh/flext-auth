@@ -12,17 +12,8 @@ from __future__ import annotations
 
 import time
 
-from tests import (
-    FlextAuth,
-    FlextAuthSettings,
-    TestsFlextAuthFixtures,
-    c,
-    config,
-    p,
-    t,
-    tm,
-    u,
-)
+from tests import FlextAuth, FlextAuthSettings, c, config, p, t, tm, u
+from tests.fixtures import TestsFlextAuthFixtures
 
 
 class TestsFlextAuthKeycloakProvider:
